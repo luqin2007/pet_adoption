@@ -157,19 +157,19 @@ onBeforeUnmount(() => {
         <ul>
           <li>
             <Icon icon="mdi:account-heart-outline" />
-            <span>志愿同行，随时响应救援</span>
+            <span>志愿同行守护</span>
           </li>
           <li>
             <Icon icon="mdi:home-heart" />
-            <span>领养代替购买，给它一个家</span>
+            <span>领养代替购买</span>
           </li>
           <li>
             <Icon icon="mdi:home-plus-outline" />
-            <span>爱心寄养接力，守护等待期</span>
+            <span>爱心寄养接力</span>
           </li>
           <li>
             <Icon icon="mdi:map-marker-alert-outline" />
-            <span>走失报备认领，上报救援线索</span>
+            <span>走失宠物认领</span>
           </li>
         </ul>
       </section>
