@@ -714,7 +714,7 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: 20px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .auth-aside {
@@ -769,15 +769,11 @@ main {
 
 .auth-card-wrap {
   min-width: 0;
-  display: flex;
-  align-items: stretch;
 }
 
 .auth-card.el-card {
   border-radius: var(--radius-xl);
   border: 1px solid var(--line);
-  width: 100%;
-  height: 100%;
 }
 
 .auth-card .el-card__body {

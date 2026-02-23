@@ -154,7 +154,6 @@ onBeforeUnmount(() => {
           返回首页
         </el-button>
         <h1>欢迎加入暖窝救助</h1>
-        <p>登录后可管理领养申请、关注活动报名状态，并接收社区救助提醒。</p>
         <ul>
           <li>
             <Icon icon="mdi:hand-heart-outline" />
