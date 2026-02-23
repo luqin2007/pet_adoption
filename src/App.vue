@@ -1,20 +1,11 @@
 <script setup>
-import { ref } from 'vue'
-import { Icon } from '@iconify/vue'
-import {
-  ArrowRight,
-  Bell,
-  Calendar,
-  DataLine,
-  House,
-  LocationInformation,
-  Medal,
-  Pointer,
-  Present,
-  StarFilled,
-} from '@element-plus/icons-vue'
-
-const menuOpen = ref(false)
+import AppFooter from './components/AppFooter.vue'
+import AppHeader from './components/AppHeader.vue'
+import AdoptionSection from './components/AdoptionSection.vue'
+import ActivitySection from './components/ActivitySection.vue'
+import FeaturedArticlesSection from './components/FeaturedArticlesSection.vue'
+import HeroSection from './components/HeroSection.vue'
+import StatsOverview from './components/StatsOverview.vue'
 
 const navItems = [
   { id: 'adoption', label: '领养推荐' },
@@ -129,254 +120,21 @@ function scrollToSection(id) {
   if (target) {
     target.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
-  menuOpen.value = false
 }
 </script>
 
 <template>
   <div class="home-page">
-    <header class="site-header">
-      <div class="nav-card">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">
-            <el-icon><House /></el-icon>
-          </span>
-          <div class="brand-text">
-            <strong>暖窝救助</strong>
-            <small><span class="top-strip-right">24h 救助热线：400-820-1314</span></small>
-          </div>
-        </div>
-
-        <nav class="desktop-nav" aria-label="主导航">
-          <button
-            v-for="item in navItems"
-            :key="item.id"
-            class="nav-link"
-            type="button"
-            @click="scrollToSection(item.id)"
-          >
-            {{ item.label }}
-          </button>
-        </nav>
-
-        <div class="nav-action">
-          <el-button class="nav-btn" type="warning" @click="scrollToSection('news')">
-            立即参与
-          </el-button>
-          <button
-            class="mobile-toggle"
-            type="button"
-            aria-label="切换导航菜单"
-            aria-controls="mobile-menu"
-            :aria-expanded="menuOpen ? 'true' : 'false'"
-            @click="menuOpen = !menuOpen"
-          >
-            <el-icon><Pointer /></el-icon>
-          </button>
-        </div>
-      </div>
-
-      <transition name="menu-fade">
-        <nav v-if="menuOpen" id="mobile-menu" class="mobile-menu" aria-label="移动端导航">
-          <button
-            v-for="item in navItems"
-            :key="item.id"
-            class="mobile-link"
-            type="button"
-            @click="scrollToSection(item.id)"
-          >
-            {{ item.label }}
-          </button>
-        </nav>
-      </transition>
-    </header>
+    <AppHeader :nav-items="navItems" @navigate="scrollToSection" />
 
     <main>
-      <section class="hero-section" id="home">
-        <div class="hero-copy">
-          <el-tag class="hero-tag" type="warning" effect="plain">城市联合救助计划</el-tag>
-          <h1>让每一次相遇，都成为被温柔接住的开始</h1>
-          <p>
-            连接居民、志愿者、医院与公益组织，建立从“发现”到“救助”再到“领养”的完整闭环。
-            每一条上报都会被记录、追踪、反馈。
-          </p>
-          <div class="hero-buttons">
-            <el-button class="warm-btn" type="warning" size="large" @click="scrollToSection('adoption')">
-              查看领养专区
-              <el-icon><ArrowRight /></el-icon>
-            </el-button>
-            <el-button class="soft-btn" size="large" @click="scrollToSection('news')">
-              查看近期活动
-            </el-button>
-          </div>
-          <ul class="hero-list">
-            <li><el-icon><LocationInformation /></el-icon> 覆盖 12 个城区联动响应</li>
-            <li><el-icon><Bell /></el-icon> 重要事件实时通知与回访</li>
-            <li><el-icon><DataLine /></el-icon> 救助数据全流程可追溯</li>
-          </ul>
-        </div>
-
-        <div class="hero-panel">
-          <el-card class="progress-card" shadow="never">
-            <div class="panel-head">
-              <h3>本周救助进度</h3>
-              <el-tag type="success">进行中</el-tag>
-            </div>
-            <div class="progress-metrics">
-              <div>
-                <span>新接收</span>
-                <strong>42</strong>
-              </div>
-              <div>
-                <span>医疗处理</span>
-                <strong>29</strong>
-              </div>
-              <div>
-                <span>完成安置</span>
-                <strong>17</strong>
-              </div>
-            </div>
-            <el-progress :stroke-width="12" :percentage="78" color="#e77a3b" />
-            <p class="panel-note">距离本周目标还差 13 只，正在持续接力。</p>
-          </el-card>
-
-          <el-card class="story-card" shadow="hover">
-            <div class="story-head">
-              <el-icon><StarFilled /></el-icon>
-              <span>今日暖心故事</span>
-            </div>
-            <p>
-              志愿者在地铁口发现受伤的“奶盖”，3 小时内完成转运、检查与临时安置。
-              目前恢复情况稳定，已开放领养申请。
-            </p>
-          </el-card>
-        </div>
-      </section>
-
-      <section class="stats-bar" aria-label="救助数据概览">
-        <el-row :gutter="16">
-          <el-col v-for="item in stats" :key="item.label" :xs="12" :sm="6">
-            <el-card class="stat-card" shadow="never">
-              <el-statistic :value="item.value">
-                <template #title>{{ item.label }}</template>
-                <template #suffix>{{ item.suffix }}</template>
-              </el-statistic>
-            </el-card>
-          </el-col>
-        </el-row>
-      </section>
-
-      <section id="adoption" class="content-section">
-        <div class="section-head">
-          <h2>领养推荐</h2>
-        </div>
-        <div class="pet-grid">
-          <article v-for="pet in pets" :key="pet.name">
-            <el-card class="pet-card" shadow="hover">
-              <div class="pet-cover" :style="{ background: pet.cover }">
-                <el-tag type="warning" effect="dark" size="small">{{ pet.status }}</el-tag>
-              </div>
-              <div class="pet-body">
-                <h3>{{ pet.name }}</h3>
-                <p>{{ pet.summary }}</p>
-                <div class="pet-meta">
-                  <span><el-icon><Calendar /></el-icon>{{ pet.age }}</span>
-                  <span><el-icon><LocationInformation /></el-icon>{{ pet.city }}</span>
-                </div>
-                <el-button text type="warning" class="card-link">
-                  预约见面
-                  <el-icon><ArrowRight /></el-icon>
-                </el-button>
-              </div>
-            </el-card>
-          </article>
-        </div>
-      </section>
-
-      <section id="news" class="content-section">
-        <div class="section-head left">
-          <h2>近期活动</h2>
-          <p>近期活动横向展示，支持快速了解时间、地点与主题。</p>
-        </div>
-        <div class="activity-row">
-          <article v-for="item in activities" :key="item.title">
-            <el-card class="activity-card" shadow="hover">
-              <div class="activity-cover">
-                <img :src="item.cover" :alt="item.title" loading="lazy" />
-                <el-tag class="activity-tag" type="warning" effect="dark" size="small">{{ item.type }}</el-tag>
-              </div>
-              <div class="activity-body">
-                <h4>{{ item.title }}</h4>
-                <p>{{ item.summary }}</p>
-                <div class="activity-meta">
-                  <span>
-                    <Icon icon="mdi:calendar-clock-outline" />
-                    {{ item.date }}
-                  </span>
-                  <span>
-                    <Icon icon="mdi:map-marker-radius-outline" />
-                    {{ item.location }}
-                  </span>
-                </div>
-                <el-button text type="warning" class="card-link">
-                  查看活动详情
-                  <el-icon><ArrowRight /></el-icon>
-                </el-button>
-              </div>
-            </el-card>
-          </article>
-        </div>
-      </section>
-
-      <section id="articles" class="content-section">
-        <div class="section-head left">
-          <h2>精选文章</h2>
-          <p>公益宣传与科普知识分开展示，阅读入口更清晰。</p>
-        </div>
-        <div class="article-row">
-          <article v-for="article in articles" :key="article.title">
-            <el-card class="article-card" shadow="hover">
-              <div class="article-cover">
-                <img :src="article.cover" :alt="article.title" loading="lazy" />
-              </div>
-              <div class="article-body">
-                <div class="article-head">
-                  <el-tag type="warning" effect="plain">{{ article.category }}</el-tag>
-                  <span>{{ article.date }}</span>
-                </div>
-                <h4>{{ article.title }}</h4>
-                <p>{{ article.desc }}</p>
-                <div class="article-foot">
-                  <span class="article-read">
-                    <Icon :icon="article.icon" />
-                    {{ article.reading }}
-                  </span>
-                  <el-button text type="warning" class="card-link">
-                    阅读全文
-                    <el-icon><ArrowRight /></el-icon>
-                  </el-button>
-                </div>
-                <div class="article-source">
-                  <Icon icon="mdi:image-outline" />
-                  {{ article.source }}
-                </div>
-              </div>
-            </el-card>
-          </article>
-        </div>
-      </section>
-
+      <HeroSection @navigate="scrollToSection" />
+      <StatsOverview :stats="stats" />
+      <AdoptionSection :pets="pets" />
+      <ActivitySection :activities="activities" />
+      <FeaturedArticlesSection :articles="articles" />
     </main>
 
-    <footer class="site-footer">
-      <div class="footer-left">
-        <h3>暖窝救助 · Stray Pet Rescue</h3>
-        <p>让更多流浪生命被看见、被治疗、被爱护、被领养。</p>
-      </div>
-      <div class="footer-right">
-        <span><el-icon><Medal /></el-icon> 公益透明公示</span>
-        <span><el-icon><Present /></el-icon> 爱心物资直达站点</span>
-      </div>
-    </footer>
+    <AppFooter />
   </div>
 </template>
