@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.bean.*;
 import com.example.backend.entity.User;
+import com.example.backend.util.JwtUtils;
 import com.example.backend.service.UserManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserManagerController {
 
     private final UserManagerService userManagerService;
+    private final JwtUtils jwtUtils;
 
     @PostMapping("/register")
     public Result<UserLoginResponse> register(@RequestBody UserRegisterRequest user) {
@@ -53,7 +55,8 @@ public class UserManagerController {
     @PostMapping("/login")
     public Result<UserLoginResponse> login(@RequestBody UserLoginRequest user) {
         User login = userManagerService.login(user);
-        UserLoginResponse response = UserLoginResponse.fromEntity(login);
+        String token = jwtUtils.generateToken(login);
+        UserLoginResponse response = UserLoginResponse.fromEntity(login, token);
         return Result.success(response);
     }
 

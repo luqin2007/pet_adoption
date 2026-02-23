@@ -11,8 +11,13 @@ public class UserLoginResponse {
     private String username;
     private String email;
     private String avatar;
+    private String token;
 
     public static UserLoginResponse fromEntity(User user) {
-        return new UserLoginResponse(user.getUsername(), user.getEmail(), user.getAvatar());
+        return new UserLoginResponse(user.getUsername(), user.getEmail(), user.getAvatar(), null);
+    }
+
+    public static UserLoginResponse fromEntity(User user, String token) {
+        return new UserLoginResponse(user.getUsername(), user.getEmail(), user.getAvatar(), token);
     }
 }
