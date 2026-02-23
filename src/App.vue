@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { Icon } from '@iconify/vue'
 import {
   ArrowRight,
   Bell,
@@ -20,8 +21,8 @@ const menuOpen = ref(false)
 const navItems = [
   { id: 'actions', label: '救助行动' },
   { id: 'adoption', label: '领养推荐' },
-  { id: 'news', label: '最新动态' },
-  { id: 'articles', label: '公益科普' },
+  { id: 'news', label: '近期活动' },
+  { id: 'articles', label: '站内文章' },
 ]
 
 const actionCards = [
@@ -87,56 +88,63 @@ const pets = [
   },
 ]
 
-const updates = [
+const activities = [
   {
-    date: '2026-02-20',
-    title: '“暖冬巡护”行动完成',
-    desc: '本周新增救助 37 只，全部完成初筛与基础驱虫。',
+    date: '2026-03-01',
+    title: '周末流浪犬义诊专场',
+    location: '城北爱心驿站',
+    summary: '兽医团队将现场完成基础检查、驱虫评估与登记建档，支持志愿者协同引导。',
+    type: '线下活动',
+    cover: 'https://images.pexels.com/photos/6568940/pexels-photo-6568940.jpeg?auto=compress&cs=tinysrgb&w=1200',
   },
   {
-    date: '2026-02-18',
-    title: '周末领养开放日报名中',
-    desc: '周六 14:00 在城北领养中心举行，支持线上预约到场。',
+    date: '2026-03-05',
+    title: '社区夜间巡护联动',
+    location: '滨江区四个巡护点',
+    summary: '联合社区与志愿者开展夜间巡查，重点排查伤病与幼崽，实时回传定位信息。',
+    type: '巡护行动',
+    cover: 'https://images.pexels.com/photos/5732474/pexels-photo-5732474.jpeg?auto=compress&cs=tinysrgb&w=1200',
   },
   {
-    date: '2026-02-15',
-    title: '新增夜间急救值班机制',
-    desc: '每日 20:00-24:00 开通夜间应急响应，缩短黄金救助时间。',
+    date: '2026-03-09',
+    title: '春季领养开放日',
+    location: '西湖区救助中心',
+    summary: '开放 30+ 只健康待领养毛孩子，现场提供领养评估、喂养建议与适应期指导。',
+    type: '领养活动',
+    cover: 'https://images.pexels.com/photos/4587991/pexels-photo-4587991.jpeg?auto=compress&cs=tinysrgb&w=1200',
   },
 ]
 
 const articles = [
   {
     category: '公益宣传',
-    title: '如何正确帮助街头流浪猫狗：先观察，再行动',
-    desc: '发现疑似受伤流浪宠物时，先判断环境安全并拍照留存，再通过平台快速上报位置与状态。',
+    title: '遇到受伤流浪宠物时，普通人第一步该做什么？',
+    desc: '从环境安全判断、远距离观察到上报信息填写，整理成一份可执行的三步指南。',
     date: '2026-02-21',
     reading: '5 分钟阅读',
-    icon: Bell,
+    icon: 'mdi:bullhorn-variant-outline',
+    cover: 'https://picsum.photos/seed/pet-article-01/960/540',
+    source: 'Picsum 占位图',
   },
   {
     category: '科普知识',
-    title: '领养前准备清单：新手家庭必做的 7 件事',
-    desc: '包含疫苗档案确认、家庭防逃逸改造、饮食过渡与应激管理，帮助宠物平稳融入新家庭。',
+    title: '新手领养准备清单：疫苗、驱虫和家庭环境一次讲清',
+    desc: '涵盖健康档案核验、居家防护改造、食谱过渡与应激应对，帮助领养更平稳。',
     date: '2026-02-19',
     reading: '8 分钟阅读',
-    icon: DataLine,
+    icon: 'mdi:book-open-page-variant-outline',
+    cover: 'https://picsum.photos/seed/pet-article-02/960/540',
+    source: 'Picsum 占位图',
   },
   {
-    category: '公益行动',
-    title: '为什么“绝育 + 免疫 + 回访”是长期救助关键',
-    desc: '系统化绝育和免疫能显著降低流浪数量增长，同时通过回访机制提升救助成功率。',
+    category: '公益宣传',
+    title: '社区共建案例：一条街如何从高频救助到稳定管理',
+    desc: '通过绝育、免疫、回访和科普四条线协同，三个月内显著降低了重复救助数量。',
     date: '2026-02-16',
     reading: '6 分钟阅读',
-    icon: Present,
-  },
-  {
-    category: '科普知识',
-    title: '冬季救助要点：低温环境下的紧急保暖方案',
-    desc: '纸箱隔风、热源距离控制、湿度管理与临时补液等实操建议，适用于社区志愿者快速处置。',
-    date: '2026-02-13',
-    reading: '4 分钟阅读',
-    icon: StarFilled,
+    icon: 'mdi:heart-circle-outline',
+    cover: 'https://picsum.photos/seed/pet-article-03/960/540',
+    source: 'Picsum 占位图',
   },
 ]
 
@@ -285,7 +293,6 @@ function scrollToSection(id) {
       <section id="adoption" class="content-section">
         <div class="section-head">
           <h2>领养推荐</h2>
-          <p>已完成基础体检与评估，可在线预约见面。</p>
         </div>
         <div class="pet-grid">
           <article v-for="pet in pets" :key="pet.name">
@@ -310,52 +317,76 @@ function scrollToSection(id) {
         </div>
       </section>
 
-      <section id="news" class="content-section news-grid">
-        <div>
-          <div class="section-head left">
-            <h2>最新动态</h2>
-            <p>公开透明，确保每条救助线索可跟进。</p>
-          </div>
-          <el-card class="timeline-card" shadow="never">
-            <el-timeline>
-              <el-timeline-item
-                v-for="item in updates"
-                :key="item.date + item.title"
-                :timestamp="item.date"
-                type="warning"
-              >
-                <h4>{{ item.title }}</h4>
-                <p>{{ item.desc }}</p>
-              </el-timeline-item>
-            </el-timeline>
-          </el-card>
+      <section id="news" class="content-section">
+        <div class="section-head left">
+          <h2>近期活动</h2>
+          <p>近期活动横向展示，支持快速了解时间、地点与主题。</p>
         </div>
-
-        <div id="articles">
-          <div class="section-head left">
-            <h2>最新文章</h2>
-            <p>传播科学救助知识，提升公众参与率。</p>
-          </div>
-          <div class="article-list">
-            <el-card v-for="article in articles" :key="article.title" class="article-card" shadow="hover">
-              <div class="article-head">
-                <el-tag type="warning" effect="plain">{{ article.category }}</el-tag>
-                <span>{{ article.date }}</span>
+        <div class="activity-row">
+          <article v-for="item in activities" :key="item.title">
+            <el-card class="activity-card" shadow="hover">
+              <div class="activity-cover">
+                <img :src="item.cover" :alt="item.title" loading="lazy" />
+                <el-tag class="activity-tag" type="warning" effect="dark" size="small">{{ item.type }}</el-tag>
               </div>
-              <h4>{{ article.title }}</h4>
-              <p>{{ article.desc }}</p>
-              <div class="article-foot">
-                <span class="article-read">
-                  <el-icon><component :is="article.icon" /></el-icon>
-                  {{ article.reading }}
-                </span>
+              <div class="activity-body">
+                <h4>{{ item.title }}</h4>
+                <p>{{ item.summary }}</p>
+                <div class="activity-meta">
+                  <span>
+                    <Icon icon="mdi:calendar-clock-outline" />
+                    {{ item.date }}
+                  </span>
+                  <span>
+                    <Icon icon="mdi:map-marker-radius-outline" />
+                    {{ item.location }}
+                  </span>
+                </div>
                 <el-button text type="warning" class="card-link">
-                  阅读全文
+                  查看活动详情
                   <el-icon><ArrowRight /></el-icon>
                 </el-button>
               </div>
             </el-card>
-          </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="articles" class="content-section">
+        <div class="section-head left">
+          <h2>站内文章</h2>
+          <p>公益宣传与科普知识分开展示，阅读入口更清晰。</p>
+        </div>
+        <div class="article-row">
+          <article v-for="article in articles" :key="article.title">
+            <el-card class="article-card" shadow="hover">
+              <div class="article-cover">
+                <img :src="article.cover" :alt="article.title" loading="lazy" />
+              </div>
+              <div class="article-body">
+                <div class="article-head">
+                  <el-tag type="warning" effect="plain">{{ article.category }}</el-tag>
+                  <span>{{ article.date }}</span>
+                </div>
+                <h4>{{ article.title }}</h4>
+                <p>{{ article.desc }}</p>
+                <div class="article-foot">
+                  <span class="article-read">
+                    <Icon :icon="article.icon" />
+                    {{ article.reading }}
+                  </span>
+                  <el-button text type="warning" class="card-link">
+                    阅读全文
+                    <el-icon><ArrowRight /></el-icon>
+                  </el-button>
+                </div>
+                <div class="article-source">
+                  <Icon icon="mdi:image-outline" />
+                  {{ article.source }}
+                </div>
+              </div>
+            </el-card>
+          </article>
         </div>
       </section>
 
