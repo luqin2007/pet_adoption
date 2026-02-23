@@ -2,6 +2,7 @@ package com.example.backend.util;
 
 import com.example.backend.service.UserManagerService;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +31,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String jwtHeader;
     @Value("${jwt.prefix}")
     private String jwtPrefix;
+
+    @PostConstruct
+    public void init() {
+        jwtPrefix = StringUtils.hasText(jwtPrefix) ? jwtPrefix.trim() : "Bearer";
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
