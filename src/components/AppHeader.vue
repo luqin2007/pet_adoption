@@ -19,9 +19,9 @@ function handleNavigate(id) {
   menuOpen.value = false
 }
 
-function goAuth() {
+function goLogin() {
   menuOpen.value = false
-  router.push('/auth')
+  router.push('/login')
 }
 </script>
 
@@ -51,7 +51,7 @@ function goAuth() {
       </nav>
 
       <div class="nav-action">
-        <el-button class="nav-btn" type="warning" @click="goAuth">
+        <el-button class="nav-btn" type="warning" @click="goLogin">
           立即加入
         </el-button>
         <button

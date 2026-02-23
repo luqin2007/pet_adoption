@@ -1,27 +1,36 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 import { ElMessage } from 'element-plus'
-import { reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft, Lock, Message, Phone, User } from '@element-plus/icons-vue'
+import { ArrowLeft, Lock, Message, User } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const activeTab = ref('login')
 const loginRef = ref()
 const registerRef = ref()
+const codeCountdown = ref(0)
+let codeTimer = null
 
 const loginForm = reactive({
-  phone: '',
+  username: '',
   password: '',
   remember: true,
 })
 
 const registerForm = reactive({
   name: '',
-  phone: '',
   email: '',
+  emailCode: '',
   password: '',
   confirmPassword: '',
+})
+
+const codeButtonText = computed(() => {
+  if (codeCountdown.value > 0) {
+    return `${codeCountdown.value}s 后重试`
+  }
+  return '获取验证码'
 })
 
 function validateConfirmPassword(_rule, value, callback) {
@@ -36,23 +45,64 @@ function validateConfirmPassword(_rule, value, callback) {
   callback()
 }
 
+function validateEmailCode(_rule, value, callback) {
+  if (!value) {
+    callback(new Error('请输入邮箱验证码'))
+    return
+  }
+  if (!/^\d{6}$/.test(value)) {
+    callback(new Error('验证码应为 6 位数字'))
+    return
+  }
+  callback()
+}
+
 const loginRules = {
-  phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 }
 
 const registerRules = {
   name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-  phone: [{ required: true, message: '请输入手机号', trigger: 'blur' }],
   email: [
     { required: true, message: '请输入邮箱', trigger: 'blur' },
     { type: 'email', message: '邮箱格式不正确', trigger: ['blur', 'change'] },
   ],
+  emailCode: [{ validator: validateEmailCode, trigger: ['blur', 'change'] }],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, message: '密码长度至少 6 位', trigger: 'blur' },
   ],
   confirmPassword: [{ validator: validateConfirmPassword, trigger: ['blur', 'change'] }],
+}
+
+function startCodeCountdown(seconds) {
+  if (codeTimer) {
+    clearInterval(codeTimer)
+    codeTimer = null
+  }
+  codeCountdown.value = seconds
+  codeTimer = setInterval(() => {
+    codeCountdown.value -= 1
+    if (codeCountdown.value <= 0) {
+      codeCountdown.value = 0
+      clearInterval(codeTimer)
+      codeTimer = null
+    }
+  }, 1000)
+}
+
+async function sendEmailCode() {
+  if (codeCountdown.value > 0 || !registerRef.value) {
+    return
+  }
+  try {
+    await registerRef.value.validateField('email')
+    ElMessage.success(`验证码已发送到 ${registerForm.email}`)
+    startCodeCountdown(60)
+  } catch {
+    ElMessage.warning('请先输入有效邮箱地址')
+  }
 }
 
 async function submitLogin() {
@@ -76,7 +126,7 @@ async function submitRegister() {
     await registerRef.value.validate()
     ElMessage.success('注册成功，请使用新账号登录')
     activeTab.value = 'login'
-    loginForm.phone = registerForm.phone
+    loginForm.username = registerForm.name
     loginForm.password = ''
   } catch {
     ElMessage.warning('请完善注册信息')
@@ -86,6 +136,13 @@ async function submitRegister() {
 function goHome() {
   router.push('/')
 }
+
+onBeforeUnmount(() => {
+  if (codeTimer) {
+    clearInterval(codeTimer)
+    codeTimer = null
+  }
+})
 </script>
 
 <template>
@@ -119,10 +176,10 @@ function goHome() {
           <el-tabs v-model="activeTab" stretch>
             <el-tab-pane label="登录" name="login">
               <el-form ref="loginRef" :model="loginForm" :rules="loginRules" label-position="top">
-                <el-form-item label="手机号" prop="phone">
-                  <el-input v-model="loginForm.phone" placeholder="请输入手机号">
+                <el-form-item label="用户名" prop="username">
+                  <el-input v-model="loginForm.username" placeholder="请输入用户名">
                     <template #prefix>
-                      <el-icon><Phone /></el-icon>
+                      <el-icon><User /></el-icon>
                     </template>
                   </el-input>
                 </el-form-item>
@@ -154,16 +211,21 @@ function goHome() {
                   </el-input>
                 </el-form-item>
 
-                <el-form-item label="手机号" prop="phone">
-                  <el-input v-model="registerForm.phone" placeholder="请输入手机号">
+                <el-form-item label="邮箱" prop="email">
+                  <el-input v-model="registerForm.email" placeholder="请输入邮箱">
                     <template #prefix>
-                      <el-icon><Phone /></el-icon>
+                      <el-icon><Message /></el-icon>
+                    </template>
+                    <template #append>
+                      <el-button class="auth-code-btn" :disabled="codeCountdown > 0" @click="sendEmailCode">
+                        {{ codeButtonText }}
+                      </el-button>
                     </template>
                   </el-input>
                 </el-form-item>
 
-                <el-form-item label="邮箱" prop="email">
-                  <el-input v-model="registerForm.email" placeholder="请输入邮箱">
+                <el-form-item label="邮箱验证码" prop="emailCode">
+                  <el-input v-model="registerForm.emailCode" placeholder="请输入 6 位邮箱验证码">
                     <template #prefix>
                       <el-icon><Message /></el-icon>
                     </template>

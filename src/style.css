@@ -788,6 +788,23 @@ main {
   font-weight: 700;
 }
 
+.auth-card .el-input-group__append {
+  background: rgba(255, 247, 238, 0.95);
+  border-color: rgba(243, 223, 204, 0.9);
+}
+
+.auth-code-btn.el-button {
+  border: none;
+  background: transparent;
+  color: var(--primary-strong);
+  font-weight: 700;
+  padding: 0 10px;
+}
+
+.auth-code-btn.el-button.is-disabled {
+  color: var(--muted);
+}
+
 .auth-form-row {
   display: flex;
   align-items: center;
