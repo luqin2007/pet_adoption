@@ -11,39 +11,15 @@ import {
   Medal,
   Pointer,
   Present,
-  Search,
   StarFilled,
-  User,
 } from '@element-plus/icons-vue'
 
 const menuOpen = ref(false)
 
 const navItems = [
-  { id: 'actions', label: '救助行动' },
   { id: 'adoption', label: '领养推荐' },
   { id: 'news', label: '近期活动' },
-  { id: 'articles', label: '站内文章' },
-]
-
-const actionCards = [
-  {
-    title: '在线紧急报案',
-    desc: '上传位置、照片与伤情描述，值班救助员会就近响应。',
-    icon: Search,
-    action: '立即上报',
-  },
-  {
-    title: '爱心捐助通道',
-    desc: '支持医疗、绝育与粮食补给，让每只毛孩子得到稳定照料。',
-    icon: Present,
-    action: '去捐助',
-  },
-  {
-    title: '志愿者报名',
-    desc: '加入巡查、临时寄养、线下领养日，和我们一起守护城市生命。',
-    icon: User,
-    action: '加入团队',
-  },
+  { id: 'articles', label: '精选文章' },
 ]
 
 const stats = [
@@ -184,7 +160,7 @@ function scrollToSection(id) {
         </nav>
 
         <div class="nav-action">
-          <el-button class="nav-btn" type="warning" @click="scrollToSection('actions')">
+          <el-button class="nav-btn" type="warning" @click="scrollToSection('news')">
             立即参与
           </el-button>
           <button
@@ -229,14 +205,15 @@ function scrollToSection(id) {
               查看领养专区
               <el-icon><ArrowRight /></el-icon>
             </el-button>
-            <el-button class="soft-btn" size="large" @click="scrollToSection('actions')">
-              我要参与救助
+            <el-button class="soft-btn" size="large" @click="scrollToSection('news')">
+              查看近期活动
             </el-button>
           </div>
           <ul class="hero-list">
             <li><el-icon><LocationInformation /></el-icon> 覆盖 12 个城区联动响应</li>
             <li><el-icon><Bell /></el-icon> 重要事件实时通知与回访</li>
-            <li><el-icon><DataLine /></el-icon> 救助数据全流程可追溯</li>
+            <li><el-icon><DataLine /></el-
+              icon> 救助数据全流程可追溯</li>
           </ul>
         </div>
 
@@ -354,7 +331,7 @@ function scrollToSection(id) {
 
       <section id="articles" class="content-section">
         <div class="section-head left">
-          <h2>站内文章</h2>
+          <h2>精选文章</h2>
           <p>公益宣传与科普知识分开展示，阅读入口更清晰。</p>
         </div>
         <div class="article-row">
@@ -390,25 +367,6 @@ function scrollToSection(id) {
         </div>
       </section>
 
-      <section id="actions" class="content-section">
-        <div class="section-head">
-          <h2>你可以这样参与救助</h2>
-          <p>三个入口，覆盖上报、捐助、行动报名。</p>
-        </div>
-        <el-row :gutter="20">
-          <el-col v-for="item in actionCards" :key="item.title" :xs="24" :sm="12" :lg="8">
-            <el-card class="action-card" shadow="hover">
-              <el-icon class="action-icon"><component :is="item.icon" /></el-icon>
-              <h3>{{ item.title }}</h3>
-              <p>{{ item.desc }}</p>
-              <el-button class="card-link" text type="warning">
-                {{ item.action }}
-                <el-icon><ArrowRight /></el-icon>
-              </el-button>
-            </el-card>
-          </el-col>
-        </el-row>
-      </section>
     </main>
 
     <footer class="site-footer">
