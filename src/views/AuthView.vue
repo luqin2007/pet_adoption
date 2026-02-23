@@ -251,8 +251,8 @@ onBeforeUnmount(() => {
 
             <el-tab-pane label="注册" name="register">
               <el-form ref="registerRef" :model="registerForm" :rules="registerRules" label-position="top">
-                <el-form-item label="姓名" prop="name">
-                  <el-input v-model="registerForm.name" placeholder="请输入姓名">
+                <el-form-item label="用户名" prop="name">
+                  <el-input v-model="registerForm.name" placeholder="请输入用户名">
                     <template #prefix>
                       <el-icon><User /></el-icon>
                     </template>
