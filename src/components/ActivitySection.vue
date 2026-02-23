@@ -14,7 +14,6 @@ const props = defineProps({
   <section id="news" class="content-section">
     <div class="section-head left">
       <h2>近期活动</h2>
-      <p>近期活动横向展示，支持快速了解时间、地点与主题。</p>
     </div>
     <div class="activity-row">
       <article v-for="item in props.activities" :key="item.title">

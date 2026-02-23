@@ -14,7 +14,6 @@ const props = defineProps({
   <section id="articles" class="content-section">
     <div class="section-head left">
       <h2>精选文章</h2>
-      <p>公益宣传与科普知识分开展示，阅读入口更清晰。</p>
     </div>
     <div class="article-row">
       <article v-for="article in props.articles" :key="article.title">

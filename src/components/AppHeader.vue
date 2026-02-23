@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { House, Pointer } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+import { ArrowDown, House } from '@element-plus/icons-vue'
 
 const props = defineProps({
   navItems: {
@@ -11,10 +12,16 @@ const props = defineProps({
 
 const emit = defineEmits(['navigate'])
 const menuOpen = ref(false)
+const router = useRouter()
 
 function handleNavigate(id) {
   emit('navigate', id)
   menuOpen.value = false
+}
+
+function goAuth() {
+  menuOpen.value = false
+  router.push('/auth')
 }
 </script>
 
@@ -44,8 +51,8 @@ function handleNavigate(id) {
       </nav>
 
       <div class="nav-action">
-        <el-button class="nav-btn" type="warning" @click="handleNavigate('news')">
-          近期活动
+        <el-button class="nav-btn" type="warning" @click="goAuth">
+          立即加入
         </el-button>
         <button
           class="mobile-toggle"
@@ -55,7 +62,7 @@ function handleNavigate(id) {
           :aria-expanded="menuOpen ? 'true' : 'false'"
           @click="menuOpen = !menuOpen"
         >
-          <el-icon><Pointer /></el-icon>
+          <el-icon><ArrowDown /></el-icon>
         </button>
       </div>
     </div>
