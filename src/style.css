@@ -748,6 +748,7 @@ main {
   margin: 20px 0 0;
   padding: 0;
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -856,6 +857,10 @@ main {
   }
 
   .activity-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-aside ul {
     grid-template-columns: 1fr;
   }
 

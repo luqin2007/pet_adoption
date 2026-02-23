@@ -156,16 +156,20 @@ onBeforeUnmount(() => {
         <h1>欢迎加入暖窝救助</h1>
         <ul>
           <li>
-            <Icon icon="mdi:hand-heart-outline" />
-            <span>追踪你参与的救助任务</span>
+            <Icon icon="mdi:account-heart-outline" />
+            <span>志愿同行，随时响应救援</span>
           </li>
           <li>
             <Icon icon="mdi:home-heart" />
-            <span>查看领养流程与回访安排</span>
+            <span>领养代替购买，给它一个家</span>
           </li>
           <li>
-            <Icon icon="mdi:shield-check-outline" />
-            <span>统一管理账号和隐私设置</span>
+            <Icon icon="mdi:home-plus-outline" />
+            <span>爱心寄养接力，守护等待期</span>
+          </li>
+          <li>
+            <Icon icon="mdi:map-marker-alert-outline" />
+            <span>走失报备认领，上报救援线索</span>
           </li>
         </ul>
       </section>
