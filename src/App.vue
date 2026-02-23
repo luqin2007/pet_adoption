@@ -212,8 +212,7 @@ function scrollToSection(id) {
           <ul class="hero-list">
             <li><el-icon><LocationInformation /></el-icon> 覆盖 12 个城区联动响应</li>
             <li><el-icon><Bell /></el-icon> 重要事件实时通知与回访</li>
-            <li><el-icon><DataLine /></el-
-              icon> 救助数据全流程可追溯</li>
+            <li><el-icon><DataLine /></el-icon> 救助数据全流程可追溯</li>
           </ul>
         </div>
 
