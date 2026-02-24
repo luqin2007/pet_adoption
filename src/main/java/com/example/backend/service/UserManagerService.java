@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -47,7 +46,7 @@ public class UserManagerService implements UserDetailsService {
 
     private static final String PASSWORD_RESET_KEY_TEMPLATE = "pet_adoption.forgetpwd.%s";
     private static final String PASSWORD_CODE_KEY_TEMPLATE = "pet_adoption.mailcode.%s";
-    private static final String MAIL_RESET_PASSWORD_TEMPLATE = "请点击以下链接重置密码：\n%s/user/reset?id=%s\n链接在 10min 内有效";
+    private static final String MAIL_RESET_PASSWORD_TEMPLATE = "请点击以下链接重置密码：\n<a>%s/user/reset?id=%s</a>\n链接在 10min 内有效";
     private static final String MAIL_CODE_TEMPLATE = "%s\n验证码 10min 内有效";
 
     @Value("${host.address}")
