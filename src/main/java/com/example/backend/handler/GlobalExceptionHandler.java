@@ -11,11 +11,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<Result<Void>> handleServiceException(ServiceException e) {
+        e.printStackTrace();
         return Result.wrap(Result.error(e));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleOtherException(Exception e) {
+        e.printStackTrace();
         return Result.wrap(Result.error(500, e.getMessage()));
     }
 }

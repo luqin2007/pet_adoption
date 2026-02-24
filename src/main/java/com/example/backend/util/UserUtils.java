@@ -62,7 +62,15 @@ public class UserUtils {
         return (role & MASK_WORKER) == MASK_WORKER || (role & MASK_ADMIN) == MASK_ADMIN;
     }
 
+    public static boolean isWorker(User user) {
+        return isWorker(user.getRole());
+    }
+
     public static boolean isAdmin(int role) {
         return (role & MASK_ADMIN) == MASK_ADMIN;
+    }
+
+    public static boolean isAdmin(User user) {
+        return isAdmin(user.getRole());
     }
 }

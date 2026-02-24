@@ -6,16 +6,13 @@ import com.example.backend.bean.UserRegisterRequest;
 import com.example.backend.bean.UserUpdateRequest;
 import com.example.backend.entity.User;
 import com.example.backend.mapper.UserMapper;
-import com.example.backend.util.CustomUserDetails;
-import com.example.backend.util.ServiceException;
-import com.example.backend.util.StringUtils;
-import com.example.backend.util.UserUtils;
+import com.example.backend.util.*;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +27,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -42,12 +41,17 @@ public class UserManagerService implements UserDetailsService {
 
     private final UserMapper userMapper;
     private final StringRedisTemplate redisTemplate;
-    private final MailSender mailSender;
     private final PasswordEncoder passwordEncoder;
+    private final MailUtils mailUtils;
     private AuthenticationManager authenticationManager;
 
     private static final String PASSWORD_RESET_KEY_TEMPLATE = "pet_adoption.forgetpwd.%s";
     private static final String PASSWORD_CODE_KEY_TEMPLATE = "pet_adoption.mailcode.%s";
+    private static final String MAIL_RESET_PASSWORD_TEMPLATE = "请点击以下链接重置密码：\n%s/user/reset?id=%s\n链接在 10min 内有效";
+    private static final String MAIL_CODE_TEMPLATE = "%s\n验证码 10min 内有效";
+
+    @Value("${host.address}")
+    private String hostAddress;
 
     /**
      * 用户注册
@@ -86,6 +90,7 @@ public class UserManagerService implements UserDetailsService {
      * 检查用户名是否存在
      */
     public boolean isUsernameExist(String username) {
+        username = URLDecoder.decode(username, StandardCharsets.UTF_8);
         return userMapper.findIdByUsername(username) != null;
     }
 
@@ -93,6 +98,7 @@ public class UserManagerService implements UserDetailsService {
      * 检查密码是否存在
      */
     public boolean isEmailExist(String email) {
+        email = URLDecoder.decode(email, StandardCharsets.UTF_8);
         return userMapper.findIdByEmail(email) != null;
     }
 
@@ -106,16 +112,9 @@ public class UserManagerService implements UserDetailsService {
         redisTemplate.opsForValue().set(redisKey, code, Duration.ofMinutes(10));
 
         // 发送邮件
-        SimpleMailMessage mail = new SimpleMailMessage();
-        mail.setFrom("lqjhzp@163.com");
-        mail.setTo(email);
-        mail.setSubject("Pet Adoption 邮箱验证码");
-        mail.setText(code + "\n验证码 10min 内有效");
-        try {
-            mailSender.send(mail);
-        } catch (Exception e) {
-            throw new ServiceException("邮件发送失败: " + e.getMessage(), e);
-        }
+        String content = String.format(MAIL_CODE_TEMPLATE, code);
+        String receiver = URLDecoder.decode(email, StandardCharsets.UTF_8);
+        mailUtils.send(receiver, "Pet Adoption 邮箱验证码", content);
     }
 
     /**
@@ -150,10 +149,56 @@ public class UserManagerService implements UserDetailsService {
     }
 
     /**
+     * 获取用户信息
+     */
+    public User getUser(Long id) {
+        // 获取用户信息
+        User user = userMapper.findById(id);
+        if (user == null) {
+            throw new ServiceException("用户不存在");
+        }
+        return user;
+    }
+
+    /**
+     * 删除用户
+     */
+    @Transactional
+    public void removeUser(Long id) {
+        // 查找用户
+        User user = userMapper.findById(id);
+        if (user == null) {
+            throw new ServiceException("用户不存在");
+        }
+
+        // 权限校验
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        if (principal == null) {
+            throw new ServiceException("请先登录");
+        }
+        User login = principal.getUser();
+        boolean allowed =
+                // 用户本人
+                Objects.equals(login.getId(), user.getId()) ||
+                // 工作人员，且被删用户非管理员
+                (UserUtils.isWorker(login) && !UserUtils.isAdmin(user)) ||
+                // 管理员
+                UserUtils.isAdmin(login);
+        if (!allowed) {
+            throw new ServiceException("权限不足");
+        }
+
+        // 删除
+        userMapper.delete(id);
+    }
+
+    /**
      * 忘记密码 - 发送密码重置链接
      */
     public void forgetPassword(String email) {
         // 查找用户
+        email = URLDecoder.decode(email, StandardCharsets.UTF_8);
         User user = userMapper.findByEmail(email);
         if (user == null) {
             throw new ServiceException("用户不存在");
@@ -173,16 +218,8 @@ public class UserManagerService implements UserDetailsService {
         redisTemplate.opsForValue().set(redisKey, user.getEmail(), Duration.ofMinutes(10));
 
         // 发送激活邮件
-        SimpleMailMessage mail = new SimpleMailMessage();
-        mail.setFrom("lqjhzp@163.com");
-        mail.setTo(user.getEmail());
-        mail.setSubject("Pet Adoption 密码重置");
-        mail.setText("请点击以下链接重置密码：\n" + "http://localhost:8080/user/reset?id=" + randomId + "\n链接在 10min 内有效");
-        try {
-            mailSender.send();
-        } catch (Exception e) {
-            throw new ServiceException("邮件发送失败: " + e.getMessage(), e);
-        }
+        String content = String.format(MAIL_RESET_PASSWORD_TEMPLATE, hostAddress, randomId);
+        mailUtils.send(user.getEmail(), "Pet Adoption 密码重置", content);
     }
 
     /**
@@ -220,17 +257,17 @@ public class UserManagerService implements UserDetailsService {
         User login = principal.getUser();
         if (oldUser.getRole() != user.getRole()) {
             // 管理员权限仅超级管理员可更改
-            boolean isAdminRoleChange = UserUtils.isAdmin(oldUser.getRole()) != UserUtils.isAdmin(user.getRole());
-            if (isAdminRoleChange && !UserUtils.isAdmin(login.getRole())) {
+            boolean isAdminRoleChange = UserUtils.isAdmin(oldUser) != UserUtils.isAdmin(user.getRole());
+            if (isAdminRoleChange && !UserUtils.isAdmin(login)) {
                 throw new ServiceException("用户权限不足");
             }
             // 其他权限变更需要救助站工作人员更改
-            if (!UserUtils.isWorker(login.getRole())) {
+            if (!UserUtils.isWorker(login)) {
                 throw new ServiceException("用户权限不足");
             }
         }
         if (!Objects.equals(login.getId(), userId) /* 用户本身 */
-                && !UserUtils.isWorker(login.getRole()) /* 救助站工作人员 */) {
+                && !UserUtils.isWorker(login) /* 救助站工作人员 */) {
             // 其他信息只需本人或救助站工作人员即可
             throw new ServiceException("用户权限不足");
         }

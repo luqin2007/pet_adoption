@@ -2,8 +2,8 @@ package com.example.backend.controller;
 
 import com.example.backend.bean.*;
 import com.example.backend.entity.User;
-import com.example.backend.util.JwtUtils;
 import com.example.backend.service.UserManagerService;
+import com.example.backend.util.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,17 +39,9 @@ public class UserManagerController {
     }
 
     @GetMapping("/check/code")
-    public Result<Void> sendMailCode(@RequestParam String email) {
+    public Result<Void> sendMailCode(@RequestParam("email") String email) {
         userManagerService.sendMailCode(email);
         return Result.success();
-    }
-
-    @PostMapping("/check/code")
-    public Result<Void> checkMail(@RequestParam MailCodeCheckRequest request) {
-        if (userManagerService.isEmailCodeMatched(request.getEmail(), request.getCode())) {
-            return Result.success();
-        }
-        return Result.error(500, "邮箱验证码错误");
     }
 
     @PostMapping("/login")
@@ -62,8 +54,9 @@ public class UserManagerController {
 
     @GetMapping("/users/{id}")
     public Result<UserLoginResponse> getUser(@PathVariable Long id) {
-        // TODO
-        return Result.error(500, "未实现");
+        User user = userManagerService.getUser(id);
+        UserLoginResponse response = UserLoginResponse.fromEntity(user);
+        return Result.success(response);
     }
 
     @PostMapping("/users/{id}")
@@ -74,19 +67,19 @@ public class UserManagerController {
     }
 
     @DeleteMapping("/users/{id}")
-    public Result<UserLoginResponse> removeUser(@PathVariable Long id) {
-        // TODO
-        return Result.error(500, "未实现");
+    public Result<Void> removeUser(@PathVariable Long id) {
+        userManagerService.removeUser(id);
+        return Result.success();
     }
 
     @GetMapping("/forget")
-    public Result<Void> forgetPassword(@RequestParam String email) {
+    public Result<Void> forgetPassword(@RequestParam("email") String email) {
         userManagerService.forgetPassword(email);
         return Result.success();
     }
 
     @PostMapping("/reset")
-    public Result<Void> resetPassword(@RequestParam PasswordResetRequest request) {
+    public Result<Void> resetPassword(@RequestBody PasswordResetRequest request) {
         userManagerService.resetPassword(request);
         return Result.success();
     }

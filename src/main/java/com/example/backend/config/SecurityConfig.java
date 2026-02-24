@@ -38,11 +38,11 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 页面权限
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/css/**", "/js/**",
+                        .requestMatchers(
                                 "/user/login", "/user/register",  // 登录、注册
                                 "/user/check/**",                   // 注册校验
                                 "/user/forget", "/user/reset",    // 忘记密码
-                                "/error"
+                                "/", "/css/**", "/js/**"        // 其他静态资源
                                 ).permitAll()
                         .anyRequest().authenticated())
                 // 异常处理
