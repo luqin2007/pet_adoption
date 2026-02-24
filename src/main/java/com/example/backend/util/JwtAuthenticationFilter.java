@@ -2,7 +2,6 @@ package com.example.backend.util;
 
 import com.example.backend.service.UserManagerService;
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,27 +31,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Value("${jwt.prefix}")
     private String jwtPrefix;
 
-    @PostConstruct
-    public void init() {
-        jwtPrefix = StringUtils.hasText(jwtPrefix) ? jwtPrefix.trim() : "Bearer";
-    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     @Nonnull HttpServletResponse response,
                                     @Nonnull FilterChain filterChain) throws ServletException, IOException {
         // 获取 Token
         String header = request.getHeader(jwtHeader);
-        if (!StringUtils.hasText(header)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        if (!header.startsWith(jwtPrefix)) {
+        if (!StringUtils.hasText(header) || !header.startsWith(jwtPrefix)) {
             filterChain.doFilter(request, response);
             return;
         }
         String token = header.substring(jwtPrefix.length()).trim();
-        if (!StringUtils.hasText(token) || !jwtUtils.validateToken(token)) {
+
+        // 校验 Token
+        if (!jwtUtils.validateAccessToken(token)) {
             filterChain.doFilter(request, response);
             return;
         }

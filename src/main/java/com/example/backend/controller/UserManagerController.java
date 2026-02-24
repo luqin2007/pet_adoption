@@ -47,8 +47,9 @@ public class UserManagerController {
     @PostMapping("/login")
     public Result<UserLoginResponse> login(@RequestBody UserLoginRequest user) {
         User login = userManagerService.login(user);
-        String token = jwtUtils.generateToken(login);
-        UserLoginResponse response = UserLoginResponse.fromEntity(login, token);
+        String accessToken = jwtUtils.generateAccessToken(login);
+        String refreshToken = jwtUtils.generateRefreshToken(login);
+        UserLoginResponse response = UserLoginResponse.fromEntity(login, accessToken, refreshToken);
         return Result.success(response);
     }
 
@@ -81,11 +82,6 @@ public class UserManagerController {
     @PostMapping("/reset")
     public Result<Void> resetPassword(@RequestBody PasswordResetRequest request) {
         userManagerService.resetPassword(request);
-        return Result.success();
-    }
-
-    @GetMapping("/logout")
-    public Result<Void> logout() {
         return Result.success();
     }
 }

@@ -1,23 +1,34 @@
 package com.example.backend.bean;
 
 import com.example.backend.entity.User;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
-@AllArgsConstructor
+@Data
 public class UserLoginResponse {
 
     private String username;
     private String email;
     private String avatar;
-    private String token;
+    private String accessToken;
+    private String refreshToken;
 
     public static UserLoginResponse fromEntity(User user) {
-        return new UserLoginResponse(user.getUsername(), user.getEmail(), user.getAvatar(), null);
+        UserLoginResponse response = new UserLoginResponse();
+        response.setUsername(user.getUsername());
+        response.setEmail(user.getEmail());
+        response.setAvatar(user.getAvatar());
+        response.setAccessToken(null);
+        response.setRefreshToken(null);
+        return response;
     }
 
-    public static UserLoginResponse fromEntity(User user, String token) {
-        return new UserLoginResponse(user.getUsername(), user.getEmail(), user.getAvatar(), token);
+    public static UserLoginResponse fromEntity(User user, String accessToken, String refreshToken) {
+        UserLoginResponse response = new UserLoginResponse();
+        response.setUsername(user.getUsername());
+        response.setEmail(user.getEmail());
+        response.setAvatar(user.getAvatar());
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
+        return response;
     }
 }

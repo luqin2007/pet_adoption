@@ -161,6 +161,18 @@ public class UserManagerService implements UserDetailsService {
     }
 
     /**
+     * 获取用户信息
+     */
+    public User getUser(String username) {
+        // 获取用户信息
+        User user = userMapper.findByUsername(username);
+        if (user == null) {
+            throw new ServiceException("用户不存在");
+        }
+        return user;
+    }
+
+    /**
      * 删除用户
      */
     @Transactional
