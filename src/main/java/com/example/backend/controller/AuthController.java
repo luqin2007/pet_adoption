@@ -7,8 +7,14 @@ import com.example.backend.entity.User;
 import com.example.backend.service.UserManagerService;
 import com.example.backend.util.JwtUtils;
 import com.example.backend.util.ServiceException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -32,8 +38,15 @@ public class AuthController {
         return Result.success(response);
     }
 
-    @GetMapping("/logout")
-    public Result<Void> logout() {
+    @PostMapping("/logout")
+    public Result<Void> logout(@RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
+        jwtUtils.getTokenFromRequest(httpRequest)
+                .filter(jwtUtils::validateAccessToken)
+                .ifPresent(jwtUtils::invalidateAccessToken);
+        Optional.ofNullable(request)
+                .map(RefreshTokenRequest::getRefreshToken)
+                .filter(jwtUtils::validateRefreshToken)
+                .ifPresent(jwtUtils::invalidateRefreshToken);
         return Result.success();
     }
 }

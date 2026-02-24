@@ -6,7 +6,10 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -16,6 +19,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -28,6 +32,10 @@ public class JwtUtils {
     private long accessExpireSeconds;
     @Value("${jwt.refresh-expire-seconds:604800}")
     private long refreshExpireSeconds;
+    @Value("${jwt.header}")
+    private String jwtHeader;
+    @Value("${jwt.prefix}")
+    private String jwtPrefix;
 
     private SecretKey secretKey;
     private static final String TOKEN_TYPE_CLAIM = "tokenType";
@@ -35,13 +43,17 @@ public class JwtUtils {
     private static final String REFRESH_TOKEN_TYPE = "refresh";
     private static final String INVALID_TOKEN_KEY_TEMPLATE = "pet_adoption.invalid_token.%s";
 
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+
     private final StringRedisTemplate redisTemplate;
 
     @PostConstruct
     public void init() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
-            throw new IllegalStateException("jwt.secret 至少需要 32 字节");
+            int diff = 32 - keyBytes.length;
+            secret = secret + com.example.backend.util.StringUtils.generateRandomString(diff);
+            logger.warn("jwt.secret 自动补全 {} 字节: {}", diff, secret);
         }
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
@@ -76,13 +88,13 @@ public class JwtUtils {
     }
 
     public boolean validateRefreshToken(String token) {
-        if (redisTemplate.opsForValue().get(String.format(INVALID_TOKEN_KEY_TEMPLATE, token)) != null)
-            return false;
         return validateToken(token, REFRESH_TOKEN_TYPE);
     }
 
     private boolean validateToken(String token, String expectedType) {
         if (!StringUtils.hasText(token))
+            return false;
+        if (isTokenInvalidated(token))
             return false;
         try {
             Claims claims = parseClaims(token);
@@ -101,7 +113,46 @@ public class JwtUtils {
                 .getPayload();
     }
 
+    public void invalidateAccessToken(String token) {
+        invalidateToken(token, ACCESS_TOKEN_TYPE);
+    }
+
     public void invalidateRefreshToken(String token) {
-        redisTemplate.opsForValue().set(String.format(INVALID_TOKEN_KEY_TEMPLATE, token), "", refreshExpireSeconds, TimeUnit.SECONDS);
+        invalidateToken(token, REFRESH_TOKEN_TYPE);
+    }
+
+    private void invalidateToken(String token, String expectedType) {
+        if (!StringUtils.hasText(token))
+            return;
+        try {
+            Claims claims = parseClaims(token);
+            String tokenType = claims.get(TOKEN_TYPE_CLAIM, String.class);
+            if (!Objects.equals(expectedType, tokenType))
+                return;
+
+            Date expireAt = claims.getExpiration();
+            long ttl = expireAt.getTime() - System.currentTimeMillis();
+            if (ttl <= 0) {
+                return;
+            }
+            String redisKey = String.format(INVALID_TOKEN_KEY_TEMPLATE, token);
+            redisTemplate.opsForValue().set(redisKey, "", ttl, TimeUnit.MILLISECONDS);
+        } catch (JwtException | IllegalArgumentException ignored) {
+        }
+    }
+
+    private boolean isTokenInvalidated(String token) {
+        String redisKey = String.format(INVALID_TOKEN_KEY_TEMPLATE, token);
+        return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
+    }
+
+    public Optional<String> getTokenFromRequest(HttpServletRequest request) {
+        // 获取 Token
+        String header = request.getHeader(jwtHeader);
+        if (!StringUtils.hasText(header) || !header.startsWith(jwtPrefix)) {
+            return Optional.empty();
+        }
+        String token = header.substring(jwtPrefix.length()).trim();
+        return StringUtils.hasText(token) ? Optional.of(token) : Optional.empty();
     }
 }

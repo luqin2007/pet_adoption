@@ -7,14 +7,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -26,30 +24,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final UserManagerService userManagerService;
 
-    @Value("${jwt.header}")
-    private String jwtHeader;
-    @Value("${jwt.prefix}")
-    private String jwtPrefix;
-
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
+    protected void doFilterInternal(@Nonnull HttpServletRequest request,
                                     @Nonnull HttpServletResponse response,
                                     @Nonnull FilterChain filterChain) throws ServletException, IOException {
-        // 获取 Token
-        String header = request.getHeader(jwtHeader);
-        if (!StringUtils.hasText(header) || !header.startsWith(jwtPrefix)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        String token = header.substring(jwtPrefix.length()).trim();
+        jwtUtils.getTokenFromRequest(request)
+                // 校验 token
+                .filter(jwtUtils::validateAccessToken)
+                // 设置认证信息
+                .ifPresent(token -> setAuthentication(token, request));
+        filterChain.doFilter(request, response);
+    }
 
-        // 校验 Token
-        if (!jwtUtils.validateAccessToken(token)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // 重建认证对象
+    private void setAuthentication(String token, HttpServletRequest request) {
         SecurityContext context = SecurityContextHolder.getContext();
         if (context.getAuthentication() == null) {
             String username = jwtUtils.getUsernameFromToken(token);
@@ -59,6 +46,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             context.setAuthentication(authentication);
         }
-        filterChain.doFilter(request, response);
     }
 }
