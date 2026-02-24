@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class UserLoginResponse {
 
+    private Long id;
     private String username;
     private String email;
     private String avatar;
@@ -14,6 +15,7 @@ public class UserLoginResponse {
 
     public static UserLoginResponse fromEntity(User user) {
         UserLoginResponse response = new UserLoginResponse();
+        response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
         response.setAvatar(user.getAvatar());
@@ -24,6 +26,7 @@ public class UserLoginResponse {
 
     public static UserLoginResponse fromEntity(User user, String accessToken, String refreshToken) {
         UserLoginResponse response = new UserLoginResponse();
+        response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
         response.setAvatar(user.getAvatar());
