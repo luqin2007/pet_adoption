@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.backend.bean.PasswordResetRequest;
 import com.example.backend.bean.UserLoginRequest;
 import com.example.backend.bean.UserRegisterRequest;
@@ -9,14 +10,10 @@ import com.example.backend.mapper.UserMapper;
 import com.example.backend.util.*;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AccountStatusException;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,7 +40,7 @@ public class UserManagerService implements UserDetailsService {
     private final StringRedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final MailUtils mailUtils;
-    private AuthenticationManager authenticationManager;
+    private final AuthUtils authUtils;
 
     private static final String PASSWORD_RESET_KEY_TEMPLATE = "pet_adoption.forgetpwd.%s";
     private static final String PASSWORD_CODE_KEY_TEMPLATE = "pet_adoption.mailcode.%s";
@@ -89,6 +87,7 @@ public class UserManagerService implements UserDetailsService {
      * 检查用户名是否存在
      */
     public boolean isUsernameExist(String username) {
+        if (!StringUtils.hasText(username)) return false;
         username = URLDecoder.decode(username, StandardCharsets.UTF_8);
         return userMapper.findIdByUsername(username) != null;
     }
@@ -97,6 +96,7 @@ public class UserManagerService implements UserDetailsService {
      * 检查密码是否存在
      */
     public boolean isEmailExist(String email) {
+        if (!StringUtils.hasText(email)) return false;
         email = URLDecoder.decode(email, StandardCharsets.UTF_8);
         return userMapper.findIdByEmail(email) != null;
     }
@@ -130,9 +130,7 @@ public class UserManagerService implements UserDetailsService {
     public User login(UserLoginRequest user) {
         CustomUserDetails principal;
         try {
-            Authentication token = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword());
-            Authentication authentication = authenticationManager.authenticate(token);
-            principal = (CustomUserDetails) authentication.getPrincipal();
+            principal = authUtils.authenticate(user.getUsername(), user.getPassword());
         } catch (BadCredentialsException e) {
             throw new ServiceException("用户名或密码错误", e);
         } catch (AccountStatusException e) {
@@ -183,12 +181,7 @@ public class UserManagerService implements UserDetailsService {
         }
 
         // 权限校验
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-        if (principal == null) {
-            throw new ServiceException("请先登录");
-        }
-        User login = principal.getUser();
+        User login = authUtils.getLoginUser().orElseThrow(() -> new ServiceException("请先登录"));
         boolean allowed =
                 // 用户本人
                 Objects.equals(login.getId(), user.getId()) ||
@@ -202,6 +195,18 @@ public class UserManagerService implements UserDetailsService {
 
         // 删除
         userMapper.delete(id);
+    }
+
+    /**
+     * 获取所有用户
+     */
+    public IPage<User> getAllUsers(IPage<?> page) {
+        // 权限校验
+        User login = authUtils.getLoginUser().orElseThrow(() -> new ServiceException("请先登录"));
+        if (!UserUtils.isWorker(login)) {
+            throw new ServiceException("权限不足");
+        }
+        return userMapper.findAll(page);
     }
 
     /**
@@ -301,11 +306,5 @@ public class UserManagerService implements UserDetailsService {
             return new CustomUserDetails(user);
         }
         throw UsernameNotFoundException.fromUsername(username);
-    }
-
-    @Autowired
-    @Lazy
-    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
     }
 }

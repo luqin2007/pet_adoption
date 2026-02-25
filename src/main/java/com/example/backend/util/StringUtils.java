@@ -28,4 +28,13 @@ public class StringUtils {
         }
         return sb.toString();
     }
+
+    /**
+     * Spring StringUtils.hasText 的别名，避免引入 StringUtils
+     *
+     * @see org.springframework.util.StringUtils#hasText(String)
+     */
+    public static boolean hasText(String str) {
+        return org.springframework.util.StringUtils.hasText(str);
+    }
 }

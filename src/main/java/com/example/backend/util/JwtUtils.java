@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -52,7 +51,7 @@ public class JwtUtils {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         if (keyBytes.length < 32) {
             int diff = 32 - keyBytes.length;
-            secret = secret + com.example.backend.util.StringUtils.generateRandomString(diff);
+            secret = secret + StringUtils.generateRandomString(diff);
             logger.warn("jwt.secret 自动补全 {} 字节: {}", diff, secret);
         }
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);

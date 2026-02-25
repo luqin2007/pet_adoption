@@ -1,10 +1,13 @@
 package com.example.backend.mapper;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.backend.entity.User;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+
+import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -23,6 +26,9 @@ public interface UserMapper {
 
     @Select("select * from users where email = #{email}")
     User findByEmail(String email);
+
+    @Select("select * from users")
+    IPage<User> findAll(IPage<?> page);
 
     @Update("insert into users (username, password, email, role, avatar, createTime, updateTime) " +
                       "values (#{username}, #{password}, #{email}, #{role}, #{avatar}, #{createTime}, #{updateTime})")
