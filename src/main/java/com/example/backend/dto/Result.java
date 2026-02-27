@@ -1,4 +1,4 @@
-package com.example.backend.bean;
+package com.example.backend.dto;
 
 import com.example.backend.util.ServiceException;
 import org.springframework.http.ResponseEntity;

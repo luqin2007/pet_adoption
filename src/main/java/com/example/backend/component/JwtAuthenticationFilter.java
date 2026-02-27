@@ -1,6 +1,7 @@
-package com.example.backend.util;
+package com.example.backend.component;
 
 import com.example.backend.service.UserManagerService;
+import com.example.backend.util.JwtUtils;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

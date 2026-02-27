@@ -1,8 +1,8 @@
 package com.example.backend.config;
 
-import com.example.backend.util.JwtAuthenticationFilter;
-import com.example.backend.util.AccessDeniedExceptionHandler;
-import com.example.backend.util.AuthenticationExceptionPoint;
+import com.example.backend.component.JwtAuthenticationFilter;
+import com.example.backend.component.AccessDeniedExceptionHandler;
+import com.example.backend.component.AuthenticationExceptionPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,6 +1,6 @@
-package com.example.backend.util;
+package com.example.backend.component;
 
-import com.example.backend.bean.Result;
+import com.example.backend.dto.Result;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

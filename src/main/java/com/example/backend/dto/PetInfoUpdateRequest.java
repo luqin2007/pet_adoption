@@ -1,24 +1,10 @@
-package com.example.backend.entity;
+package com.example.backend.dto;
 
+import com.example.backend.entity.PetInformation;
 import lombok.Data;
 
-import java.sql.Date;
-
-/**
- * 流浪宠物信息
- */
 @Data
-public class PetInformation {
-
-    /**
-     * 宠物 id
-     */
-    private Long id;
-
-    /**
-     * 发现该宠物的用户 id
-     */
-    private Long userId;
+public class PetInfoUpdateRequest {
 
     /**
      * 宠物名称
@@ -67,24 +53,9 @@ public class PetInformation {
 
     /**
      * 宠物状态
-     * 0: 待审核
-     * 1: 审核未通过
-     * 2: 已审核，查找中
-     * 3: 已找到，无法救助或已死亡
-     * 4: 已超时，放弃救助
-     * 5: 已收容
-     * 6: 已完成体检，可领养
-     * 7: 已领养
+     * @see PetInformation#getStatus()
      */
-    private Integer status;
+    private int status;
 
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 最后一次修改时间
-     */
-    private Date updateTime;
+    private String statusDesc;
 }

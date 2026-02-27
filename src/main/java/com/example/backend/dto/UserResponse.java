@@ -1,20 +1,46 @@
-package com.example.backend.bean;
+package com.example.backend.dto;
 
 import com.example.backend.entity.User;
 import lombok.Data;
 
+/**
+ * 用户响应，返回用户信息
+ */
 @Data
-public class UserLoginResponse {
+public class UserResponse {
 
+    /**
+     * 用户 id
+     */
     private Long id;
+
+    /**
+     * 用户名
+     */
     private String username;
+
+    /**
+     * 邮箱
+     */
     private String email;
+
+    /**
+     * 头像
+     */
     private String avatar;
+
+    /**
+     * 访问令牌，仅登录/注册/刷新令牌时返回
+     */
     private String accessToken;
+
+    /**
+     * 刷新令牌，仅登录/注册/刷新令牌时返回
+     */
     private String refreshToken;
 
-    public static UserLoginResponse fromEntity(User user) {
-        UserLoginResponse response = new UserLoginResponse();
+    public static UserResponse fromEntity(User user) {
+        UserResponse response = new UserResponse();
         response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
@@ -24,8 +50,8 @@ public class UserLoginResponse {
         return response;
     }
 
-    public static UserLoginResponse fromEntity(User user, String accessToken, String refreshToken) {
-        UserLoginResponse response = new UserLoginResponse();
+    public static UserResponse fromEntity(User user, String accessToken, String refreshToken) {
+        UserResponse response = new UserResponse();
         response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());

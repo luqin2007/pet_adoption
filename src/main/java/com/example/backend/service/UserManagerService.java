@@ -1,10 +1,11 @@
 package com.example.backend.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.example.backend.bean.PasswordResetRequest;
-import com.example.backend.bean.UserLoginRequest;
-import com.example.backend.bean.UserRegisterRequest;
-import com.example.backend.bean.UserUpdateRequest;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.backend.dto.PasswordResetRequest;
+import com.example.backend.dto.UserLoginRequest;
+import com.example.backend.dto.UserRegisterRequest;
+import com.example.backend.dto.UserUpdateRequest;
 import com.example.backend.entity.User;
 import com.example.backend.mapper.UserMapper;
 import com.example.backend.util.*;
@@ -14,8 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,15 +27,14 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserManagerService implements UserDetailsService {
+public class UserManagerService extends ServiceImpl<UserMapper, User> implements UserDetailsService {
 
-    private final UserMapper userMapper;
     private final StringRedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final MailUtils mailUtils;
@@ -79,8 +77,13 @@ public class UserManagerService implements UserDetailsService {
         userEntity.setAvatar(user.getAvatar());
         userEntity.setCreateTime(Date.valueOf(LocalDate.now()));
         userEntity.setUpdateTime(Date.valueOf(LocalDate.now()));
-        userMapper.insert(userEntity);
-        return userMapper.findById(userEntity.getId());
+        save(userEntity);
+
+        // 登录
+        UserLoginRequest loginRequest = new UserLoginRequest();
+        loginRequest.setUsername(user.getUsername());
+        loginRequest.setPassword(user.getPassword());
+        return login(loginRequest);
     }
 
     /**
@@ -89,7 +92,7 @@ public class UserManagerService implements UserDetailsService {
     public boolean isUsernameExist(String username) {
         if (!StringUtils.hasText(username)) return false;
         username = URLDecoder.decode(username, StandardCharsets.UTF_8);
-        return userMapper.findIdByUsername(username) != null;
+        return exists(lambdaQuery().eq(User::getUsername, username));
     }
 
     /**
@@ -98,7 +101,7 @@ public class UserManagerService implements UserDetailsService {
     public boolean isEmailExist(String email) {
         if (!StringUtils.hasText(email)) return false;
         email = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        return userMapper.findIdByEmail(email) != null;
+        return exists(lambdaQuery().eq(User::getEmail, email));
     }
 
     /**
@@ -149,24 +152,16 @@ public class UserManagerService implements UserDetailsService {
      * 获取用户信息
      */
     public User getUser(Long id) {
-        // 获取用户信息
-        User user = userMapper.findById(id);
-        if (user == null) {
-            throw new ServiceException("用户不存在");
-        }
-        return user;
+        return getOptById(id)
+                .orElseThrow(() -> new ServiceException("用户不存在"));
     }
 
     /**
      * 获取用户信息
      */
     public User getUser(String username) {
-        // 获取用户信息
-        User user = userMapper.findByUsername(username);
-        if (user == null) {
-            throw new ServiceException("用户不存在");
-        }
-        return user;
+        return getOneOpt(lambdaQuery().eq(User::getUsername, username))
+                .orElseThrow(() -> new ServiceException("用户不存在"));
     }
 
     /**
@@ -175,38 +170,36 @@ public class UserManagerService implements UserDetailsService {
     @Transactional
     public void removeUser(Long id) {
         // 查找用户
-        User user = userMapper.findById(id);
-        if (user == null) {
-            throw new ServiceException("用户不存在");
-        }
+        User user = getOptById(id)
+                .orElseThrow(() -> new ServiceException("用户不存在"));
 
         // 权限校验
-        User login = authUtils.getLoginUser().orElseThrow(() -> new ServiceException("请先登录"));
+        User login = authUtils.getLoginUser(ServiceException::new);
         boolean allowed =
                 // 用户本人
                 Objects.equals(login.getId(), user.getId()) ||
                 // 工作人员，且被删用户非管理员
-                (UserUtils.isWorker(login) && !UserUtils.isAdmin(user)) ||
-                // 管理员
-                UserUtils.isAdmin(login);
+                (authUtils.isWorker(login) && !authUtils.isAdmin(user)) ||
+                // 超级管理员
+                authUtils.isAdmin(login);
         if (!allowed) {
             throw new ServiceException("权限不足");
         }
 
         // 删除
-        userMapper.delete(id);
+        removeById(id);
     }
 
     /**
      * 获取所有用户
      */
-    public IPage<User> getAllUsers(IPage<?> page) {
+    public IPage<User> getAllUsers(IPage<User> page) {
         // 权限校验
-        User login = authUtils.getLoginUser().orElseThrow(() -> new ServiceException("请先登录"));
-        if (!UserUtils.isWorker(login)) {
+        User login = authUtils.getLoginUser(ServiceException::new);
+        if (!authUtils.isWorker(login)) {
             throw new ServiceException("权限不足");
         }
-        return userMapper.findAll(page);
+        return page(page);
     }
 
     /**
@@ -215,10 +208,8 @@ public class UserManagerService implements UserDetailsService {
     public void forgetPassword(String email) {
         // 查找用户
         email = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        User user = userMapper.findByEmail(email);
-        if (user == null) {
-            throw new ServiceException("用户不存在");
-        }
+        User user = getOneOpt(lambdaQuery().eq(User::getEmail, email))
+                .orElseThrow(() -> new ServiceException("用户不存在"));
 
         // 生成随机密码，保存相关信息
         // 有效期 10min
@@ -249,13 +240,14 @@ public class UserManagerService implements UserDetailsService {
             throw new ServiceException("链接已过期");
         }
 
-        User user = userMapper.findByEmail(email);
-        if (user == null) {
+        String pwd = passwordEncoder.encode(request.getPassword());
+        boolean updated = update(lambdaUpdate()
+                .eq(User::getEmail, email)
+                .set(User::getPassword, pwd));
+        redisTemplate.delete(redisKey);
+        if (!updated) {
             throw new ServiceException("用户不存在");
         }
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        userMapper.updatePassword(user);
-        redisTemplate.delete(redisKey);
     }
 
     /**
@@ -264,26 +256,21 @@ public class UserManagerService implements UserDetailsService {
     @Transactional
     public User update(Long userId, UserUpdateRequest user) {
         // 校验用户权限
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
-        if (principal == null) {
-            throw new ServiceException("请先登录");
-        }
-        User oldUser = userMapper.findById(userId);
-        User login = principal.getUser();
+        User login = authUtils.getLoginUser(ServiceException::new);
+        User oldUser = getById(userId);
         if (oldUser.getRole() != user.getRole()) {
             // 管理员权限仅超级管理员可更改
-            boolean isAdminRoleChange = UserUtils.isAdmin(oldUser) != UserUtils.isAdmin(user.getRole());
-            if (isAdminRoleChange && !UserUtils.isAdmin(login)) {
+            boolean isAdminRoleChange = authUtils.isAdmin(oldUser) != authUtils.isAdmin(user.getRole());
+            if (isAdminRoleChange && !authUtils.isAdmin(login)) {
                 throw new ServiceException("用户权限不足");
             }
             // 其他权限变更需要救助站工作人员更改
-            if (!UserUtils.isWorker(login)) {
+            if (!authUtils.isWorker(login)) {
                 throw new ServiceException("用户权限不足");
             }
         }
         if (!Objects.equals(login.getId(), userId) /* 用户本身 */
-                && !UserUtils.isWorker(login) /* 救助站工作人员 */) {
+                && !authUtils.isWorker(login) /* 救助站工作人员 */) {
             // 其他信息只需本人或救助站工作人员即可
             throw new ServiceException("用户权限不足");
         }
@@ -294,17 +281,25 @@ public class UserManagerService implements UserDetailsService {
         oldUser.setRole(user.getRole());
         oldUser.setAvatar(user.getAvatar());
         oldUser.setUpdateTime(Date.valueOf(LocalDate.now()));
-        userMapper.update(oldUser);
+        if (!updateById(oldUser)) {
+            throw new ServiceException("用户不存在");
+        }
         return oldUser;
+    }
+
+    /**
+     * 根据 id 批量获取用户信息
+     */
+    public Map<Long, User> getUsersBatchByIds(Set<Long> collect) {
+        return listByIds(collect).stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
     }
 
     @Override
     @Nonnull
     public UserDetails loadUserByUsername(@Nonnull String username) throws UsernameNotFoundException {
-        User user = userMapper.findByUsername(username);
-        if (user != null) {
-            return new CustomUserDetails(user);
-        }
-        throw UsernameNotFoundException.fromUsername(username);
+        return getOneOpt(lambdaQuery().eq(User::getUsername, username))
+                .map(user -> new CustomUserDetails(user, authUtils))
+                .orElseThrow(() -> UsernameNotFoundException.fromUsername(username));
     }
 }

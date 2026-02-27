@@ -8,8 +8,8 @@ public class CustomUserDetails extends org.springframework.security.core.userdet
 
     private final User user;
 
-    public CustomUserDetails(User user) {
-        super(user.getUsername(), user.getPassword(), UserUtils.createAuthorities(user.getRole()));
+    public CustomUserDetails(User user, AuthUtils authUtils) {
+        super(user.getUsername(), user.getPassword(), authUtils.createAuthorities(user.getRole()));
         this.user = user;
     }
 }

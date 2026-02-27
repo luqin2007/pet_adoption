@@ -1,6 +1,6 @@
-package com.example.backend.handler;
+package com.example.backend.component;
 
-import com.example.backend.bean.Result;
+import com.example.backend.dto.Result;
 import com.example.backend.util.ServiceException;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
