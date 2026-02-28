@@ -30,6 +30,11 @@ public class UserResponse {
     private String avatar;
 
     /**
+     * 身份
+     */
+    private Integer role;
+
+    /**
      * 访问令牌，仅登录/注册/刷新令牌时返回
      */
     private String accessToken;
@@ -45,19 +50,7 @@ public class UserResponse {
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
         response.setAvatar(user.getAvatar());
-        response.setAccessToken(null);
-        response.setRefreshToken(null);
-        return response;
-    }
-
-    public static UserResponse fromEntity(User user, String accessToken, String refreshToken) {
-        UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setUsername(user.getUsername());
-        response.setEmail(user.getEmail());
-        response.setAvatar(user.getAvatar());
-        response.setAccessToken(accessToken);
-        response.setRefreshToken(refreshToken);
+        response.setRole(user.getRole());
         return response;
     }
 }

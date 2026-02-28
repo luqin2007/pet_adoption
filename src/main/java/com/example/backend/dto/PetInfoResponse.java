@@ -1,13 +1,8 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.PetImage;
 import com.example.backend.entity.PetInformation;
-import com.example.backend.entity.PetTag;
-import com.example.backend.entity.User;
-import com.example.backend.util.FileUtils;
 import lombok.Data;
 
-import java.nio.file.Path;
 import java.util.List;
 
 @Data
@@ -75,11 +70,11 @@ public class PetInfoResponse {
      */
     private String cover;
 
-    public static PetInfoResponse fromEntity(PetInformation petInformation, User user, List<PetTag> tags, PetImage cover, FileUtils fileUtils) {
+    public static PetInfoResponse fromEntity(PetInformation petInformation, UserResponse user, List<PetTagResponse> tags, String coverUrl) {
         PetInfoResponse response = new PetInfoResponse();
         response.setId(petInformation.getId());
         response.setName(petInformation.getName());
-        response.setUser(UserResponse.fromEntity(user));
+        response.setUser(user);
         response.setMinAge(petInformation.getMinAge());
         response.setMaxAge(petInformation.getMaxAge());
         response.setSex(petInformation.getSex());
@@ -88,13 +83,8 @@ public class PetInfoResponse {
         response.setHealth(petInformation.getHealth());
         response.setVaccine(petInformation.getVaccine());
         response.setDescription(petInformation.getDescription());
-        response.setTags(tags.stream()
-                .map(PetTagResponse::fromTag)
-                .toList());
-        if (cover != null) {
-            Path imagePath = fileUtils.buildPetImagePath(petInformation.getId());
-            response.setCover(cover.toAssetUrl(imagePath));
-        }
+        response.setTags(tags);
+        response.setCover(coverUrl);
         return response;
     }
 }

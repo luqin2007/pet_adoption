@@ -2,12 +2,13 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.PetInformation;
 import com.example.backend.entity.PetLocation;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.sql.Date;
-import java.util.List;
 
 /**
  * 添加流浪宠物请求体
@@ -18,7 +19,8 @@ public class PetInfoAddRequest {
     /**
      * 宠物名称，可由爱心人士起，或留空
      */
-    private String name;
+    @JsonSetter(nulls = Nulls.SKIP)
+    private String name = "";
 
     /**
      * 最小年龄，确定流浪宠物年龄大致范围
@@ -47,22 +49,20 @@ public class PetInfoAddRequest {
     /**
      * 宠物品种
      */
-    private String breed;
+    @JsonSetter(nulls = Nulls.SKIP)
+    private String breed = "";
 
     /**
      * 宠物描述
      */
-    private String description;
-
-    /**
-     * 特征信息
-     */
-    private List<String> tags;
+    @JsonSetter(nulls = Nulls.SKIP)
+    private String description = "";
 
     /**
      * 宠物健康状况
      */
-    private String health;
+    @JsonSetter(nulls = Nulls.SKIP)
+    private String health = "";
 
     // 地址信息
     @NotBlank(message = "请输入发现位置")
@@ -74,29 +74,29 @@ public class PetInfoAddRequest {
     @NotBlank(message = "请输入发现位置")
     private String detailAddress;
 
-    public static PetInformation createInformation(PetInfoAddRequest request) {
+    public PetInformation createInfo() {
         PetInformation petInformation = new PetInformation();
-        petInformation.setName(request.getName());
-        petInformation.setMinAge(request.getMinAge());
-        petInformation.setMaxAge(request.getMaxAge());
-        petInformation.setSex(request.getSex());
-        petInformation.setType(request.getType());
-        petInformation.setBreed(request.getBreed());
-        petInformation.setHealth(request.getHealth());
-        petInformation.setDescription(request.getDescription());
+        petInformation.setName(getName());
+        petInformation.setMinAge(getMinAge());
+        petInformation.setMaxAge(getMaxAge());
+        petInformation.setSex(getSex());
+        petInformation.setType(getType());
+        petInformation.setBreed(getBreed());
+        petInformation.setHealth(getHealth());
+        petInformation.setDescription(getDescription());
         petInformation.setStatus(0);
         petInformation.setCreateTime(new Date(System.currentTimeMillis()));
         petInformation.setUpdateTime(new Date(System.currentTimeMillis()));
         return petInformation;
     }
 
-    public static PetLocation createLocation(Long petId, PetInfoAddRequest request) {
+    public PetLocation createLocation(Long petId) {
         PetLocation petLocation = new PetLocation();
         petLocation.setPetId(petId);
-        petLocation.setProvince(request.getProvince());
-        petLocation.setCity(request.getCity());
-        petLocation.setCounty(request.getCounty());
-        petLocation.setDetailAddress(request.getDetailAddress());
+        petLocation.setProvince(getProvince());
+        petLocation.setCity(getCity());
+        petLocation.setCounty(getCounty());
+        petLocation.setDetailAddress(getDetailAddress());
         petLocation.setDate(new Date(System.currentTimeMillis()));
         return petLocation;
     }

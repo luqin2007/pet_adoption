@@ -1,11 +1,9 @@
 package com.example.backend.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.backend.dto.PasswordResetRequest;
-import com.example.backend.dto.UserLoginRequest;
-import com.example.backend.dto.UserRegisterRequest;
-import com.example.backend.dto.UserUpdateRequest;
+import com.example.backend.dto.*;
 import com.example.backend.entity.User;
 import com.example.backend.mapper.UserMapper;
 import com.example.backend.util.*;
@@ -33,12 +31,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class UserManagerService extends ServiceImpl<UserMapper, User> implements UserDetailsService {
+public class UserService extends ServiceImpl<UserMapper, User> implements UserDetailsService {
 
     private final StringRedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final MailUtils mailUtils;
     private final AuthUtils authUtils;
+    private final JwtUtils jwtUtils;
 
     private static final String PASSWORD_RESET_KEY_TEMPLATE = "pet_adoption.forgetpwd.%s";
     private static final String PASSWORD_CODE_KEY_TEMPLATE = "pet_adoption.mailcode.%s";
@@ -52,37 +51,37 @@ public class UserManagerService extends ServiceImpl<UserMapper, User> implements
      * 用户注册
      */
     @Transactional
-    public User register(UserRegisterRequest user) {
+    public UserResponse register(UserRegisterRequest request) {
         // 校验必要的参数
-        if (isUsernameExist(user.getUsername())) {
+        if (isUsernameExist(request.getUsername())) {
             throw new ServiceException("用户名已存在");
         }
-        if (isEmailExist(user.getEmail())) {
+        if (isEmailExist(request.getEmail())) {
             throw new ServiceException("邮箱已存在");
         }
-        if (!isEmailCodeMatched(user.getEmail(), user.getCode())) {
+        if (!isEmailCodeMatched(request.getEmail(), request.getCode())) {
             throw new ServiceException("邮箱验证码错误");
         }
 
         // 重置邮箱验证码
-        String redisKey = String.format(PASSWORD_CODE_KEY_TEMPLATE, user.getEmail());
+        String redisKey = String.format(PASSWORD_CODE_KEY_TEMPLATE, request.getEmail());
         redisTemplate.delete(redisKey);
 
         // 注册
-        User userEntity = new User();
-        userEntity.setUsername(user.getUsername());
-        userEntity.setPassword(passwordEncoder.encode(user.getPassword()));
-        userEntity.setEmail(user.getEmail());
-        userEntity.setRole(0);
-        userEntity.setAvatar(user.getAvatar());
-        userEntity.setCreateTime(Date.valueOf(LocalDate.now()));
-        userEntity.setUpdateTime(Date.valueOf(LocalDate.now()));
-        save(userEntity);
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEmail(request.getEmail());
+        user.setRole(0);
+        user.setAvatar(request.getAvatar());
+        user.setCreateTime(Date.valueOf(LocalDate.now()));
+        user.setUpdateTime(Date.valueOf(LocalDate.now()));
+        save(user);
 
         // 登录
         UserLoginRequest loginRequest = new UserLoginRequest();
-        loginRequest.setUsername(user.getUsername());
-        loginRequest.setPassword(user.getPassword());
+        loginRequest.setUsername(request.getUsername());
+        loginRequest.setPassword(request.getPassword());
         return login(loginRequest);
     }
 
@@ -130,10 +129,10 @@ public class UserManagerService extends ServiceImpl<UserMapper, User> implements
     /**
      * 登录
      */
-    public User login(UserLoginRequest user) {
+    public UserResponse login(UserLoginRequest request) {
         CustomUserDetails principal;
         try {
-            principal = authUtils.authenticate(user.getUsername(), user.getPassword());
+            principal = authUtils.authenticate(request.getUsername(), request.getPassword());
         } catch (BadCredentialsException e) {
             throw new ServiceException("用户名或密码错误", e);
         } catch (AccountStatusException e) {
@@ -145,15 +144,29 @@ public class UserManagerService extends ServiceImpl<UserMapper, User> implements
         if (principal == null) {
             throw new ServiceException("用户不存在");
         }
-        return principal.getUser();
+
+        // 附着 JWT 信息
+        User user = principal.getUser();
+        UserResponse response = UserResponse.fromEntity(user);
+        String accessToken = jwtUtils.generateAccessToken(user);
+        String refreshToken = jwtUtils.generateRefreshToken(user);
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
+        return response;
     }
 
     /**
      * 获取用户信息
      */
-    public User getUser(Long id) {
-        return getOptById(id)
-                .orElseThrow(() -> new ServiceException("用户不存在"));
+    public UserResponse getUser(Long userId, boolean allowNotExist) {
+        if (allowNotExist) {
+            User user = getById(userId);
+            return user == null ? null : UserResponse.fromEntity(user);
+        } else {
+            return getOptById(userId)
+                    .map(UserResponse::fromEntity)
+                    .orElseThrow(() -> new ServiceException("用户不存在"));
+        }
     }
 
     /**
@@ -168,9 +181,9 @@ public class UserManagerService extends ServiceImpl<UserMapper, User> implements
      * 删除用户
      */
     @Transactional
-    public void removeUser(Long id) {
+    public void removeUser(Long userId) {
         // 查找用户
-        User user = getOptById(id)
+        User user = getOptById(userId)
                 .orElseThrow(() -> new ServiceException("用户不存在"));
 
         // 权限校验
@@ -187,19 +200,21 @@ public class UserManagerService extends ServiceImpl<UserMapper, User> implements
         }
 
         // 删除
-        removeById(id);
+        removeById(userId);
     }
 
     /**
      * 获取所有用户
      */
-    public IPage<User> getAllUsers(IPage<User> page) {
+    public Page<UserResponse> getAllUsers(Page<User> page) {
         // 权限校验
         User login = authUtils.getLoginUser(ServiceException::new);
         if (!authUtils.isWorker(login)) {
             throw new ServiceException("权限不足");
         }
-        return page(page);
+        // 数据转换
+        Page<User> result = page(page);
+        return PageUtils.convertDto(result, UserResponse::fromEntity);
     }
 
     /**
@@ -254,13 +269,13 @@ public class UserManagerService extends ServiceImpl<UserMapper, User> implements
      * 修改用户信息
      */
     @Transactional
-    public User update(Long userId, UserUpdateRequest user) {
+    public UserResponse update(Long userId, UserUpdateRequest request) {
         // 校验用户权限
         User login = authUtils.getLoginUser(ServiceException::new);
-        User oldUser = getById(userId);
-        if (oldUser.getRole() != user.getRole()) {
+        User user = getById(userId);
+        if (user.getRole() != request.getRole()) {
             // 管理员权限仅超级管理员可更改
-            boolean isAdminRoleChange = authUtils.isAdmin(oldUser) != authUtils.isAdmin(user.getRole());
+            boolean isAdminRoleChange = authUtils.isAdmin(user) != authUtils.isAdmin(request.getRole());
             if (isAdminRoleChange && !authUtils.isAdmin(login)) {
                 throw new ServiceException("用户权限不足");
             }
@@ -275,24 +290,24 @@ public class UserManagerService extends ServiceImpl<UserMapper, User> implements
             throw new ServiceException("用户权限不足");
         }
 
-        oldUser.setUsername(user.getUsername());
-        oldUser.setPassword(user.getPassword());
-        oldUser.setEmail(user.getEmail());
-        oldUser.setRole(user.getRole());
-        oldUser.setAvatar(user.getAvatar());
-        oldUser.setUpdateTime(Date.valueOf(LocalDate.now()));
-        if (!updateById(oldUser)) {
+        user.setUsername(request.getUsername());
+        user.setPassword(request.getPassword());
+        user.setEmail(request.getEmail());
+        user.setRole(request.getRole());
+        user.setAvatar(request.getAvatar());
+        user.setUpdateTime(Date.valueOf(LocalDate.now()));
+        if (!updateById(user)) {
             throw new ServiceException("用户不存在");
         }
-        return oldUser;
+        return UserResponse.fromEntity(user);
     }
 
     /**
      * 根据 id 批量获取用户信息
      */
-    public Map<Long, User> getUsersBatchByIds(Set<Long> collect) {
+    public Map<Long, UserResponse> getUsersBatchByIds(Set<Long> collect) {
         return listByIds(collect).stream()
-                .collect(Collectors.toMap(User::getId, Function.identity()));
+                .collect(Collectors.toMap(User::getId, UserResponse::fromEntity));
     }
 
     @Override

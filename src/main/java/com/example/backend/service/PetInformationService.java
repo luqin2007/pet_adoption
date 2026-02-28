@@ -7,10 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.mapper.*;
-import com.example.backend.util.AuthUtils;
-import com.example.backend.util.FileUtils;
-import com.example.backend.util.ServiceException;
-import com.example.backend.util.StringUtils;
+import com.example.backend.util.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.file.PathUtils;
 import org.springframework.stereotype.Service;
@@ -24,17 +21,18 @@ import java.sql.Date;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
-public class PetInformationManagerService extends ServiceImpl<PetInformationMapper, PetInformation> {
+public class PetInformationService extends ServiceImpl<PetInformationMapper, PetInformation> {
 
     private final PetStatusRecordMapper petStatusRecordMapper;
     private final PetLocationMapper petLocationMapper;
     private final PetImageMapper petImageMapper;
     private final PetVideoMapper petVideoMapper;
     private final PetTagMapper petTagMapper;
+
+    private final UserService userService;
     private final AuthUtils authUtils;
     private final FileUtils fileUtils;
 
@@ -42,19 +40,29 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
      * 添加流浪宠物基础信息
      */
     @Transactional
-    public PetInformation addPetInformation(PetInfoAddRequest petInformation) {
-        PetInformation info = PetInfoAddRequest.createInformation(petInformation);
-        save(info);
-        PetLocation location = PetInfoAddRequest.createLocation(info.getId(), petInformation);
+    public PetInfoAddResponse addPetInformation(PetInfoAddRequest request) {
+        PetInformation information = request.createInfo();
+        save(information);
+        PetLocation location = request.createLocation(information.getId());
         petLocationMapper.insert(location);
-        return info;
+        return PetInfoAddResponse.fromEntity(information);
+    }
+
+    public PetInfoResponse getPetInformation(Long petId) {
+        PetInformation info = getById(petId);
+        UserResponse user = userService.getUser(info.getUserId(), true);
+        List<PetTagResponse> tags = getPetTags(petId);
+        String cover = getPetCoverImage(petId)
+                .map(image -> image.toPetImageUrl(fileUtils))
+                .orElse(null);
+        return PetInfoResponse.fromEntity(info, user, tags, cover);
     }
 
     /**
      * 更新流浪宠物信息
      */
     @Transactional
-    public PetInformation updatePetInformation(Long petId, PetInfoUpdateRequest request) {
+    public PetInfoResponse updatePetInformation(Long petId, PetInfoUpdateRequest request) {
         // 检查宠物是否存在
         PetInformation info = getOptById(petId)
                 .orElseThrow(() -> new ServiceException("宠物信息不存在"));
@@ -78,20 +86,16 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
             petStatusRecordMapper.insert(record);
         }
 
-        // 更新
-        info.setName(request.getName());
-        info.setMinAge(request.getMinAge());
-        info.setMaxAge(request.getMaxAge());
-        info.setSex(request.getSex());
-        info.setType(request.getType());
-        info.setBreed(request.getBreed());
-        info.setHealth(request.getHealth());
-        info.setVaccine(request.getVaccine());
-        info.setDescription(request.getDescription());
-        info.setStatus(request.getStatus());
+        // 更新宠物信息
+        request.apply(info);
         info.setUpdateTime(updateTime);
         updateById(info);
-        return info;
+        UserResponse discover = userService.getUser(info.getUserId(), true);
+        List<PetTagResponse> tags = getPetTags(petId);
+        String cover = getPetCoverImage(petId)
+                .map(image -> image.toPetImageUrl(fileUtils))
+                .orElse(null);
+        return PetInfoResponse.fromEntity(info, discover, tags, cover);
     }
 
     /**
@@ -136,10 +140,36 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
     }
 
     /**
+     * 获取流浪宠物列表
+     */
+    public Page<PetInfoResponse> getPetInformationList(Page<PetInformation> page) {
+        Page<PetInformation> result = page(page);
+        // 数据转换
+        List<PetInformation> records = result.getRecords();
+        Map<Long, UserResponse> userMap = userService.getUsersBatchByIds(records.stream()
+                .map(PetInformation::getUserId)
+                .collect(Collectors.toSet()));
+        Map<Long, List<PetTagResponse>> tagMap = getPetTagsBatchByPetIds(records.stream()
+                .map(PetInformation::getId)
+                .collect(Collectors.toSet()));
+        Map<Long, PetImage> coverMap = getPetCoversBatchByPetIds(records.stream()
+                .map(PetInformation::getId)
+                .collect(Collectors.toSet()));
+        return PageUtils.convertDto(result, info -> {
+            UserResponse user = userMap.get(info.getUserId());
+            List<PetTagResponse> tags = tagMap.getOrDefault(info.getId(), Collections.emptyList());
+            String cover = Optional.ofNullable(coverMap.get(info.getId()))
+                    .map(image -> image.toPetImageUrl(fileUtils))
+                    .orElse(null);
+            return PetInfoResponse.fromEntity(info, user, tags, cover);
+        });
+    }
+
+    /**
      * 上传流浪宠物图片
      */
     @Transactional
-    public PetImage uploadPetImage(Long petId, MultipartFile file) {
+    public PetMediaResponse uploadPetImage(Long petId, MultipartFile file) {
         // 检查用户
         User user = authUtils.getLoginUser(ServiceException::new);
 
@@ -161,7 +191,7 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
             throw new ServiceException("文件上传失败", e);
         }
         petImageMapper.insert(image);
-        return image;
+        return PetMediaResponse.fromImage(image, fileUtils);
     }
 
     /**
@@ -222,7 +252,7 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
      * 更新流浪宠物图片信息
      */
     @Transactional
-    public void updatePetImage(Long imageId, PetMediaRequest request) {
+    public PetMediaResponse updatePetImage(Long imageId, PetMediaRequest request) {
         // 检查图片
         PetImage image = petImageMapper.selectById(imageId);
         if (image == null)
@@ -264,13 +294,15 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
                 }
             }
         }
+
+        return PetMediaResponse.fromImage(image, fileUtils);
     }
 
     /**
      * 上传流浪宠物视频
      */
     @Transactional
-    public PetVideo uploadPetVideo(Long petId, MultipartFile file) {
+    public PetMediaResponse uploadPetVideo(Long petId, MultipartFile file) {
         // 检查用户
         User user = authUtils.getLoginUser(ServiceException::new);
 
@@ -291,7 +323,7 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
             throw new ServiceException("文件上传失败", e);
         }
         petVideoMapper.insert(video);
-        return video;
+        return PetMediaResponse.fromVideo(video, fileUtils);
     }
 
     /**
@@ -324,7 +356,7 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
      * 更新流浪宠物视频信息
      */
     @Transactional
-    public void updatePetVideo(Long videoId, PetMediaRequest request) {
+    public PetMediaResponse updatePetVideo(Long videoId, PetMediaRequest request) {
         // 检查视频
         PetVideo video = petVideoMapper.selectById(videoId);
         if (video == null)
@@ -342,6 +374,8 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
         video.setName(request.getName());
         video.setDescription(request.getDescription());
         petVideoMapper.updateById(video);
+
+        return PetMediaResponse.fromVideo(video, fileUtils);
     }
 
     /*
@@ -360,15 +394,18 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
     /**
      * 获取流浪宠物标签
      */
-    public List<PetTag> getPetTags(Long petId) {
-        return petTagMapper.selectList(Wrappers.<PetTag>lambdaQuery().eq(PetTag::getPetId, petId));
+    public List<PetTagResponse> getPetTags(Long petId) {
+        return petTagMapper.selectList(Wrappers.<PetTag>lambdaQuery().eq(PetTag::getPetId, petId))
+                .stream()
+                .map(PetTagResponse::fromTag)
+                .toList();
     }
 
     /**
      * 添加流浪宠物标签
      */
     @Transactional
-    public List<PetTag> addPetTags(Long petId, PetTagNamesRequest request) {
+    public List<PetTagResponse> addPetTags(Long petId, PetTagNamesRequest request) {
         // 检查权限
         PetInformation info = getOptById(petId)
                 .orElseThrow(() -> new ServiceException("流浪宠物不存在"));
@@ -378,7 +415,7 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
 
         // 筛选标签
         Set<String> currentTags = getPetTags(petId).stream()
-                .map(PetTag::getTag)
+                .map(PetTagResponse::getTag)
                 .collect(Collectors.toSet());
         Date createTime = new Date(System.currentTimeMillis());
         List<PetTag> tags = request.getTags().stream()
@@ -401,6 +438,7 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
         if (!tags.isEmpty()) {
             petTagMapper.insert(tags);
         }
+
         return getPetTags(petId);
     }
 
@@ -408,7 +446,7 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
      * 删除流浪宠物标签
      */
     @Transactional
-    public List<PetTag> deletePetTags(Long petId, PetTagIdsRequest request) {
+    public List<PetTagResponse> deletePetTags(Long petId, PetTagIdsRequest request) {
         // 检查权限
         PetInformation info = getOptById(petId)
                 .orElseThrow(() -> new ServiceException("流浪宠物不存在"));
@@ -428,23 +466,38 @@ public class PetInformationManagerService extends ServiceImpl<PetInformationMapp
     /**
      * 获取流浪宠物状态流转记录
      */
-    public Page<PetStatusRecord> getPetStatusRecords(Long petId, Page<PetStatusRecord> page) {
+    public Page<PetStatusRecordResponse> getPetStatusRecords(Long petId, Page<PetStatusRecord> page) {
         User login = authUtils.getLoginUser(ServiceException::new);
         if (!authUtils.isWorker(login))
             throw new ServiceException("权限不足");
 
-        return petStatusRecordMapper.selectPage(page, Wrappers.<PetStatusRecord>lambdaQuery()
+        Page<PetStatusRecord> result = petStatusRecordMapper.selectPage(page, Wrappers.<PetStatusRecord>lambdaQuery()
                 .eq(PetStatusRecord::getPetId, petId));
+        // 数据转换
+        List<PetStatusRecord> records = result.getRecords();
+        Map<Long, PetInformation> petMap = getPetInfoBatchByIds(records.stream()
+                .map(PetStatusRecord::getPetId)
+                .collect(Collectors.toSet()));
+        Map<Long, PetImage> coverMap = getPetCoversBatchByPetIds(records.stream()
+                .map(PetStatusRecord::getPetId)
+                .collect(Collectors.toSet()));
+        Map<Long, UserResponse> userMap = userService.getUsersBatchByIds(records.stream()
+                .map(PetStatusRecord::getUserId)
+                .collect(Collectors.toSet()));
+        return PageUtils.convertDto(result, record -> PetStatusRecordResponse.fromEntity(record,
+                petMap.get(record.getPetId()),
+                coverMap.get(record.getPetId()).toPetImageUrl(fileUtils),
+                userMap.get(record.getUserId())));
     }
 
     /**
      * 根据 id 批量获取流浪宠物标签
      */
-    public Map<Long, List<PetTag>> getPetTagsBatchByPetIds(Set<Long> petIds) {
-        Map<Long, List<PetTag>> map = new HashMap<>(petIds.size());
+    public Map<Long, List<PetTagResponse>> getPetTagsBatchByPetIds(Set<Long> petIds) {
+        Map<Long, List<PetTagResponse>> map = new HashMap<>(petIds.size());
         petIds.forEach(id -> map.put(id, new ArrayList<>()));
         petTagMapper.selectList(Wrappers.<PetTag>lambdaQuery().in(PetTag::getPetId, petIds))
-                .forEach(tag -> map.get(tag.getPetId()).add(tag));
+                .forEach(tag -> map.get(tag.getPetId()).add(PetTagResponse.fromTag(tag)));
         return map;
     }
 

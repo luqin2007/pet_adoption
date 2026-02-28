@@ -1,5 +1,7 @@
 package com.example.backend.component;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.example.backend.entity.PetInformation;
 import com.example.backend.mapper.PetInformationMapper;
 import com.example.backend.util.FileUtils;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +35,8 @@ public class FileCleanScheduleTask {
     }
 
     private void cleanPetMediaFiles() {
-        Set<Long> petIds = new HashSet<>(petInformationMapper.getAllIds());
+        Set<Long> petIds = new HashSet<>(petInformationMapper.selectObjs(Wrappers.<PetInformation>lambdaQuery()
+                .select(PetInformation::getId)));
         Path pets = Paths.get(fileUtils.getPetsUploadPath());
         if (!Files.isDirectory(pets)) return;
 

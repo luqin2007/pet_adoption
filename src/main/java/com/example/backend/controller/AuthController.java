@@ -4,7 +4,7 @@ import com.example.backend.dto.RefreshTokenRequest;
 import com.example.backend.dto.Result;
 import com.example.backend.dto.UserResponse;
 import com.example.backend.entity.User;
-import com.example.backend.service.UserManagerService;
+import com.example.backend.service.UserService;
 import com.example.backend.util.JwtUtils;
 import com.example.backend.util.ServiceException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +21,7 @@ import java.util.Optional;
  * 认证相关 API
  * - 刷新认证
  * - 登出
+ * TODO 创建对应 Service 层？
  */
 @Validated
 @RestController
@@ -29,7 +30,7 @@ import java.util.Optional;
 public class AuthController {
 
     private final JwtUtils jwtUtils;
-    private final UserManagerService userManagerService;
+    private final UserService userService;
 
     /**
      * 刷新访问令牌
@@ -41,10 +42,8 @@ public class AuthController {
         }
 
         String username = jwtUtils.getUsernameFromToken(request.getRefreshToken());
-        User user = userManagerService.getUser(username);
-        String accessToken = jwtUtils.generateAccessToken(user);
-        String refreshToken = jwtUtils.generateRefreshToken(user);
-        UserResponse response = UserResponse.fromEntity(user, accessToken, refreshToken);
+        User user = userService.getUser(username);
+        UserResponse response = UserResponse.fromEntity(user);
         return Result.success(response);
     }
 
@@ -53,9 +52,11 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public Result<Void> logout(@RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
+        // 注销访问令牌
         jwtUtils.getTokenFromRequest(httpRequest)
                 .filter(jwtUtils::validateAccessToken)
                 .ifPresent(jwtUtils::invalidateAccessToken);
+        // 注销刷新令牌
         Optional.ofNullable(request)
                 .map(RefreshTokenRequest::getRefreshToken)
                 .filter(jwtUtils::validateRefreshToken)

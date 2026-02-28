@@ -1,19 +1,15 @@
 package com.example.backend.controller;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.example.backend.dto.*;
 import com.example.backend.entity.User;
-import com.example.backend.service.UserManagerService;
+import com.example.backend.service.UserService;
 import com.example.backend.util.JwtUtils;
+import com.example.backend.util.PageUtils;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 用户管理模块
@@ -38,9 +34,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
-public class UserManagerController {
+public class UserController {
 
-    private final UserManagerService userManagerService;
+    private final UserService userService;
     private final JwtUtils jwtUtils;
 
     /**
@@ -48,10 +44,7 @@ public class UserManagerController {
      */
     @PostMapping("/register")
     public Result<UserResponse> register(@RequestBody UserRegisterRequest user) {
-        User register = userManagerService.register(user);
-        String accessToken = jwtUtils.generateAccessToken(register);
-        String refreshToken = jwtUtils.generateRefreshToken(register);
-        UserResponse response = UserResponse.fromEntity(register, accessToken, refreshToken);
+        UserResponse response = userService.register(user);
         return Result.success(response);
     }
 
@@ -60,7 +53,7 @@ public class UserManagerController {
      */
     @GetMapping("/check/username/{username}")
     public Result<Void> isUsernameExist(@PathVariable String username) {
-        if (userManagerService.isUsernameExist(username)) {
+        if (userService.isUsernameExist(username)) {
             return Result.error(500, "用户名已存在");
         }
         return Result.success();
@@ -71,7 +64,7 @@ public class UserManagerController {
      */
     @GetMapping("/check/email/{email}")
     public Result<Void> isMailExist(@PathVariable String email) {
-        if (userManagerService.isEmailExist(email)) {
+        if (userService.isEmailExist(email)) {
             return Result.error(500, "邮箱已存在");
         }
         return Result.success();
@@ -82,7 +75,7 @@ public class UserManagerController {
      */
     @GetMapping("/check/code")
     public Result<Void> sendMailCode(@Email(message = "邮箱格式错误") @RequestParam("email") String email) {
-        userManagerService.sendMailCode(email);
+        userService.sendMailCode(email);
         return Result.success();
     }
 
@@ -91,20 +84,7 @@ public class UserManagerController {
      */
     @PostMapping("/login")
     public Result<UserResponse> login(@RequestBody UserLoginRequest user) {
-        User login = userManagerService.login(user);
-        String accessToken = jwtUtils.generateAccessToken(login);
-        String refreshToken = jwtUtils.generateRefreshToken(login);
-        UserResponse response = UserResponse.fromEntity(login, accessToken, refreshToken);
-        return Result.success(response);
-    }
-
-    /**
-     * 获取用户信息
-     */
-    @GetMapping("/users/{id}")
-    public Result<UserResponse> getUser(@PathVariable Long id) {
-        User user = userManagerService.getUser(id);
-        UserResponse response = UserResponse.fromEntity(user);
+        UserResponse response = userService.login(user);
         return Result.success(response);
     }
 
@@ -113,7 +93,7 @@ public class UserManagerController {
      */
     @GetMapping("/forget")
     public Result<Void> forgetPassword(@Email(message = "邮箱格式错误") @RequestParam("email") String email) {
-        userManagerService.forgetPassword(email);
+        userService.forgetPassword(email);
         return Result.success();
     }
 
@@ -122,44 +102,25 @@ public class UserManagerController {
      */
     @PostMapping("/reset")
     public Result<Void> resetPassword(@RequestBody PasswordResetRequest request) {
-        userManagerService.resetPassword(request);
+        userService.resetPassword(request);
         return Result.success();
     }
 
     /**
-     * 获取用户列表
+     * 获取用户信息
      */
-    @GetMapping("/users")
-    public Result<PageDTO<UserResponse>> getUserList(@RequestParam(defaultValue = "1") Integer current,
-                                                     @RequestParam(defaultValue = "10") Integer size,
-                                                     @RequestParam(defaultValue = "id") String sort,
-                                                     @RequestParam(defaultValue = "ASC") String order) {
-        // 分页
-        List<OrderItem> orders = order.equalsIgnoreCase("ASC")
-                ? OrderItem.ascs(sort)
-                : OrderItem.descs(sort);
-        Page<User> page = Page.of(current, size);
-        page.setOrders(orders);
-
-        // 查询
-        IPage<User> users = userManagerService.getAllUsers(page);
-        List<UserResponse> records = users.getRecords().stream()
-                .map(UserResponse::fromEntity)
-                .toList();
-        IPage<UserResponse> response =
-                PageDTO.of(users.getCurrent(), users.getSize(), users.getTotal());
-        // Mybatis-plus 为什么 PageDTO 要求传入 List<Object> 而不是 List<T> ?
-        response.setRecords(records);
-        return Result.success((PageDTO<UserResponse>) response);
+    @GetMapping("/users/{id}")
+    public Result<UserResponse> getUser(@PathVariable("id") Long userId) {
+        UserResponse response = userService.getUser(userId, false);
+        return Result.success(response);
     }
 
     /**
      * 更新用户信息
      */
     @PostMapping("/users/{id}")
-    public Result<UserResponse> updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest user) {
-        User update = userManagerService.update(id, user);
-        UserResponse response = UserResponse.fromEntity(update);
+    public Result<UserResponse> updateUser(@PathVariable("id") Long userId, @RequestBody UserUpdateRequest user) {
+        UserResponse response = userService.update(userId, user);
         return Result.success(response);
     }
 
@@ -167,8 +128,22 @@ public class UserManagerController {
      * 删除用户
      */
     @DeleteMapping("/users/{id}")
-    public Result<Void> removeUser(@PathVariable Long id) {
-        userManagerService.removeUser(id);
+    public Result<Void> removeUser(@PathVariable("id") Long userId) {
+        userService.removeUser(userId);
         return Result.success();
     }
+
+    /**
+     * 获取用户列表
+     */
+    @GetMapping("/users")
+    public Result<Page<UserResponse>> getUserList(@RequestParam(defaultValue = "1") Integer current,
+                                                  @RequestParam(defaultValue = "10") Integer size,
+                                                  @RequestParam(defaultValue = "id") String sort,
+                                                  @RequestParam(defaultValue = "ASC") String order) {
+        Page<User> page = PageUtils.createPage(current, size, sort, order);
+        Page<UserResponse> response = userService.getAllUsers(page);
+        return Result.success(response);
+    }
+
 }

@@ -7,12 +7,12 @@ import lombok.Data;
 public class PetTagResponse {
 
     private Long id;
-    private String name;
+    private String tag;
 
     public static PetTagResponse fromTag(PetTag petTag) {
         PetTagResponse response = new PetTagResponse();
         response.setId(petTag.getId());
-        response.setName(petTag.getTag());
+        response.setTag(petTag.getTag());
         return response;
     }
 }
