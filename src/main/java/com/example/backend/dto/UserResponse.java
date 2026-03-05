@@ -1,6 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.User;
+import com.example.backend.util.AuthUtils;
 import lombok.Data;
 
 /**
@@ -50,7 +51,7 @@ public class UserResponse {
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
         response.setAvatar(user.getAvatar());
-        response.setRole(user.getRole());
+        response.setRole(AuthUtils.getRoleCode(user));
         return response;
     }
 }

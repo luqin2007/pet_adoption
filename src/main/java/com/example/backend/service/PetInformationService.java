@@ -384,10 +384,10 @@ public class PetInformationService extends ServiceImpl<PetInformationMapper, Pet
      * - 已领养之前，可由志愿者、兽医修改
      */
     private boolean checkUserPermission(PetInformation info, User login) {
-        return authUtils.isWorker(login) || switch (info.getStatus()) {
+        return login.isWorker() || switch (info.getStatus()) {
             case 0, 1 -> info.getUserId() != null && Objects.equals(login.getId(), info.getUserId());
             case 7 -> false;
-            default -> authUtils.isWorker(login) || authUtils.isVolunteer(login);
+            default -> login.isWorker() || login.isVolunteer();
         };
     }
 
@@ -468,7 +468,7 @@ public class PetInformationService extends ServiceImpl<PetInformationMapper, Pet
      */
     public Page<PetStatusRecordResponse> getPetStatusRecords(Long petId, Page<PetStatusRecord> page) {
         User login = authUtils.getLoginUser(ServiceException::new);
-        if (!authUtils.isWorker(login))
+        if (!login.isWorker())
             throw new ServiceException("权限不足");
 
         Page<PetStatusRecord> result = petStatusRecordMapper.selectPage(page, Wrappers.<PetStatusRecord>lambdaQuery()

@@ -1,6 +1,6 @@
 package com.example.backend.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.dto.*;
@@ -10,6 +10,7 @@ import com.example.backend.util.*;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,7 +27,6 @@ import java.sql.Date;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,9 +35,9 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
 
     private final StringRedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
-    private final MailUtils mailUtils;
     private final AuthUtils authUtils;
     private final JwtUtils jwtUtils;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final String PASSWORD_RESET_KEY_TEMPLATE = "pet_adoption.forgetpwd.%s";
     private static final String PASSWORD_CODE_KEY_TEMPLATE = "pet_adoption.mailcode.%s";
@@ -115,7 +115,8 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
         // 发送邮件
         String content = String.format(MAIL_CODE_TEMPLATE, code);
         String receiver = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        mailUtils.send(receiver, "Pet Adoption 邮箱验证码", content);
+        NotificationEvent event = NotificationEvent.mails("Pet Adoption 邮箱验证码", content, Set.of(receiver));
+        eventPublisher.publishEvent(event);
     }
 
     /**
@@ -191,10 +192,10 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
         boolean allowed =
                 // 用户本人
                 Objects.equals(login.getId(), user.getId()) ||
-                // 工作人员，且被删用户非管理员
-                (authUtils.isWorker(login) && !authUtils.isAdmin(user)) ||
-                // 超级管理员
-                authUtils.isAdmin(login);
+                        // 工作人员，且被删用户非管理员
+                        (login.isWorker() && !user.isAdmin()) ||
+                        // 超级管理员
+                        login.isAdmin();
         if (!allowed) {
             throw new ServiceException("权限不足");
         }
@@ -209,7 +210,7 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
     public Page<UserResponse> getAllUsers(Page<User> page) {
         // 权限校验
         User login = authUtils.getLoginUser(ServiceException::new);
-        if (!authUtils.isWorker(login)) {
+        if (!login.isWorker()) {
             throw new ServiceException("权限不足");
         }
         // 数据转换
@@ -241,7 +242,8 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
 
         // 发送激活邮件
         String content = String.format(MAIL_RESET_PASSWORD_TEMPLATE, hostAddress, randomId);
-        mailUtils.send(user.getEmail(), "Pet Adoption 密码重置", content);
+        NotificationEvent event = NotificationEvent.mails("Pet Adoption 密码重置", content, Set.of(user.getEmail()));
+        eventPublisher.publishEvent(event);
     }
 
     /**
@@ -273,27 +275,19 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
         // 校验用户权限
         User login = authUtils.getLoginUser(ServiceException::new);
         User user = getById(userId);
-        if (user.getRole() != request.getRole()) {
+        if (user.isAdmin() && !login.isAdmin()) {
             // 管理员权限仅超级管理员可更改
-            boolean isAdminRoleChange = authUtils.isAdmin(user) != authUtils.isAdmin(request.getRole());
-            if (isAdminRoleChange && !authUtils.isAdmin(login)) {
-                throw new ServiceException("用户权限不足");
-            }
-            // 其他权限变更需要救助站工作人员更改
-            if (!authUtils.isWorker(login)) {
-                throw new ServiceException("用户权限不足");
-            }
+            throw new ServiceException("用户权限不足");
         }
-        if (!Objects.equals(login.getId(), userId) /* 用户本身 */
-                && !authUtils.isWorker(login) /* 救助站工作人员 */) {
-            // 其他信息只需本人或救助站工作人员即可
+        if (!login.isWorker() && !Objects.equals(login.getId(), userId)) {
+            // 其他权限变更需要本人或救助站工作人员更改
             throw new ServiceException("用户权限不足");
         }
 
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword());
         user.setEmail(request.getEmail());
-        user.setRole(request.getRole());
+        user.setRole(AuthUtils.getRoleCode(request.getRole()));
         user.setAvatar(request.getAvatar());
         user.setUpdateTime(Date.valueOf(LocalDate.now()));
         if (!updateById(user)) {
@@ -305,16 +299,51 @@ public class UserService extends ServiceImpl<UserMapper, User> implements UserDe
     /**
      * 根据 id 批量获取用户信息
      */
-    public Map<Long, UserResponse> getUsersBatchByIds(Set<Long> collect) {
-        return listByIds(collect).stream()
+    public Map<Long, UserResponse> getUsersBatchByIds(Set<Long> ids) {
+        if (ids.isEmpty()) return Map.of();
+        return listByIds(ids).stream()
                 .collect(Collectors.toMap(User::getId, UserResponse::fromEntity));
+    }
+
+    /**
+     * 根据 id 批量获取邮件地址，用于发送邮件
+     */
+    public Set<String> getMailsBatchByIds(Set<Long> ids) {
+        if (ids.isEmpty()) return Set.of();
+        return listObjs(lambdaQuery().select(User::getEmail).in(User::getId, ids)).stream()
+                .map(obj -> (String) obj)
+                .filter(StringUtils::hasText)
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * 根据角色批量获取用户 id
+     */
+    public Set<Long> getIdsBatchByRoles(Set<String> roleSet) {
+        Set<String> roles = (roleSet == null ? Set.<String>of() : roleSet).stream()
+                .filter(StringUtils::hasText)
+                .filter(AuthUtils.ALL_ROLES::contains)
+                .collect(Collectors.toSet());
+        if (roles.isEmpty()) return Set.of();
+        Integer role = roleSet.stream()
+                .map(AuthUtils.MATCH_MASK_MAP::get)
+                .filter(Objects::nonNull)
+                .reduce(0, (i, j) -> i | j);
+        role = AuthUtils.getRoleCode(role);
+
+        LambdaQueryChainWrapper<User> wrapper = lambdaQuery()
+                .select(User::getId)
+                .eq(User::getRole, role);
+        return listObjs(wrapper)
+                .stream().map(obj -> (Long) obj)
+                .collect(Collectors.toSet());
     }
 
     @Override
     @Nonnull
     public UserDetails loadUserByUsername(@Nonnull String username) throws UsernameNotFoundException {
         return getOneOpt(lambdaQuery().eq(User::getUsername, username))
-                .map(user -> new CustomUserDetails(user, authUtils))
+                .map(CustomUserDetails::new)
                 .orElseThrow(() -> UsernameNotFoundException.fromUsername(username));
     }
 }

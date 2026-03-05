@@ -8,7 +8,7 @@ import java.sql.Date;
  * 用户账户信息
  */
 @Data
-public class User {
+public class User implements IUserRole {
 
     /**
      * 用户 id
