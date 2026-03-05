@@ -1,6 +1,5 @@
 package com.example.backend.util;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -23,7 +22,7 @@ public record NotificationEvent(
         boolean sendEmailToUsers
 ) {
     public static NotificationEvent mails(String title, String content, Set<String> emails) {
-        return new NotificationEvent(title, content, JumpTarget.EMPTY, emails, Set.of(), Set.of(), Set.of());
+        return new NotificationEvent(title, content, JumpTarget.EMPTY, emails, Set.of(), Set.of(), false);
     }
 
     public enum JumpTarget {
