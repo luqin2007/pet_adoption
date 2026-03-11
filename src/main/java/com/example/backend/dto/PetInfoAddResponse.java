@@ -1,6 +1,6 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.PetInformation;
+import com.example.backend.entity.Pet;
 import lombok.Data;
 
 @Data
@@ -48,17 +48,17 @@ public class PetInfoAddResponse {
      */
     private String description;
 
-    public static PetInfoAddResponse fromEntity(PetInformation petInformation) {
+    public static PetInfoAddResponse fromEntity(Pet pet) {
         PetInfoAddResponse response = new PetInfoAddResponse();
-        response.setId(petInformation.getId());
-        response.setName(petInformation.getName());
-        response.setMinAge(petInformation.getMinAge());
-        response.setMaxAge(petInformation.getMaxAge());
-        response.setSex(petInformation.getSex());
-        response.setType(petInformation.getType());
-        response.setBreed(petInformation.getBreed());
-        response.setHealth(petInformation.getHealth());
-        response.setDescription(petInformation.getDescription());
+        response.setId(pet.getId());
+        response.setName(pet.getName());
+        response.setMinAge(pet.getMinAge());
+        response.setMaxAge(pet.getMaxAge());
+        response.setSex(pet.getSex());
+        response.setType(pet.getType());
+        response.setBreed(pet.getBreed());
+        response.setHealth(pet.getHealth());
+        response.setDescription(pet.getDescription());
         return response;
     }
 }

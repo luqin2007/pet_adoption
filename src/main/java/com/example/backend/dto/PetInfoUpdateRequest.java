@@ -1,12 +1,15 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.PetInformation;
+import com.example.backend.entity.Pet;
+import com.example.backend.entity.PetStatusRecord;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
+
+import java.sql.Date;
 
 @Data
 public class PetInfoUpdateRequest {
@@ -67,10 +70,9 @@ public class PetInfoUpdateRequest {
 
     /**
      * 宠物状态
-     * @see PetInformation#getStatus()
+     * @see Pet#getStatus()
      */
-    @Min(value = 0, message = "错误状态")
-    @Max(value = 7, message = "错误状态")
+    @Range(min = 0, max = 7, message = "错误状态")
     private int status;
 
     /**
@@ -79,7 +81,7 @@ public class PetInfoUpdateRequest {
     @JsonSetter(nulls = Nulls.SKIP)
     private String statusDesc = "";
 
-    public void apply(PetInformation info) {
+    public void apply(Pet info, Date now) {
         info.setName(name);
         info.setMinAge(minAge);
         info.setMaxAge(maxAge);
@@ -90,5 +92,17 @@ public class PetInfoUpdateRequest {
         info.setVaccine(vaccine);
         info.setDescription(description);
         info.setStatus(status);
+        info.setUpdateTime(now);
+    }
+
+    public PetStatusRecord buildStatusRecord(Pet info, Long userId, Date now) {
+        PetStatusRecord record = new PetStatusRecord();
+        record.setUserId(userId);
+        record.setPetId(info.getId());
+        record.setFrom(info.getStatus());
+        record.setTo(status);
+        record.setCreateTime(now);
+        record.setDescription(description);
+        return record;
     }
 }

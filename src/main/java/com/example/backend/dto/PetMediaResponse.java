@@ -1,7 +1,7 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.PetImage;
-import com.example.backend.entity.PetVideo;
+import com.example.backend.entity.MediaInfo;
+import com.example.backend.util.C;
 import com.example.backend.util.FileUtils;
 import lombok.Data;
 
@@ -33,24 +33,14 @@ public class PetMediaResponse {
 
     private Date createDate;
 
-    public static PetMediaResponse fromImage(PetImage image, FileUtils fileUtils) {
+    public static PetMediaResponse fromEntity(MediaInfo media) {
         PetMediaResponse response = new PetMediaResponse();
         response.setType("image");
-        response.setPath(image.toPetImageUrl(fileUtils));
-        response.setName(image.getName());
-        response.setDescription(image.getDescription());
-        response.setCover(image.getIsCover());
-        response.setCreateDate(image.getCreateTime());
-        return response;
-    }
-
-    public static PetMediaResponse fromVideo(PetVideo video, FileUtils fileUtils) {
-        PetMediaResponse response = new PetMediaResponse();
-        response.setType("video");
-        response.setPath(video.toPetVideoUrl(fileUtils));
-        response.setName(video.getName());
-        response.setDescription(video.getDescription());
-        response.setCreateDate(video.getCreateTime());
+        response.setPath(FileUtils.generateAssetUrl(C.PARENT_PET, media.getParentId(), media.getFilename()));
+        response.setName(media.getName());
+        response.setDescription(media.getDescription());
+        response.setCover(media.getIsCover());
+        response.setCreateDate(media.getCreateTime());
         return response;
     }
 }

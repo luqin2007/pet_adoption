@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import java.util.List;
 import java.util.function.Function;
 
-public class PageUtils {
+public class DbUtils {
 
     public static <T> Page<T> createPage(Integer currentPage, Integer size, String sort, String order) {
         Page<T> page = Page.of(currentPage, size, true);

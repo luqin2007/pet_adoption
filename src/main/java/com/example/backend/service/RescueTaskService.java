@@ -1,12 +1,310 @@
 package com.example.backend.service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.backend.entity.RescueTask;
-import com.example.backend.mapper.RescueTaskMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.backend.dto.*;
+import com.example.backend.entity.*;
+import com.example.backend.mapper.*;
+import com.example.backend.util.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Path;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.example.backend.util.C.*;
 
 @Service
 @RequiredArgsConstructor
-public class RescueTaskService extends ServiceImpl<RescueTaskMapper, RescueTask> {
+public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask> {
+
+    private final RescueTaskLocationMapper rescueTaskLocationMapper;
+    private final RescueTaskAssignMapper rescueTaskAssignMapper;
+    private final RescueTaskRecordMapper rescueTaskRecordMapper;
+    private final MediaInfoMapper mediaInfoMapper;
+
+    private final UserService userService;
+
+    @Value("${host.address}")
+    private String host;
+
+    /**
+     * 创建一个临时救助任务 id，有效期 30min
+     */
+    public String beginRescueTask() {
+        // 检查用户
+        AuthUtils.getLoginUser();
+
+        // 生成临时 task id
+        String uuid = StringUtils.randomUUID(KEY_RESCUE_TASK, redisTemplateString, 10);
+        String redisKey = String.format(KEY_RESCUE_TASK, uuid);
+
+        // 30min 填写时间
+        putToRedis(redisKey, "", 30);
+        putToRedis(String.format(KEY_RESCUE_TASK_MEDIA_COUNT, uuid), "0");
+        return uuid;
+    }
+
+    @Transactional
+    public RescueTaskResponse addRescueTask(RescueTaskAddRequest request) {
+        // 检查用户和任务
+        User login = AuthUtils.getLoginUser();
+        String uuid = request.getId();
+        String redisKey = String.format(KEY_RESCUE_TASK, uuid);
+        requireRedisString(redisKey, "添加超时，请刷新重试");
+
+        // 存储任务信息
+        RescueTask task = request.createTask(login.getId());
+        save(task);
+        rescueTaskLocationMapper.insert(request.createLocation(task.getId()));
+        RescueTaskRecord record =
+                RescueTaskRecord.create(task, login.getId(), RESCUE_TASK_ACTION_CREATE, 0, task.getSummary());
+        rescueTaskRecordMapper.insert(record);
+
+        // 添加所有图片和视频
+        String mediaKey = String.format(KEY_RESCUE_TASK_MEDIA, uuid);
+        List<MediaInfo> infos = getAllFromRedisHash(mediaKey, TempMediaInfo.class).stream()
+                // 转移临时文件
+                .filter(data -> FileUtils.transferTempFile(data, uuid, task.getId(), PARENT_RESCUE_TASK))
+                // 更新媒体信息
+                .map(media -> media.createEntity(task.getId(), PARENT_RESCUE_TASK))
+                .toList();
+        mediaInfoMapper.insert(infos);
+
+        // 清理缓存
+        String countKey = String.format(KEY_RESCUE_TASK_MEDIA_COUNT, uuid);
+        deleteStringFromRedis(redisKey, countKey);
+        deleteObjectFromRedis(mediaKey);
+        FileUtils.tryDeleteDirectory(FileUtils.generateTempPath(PARENT_RESCUE_TASK, uuid), false);
+
+        // 通知
+        String notificationTitle = "新任务";
+        String notificationContent = task.getSummary();
+        eventPublisher.publishEvent(NotificationEvent.system(notificationTitle, notificationContent,
+                "/tasks/" + task.getId(), ROLE_WORKER));
+        String emailTitle = "新任务：" + task.getSummary();
+        String emailContent = buildALabel(task.getSummary(), task.getId()) + "<div>" + task.getDescription() + "</div>";
+        eventPublisher.publishEvent(NotificationEvent.mailToRoles(emailTitle, emailContent, ROLE_WORKER));
+        eventPublisher.publishEvent(NotificationEvent.system(emailTitle, emailContent, buildTaskUrl(task.getId()), ROLE_WORKER));
+        return RescueTaskResponse.fromEntity(task);
+    }
+
+    public Long uploadMediaFile(String uuid, MultipartFile file) {
+        // 检查用户和任务
+        User user = AuthUtils.getLoginUser();
+        String redisKey = String.format(KEY_RESCUE_TASK, uuid);
+        requireRedisString(redisKey, "添加超时，请刷新重试");
+
+        // 上传文件
+        Pair<String, Integer> extAndType = FileUtils.getFileExtensionAndType(file);
+        Date now = new Date();
+        String name = FileUtils.getNameWithoutExtension(file.getOriginalFilename());
+        String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
+        Path targetPath = FileUtils.generateTempPath(PARENT_RESCUE_TASK, uuid);
+        FileUtils.upload(file, filename, targetPath);
+
+        // 存储媒体数据
+        Long id = incrementFromRedis(String.format(KEY_RESCUE_TASK_MEDIA_COUNT, uuid));
+        TempMediaInfo info = new TempMediaInfo();
+        info.setId(id);
+        info.setType(extAndType.getSecond());
+        info.setName(name);
+        info.setUpdate(now);
+        info.setUserId(user.getId());
+        info.setFilename(filename);
+        String hashKey = String.format(KEY_RESCUE_TASK_MEDIA, uuid);
+        putToRedisHash(hashKey, filename, info);
+        return id;
+    }
+
+    @Transactional
+    public RescueTaskResponse updateRescueTask(Long taskId, RescueTaskUpdateRequest request) {
+        // 校验
+        RescueTask task = requireById(taskId, "任务不存在");
+        User login = AuthUtils.getLoginUser();
+        if (!Objects.equals(task.getStatus(), RESCUE_TASK_STATUS_CREATED)) {
+            // 刚创建，允许创建者和工作人员修改
+            requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
+        } else {
+            throw ServiceException.invalidate("无法修改已通过的任务");
+        }
+
+        // 更新任务信息
+        request.applyTo(task);
+        updateById(task);
+        RescueTaskRecord record = RescueTaskRecord.create(task, login.getId(), C.RESCUE_TASK_ACTION_UPDATE, task.getStatus(), request.getReason());
+        rescueTaskRecordMapper.insert(record);
+
+        // 更新位置信息
+        Location location = rescueTaskLocationMapper.selectOne(rescueTaskLocationMapper.queryByTask(taskId));
+        if (location == null) { // 位置信息缺失
+            rescueTaskLocationMapper.insert(request.createLocation(taskId));
+        } else { // 更新
+            request.applyTo(location);
+            rescueTaskLocationMapper.updateById(location);
+        }
+
+        // 通知
+        String title = "救援任务已更新";
+        String content = task.getSummary();
+        eventPublisher.publishEvent(NotificationEvent.system(title, content, buildTaskUrl(task.getId()), ROLE_WORKER));
+        return RescueTaskResponse.fromEntity(task);
+    }
+
+    public void deleteRescueMedia(String uuid, Long mediaId) {
+        // 检查用户和任务
+        AuthUtils.getLoginUser();
+        String redisKey = String.format(KEY_RESCUE_TASK, uuid);
+        requireRedisString(redisKey, "添加超时，请刷新重试");
+
+        // 删除媒体记录
+        String listKey = String.format(KEY_RESCUE_TASK_MEDIA, uuid);
+        List<TempMediaInfo> mediaInfos = getAndDeleteFromRedisHash(listKey, String.valueOf(mediaId));
+        requireExist(mediaInfos, "媒体不存在");
+        TempMediaInfo info = mediaInfos.get(0);
+
+        // 删除媒体文件
+        Path file = FileUtils.generateTempPath(PARENT_RESCUE_TASK, uuid, info.getFilename());
+        FileUtils.tryDeleteFile(file);
+    }
+
+    @Transactional
+    public void deleteRescueMedia(Long mediaId) {
+        // 检查用户和任务状态
+        User login = AuthUtils.getLoginUser();
+        MediaInfo media = mediaInfoMapper.requireById(mediaId, "图片/视频不存在");
+        requireEqual(PARENT_RESCUE_TASK, media.getParentType(), "图片/视频不匹配");
+        RescueTask task = requireById(media.getParentId(), "救助任务不存在");
+        requireEqual(RESCUE_TASK_STATUS_CREATED, task.getStatus(), "无法修改已通过的任务");
+        requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
+
+        // 删除媒体文件
+        mediaInfoMapper.deleteById(mediaId);
+        Path file = FileUtils.generateFilePath(PARENT_RESCUE_TASK, media.getParentId(), media.getFilename());
+        FileUtils.tryDeleteFile(file);
+        FileUtils.tryDeleteDirectory(file.getParent(), true);
+
+        // 图片：重置封面
+        if (Objects.equals(MEDIA_TYPE_IMAGE, media.getType()) && media.getIsCover()) {
+            MediaInfo latestImage = mediaInfoMapper.selectOne(mediaInfoMapper.queryLatestImageId(PARENT_RESCUE_TASK, task.getId()));
+            if (latestImage != null)
+                mediaInfoMapper.updateById(latestImage.getId(), MediaInfo::getIsCover, true);
+        }
+    }
+
+    @Transactional
+    public void deleteRescueTask(Long taskId) {
+        // 检查用户和任务状态
+        User login = AuthUtils.getLoginUser();
+        RescueTask task = requireById(taskId, "救助任务不存在");
+        requireEqual(RESCUE_TASK_STATUS_CREATED, task.getStatus(), "无法删除已通过的任务");
+        requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
+
+        // 删除数据库数据
+        List<MediaInfo> mediaInfos = mediaInfoMapper.selectList(mediaInfoMapper.queryIdAndFilename(PARENT_RESCUE_TASK, taskId));
+        mediaInfoMapper.deleteByIds(mediaInfos);
+        removeById(taskId);
+
+        // 删除媒体文件
+        mediaInfos.stream()
+                .map(info -> FileUtils.generateFilePath(PARENT_RESCUE_TASK, taskId, info.getFilename()))
+                .forEach(FileUtils::tryDeleteFile);
+        Path taskPath = FileUtils.generateFilePath(PARENT_RESCUE_TASK, taskId);
+        FileUtils.tryDeleteDirectory(taskPath, false);
+    }
+
+    @Transactional
+    public void updateRescueTaskRecord(Long taskId, RescueTaskRecordRequest request) {
+        // 任务校验
+        RescueTask task = requireById(taskId, "救助任务不存在");
+        User login = AuthUtils.getLoginUser();
+        requirePermission(login.isWorker());
+
+        // 状态变更
+        RescueTaskRecord record = RescueTaskRecord.create(task, login.getId(), RESCUE_TASK_ACTION_STATUS, task.getStatus(), request.getReason());
+        task.setStatus(request.getStatus());
+        updateById(task);
+        rescueTaskRecordMapper.insert(record);
+
+        // 通知
+        String title = "任务状态已更新";
+        String content = task.getSummary() + ": " + request.getReason();
+        NotificationEvent.system(title, content, buildTaskUrl(task.getId()), ROLE_WORKER);
+    }
+
+    public RescueTaskRecordsResponse getRescueTaskRecords(Long taskId) {
+        List<RescueTaskRecord> result = rescueTaskRecordMapper.selectList(rescueTaskRecordMapper.queryByTask(taskId));
+        Map<Long, UsernameAndAvatarResponse> users = userService.getUsernameAndAvatarBatchByIds(result.stream()
+                .map(RescueTaskRecord::getUserId)
+                .collect(Collectors.toSet()));
+        return RescueTaskRecordsResponse.fromEntity(result, users);
+    }
+
+    public RescueTaskResponse getRescueTask(Long taskId) {
+        RescueTask task = requireById(taskId, "任务不存在");
+        return RescueTaskResponse.fromEntity(task);
+    }
+
+    public Page<RescueTaskResponse> getRescueTasks(Page<RescueTask> page) {
+        Page<RescueTask> result = page(page);
+        return DbUtils.convertDto(result, RescueTaskResponse::fromEntity);
+    }
+
+    @Transactional
+    public List<UserResponse> assignRescueTask(Long taskId, IdsRequest request) {
+        // 校验权限
+        User login = AuthUtils.getLoginUser();
+        requirePermission(login.isWorker());
+        RescueTask task = requireById(taskId, "任务不存在");
+        requireNotEqual(RESCUE_TASK_STATUS_CREATED, task.getStatus(), "任务未通过审核");
+
+        // 任务分配
+        Set<Long> addUsers = rescueTaskAssignMapper.selectList(rescueTaskAssignMapper.queryUserIdByTask(taskId)).stream()
+                .map(RescueTaskAssign::getUserId)
+                .collect(Collectors.toSet()); // 已分配用户
+        List<RescueTaskAssign> assigns = userService.getMailsBatchByIds(request.getIds()).stream()
+                .map(User::getId) // 过滤非法用户
+                .filter(id -> !addUsers.contains(id)) // 过滤已分配用户
+                // 创建记录
+                .map(id -> RescueTaskAssign.create(taskId, id, login.getId()))
+                .toList();
+        rescueTaskAssignMapper.insert(assigns);
+
+        // 通知分配用户
+        Set<Long> userIds = rescueTaskAssignMapper.selectList(rescueTaskAssignMapper.queryUserIdByTask(taskId)).stream()
+                .map(RescueTaskAssign::getUserId)
+                .collect(Collectors.toSet()); // 所有已分配用户
+        Set<User> users = userService.getMailsBatchByIds(userIds);
+        Set<Long> newUserIds = assigns.stream()
+                .map(RescueTaskAssign::getUserId)
+                .collect(Collectors.toSet()); // 新被分配用户
+        Set<String> newUserEmails = users.stream()
+                .filter(user -> newUserIds.contains(user.getId()))
+                .map(User::getEmail)
+                .filter(StringUtils::hasText)
+                .collect(Collectors.toSet()); // 新被分配用户邮箱
+        eventPublisher.publishEvent( // 邮箱
+                NotificationEvent.mail("任务分配通知", "您已被分配任务：" + buildALabel(task.getSummary(), taskId), newUserEmails));
+        eventPublisher.publishEvent( // 系统内
+                NotificationEvent.system("任务分配通知", "您已被分配任务：" + task.getSummary(), buildTaskUrl(taskId), newUserIds));
+        Set<Long> oldUserIds = users.stream()
+                .map(User::getId)
+                .filter(id -> !newUserIds.contains(id))
+                .collect(Collectors.toSet());
+        eventPublisher.publishEvent( // 系统内
+                NotificationEvent.system("任务分配通知", "您参与的任务有新人加入啦：" + task.getSummary(), buildTaskUrl(taskId), oldUserIds));
+        return users.stream().map(UserResponse::fromEntity).toList();
+    }
+
+    private String buildTaskUrl(Long taskId) {
+        return "/task/tasks/" + taskId;
+    }
+
+    private String buildALabel(String text, Long taskId) {
+        return "<a href=\"" + host + buildTaskUrl(taskId) + "\">" + text + "</a>";
+    }
 }

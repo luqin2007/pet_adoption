@@ -1,11 +1,13 @@
 package com.example.backend.dto;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
+import com.example.backend.entity.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.sql.Date;
 
 /**
  * 用户注册 请求体
@@ -44,4 +46,17 @@ public class UserRegisterRequest {
     @NotBlank(message = "请输入验证码")
     @Length(min = 6, max = 6, message = "验证码错误")
     private String code;
+
+    public User createUser(PasswordEncoder passwordEncoder) {
+        Date now = new Date(System.currentTimeMillis());
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setEmail(email);
+        user.setRole(0);
+        user.setAvatar(avatar);
+        user.setCreateTime(now);
+        user.setUpdateTime(now);
+        return user;
+    }
 }

@@ -25,38 +25,28 @@ public class NotificationEventListener {
     private final MailSender mailSender;
 
     @Async
-    @EventListener(NotificationEvent.class)
-    public void onNotification(NotificationEvent event) {
-        Set<Long> ids = new HashSet<>(event.users());
-        if (!event.roles().isEmpty()) {
-            ids.addAll(userService.getIdsBatchByRoles(event.roles()));
-        }
-        sendAppNotification(ids.toArray(Long[]::new), event);
-
-        Set<String> emails = new HashSet<>(event.emails());
-        if (event.sendEmailToUsers() && !event.users().isEmpty()) {
-            emails.addAll(userService.getMailsBatchByIds(event.users()));
-        }
-        sendEmail(emails.toArray(String[]::new), event.title(), event.content());
-    }
-
-    /**
-     * 发送邮件
-     */
-    private void sendEmail(String[] to, String title, String content) {
+    @EventListener(NotificationEvent.Mail.class)
+    public void onNotification(NotificationEvent.Mail event) {
+        Set<String> emails = new HashSet<>(event.getAddresses());
+        emails.addAll(userService.getMailsBatchByRoles(event.getRoles()));
+        // 发送邮件
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setFrom(mailFrom);
-        mail.setTo(to);
-        mail.setSubject(title);
-        mail.setText(content);
+        mail.setTo(emails.toArray(String[]::new));
+        mail.setSubject(event.getTitle());
+        mail.setText(event.getContent());
         try {
             mailSender.send(mail);
         } catch (Exception e) {
-            throw new ServiceException("邮件发送失败: " + e.getMessage(), e);
+            throw ServiceException.system("邮件发送失败: " + e.getMessage(), e);
         }
     }
 
-    private void sendAppNotification(Long[] ids, NotificationEvent event) {
+    @Async
+    @EventListener(NotificationEvent.System.class)
+    public void onNotification(NotificationEvent.System event) {
+        Set<Long> ids = new HashSet<>(event.getUsers());
+        ids.addAll(userService.getIdsBatchByRoles(event.getRoles()));
         // TODO 发送通知
     }
 }

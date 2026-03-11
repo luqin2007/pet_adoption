@@ -4,12 +4,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.User;
 import com.example.backend.service.UserService;
-import com.example.backend.util.JwtUtils;
-import com.example.backend.util.PageUtils;
+import com.example.backend.util.DbUtils;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 用户管理模块
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
  *   - 重置密码：resetPassword ( √ × )
  * - 信息维护 ( √ × )
  *   - 修改用户信息：updateUser ( √ × )
+ *   - 上传头像：uploadAvatar ( √ × )
  * - 账号状态管理 ( √ × )
  *   - 获取用户列表：getUserList ( √ × )
  *   - 删除用户：deleteUser ( √ × )
@@ -37,7 +38,6 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
-    private final JwtUtils jwtUtils;
 
     /**
      * 用户注册
@@ -84,7 +84,7 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result<UserResponse> login(@RequestBody UserLoginRequest user) {
-        UserResponse response = userService.login(user);
+        UserResponse response = userService.login(user.getUsername(), user.getPassword());
         return Result.success(response);
     }
 
@@ -111,7 +111,7 @@ public class UserController {
      */
     @GetMapping("/users/{id}")
     public Result<UserResponse> getUser(@PathVariable("id") Long userId) {
-        UserResponse response = userService.getUser(userId, false);
+        UserResponse response = userService.getUser(userId);
         return Result.success(response);
     }
 
@@ -121,6 +121,15 @@ public class UserController {
     @PostMapping("/users/{id}")
     public Result<UserResponse> updateUser(@PathVariable("id") Long userId, @RequestBody UserUpdateRequest user) {
         UserResponse response = userService.update(userId, user);
+        return Result.success(response);
+    }
+
+    /**
+     * 上传头像
+     */
+    @PostMapping("/users/{id}/avatar")
+    public Result<UserResponse> uploadAvatar(@PathVariable("id") Long userId, @RequestBody MultipartFile file) {
+        UserResponse response = userService.uploadAvatar(userId, file);
         return Result.success(response);
     }
 
@@ -141,7 +150,7 @@ public class UserController {
                                                   @RequestParam(defaultValue = "10") Integer size,
                                                   @RequestParam(defaultValue = "id") String sort,
                                                   @RequestParam(defaultValue = "ASC") String order) {
-        Page<User> page = PageUtils.createPage(current, size, sort, order);
+        Page<User> page = DbUtils.createPage(current, size, sort, order);
         Page<UserResponse> response = userService.getAllUsers(page);
         return Result.success(response);
     }

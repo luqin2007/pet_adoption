@@ -1,9 +1,12 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.backend.entity.PetLocation;
+import com.example.backend.entity.Location;
 import org.apache.ibatis.annotations.Mapper;
 
+/**
+ * 索引：
+ * - (parentType, parentId)
+ */
 @Mapper
-public interface PetLocationMapper extends BaseMapper<PetLocation> {
+public interface PetLocationMapper extends IBaseMapper<Location> {
 }

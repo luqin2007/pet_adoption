@@ -1,8 +1,9 @@
 package com.example.backend.component;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.example.backend.entity.PetInformation;
-import com.example.backend.mapper.PetInformationMapper;
+import com.example.backend.entity.Pet;
+import com.example.backend.mapper.PetMapper;
+import com.example.backend.util.C;
 import com.example.backend.util.FileUtils;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -14,7 +15,6 @@ import org.springframework.util.FileSystemUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -26,7 +26,7 @@ public class FileCleanScheduleTask {
 
     private static final Logger logger = LoggerFactory.getLogger(FileCleanScheduleTask.class);
 
-    private final PetInformationMapper petInformationMapper;
+    private final PetMapper petMapper;
     private final FileUtils fileUtils;
 
     @Scheduled(cron = "0 0 3 * * ?")
@@ -35,9 +35,9 @@ public class FileCleanScheduleTask {
     }
 
     private void cleanPetMediaFiles() {
-        Set<Long> petIds = new HashSet<>(petInformationMapper.selectObjs(Wrappers.<PetInformation>lambdaQuery()
-                .select(PetInformation::getId)));
-        Path pets = Paths.get(fileUtils.getPetsUploadPath());
+        Set<Long> petIds = new HashSet<>(petMapper.selectObjs(Wrappers.<Pet>lambdaQuery()
+                .select(Pet::getId)));
+        Path pets = FileUtils.generateTempPath(C.PARENT_PET, "");
         if (!Files.isDirectory(pets)) return;
 
         cleanDirectory("cleanPetMediaFiles", pets, path -> {

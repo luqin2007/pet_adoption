@@ -1,5 +1,6 @@
 package com.example.backend.dto;
 
+import com.example.backend.entity.MediaInfo;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.NotBlank;
@@ -16,4 +17,10 @@ public class PetMediaRequest {
 
     @JsonSetter(nulls = Nulls.SKIP)
     private Boolean isCover = false;
+
+    public void apply(MediaInfo media) {
+        media.setName(name);
+        media.setDescription(description);
+        media.setIsCover(isCover);
+    }
 }

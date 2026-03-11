@@ -3,7 +3,6 @@ package com.example.backend.controller;
 import com.example.backend.dto.RefreshTokenRequest;
 import com.example.backend.dto.Result;
 import com.example.backend.dto.UserResponse;
-import com.example.backend.entity.User;
 import com.example.backend.service.UserService;
 import com.example.backend.util.JwtUtils;
 import com.example.backend.util.ServiceException;
@@ -21,7 +20,7 @@ import java.util.Optional;
  * 认证相关 API
  * - 刷新认证
  * - 登出
- * TODO 创建对应 Service 层？
+ * TODO 是否需要创建对应 Service 层？
  */
 @Validated
 @RestController
@@ -37,13 +36,11 @@ public class AuthController {
      */
     @PostMapping("/refresh")
     public Result<UserResponse> refresh(@RequestBody RefreshTokenRequest request) {
-        if (!jwtUtils.validateRefreshToken(request.getRefreshToken())) {
-            throw new ServiceException(401, "Token 无效或已过期");
-        }
+        if (!jwtUtils.validateRefreshToken(request.getRefreshToken()))
+            throw ServiceException.token("Token 无效或已过期");
 
         String username = jwtUtils.getUsernameFromToken(request.getRefreshToken());
-        User user = userService.getUser(username);
-        UserResponse response = UserResponse.fromEntity(user);
+        UserResponse response = userService.getUser(username);
         return Result.success(response);
     }
 

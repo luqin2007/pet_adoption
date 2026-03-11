@@ -1,12 +1,16 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.User;
+import com.example.backend.util.AuthUtils;
+import com.example.backend.util.StringUtils;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.Range;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.sql.Date;
 
 /**
  * 用户更新 请求体
@@ -42,7 +46,16 @@ public class UserUpdateRequest {
      * 角色
      * @see User#getRole()
      */
-    @Min(value = 0, message = "错误权限")
-    @Max(value = 31, message = "错误权限")
+    @Range(min = 0, max = 31, message = "错误权限")
     private int role;
+
+    public void apply(User user, PasswordEncoder passwordEncoder) {
+        user.setUsername(username);
+        if (StringUtils.hasText(password))
+            user.setPassword(passwordEncoder.encode(password));
+        user.setEmail(email);
+        user.setRole(AuthUtils.getRoleCode(role));
+        user.setAvatar(avatar);
+        user.setUpdateTime(new Date(System.currentTimeMillis()));
+    }
 }

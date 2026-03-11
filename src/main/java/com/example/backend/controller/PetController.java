@@ -2,16 +2,17 @@ package com.example.backend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
-import com.example.backend.entity.PetInformation;
+import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
-import com.example.backend.service.PetInformationService;
-import com.example.backend.util.PageUtils;
+import com.example.backend.service.PetService;
+import com.example.backend.util.DbUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 流浪宠物信息管理模块
@@ -26,12 +27,9 @@ import java.util.List;
  *   - 获取流浪宠物列表：getPetList ( √ × )
  *   - 获取流浪宠物信息：getPet ( √ × )
  * - 多媒体管理 ( √ × )
- *   - 上传流浪宠物图片：uploadPetImage ( √ × )
- *   - 删除流浪宠物图片：deletePetImage ( √ × )
- *   - 修改流浪宠物图片信息：updatePetImage ( √ × )
- *   - 上传流浪宠物视频：uploadPetVideo ( √ × )
- *   - 删除流浪宠物视频：deletePetVideo ( √ × )
- *   - 修改流浪宠物视频信息：updatePetVideo ( √ × )
+ *   - 上传流浪宠物图片/视频：uploadPetMedia ( √ × )
+ *   - 删除流浪宠物图片/视频：deletePetMedia ( √ × )
+ *   - 修改流浪宠物图片信息/视频：updatePetMedia ( √ × )
  * - 特征信息管理 ( √ × )
  *   - 添加流浪宠物特征：addPetTags ( √ × )
  *   - 删除流浪宠物特征：deletePetTags ( √ × )
@@ -41,16 +39,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/pet")
 @RequiredArgsConstructor
-public class PetInformationController {
+public class PetController {
 
-    private final PetInformationService petInformationService;
+    private final PetService petService;
 
     /**
      * 添加流浪宠物信息
      */
     @PutMapping("/pets")
     public Result<PetInfoAddResponse> addPetInformation(@RequestBody PetInfoAddRequest petInformation) {
-        PetInfoAddResponse response = petInformationService.addPetInformation(petInformation);
+        PetInfoAddResponse response = petService.addInformation(petInformation);
         return Result.success(response);
     }
 
@@ -59,7 +57,7 @@ public class PetInformationController {
      */
     @GetMapping("/pets/{id}")
     public Result<PetInfoResponse> getPetInformation(@PathVariable("id") Long petId) {
-        PetInfoResponse response = petInformationService.getPetInformation(petId);
+        PetInfoResponse response = petService.getInformation(petId);
         return Result.success(response);
     }
 
@@ -68,7 +66,7 @@ public class PetInformationController {
      */
     @PostMapping("/pets/{id}")
     public Result<PetInfoResponse> updatePetInformation(@PathVariable("id") Long petId, @RequestBody PetInfoUpdateRequest request) {
-        PetInfoResponse response = petInformationService.updatePetInformation(petId, request);
+        PetInfoResponse response = petService.updateInformation(petId, request);
         return Result.success(response);
     }
 
@@ -77,7 +75,7 @@ public class PetInformationController {
      */
     @DeleteMapping("/pets/{id}")
     public Result<Void> deletePetInformation(@PathVariable("id") Long petId) {
-        petInformationService.deletePetInformation(petId);
+        petService.deleteInformation(petId);
         return Result.success();
     }
 
@@ -89,62 +87,35 @@ public class PetInformationController {
                                                     @RequestParam(name = "size", defaultValue = "10") Integer size,
                                                     @RequestParam(name = "sort", defaultValue = "id") String sort,
                                                     @RequestParam(name = "order", defaultValue = "ASC") String order) {
-        Page<PetInformation> page = PageUtils.createPage(currentPage, size, sort, order);
-        Page<PetInfoResponse> response = petInformationService.getPetInformationList(page);
+        Page<Pet> page = DbUtils.createPage(currentPage, size, sort, order);
+        Page<PetInfoResponse> response = petService.getInformations(page);
         return Result.success(response);
     }
 
     /**
-     * 上传流浪宠物图片
+     * 上传流浪宠物图片/视频
      */
-    @PostMapping("/pets/{id}/images")
-    public Result<PetMediaResponse> uploadPetImage(@PathVariable("id") Long petId, @RequestBody MultipartFile file) {
-        PetMediaResponse response = petInformationService.uploadPetImage(petId, file);
+    @PostMapping("/pets/{id}/media")
+    public Result<PetMediaResponse> uploadPetMedia(@PathVariable("id") Long petId, @RequestBody MultipartFile file) {
+        PetMediaResponse response = petService.uploadMedia(petId, file);
         return Result.success(response);
     }
 
     /**
-     * 删除流浪宠物图片
+     * 删除流浪宠物图片/视频
      */
-    @DeleteMapping("/pets/{id}/images")
-    public Result<Void> deletePetImage(@PathVariable("id") Long imageId) {
-        petInformationService.deletePetImage(imageId);
+    @DeleteMapping("/pets/{id}/media")
+    public Result<Void> deletePetMedia(@PathVariable("id") Long imageId) {
+        petService.deleteMedia(imageId);
         return Result.success();
     }
 
     /**
-     * 修改流浪宠物图片信息
+     * 修改流浪宠物图片/视频信息
      */
-    @PostMapping("/pets/{id}/images")
-    public Result<PetMediaResponse> updatePetImage(@PathVariable("id") Long petId, @RequestBody PetMediaRequest image) {
-        PetMediaResponse response = petInformationService.updatePetImage(petId, image);
-        return Result.success(response);
-    }
-
-    /**
-     * 上传流浪宠物视频
-     */
-    @PostMapping("/pets/{id}/videos")
-    public Result<PetMediaResponse> uploadPetVideo(@PathVariable("id") Long petId, @RequestBody MultipartFile file) {
-        PetMediaResponse response = petInformationService.uploadPetVideo(petId, file);
-        return Result.success(response);
-    }
-
-    /**
-     * 删除流浪宠物视频
-     */
-    @DeleteMapping("/pets/{id}/videos")
-    public Result<Void> deletePetVideo(@PathVariable("id") Long videoId) {
-        petInformationService.deletePetVideo(videoId);
-        return Result.success();
-    }
-
-    /**
-     * 修改流浪宠物视频描述
-     */
-    @PostMapping("/pets/{id}/videos")
-    public Result<PetMediaResponse> updatePetVideo(@PathVariable("id") Long videoId, @RequestBody PetMediaRequest video) {
-        PetMediaResponse response = petInformationService.updatePetVideo(videoId, video);
+    @PostMapping("/pets/{id}/media")
+    public Result<PetMediaResponse> updatePetMedia(@PathVariable("id") Long petId, @RequestBody PetMediaRequest image) {
+        PetMediaResponse response = petService.updateMedia(petId, image);
         return Result.success(response);
     }
 
@@ -153,7 +124,7 @@ public class PetInformationController {
      */
     @PutMapping("/pets/{id}/tags")
     public Result<List<PetTagResponse>> addPetTags(@PathVariable("id") Long petId, @RequestBody PetTagNamesRequest request) {
-        List<PetTagResponse> response = petInformationService.addPetTags(petId, request);
+        List<PetTagResponse> response = petService.addTags(petId, request);
         return Result.success(response);
     }
 
@@ -161,8 +132,8 @@ public class PetInformationController {
      * 删除流浪宠物特征
      */
     @DeleteMapping("/pets/{id}/tags")
-    public Result<List<PetTagResponse>> deletePetTags(@PathVariable("id") Long petId, @RequestBody PetTagIdsRequest request) {
-        List<PetTagResponse> response = petInformationService.deletePetTags(petId, request);
+    public Result<List<PetTagResponse>> deletePetTags(@PathVariable("id") Long petId, @RequestBody IdsRequest request) {
+        List<PetTagResponse> response = petService.deleteTags(petId, request);
         return Result.success(response);
     }
 
@@ -175,8 +146,8 @@ public class PetInformationController {
                                                                      @RequestParam(name = "size", defaultValue = "10") Integer size,
                                                                      @RequestParam(name = "sort", defaultValue = "id") String sort,
                                                                      @RequestParam(name = "order", defaultValue = "ASC") String order) {
-        Page<PetStatusRecord> page = PageUtils.createPage(currentPage, size, sort, order);
-        Page<PetStatusRecordResponse> response = petInformationService.getPetStatusRecords(petId, page);
+        Page<PetStatusRecord> page = DbUtils.createPage(currentPage, size, sort, order);
+        Page<PetStatusRecordResponse> response = petService.getStatusRecords(petId, page, Set.of());
         return Result.success(response);
     }
 }

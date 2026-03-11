@@ -1,6 +1,6 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.PetInformation;
+import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
 import lombok.Data;
 
@@ -13,7 +13,7 @@ public class PetStatusRecordResponse {
     Long id;
     int from;
     int to;
-    Date time;
+    Date createTime;
     String description;
 
     // 对应宠物信息
@@ -24,15 +24,15 @@ public class PetStatusRecordResponse {
     // 发起用户信息
     UserResponse user;
 
-    public static PetStatusRecordResponse fromEntity(PetStatusRecord record, PetInformation petInformation, String cover, UserResponse user) {
+    public static PetStatusRecordResponse fromEntity(PetStatusRecord record, Pet pet, String cover, UserResponse user) {
         PetStatusRecordResponse response = new PetStatusRecordResponse();
         response.setId(record.getId());
         response.setFrom(record.getFrom());
         response.setTo(record.getTo());
-        response.setTime(record.getTime());
+        response.setCreateTime(record.getCreateTime());
         response.setDescription(record.getDescription());
         response.setPetId(record.getPetId());
-        response.setPetName(petInformation.getName());
+        response.setPetName(pet.getName());
         response.setCover(cover);
         response.setUser(user);
         return response;

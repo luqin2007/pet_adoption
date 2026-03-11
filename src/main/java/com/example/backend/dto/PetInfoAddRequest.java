@@ -1,12 +1,13 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.PetInformation;
-import com.example.backend.entity.PetLocation;
+import com.example.backend.entity.Pet;
+import com.example.backend.util.C;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.sql.Date;
 
@@ -14,7 +15,8 @@ import java.sql.Date;
  * 添加流浪宠物请求体
  */
 @Data
-public class PetInfoAddRequest {
+@EqualsAndHashCode(callSuper = true)
+public class PetInfoAddRequest extends LocationRequest {
 
     /**
      * 宠物名称，可由爱心人士起，或留空
@@ -64,40 +66,19 @@ public class PetInfoAddRequest {
     @JsonSetter(nulls = Nulls.SKIP)
     private String health = "";
 
-    // 地址信息
-    @NotBlank(message = "请输入发现位置")
-    private String province;
-    @NotBlank(message = "请输入发现位置")
-    private String city;
-    @NotBlank(message = "请输入发现位置")
-    private String county;
-    @NotBlank(message = "请输入发现位置")
-    private String detailAddress;
-
-    public PetInformation createInfo() {
-        PetInformation petInformation = new PetInformation();
-        petInformation.setName(getName());
-        petInformation.setMinAge(getMinAge());
-        petInformation.setMaxAge(getMaxAge());
-        petInformation.setSex(getSex());
-        petInformation.setType(getType());
-        petInformation.setBreed(getBreed());
-        petInformation.setHealth(getHealth());
-        petInformation.setDescription(getDescription());
-        petInformation.setStatus(0);
-        petInformation.setCreateTime(new Date(System.currentTimeMillis()));
-        petInformation.setUpdateTime(new Date(System.currentTimeMillis()));
-        return petInformation;
-    }
-
-    public PetLocation createLocation(Long petId) {
-        PetLocation petLocation = new PetLocation();
-        petLocation.setPetId(petId);
-        petLocation.setProvince(getProvince());
-        petLocation.setCity(getCity());
-        petLocation.setCounty(getCounty());
-        petLocation.setDetailAddress(getDetailAddress());
-        petLocation.setDate(new Date(System.currentTimeMillis()));
-        return petLocation;
+    public Pet createInfo() {
+        Pet pet = new Pet();
+        pet.setName(getName());
+        pet.setMinAge(getMinAge());
+        pet.setMaxAge(getMaxAge());
+        pet.setSex(getSex());
+        pet.setType(getType());
+        pet.setBreed(getBreed());
+        pet.setHealth(getHealth());
+        pet.setDescription(getDescription());
+        pet.setStatus(C.PET_STATUS_WAITING);
+        pet.setCreateTime(new Date(System.currentTimeMillis()));
+        pet.setUpdateTime(new Date(System.currentTimeMillis()));
+        return pet;
     }
 }

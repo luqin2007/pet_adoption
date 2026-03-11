@@ -1,6 +1,6 @@
 package com.example.backend.entity;
 
-import static com.example.backend.util.AuthUtils.*;
+import static com.example.backend.util.C.*;
 
 public interface IUserRole {
 

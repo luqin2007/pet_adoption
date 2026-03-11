@@ -2,6 +2,8 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.User;
 import com.example.backend.util.AuthUtils;
+import com.example.backend.util.C;
+import com.example.backend.util.FileUtils;
 import lombok.Data;
 
 /**
@@ -50,8 +52,8 @@ public class UserResponse {
         response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
-        response.setAvatar(user.getAvatar());
-        response.setRole(AuthUtils.getRoleCode(user));
+        response.setAvatar(FileUtils.generateAssetUrl(C.PARENT_USER_AVATAR, user.getId(), user.getAvatar()));
+        response.setRole(AuthUtils.getRoleCode(user.getRole()));
         return response;
     }
 }
