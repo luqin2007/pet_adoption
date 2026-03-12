@@ -13,49 +13,55 @@ public class RescueTaskRecord implements IId {
     /**
      * *主键 long*
      */
-    Long id;
+    private Long id;
 
     /**
      * 救助任务 id
      * *外键:rescueTask(id) 非空 long*
      */
-    Long taskId;
+    private Long taskId;
 
     /**
      * 发起者 id
      * *外键:user(id) 非空 long*
      */
-    Long userId;
+    private Long userId;
+
+    /**
+     * 状态审核者 id
+     * *外键:user(id) 非空 long*
+     */
+    private Long approveId;
 
     /**
      * 记录类型
      * *非空 tinyint*
      */
-    Integer action;
+    private Integer action;
 
     /**
      * 修改前的任务状态
      * *非空 tinyint*
      */
-    Integer statusFrom;
+    private Integer statusFrom;
 
     /**
      * 修改后的任务状态
      * *非空 tinyint*
      */
-    Integer statusTo;
+    private Integer statusTo;
 
     /**
      * 修改原因
      * *非空 text*
      */
-    String reason;
+    private String reason;
 
     /**
      * 创建时间
      * *非空 datetime*
      */
-    Date createTime;
+    private Date createTime;
 
     /**
      * 记录任务变更

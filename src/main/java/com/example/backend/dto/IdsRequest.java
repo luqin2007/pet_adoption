@@ -1,7 +1,6 @@
 package com.example.backend.dto;
 
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 import java.util.List;
@@ -9,6 +8,6 @@ import java.util.List;
 @Data
 public class IdsRequest {
 
-    @JsonSetter(nulls = Nulls.SKIP)
+    @NotEmpty
     private List<Long> ids = List.of();
 }

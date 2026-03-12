@@ -22,9 +22,9 @@ public class PetStatusRecordResponse {
     String cover;
 
     // 发起用户信息
-    UserResponse user;
+    UsernameAndAvatarResponse user;
 
-    public static PetStatusRecordResponse fromEntity(PetStatusRecord record, Pet pet, String cover, UserResponse user) {
+    public static PetStatusRecordResponse fromEntity(PetStatusRecord record, Pet pet, String cover, UsernameAndAvatarResponse user) {
         PetStatusRecordResponse response = new PetStatusRecordResponse();
         response.setId(record.getId());
         response.setFrom(record.getFrom());

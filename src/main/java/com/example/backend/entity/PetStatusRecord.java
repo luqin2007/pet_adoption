@@ -13,42 +13,48 @@ public class PetStatusRecord implements IId {
     /**
      * *主键 long*
      */
-    Long id;
+    private Long id;
 
     /**
      * 流浪宠物 id
      * *外键:pet(id) 非空 long*
      */
-    Long petId;
+    private Long petId;
 
     /**
      * 提交用户 id
      * *外键:user(id) 非空 long*
      */
-    Long userId;
+    private Long userId;
 
     /**
      * 旧状态
      * *非空 tinyint*
      */
-    Integer from;
+    private Integer from;
 
     /**
      * 新状态
      * *非空 tinyint*
      */
-    Integer to;
+    private Integer to;
+
+    /**
+     * 审批状态
+     * *非空 tinyint*
+     */
+    private Integer status;
 
     /**
      * 转移说明
      * *可空 text*
      */
-    String description;
+    private String description;
 
     /**
      * 创建时间
      * *非空 datetime*
      */
-    Date createTime;
+    private Date createTime;
 
 }

@@ -76,7 +76,7 @@ public class Pet implements IId {
     private String description;
 
     /**
-     * 宠物状态
+     * 宠物记录状态
      * *非空 tinyint*
      */
     private Integer status;

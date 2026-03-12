@@ -30,7 +30,8 @@ import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.backend.util.C.*;
+import static com.example.backend.util.C.KEY_PASSWORD_RESET;
+import static com.example.backend.util.C.MESSAGE_RESET_PWD;
 
 @Service
 @RequiredArgsConstructor
@@ -281,15 +282,6 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         }
 
         return response;
-    }
-
-    /**
-     * 根据 id 批量获取用户信息
-     */
-    public Map<Long, UserResponse> getUsersBatchByIds(Set<Long> ids) {
-        if (ids.isEmpty()) return Map.of();
-        return listByIds(ids).stream()
-                .collect(Collectors.toMap(User::getId, UserResponse::fromEntity));
     }
 
     /**

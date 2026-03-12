@@ -11,6 +11,8 @@ import lombok.EqualsAndHashCode;
 
 import java.sql.Date;
 
+import static com.example.backend.util.C.PET_STATUS_WAITING;
+
 /**
  * 添加流浪宠物请求体
  */
@@ -76,7 +78,7 @@ public class PetInfoAddRequest extends LocationRequest {
         pet.setBreed(getBreed());
         pet.setHealth(getHealth());
         pet.setDescription(getDescription());
-        pet.setStatus(C.PET_STATUS_WAITING);
+        pet.setStatus(PET_STATUS_WAITING);
         pet.setCreateTime(new Date(System.currentTimeMillis()));
         pet.setUpdateTime(new Date(System.currentTimeMillis()));
         return pet;

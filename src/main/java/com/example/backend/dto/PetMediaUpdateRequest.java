@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class PetMediaRequest {
+public class PetMediaUpdateRequest {
 
     @NotBlank(message = "名称为空")
     private String name;

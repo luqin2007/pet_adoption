@@ -148,7 +148,7 @@ public class FileUtils implements ApplicationContextAware {
     public static String getNameWithoutExtension(String filename) {
         if (!StringUtils.hasText(filename)) return "";
         int index = filename.lastIndexOf(".");
-        return index == -1 ? filename : filename.substring(0, index);
+        return index < 0 ? filename : filename.substring(0, index);
     }
 
     /**

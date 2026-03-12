@@ -3,8 +3,10 @@ package com.example.backend.dto;
 import com.example.backend.entity.Pet;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-public class PetInfoAddResponse {
+public class PetResponse {
 
     private Long id;
 
@@ -14,12 +16,17 @@ public class PetInfoAddResponse {
     private String name;
 
     /**
-     * 宠物最小年龄
+     * 发现者
+     */
+    private UsernameAndAvatarResponse user;
+
+    /**
+     * 宠物最小年龄 (月)
      */
     private Integer minAge;
 
     /**
-     * 宠物最大年龄
+     * 宠物最大年龄 (月)
      */
     private Integer maxAge;
 
@@ -44,21 +51,40 @@ public class PetInfoAddResponse {
     private String health;
 
     /**
+     * 宠物疫苗情况
+     */
+    private String vaccine;
+
+    /**
      * 宠物描述
      */
     private String description;
 
-    public static PetInfoAddResponse fromEntity(Pet pet) {
-        PetInfoAddResponse response = new PetInfoAddResponse();
+    /**
+     * 宠物特征
+     */
+    private List<PetTagResponse> tags;
+
+    /**
+     * 宠物封面地址
+     */
+    private String cover;
+
+    public static PetResponse fromEntity(Pet pet, UsernameAndAvatarResponse user, List<PetTagResponse> tags, String coverUrl) {
+        PetResponse response = new PetResponse();
         response.setId(pet.getId());
         response.setName(pet.getName());
+        response.setUser(user);
         response.setMinAge(pet.getMinAge());
         response.setMaxAge(pet.getMaxAge());
         response.setSex(pet.getSex());
         response.setType(pet.getType());
         response.setBreed(pet.getBreed());
         response.setHealth(pet.getHealth());
+        response.setVaccine(pet.getVaccine());
         response.setDescription(pet.getDescription());
+        response.setTags(tags);
+        response.setCover(coverUrl);
         return response;
     }
 }

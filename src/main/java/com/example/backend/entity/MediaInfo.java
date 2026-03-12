@@ -1,9 +1,6 @@
 package com.example.backend.entity;
 
-import com.example.backend.util.FileUtils;
 import lombok.Data;
-import org.springframework.data.util.Pair;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 
@@ -71,31 +68,4 @@ public class MediaInfo implements IId {
      * *非空 datetime*
      */
     private Date createTime;
-
-    /**
-     * 从上传文件生成媒体信息
-     *
-     * @param parentId   与之关联的资源 id
-     * @param parentType 关联类型
-     * @param userId     上传用户 id
-     * @param file       上传文件
-     */
-    public static MediaInfo fromUpload(Long parentId, String parentType, Long userId, MultipartFile file) {
-        String oriName = file.getOriginalFilename();
-        String name = FileUtils.getNameWithoutExtension(oriName);
-        Date now = new Date();
-        Pair<String, Integer> pair = FileUtils.getFileExtensionAndType(file);
-
-        MediaInfo mediaInfo = new MediaInfo();
-        mediaInfo.setParentId(parentId);
-        mediaInfo.setParentType(parentType);
-        mediaInfo.setUserId(userId);
-        mediaInfo.setName(name);
-        mediaInfo.setDescription(null);
-        mediaInfo.setIsCover(false);
-        mediaInfo.setFilename(FileUtils.generateFilename(name, now, pair.getFirst()));
-        mediaInfo.setType(pair.getSecond());
-        mediaInfo.setCreateTime(now);
-        return mediaInfo;
-    }
 }
