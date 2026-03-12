@@ -28,6 +28,9 @@ public class C {
     public static final int MASK_DONOR = 0x4;
     public static final int MASK_VETERINARIAN = 0x8;
     public static final int MASK_ADMIN = 0x10;
+    public static final int
+            ROLE_MASK_MIN = 0,
+            ROLE_MASK_MAX = MASK_VOLUNTEER | MASK_WORKER | MASK_DONOR | MASK_VETERINARIAN | MASK_ADMIN;
 
     /*
     宠物状态
@@ -48,6 +51,7 @@ public class C {
     public static final int PET_STATUS_HEALTH = 6;
     // 已领养
     public static final int PET_STATUS_ADOPTED = 7;
+    public static final int PET_STATUS_MIN = PET_STATUS_WAITING, PET_STATUS_MAX = PET_STATUS_ADOPTED;
 
     /*
     关联实体类型 parentType
@@ -75,6 +79,9 @@ public class C {
     public static final Integer RESCUE_TASK_STATUS_COMPLETED = 4;
     // 已废弃
     public static final Integer RESCUE_TASK_STATUS_DISCARDED = 5;
+    public static final int
+            RESCUE_TASK_STATUS_MIN = RESCUE_TASK_STATUS_CREATED,
+            RESCUE_TASK_STATUS_MAX = RESCUE_TASK_STATUS_DISCARDED;
 
     /*
     救助任务类型
@@ -85,6 +92,9 @@ public class C {
     public static final Integer RESCUE_TASK_TYPE_MEDICAL = 1;
     // 其他
     public static final Integer RESCUE_TASK_TYPE_OTHER = 2;
+    public static final int
+            RESCUE_TASK_TYPE_MIN = RESCUE_TASK_TYPE_FIND,
+            RESCUE_TASK_TYPE_MAX = RESCUE_TASK_TYPE_OTHER;
 
     /*
     救助任务变更类型
@@ -97,8 +107,6 @@ public class C {
     public static final Integer RESCUE_TASK_ACTION_STATUS = 3;
     // 产生子任务
     public static final Integer RESCUE_TASK_ACTION_FORK = 4;
-    // 产生建议
-    public static final Integer RESCUE_TASK_ACTION_SUGGEST = 5;
 
     /*
     Redis 键模板

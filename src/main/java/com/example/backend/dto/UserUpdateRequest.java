@@ -12,6 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.sql.Date;
 
+import static com.example.backend.util.C.ROLE_MASK_MAX;
+import static com.example.backend.util.C.ROLE_MASK_MIN;
+
 /**
  * 用户更新 请求体
  */
@@ -44,9 +47,8 @@ public class UserUpdateRequest {
 
     /**
      * 角色
-     * @see User#getRole()
      */
-    @Range(min = 0, max = 31, message = "错误权限")
+    @Range(min = ROLE_MASK_MIN, max = ROLE_MASK_MAX, message = "错误权限")
     private int role;
 
     public void apply(User user, PasswordEncoder passwordEncoder) {

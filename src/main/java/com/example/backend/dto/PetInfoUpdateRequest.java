@@ -2,6 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
+import com.example.backend.util.C;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.Min;
@@ -70,9 +71,8 @@ public class PetInfoUpdateRequest {
 
     /**
      * 宠物状态
-     * @see Pet#getStatus()
      */
-    @Range(min = 0, max = 7, message = "错误状态")
+    @Range(min = C.PET_STATUS_MIN, max = C.PET_STATUS_MAX, message = "错误状态")
     private int status;
 
     /**

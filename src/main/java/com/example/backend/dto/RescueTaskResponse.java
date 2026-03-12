@@ -1,12 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.RescueTask;
-import com.example.backend.entity.RescueTaskAssign;
-import com.example.backend.entity.RescueTaskSuggestion;
-import com.example.backend.entity.RescueTaskRecord;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 public class RescueTaskResponse {

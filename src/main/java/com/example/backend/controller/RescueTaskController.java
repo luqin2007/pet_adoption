@@ -22,7 +22,6 @@ import java.util.List;
  *   - 媒体删除: deleteRescueMediaWhenAdd ( √ × )
  *   - 信息修改: updateRescueTask ( √ × )
  *   - 已上传媒体删除: deleteRescueMediaWhenUpdate ( √ × )
- *   - 信息建议 ( × × )
  *   - 信息删除: deleteRescueTask ( √ × )
  * - 任务分配功能 ( √ × )
  *   - 任务查询: getRescueTask/getRescueTasks ( √ × )
@@ -100,10 +99,10 @@ public class RescueTaskController {
     }
 
     /**
-     * 上报任务结果
+     * 修改任务状态
      */
     @PostMapping("/status/{id}")
-    public Result<Void> updateRescueTaskRecord(@PathVariable("id") Long taskId, RescueTaskRecordRequest request) {
+    public Result<Void> updateRescueTaskStatus(@PathVariable("id") Long taskId, RescueTaskRecordRequest request) {
         rescueTaskService.updateRescueTaskRecord(taskId, request);
         return Result.success();
     }
