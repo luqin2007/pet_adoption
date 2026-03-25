@@ -58,7 +58,7 @@ public class FirstRegistrationItemResponse {
      * User: id, username, avatar<br>
      * <br>
      * pets: FirstRegistration.petId<br>
-     * users: FirstRegistration.userId
+     * users: FirstRegistration.registrarId
      */
     public static FirstRegistrationItemResponse createBatch(FirstRegistration firstRegistration,
                                                             Map<Long, Pet> pets, Map<Long, User> users) {
