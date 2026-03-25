@@ -9,4 +9,9 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface PetLocationMapper extends IBaseMapper<Location> {
+
+    @Override
+    default String getMissingMessage() {
+        return "宠物位置信息不存在";
+    }
 }

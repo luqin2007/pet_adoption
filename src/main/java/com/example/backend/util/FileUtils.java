@@ -1,7 +1,6 @@
 package com.example.backend.util;
 
-import com.example.backend.dto.TempMediaInfo;
-import lombok.RequiredArgsConstructor;
+import com.example.backend.entity.IFile;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import static com.example.backend.util.C.MEDIA_TYPE_IMAGE;
 import static com.example.backend.util.C.MEDIA_TYPE_VIDEO;
 
-@RequiredArgsConstructor
+@Component
 public class FileUtils implements ApplicationContextAware {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -71,7 +71,7 @@ public class FileUtils implements ApplicationContextAware {
      * @param parentId   关联实体 id
      * @param parentType 关联实体类型
      */
-    public static boolean transferTempFile(TempMediaInfo fileInfo, String uuid, Long parentId, String parentType) {
+    public static boolean transferTempFile(IFile fileInfo, String uuid, Long parentId, String parentType) {
         Path filePath = generateFilePath(parentType, parentId, fileInfo.getFilename());
         Path tempPath = generateTempPath(parentType, uuid, fileInfo.getFilename());
         if (Files.isRegularFile(tempPath) && !Files.exists(filePath)) {
@@ -152,6 +152,16 @@ public class FileUtils implements ApplicationContextAware {
     }
 
     /**
+     * 获取文件名和扩展名
+     */
+    public static Pair<String, String> getNameAndExtension(String filename) {
+        if (!StringUtils.hasText(filename)) return Pair.of("", "");
+        int index = filename.lastIndexOf(".");
+        return index < 0 ? Pair.of(filename, "")
+                : Pair.of(filename.substring(0, index), filename.substring(index + 1));
+    }
+
+    /**
      * 生成上传文件名，日期(yyyyMMddHHmmss) + 名称 + 扩展名
      *
      * @param name       文件名。可空
@@ -160,9 +170,13 @@ public class FileUtils implements ApplicationContextAware {
      */
     public static String generateFilename(String name, Date createTime, String extension) {
         String prefix = FORMATTER.format(createTime.toInstant());
-        return StringUtils.hasText(name)
-                ? prefix + "_" + name + "." + extension
-                : prefix + "." + extension;
+        if (StringUtils.hasText(extension)) {
+            return StringUtils.hasText(name)
+                    ? prefix + "_" + name + "." + extension
+                    : prefix + "." + extension;
+        } else {
+            return StringUtils.hasText(name) ? prefix + "_" + name : prefix;
+        }
     }
 
     /**

@@ -1,7 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.User;
-import com.example.backend.util.AuthUtils;
+import com.example.backend.util.Bits;
 import com.example.backend.util.StringUtils;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -12,8 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.sql.Date;
 
-import static com.example.backend.util.C.ROLE_MASK_MAX;
-import static com.example.backend.util.C.ROLE_MASK_MIN;
+import static com.example.backend.util.C.*;
 
 /**
  * 用户更新 请求体
@@ -48,15 +47,15 @@ public class UserUpdateRequest {
     /**
      * 角色
      */
-    @Range(min = ROLE_MASK_MIN, max = ROLE_MASK_MAX, message = "错误权限")
+    @Range(min = USER_ROLE_MASK_MIN, max = USER_ROLE_MASK_MAX, message = "错误权限")
     private int role;
 
-    public void apply(User user, PasswordEncoder passwordEncoder) {
+    public void applyTo(User user, PasswordEncoder passwordEncoder) {
         user.setUsername(username);
         if (StringUtils.hasText(password))
             user.setPassword(passwordEncoder.encode(password));
         user.setEmail(email);
-        user.setRole(AuthUtils.getRoleCode(role));
+        user.setRole(Bits.rezip(USER_ROLE_REZIP_MAP, role));
         user.setAvatar(avatar);
         user.setUpdateTime(new Date(System.currentTimeMillis()));
     }

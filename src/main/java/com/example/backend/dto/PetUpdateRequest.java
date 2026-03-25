@@ -66,7 +66,7 @@ public class PetUpdateRequest {
     @JsonSetter(nulls = Nulls.SKIP)
     private String description = "";
 
-    public void apply(Pet info) {
+    public void applyTo(Pet info) {
         info.setName(name);
         info.setMinAge(minAge);
         info.setMaxAge(maxAge);

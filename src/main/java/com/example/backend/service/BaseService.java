@@ -1,29 +1,39 @@
 package com.example.backend.service;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.IId;
+import com.example.backend.entity.User;
 import com.example.backend.mapper.IBaseMapper;
+import com.example.backend.util.CustomUserDetails;
+import com.example.backend.util.RedisHelper;
 import com.example.backend.util.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.ObjectUtils;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 
 public class BaseService<M extends IBaseMapper<T>, T extends IId> extends ServiceImpl<M, T> {
 
-    protected StringRedisTemplate redisTemplateString;
-    protected RedisTemplate<String, Object> redisTemplateObject;
+    protected RedisHelper redisHelper;
     protected ApplicationEventPublisher eventPublisher;
 
     // 权限校验
+
+    /**
+     * 获取当前登录用户
+     */
+    public static User getLoginUser() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .map(auth -> (CustomUserDetails) auth.getPrincipal())
+                .map(CustomUserDetails::getUser)
+                .orElseThrow(() -> ServiceException.auth("请先登录"));
+    }
 
     /**
      * 权限校验
@@ -43,135 +53,96 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends Servic
      * 确保对象相同
      */
     protected void requireEqual(Object obj1, Object obj2, String message) {
-        if (obj1 != null && !obj1.equals(obj2))
+        if (obj1 != null && !obj1.equals(obj2)) {
             throw ServiceException.invalidate(message);
+        }
     }
 
     /**
      * 确保对象不同
      */
     protected void requireNotEqual(Object obj1, Object obj2, String message) {
-        if (!Objects.equals(obj1, obj2))
+        if (!Objects.equals(obj1, obj2)) {
             throw ServiceException.invalidate(message);
+        }
     }
 
-    /**
-     * 校验 Redis 键是否存在
-     */
-    protected void requireRedisString(String key, String message) {
-        if (!redisTemplateString.hasKey(key))
-            throw ServiceException.invalidate(message);
+    // --- mapper
+
+    @SafeVarargs
+    public final T selectById(Long id, SFunction<T, ?>... columns) {
+        return baseMapper.selectById(id, columns);
     }
 
-    /**
-     * 确保数据存在
-     */
-    protected T requireById(Long id, String message) {
-        return getBaseMapper().requireById(id, message);
+    public <V> void updateById(Long id, SFunction<T, V> column, V value) {
+        baseMapper.updateById(id, column, value);
     }
 
-    /**
-     * 确保数据存在
-     */
-    protected <V> T requireOne(SFunction<T, V> field, V value, String message) {
-        return getBaseMapper().requireOne(field, value, message);
+    public T requireById(Long id) {
+        return baseMapper.requireById(id);
     }
 
-    /**
-     * 确保数据存在
-     */
-    protected T requireOne(Wrapper<T> queryWrapper, String message) {
-        return getBaseMapper().requireOne(queryWrapper, message);
+    @SafeVarargs
+    public final T requireById(Long id, SFunction<T, ?>... columns) {
+        return baseMapper.requireById(id, columns);
     }
 
-    // Redis
-
-    /**
-     * 向 Redis 中添加字符串
-     */
-    protected void putToRedis(String key, String value) {
-        redisTemplateString.opsForValue().set(key, value);
+    public void requireExist(Long id) {
+        baseMapper.requireExist(id);
     }
 
-    /**
-     * 向 Redis 中添加字符串
-     *
-     * @param timeoutMinutes 超时时间（分钟）
-     */
-    protected void putToRedis(String key, String value, long timeoutMinutes) {
-        redisTemplateString.opsForValue().set(key, value, Duration.ofMinutes(timeoutMinutes));
+    public void requireExist(Wrapper<T> queryWrapper) {
+        baseMapper.requireExist(queryWrapper);
     }
 
-    /**
-     * 从 Redis 中获取字符串
-     */
-    protected String getStringFromRedis(String key) {
-        return redisTemplateString.opsForValue().get(key);
+    public <V> T requireOne(SFunction<T, V> field, V value) {
+        return baseMapper.requireOne(field, value);
     }
 
-    /**
-     * 从 Redis 中删除字符串
-     */
-    protected void deleteStringFromRedis(String... keys) {
-        if (keys.length == 1)
-            redisTemplateString.delete(keys[0]);
-        else if (keys.length > 1)
-            redisTemplateString.delete(List.of(keys));
+    public T requireOne(Wrapper<T> queryWrapper) {
+        return baseMapper.requireOne(queryWrapper);
     }
 
-    /**
-     * 从 Redis 中获取并删除字符串
-     */
-    protected String getAndDeleteStringFromRedis(String key) {
-        return redisTemplateString.opsForValue().getAndDelete(key);
+    public List<T> listById(Set<Long> ids) {
+        return baseMapper.selectList(ids);
     }
 
-    /**
-     * 从 Redis 中获取并 +1
-     */
-    protected Long incrementFromRedis(String key) {
-        return redisTemplateObject.opsForValue().increment(key);
+    @SafeVarargs
+    public final List<T> listById(Set<Long> ids, SFunction<T, ?>... columns) {
+        return baseMapper.selectList(ids, columns);
     }
 
-    /**
-     * 向 Redis 的 Hash 中添加对象
-     */
-    protected void putToRedisHash(String key, String hashKey, Object value) {
-        redisTemplateObject.opsForHash().put(key, hashKey, value);
+    @SafeVarargs
+    public final <V> List<T> list(LambdaQueryWrapper<T> wrapper, SFunction<T, ?>... columns) {
+        return baseMapper.selectList(wrapper, columns);
     }
 
-    /**
-     * 从 Redis 的 Hash 中获取并删除对象
-     */
-    protected <V> List<V> getAndDeleteFromRedisHash(String key, String hashKey) {
-        return (List<V>) redisTemplateObject.opsForHash().getAndDelete(key, Set.of(hashKey));
+    public <R> Map<Long, R> group(Wrapper<T> wrapper, Function<T, R> converter) {
+        return baseMapper.group(wrapper, converter);
     }
 
-    /**
-     * 从 Redis 的 Hash 中获取所有对象
-     *
-     * @param type 仅用于确认数据类型
-     */
-    protected <V> List<V> getAllFromRedisHash(String key, Class<V> type) {
-        return (List<V>) redisTemplateObject.opsForHash().values(key);
+    public Map<Long, T> group(Wrapper<T> wrapper) {
+        return baseMapper.group(wrapper);
     }
 
-    /**
-     * 从 Redis 中删除对象
-     */
-    protected void deleteObjectFromRedis(String... keys) {
-        if (keys.length == 1)
-            redisTemplateObject.delete(keys[0]);
-        else if (keys.length > 1)
-            redisTemplateObject.delete(List.of(keys));
+    public Map<Long, T> groupById(Set<Long> ids) {
+        return baseMapper.groupById(ids);
     }
+
+    @SafeVarargs
+    public final Map<Long, T> groupById(Set<Long> ids, SFunction<T, ?>... columns) {
+        return baseMapper.groupById(ids, columns);
+    }
+
+    public <R> Map<Long, List<R>> groupList(Wrapper<T> wrapper, SFunction<T, Long> keyColumn, Function<T, R> converter) {
+        return baseMapper.groupList(wrapper, keyColumn, converter);
+    }
+
+    // ---
 
     @Autowired
-    public void setObjects(StringRedisTemplate redisTemplateString,
-                           RedisTemplate<String, Object> redisTemplateObject,
-                           ApplicationEventPublisher eventPublisher) {
-        this.redisTemplateString = redisTemplateString;
-        this.redisTemplateObject = redisTemplateObject;
+    public void setObjects(RedisHelper redisHelper, ApplicationEventPublisher eventPublisher) {
+        this.redisHelper = redisHelper;
         this.eventPublisher = eventPublisher;
     }
 }

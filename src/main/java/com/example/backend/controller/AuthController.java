@@ -4,7 +4,7 @@ import com.example.backend.dto.RefreshTokenRequest;
 import com.example.backend.dto.Result;
 import com.example.backend.dto.UserResponse;
 import com.example.backend.service.UserService;
-import com.example.backend.util.JwtUtils;
+import com.example.backend.util.JwtHelper;
 import com.example.backend.util.ServiceException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final JwtUtils jwtUtils;
+    private final JwtHelper jwtHelper;
     private final UserService userService;
 
     /**
@@ -36,10 +36,10 @@ public class AuthController {
      */
     @PostMapping("/refresh")
     public Result<UserResponse> refresh(@RequestBody RefreshTokenRequest request) {
-        if (!jwtUtils.validateRefreshToken(request.getRefreshToken()))
+        if (!jwtHelper.validateRefreshToken(request.getRefreshToken()))
             throw ServiceException.token("Token 无效或已过期");
 
-        String username = jwtUtils.getUsernameFromToken(request.getRefreshToken());
+        String username = jwtHelper.getUsernameFromToken(request.getRefreshToken());
         UserResponse response = userService.getUser(username);
         return Result.success(response);
     }
@@ -50,14 +50,14 @@ public class AuthController {
     @PostMapping("/logout")
     public Result<Void> logout(@RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
         // 注销访问令牌
-        jwtUtils.getTokenFromRequest(httpRequest)
-                .filter(jwtUtils::validateAccessToken)
-                .ifPresent(jwtUtils::invalidateAccessToken);
+        jwtHelper.getTokenFromRequest(httpRequest)
+                .filter(jwtHelper::validateAccessToken)
+                .ifPresent(jwtHelper::invalidateAccessToken);
         // 注销刷新令牌
         Optional.ofNullable(request)
                 .map(RefreshTokenRequest::getRefreshToken)
-                .filter(jwtUtils::validateRefreshToken)
-                .ifPresent(jwtUtils::invalidateRefreshToken);
+                .filter(jwtHelper::validateRefreshToken)
+                .ifPresent(jwtHelper::invalidateRefreshToken);
         return Result.success();
     }
 }

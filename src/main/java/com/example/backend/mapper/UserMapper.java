@@ -40,42 +40,6 @@ public interface UserMapper extends IBaseMapper<User> {
     }
 
     /**
-     * 获取用于显示的用户数据
-     * - 查询：[User(id, username, avatar)]
-     *
-     * @param userId 用户 id
-     */
-    default LambdaQueryWrapper<User> queryUsernameAndAvatar(Long userId) {
-        return lambdaQuery()
-                .eq(User::getId, userId)
-                .select(User::getId, User::getUsername, User::getAvatar);
-    }
-
-    /**
-     * 批量获取用于显示的用户数据
-     * - 查询：[User(id, username, avatar)]
-     *
-     * @param userIds 用户 id
-     */
-    default LambdaQueryWrapper<User> queryUsernameAndAvatar(Collection<Long> userIds) {
-        return lambdaQuery()
-                .in(User::getId, userIds)
-                .select(User::getId, User::getUsername, User::getAvatar);
-    }
-
-    /**
-     * 批量获取用户邮件地址
-     * - 查询：[User(id, email)]
-     *
-     * @param userIds 用户 id
-     */
-    default LambdaQueryWrapper<User> queryIdAndEmails(Collection<Long> userIds) {
-        return lambdaQuery()
-                .in(User::getId, userIds)
-                .select(User::getId, User::getEmail);
-    }
-
-    /**
      * 根据角色查询用户数据，需要位运算
      * - 查询：[User]
      *
@@ -88,5 +52,10 @@ public interface UserMapper extends IBaseMapper<User> {
                 .select(column)
                 .apply("role & {0} = {0}", role);
         return selectObjs(wrapper);
+    }
+
+    @Override
+    default String getMissingMessage() {
+        return "用户不存在";
     }
 }

@@ -1,7 +1,7 @@
 package com.example.backend.component;
 
 import com.example.backend.service.UserService;
-import com.example.backend.util.JwtUtils;
+import com.example.backend.util.JwtHelper;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,16 +22,16 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtUtils jwtUtils;
+    private final JwtHelper jwtHelper;
     private final UserService userService;
 
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request,
                                     @Nonnull HttpServletResponse response,
                                     @Nonnull FilterChain filterChain) throws ServletException, IOException {
-        jwtUtils.getTokenFromRequest(request)
+        jwtHelper.getTokenFromRequest(request)
                 // 校验 token
-                .filter(jwtUtils::validateAccessToken)
+                .filter(jwtHelper::validateAccessToken)
                 // 设置认证信息
                 .ifPresent(token -> setAuthentication(token, request));
         filterChain.doFilter(request, response);
@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void setAuthentication(String token, HttpServletRequest request) {
         SecurityContext context = SecurityContextHolder.getContext();
         if (context.getAuthentication() == null) {
-            String username = jwtUtils.getUsernameFromToken(token);
+            String username = jwtHelper.getUsernameFromToken(token);
             UserDetails userDetails = userService.loadUserByUsername(username);
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

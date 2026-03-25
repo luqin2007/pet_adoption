@@ -2,9 +2,7 @@ package com.example.backend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
-import com.example.backend.entity.User;
 import com.example.backend.service.UserService;
-import com.example.backend.util.DbUtils;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -33,7 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Validated
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -146,12 +144,8 @@ public class UserController {
      * 获取用户列表
      */
     @GetMapping("/users")
-    public Result<Page<UserResponse>> getUserList(@RequestParam(defaultValue = "1") Integer current,
-                                                  @RequestParam(defaultValue = "10") Integer size,
-                                                  @RequestParam(defaultValue = "id") String sort,
-                                                  @RequestParam(defaultValue = "ASC") String order) {
-        Page<User> page = DbUtils.createPage(current, size, sort, order);
-        Page<UserResponse> response = userService.getAllUsers(page);
+    public Result<Page<UserResponse>> getUserList(PageRequest pageRequest) {
+        Page<UserResponse> response = userService.getAllUsers(pageRequest);
         return Result.success(response);
     }
 

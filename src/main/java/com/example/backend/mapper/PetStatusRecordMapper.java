@@ -27,4 +27,9 @@ public interface PetStatusRecordMapper extends IBaseMapper<PetStatusRecord> {
                 .eq(PetStatusRecord::getPetId, petId);
         return ObjectUtils.isEmpty(userIds) ? wrapper : wrapper.in(PetStatusRecord::getUserId, userIds);
     }
+
+    @Override
+    default String getMissingMessage() {
+        return "状态记录不存在";
+    }
 }

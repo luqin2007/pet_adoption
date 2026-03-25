@@ -42,9 +42,14 @@ public interface PetTagMapper extends IBaseMapper<PetTag> {
      * @param petId 流浪宠物 id
      * @param ids   Tag id
      */
-    default LambdaQueryWrapper<PetTag> deleteByIdsFilterByPet(Long petId, Collection<Long> ids) {
+    default LambdaQueryWrapper<PetTag> deleteByPetAndIds(Long petId, Collection<Long> ids) {
         return lambdaQuery()
                 .eq(PetTag::getPetId, petId)
                 .in(PetTag::getId, ids);
+    }
+
+    @Override
+    default String getMissingMessage() {
+        return "标签信息不存在";
     }
 }

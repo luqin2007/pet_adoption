@@ -1,90 +1,83 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Pet;
+import com.example.backend.entity.User;
+import com.example.backend.util.FileUtils;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
+
+import static com.example.backend.util.C.PARENT_USER;
 
 @Data
+@AllArgsConstructor
 public class PetResponse {
 
     private Long id;
-
-    /**
-     * 宠物名称
-     */
     private String name;
-
-    /**
-     * 发现者
-     */
-    private UsernameAndAvatarResponse user;
-
-    /**
-     * 宠物最小年龄 (月)
-     */
-    private Integer minAge;
-
-    /**
-     * 宠物最大年龄 (月)
-     */
-    private Integer maxAge;
-
-    /**
-     * 宠物性别
-     */
+    private Integer age;
     private String sex;
-
-    /**
-     * 宠物类型
-     */
     private String type;
-
-    /**
-     * 宠物品种
-     */
     private String breed;
-
-    /**
-     * 宠物健康情况
-     */
     private String health;
-
-    /**
-     * 宠物疫苗情况
-     */
-    private String vaccine;
-
-    /**
-     * 宠物描述
-     */
     private String description;
-
-    /**
-     * 宠物特征
-     */
     private List<PetTagResponse> tags;
+    private String cover;
+    private List<VaccineResponse> vaccines;
+    private List<DewormResponse> deworms;
+
+    // discover
+    private Long discoverId;
+    private String username;
+    private String avatar;
 
     /**
-     * 宠物封面地址
+     * User: id, username, avatar
      */
-    private String cover;
+    public static PetResponse create(Pet pet, String coverUrl,
+                                     User discover,
+                                     List<PetTagResponse> tags,
+                                     List<VaccineResponse> vaccines,
+                                     List<DewormResponse> deworms) {
+        return new PetResponse(
+                pet.getId(),
+                pet.getName(),
+                pet.getAge(),
+                pet.getSex(),
+                pet.getType(),
+                pet.getBreed(),
+                pet.getHealth(),
+                pet.getDescription(),
+                tags,
+                coverUrl,
+                vaccines,
+                deworms,
+                discover.getId(),
+                discover.getUsername(),
+                FileUtils.generateAssetUrl(PARENT_USER, discover.getId(), discover.getAvatar()));
+    }
 
-    public static PetResponse fromEntity(Pet pet, UsernameAndAvatarResponse user, List<PetTagResponse> tags, String coverUrl) {
-        PetResponse response = new PetResponse();
-        response.setId(pet.getId());
-        response.setName(pet.getName());
-        response.setUser(user);
-        response.setMinAge(pet.getMinAge());
-        response.setMaxAge(pet.getMaxAge());
-        response.setSex(pet.getSex());
-        response.setType(pet.getType());
-        response.setBreed(pet.getBreed());
-        response.setHealth(pet.getHealth());
-        response.setVaccine(pet.getVaccine());
-        response.setDescription(pet.getDescription());
-        response.setTags(tags);
-        response.setCover(coverUrl);
-        return response;
+    /**
+     * User: id, username, avatar<br>
+     * <br>
+     * users: pet.discoverId<br>
+     * tags: pet.id<br>
+     * covers: pet.id<br>
+     * vaccines: pet.id<br>
+     * deworms: pet.id
+     */
+    public static PetResponse createBatch(Pet pet,
+                                          Map<Long, User> users,
+                                          Map<Long, List<PetTagResponse>> tags,
+                                          Map<Long, String> covers,
+                                          Map<Long, List<VaccineResponse>> vaccines,
+                                          Map<Long, List<DewormResponse>> deworms) {
+        return create(pet, covers.get(pet.getId()),
+                users.get(pet.getDiscoverId()),
+                tags.get(pet.getId()),
+                vaccines.get(pet.getId()),
+                deworms.get(pet.getId()));
     }
 }

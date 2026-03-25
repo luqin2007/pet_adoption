@@ -1,6 +1,6 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.MediaInfo;
+import com.example.backend.entity.MediaFile;
 import com.example.backend.util.FileUtils;
 import com.example.backend.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -30,29 +30,20 @@ public class PetMediaUploadRequest {
     @NotEmpty(message = "文件为空")
     private MultipartFile file;
 
-    /**
-     * 从上传文件生成媒体信息
-     *
-     * @param parentId   与之关联的资源 id
-     * @param userId     上传用户 id
-     * @param file       上传文件
-     */
-    public MediaInfo createMedia(Long parentId, Long userId, MultipartFile file) {
+    public MediaFile createMedia(Long parentId, Long userId, MultipartFile file) {
         String oriName = file.getOriginalFilename();
         String fileName = FileUtils.getNameWithoutExtension(oriName);
         Pair<String, Integer> extAndType = FileUtils.getFileExtensionAndType(file);
-
         Date now = new Date();
-        MediaInfo mediaInfo = new MediaInfo();
-        mediaInfo.setParentId(parentId);
-        mediaInfo.setParentType(PARENT_PET);
-        mediaInfo.setUserId(userId);
-        mediaInfo.setName(StringUtils.hasText(name) ? name : fileName);
-        mediaInfo.setDescription(description);
-        mediaInfo.setIsCover(false);
-        mediaInfo.setFilename(FileUtils.generateFilename(fileName, now, extAndType.getFirst()));
-        mediaInfo.setType(extAndType.getSecond());
-        mediaInfo.setCreateTime(now);
-        return mediaInfo;
+        return new MediaFile(null,
+                parentId,
+                PARENT_PET,
+                userId,
+                StringUtils.hasText(name) ? name : fileName,
+                description,
+                isCover,
+                FileUtils.generateFilename(fileName, now, extAndType.getFirst()),
+                extAndType.getSecond(),
+                now);
     }
 }

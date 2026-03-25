@@ -41,6 +41,11 @@ public class UserRegisterRequest {
     private String avatar;
 
     /**
+     * 联系方式
+     */
+    private String phone;
+
+    /**
      * 验证码
      */
     @NotBlank(message = "请输入验证码")
@@ -49,14 +54,14 @@ public class UserRegisterRequest {
 
     public User createUser(PasswordEncoder passwordEncoder) {
         Date now = new Date(System.currentTimeMillis());
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setEmail(email);
-        user.setRole(0);
-        user.setAvatar(avatar);
-        user.setCreateTime(now);
-        user.setUpdateTime(now);
-        return user;
+        return new User(null,
+                username,
+                passwordEncoder.encode(password),
+                email,
+                0,
+                avatar,
+                phone,
+                now,
+                now);
     }
 }

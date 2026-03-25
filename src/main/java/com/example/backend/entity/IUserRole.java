@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.util.Bits;
+
 import static com.example.backend.util.C.*;
 
 public interface IUserRole {
@@ -9,27 +11,22 @@ public interface IUserRole {
     void setRole(Integer role);
 
     default boolean isVolunteer() {
-        Integer role = getRole();
-        return role != null && (role & MASK_VOLUNTEER) == MASK_VOLUNTEER;
+        return Bits.match(getRole(), USER_ROLE_MASK_VOLUNTEER);
     }
 
     default boolean isWorker() {
-        Integer role = getRole();
-        return role != null && (role & MASK_WORKER) == MASK_WORKER;
+        return Bits.match(getRole(), USER_ROLE_MASK_WORKER);
     }
 
     default boolean isDonor() {
-        Integer role = getRole();
-        return role != null && (role & MASK_DONOR) == MASK_DONOR;
+        return Bits.match(getRole(), USER_ROLE_MASK_DONOR);
     }
 
-    default boolean isVeterinarian() {
-        Integer role = getRole();
-        return role != null && (role & MASK_VETERINARIAN) == MASK_VETERINARIAN;
+    default boolean isDoctor() {
+        return Bits.match(getRole(), USER_ROLE_MASK_DOCTOR);
     }
 
     default boolean isAdmin() {
-        Integer role = getRole();
-        return role != null && (role & MASK_ADMIN) == MASK_ADMIN;
+        return Bits.match(getRole(), USER_ROLE_MASK_ADMIN);
     }
 }

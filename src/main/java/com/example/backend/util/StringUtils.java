@@ -1,10 +1,7 @@
 package com.example.backend.util;
 
-import org.springframework.data.redis.core.StringRedisTemplate;
-
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Function;
 
 public class StringUtils {
 
@@ -33,15 +30,14 @@ public class StringUtils {
         return sb.toString();
     }
 
-    public static String randomUUID(String keyTemplate, StringRedisTemplate redisTemplate, int maxTimes) {
-        String randomId, redisKey;
+    public static String randomUUID(String keyTemplate, RedisHelper redisHelper, int maxTimes) {
+        String randomId;
         int retryTimes = 0;
         do {
             randomId = UUID.randomUUID().toString();
-            redisKey = String.format(keyTemplate, randomId);
             if (retryTimes++ > maxTimes)
                 throw ServiceException.unavailable("请稍后重试");
-        } while (redisTemplate.hasKey(redisKey));
+        } while (redisHelper.hasString(keyTemplate, randomId));
         return randomId;
     }
 
@@ -52,5 +48,9 @@ public class StringUtils {
      */
     public static boolean hasText(String str) {
         return org.springframework.util.StringUtils.hasText(str);
+    }
+
+    public static String notNull(String str) {
+        return str == null ? "" : str;
     }
 }

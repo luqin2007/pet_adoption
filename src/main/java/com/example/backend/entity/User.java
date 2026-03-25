@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 
@@ -8,10 +10,12 @@ import java.sql.Date;
  * 用户账户信息
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class User implements IUserRole, IId {
 
     /**
-     * *主键 long*
+     * *主键 int*
      */
     private Long id;
 
@@ -41,9 +45,15 @@ public class User implements IUserRole, IId {
 
     /**
      * 头像
-     * *可空 varchar(255)*
+     * *varchar(255)*
      */
     private String avatar;
+
+    /**
+     * 联系方式
+     * *varchar(50)*
+     */
+    private String phone;
 
     /**
      * 创建时间

@@ -1,15 +1,21 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.User;
-import com.example.backend.util.AuthUtils;
+import com.example.backend.util.Bits;
 import com.example.backend.util.C;
 import com.example.backend.util.FileUtils;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import static com.example.backend.util.C.USER_ROLE_REZIP_MAP;
 
 /**
  * 用户响应，返回用户信息
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserResponse {
 
     /**
@@ -38,6 +44,11 @@ public class UserResponse {
     private Integer role;
 
     /**
+     * 联系方式
+     */
+    private String phone;
+
+    /**
      * 访问令牌，仅登录/注册/刷新令牌时返回
      */
     private String accessToken;
@@ -48,12 +59,15 @@ public class UserResponse {
     private String refreshToken;
 
     public static UserResponse fromEntity(User user) {
-        UserResponse response = new UserResponse();
-        response.setId(user.getId());
-        response.setUsername(user.getUsername());
-        response.setEmail(user.getEmail());
-        response.setAvatar(FileUtils.generateAssetUrl(C.PARENT_USER_AVATAR, user.getId(), user.getAvatar()));
-        response.setRole(AuthUtils.getRoleCode(user.getRole()));
-        return response;
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                FileUtils.generateAssetUrl(C.PARENT_USER, user.getId(), user.getAvatar()),
+                Bits.rezip(USER_ROLE_REZIP_MAP, user.getRole()),
+                user.getPhone(),
+                null,
+                null
+        );
     }
 }

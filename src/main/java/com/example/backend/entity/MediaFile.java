@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
@@ -8,10 +10,12 @@ import java.util.Date;
  * 媒体信息（图片、视频）
  */
 @Data
-public class MediaInfo implements IId {
+@NoArgsConstructor
+@AllArgsConstructor
+public class MediaFile implements IId, IFile {
 
     /**
-     * *主键 long*
+     * *主键 int*
      */
     private Long id;
 
@@ -29,7 +33,7 @@ public class MediaInfo implements IId {
 
     /**
      * 上传用户 id
-     * *外键:user(id) 非空 long*
+     * *外键:user(id) 非空 int*
      */
     private Long userId;
 
@@ -41,7 +45,7 @@ public class MediaInfo implements IId {
 
     /**
      * 资源介绍
-     * *可空 text*
+     * *text*
      */
     private String description;
 

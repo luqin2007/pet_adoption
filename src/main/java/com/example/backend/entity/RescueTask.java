@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
@@ -8,28 +10,30 @@ import java.util.Date;
  * 救助任务
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RescueTask implements IId {
 
     /**
-     * *主键 long*
+     * *主键 int*
      */
     private Long id;
 
     /**
      * 上一个任务 id
-     * *外键:rescueTask(id) 可空 long*
+     * *外键:rescueTask(id) long*
      */
     private Long previousId;
 
     /**
      * 创建者
-     * *外键:user(id) 非空 long*
+     * *外键:user(id) 非空 int*
      */
     private Long userId;
 
     /**
      * 审核者
-     * *外键:user(id) 非空 long*
+     * *外键:user(id) 非空 int*
      */
     private Long approveId;
 
@@ -41,7 +45,7 @@ public class RescueTask implements IId {
 
     /**
      * 详细描述
-     * *可空 text*
+     * *text*
      */
     private String description;
 

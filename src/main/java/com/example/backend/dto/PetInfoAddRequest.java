@@ -1,7 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Pet;
-import com.example.backend.util.C;
+import com.example.backend.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.Min;
@@ -30,13 +30,7 @@ public class PetInfoAddRequest extends LocationRequest {
      * 最小年龄，确定流浪宠物年龄大致范围
      */
     @Min(value = 0, message = "请输入正确的年龄")
-    private Integer minAge;
-
-    /**
-     * 最大年龄，确定流浪宠物年龄大致范围
-     */
-    @Min(value = 0, message = "请输入正确的年龄")
-    private Integer maxAge;
+    private Integer age;
 
     /**
      * 性别
@@ -53,34 +47,33 @@ public class PetInfoAddRequest extends LocationRequest {
     /**
      * 宠物品种
      */
-    @JsonSetter(nulls = Nulls.SKIP)
-    private String breed = "";
+    private String breed;
 
     /**
      * 宠物描述
      */
-    @JsonSetter(nulls = Nulls.SKIP)
-    private String description = "";
+    private String description;
 
     /**
      * 宠物健康状况
      */
-    @JsonSetter(nulls = Nulls.SKIP)
-    private String health = "";
+    private String health;
 
-    public Pet createInfo() {
-        Pet pet = new Pet();
-        pet.setName(getName());
-        pet.setMinAge(getMinAge());
-        pet.setMaxAge(getMaxAge());
-        pet.setSex(getSex());
-        pet.setType(getType());
-        pet.setBreed(getBreed());
-        pet.setHealth(getHealth());
-        pet.setDescription(getDescription());
-        pet.setStatus(PET_STATUS_WAITING);
-        pet.setCreateTime(new Date(System.currentTimeMillis()));
-        pet.setUpdateTime(new Date(System.currentTimeMillis()));
-        return pet;
+    public Pet createInfo(Long userId) {
+        Date now = new Date(System.currentTimeMillis());
+        return new Pet(null,
+                userId,
+                name,
+                age,
+                sex,
+                type,
+                StringUtils.notNull(breed),
+                StringUtils.notNull(health),
+                "",
+                StringUtils.notNull(description),
+                PET_STATUS_WAITING,
+                false,
+                now,
+                now);
     }
 }

@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 
@@ -8,70 +10,60 @@ import java.sql.Date;
  * 流浪宠物信息
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Pet implements IId {
 
     /**
-     * *主键 long*
+     * *主键 int*
      */
     private Long id;
 
     /**
      * 发现该宠物的用户 id
-     * *外键:user(id) 非空 long*
+     * *外键:user(id) 非空 int*
      */
-    private Long userId;
+    private Long discoverId;
 
     /**
      * 宠物名称
-     * *可空 varchar(255)*
+     * *varchar(255)*
      */
     private String name;
 
     /**
-     * 宠物最小年龄（月）
-     * *可空 integer*
+     * 宠物年龄（月）
+     * *integer*
      */
-    private Integer minAge;
-
-    /**
-     * 宠物最大年龄（月）
-     * *可空 integer*
-     */
-    private Integer maxAge;
+    private Integer age;
 
     /**
      * 宠物性别
-     * *可空 varchar(10)*
+     * *varchar(10)*
      */
     private String sex;
 
     /**
      * 宠物类型
-     * *可空 varchar(50)*
+     * *varchar(50)*
      */
     private String type;
 
     /**
      * 宠物品种
-     * *可空 varchar(50)*
+     * *varchar(50)*
      */
     private String breed;
 
     /**
      * 宠物健康情况
-     * *可空 varchar(255)*
+     * *varchar(255)*
      */
     private String health;
 
     /**
-     * 宠物疫苗情况
-     * *可空 varchar(255)*
-     */
-    private String vaccine;
-
-    /**
      * 宠物描述
-     * *可空 text*
+     * *text*
      */
     private String description;
 
@@ -80,6 +72,12 @@ public class Pet implements IId {
      * *非空 tinyint*
      */
     private Integer status;
+
+    /**
+     * 是否被废弃
+     * *非空 boolean*
+     */
+    private Boolean isDiscard;
 
     /**
      * 创建时间

@@ -2,6 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
+import com.example.backend.util.C;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.Range;
@@ -28,13 +29,12 @@ public class PetStatusUpdateRequest {
     private String reason;
 
     public PetStatusRecord buildStatusRecord(Pet info, Long userId) {
-        PetStatusRecord record = new PetStatusRecord();
-        record.setUserId(userId);
-        record.setPetId(info.getId());
-        record.setFrom(info.getStatus());
-        record.setTo(status);
-        record.setCreateTime(new Date(System.currentTimeMillis()));
-        record.setDescription(reason);
-        return record;
+        return new PetStatusRecord(null,
+                petId,
+                userId,
+                info.getStatus(),
+                status,
+                reason,
+                new Date(System.currentTimeMillis()));
     }
 }

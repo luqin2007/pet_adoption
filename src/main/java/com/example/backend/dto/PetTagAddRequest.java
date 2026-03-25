@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.Set;
 
 @Data
-public class PetTagNamesRequest {
+public class PetTagAddRequest {
 
     @NotEmpty(message = "请输入宠物特征")
     private List<String> tags;
 
-    public List<PetTag> createTags(Long petId, Long userId, Set<String> currentTags) {
+    public List<PetTag> create(Long petId, Long userId, Set<String> currentTags) {
         Date now = new Date(System.currentTimeMillis());
         return tags.stream()
                 // 非空
@@ -23,14 +23,7 @@ public class PetTagNamesRequest {
                 // 去重
                 .distinct()
                 .filter(tag -> !currentTags.contains(tag))
-                .map(tag -> {
-                    PetTag petTag = new PetTag();
-                    petTag.setPetId(petId);
-                    petTag.setUserId(userId);
-                    petTag.setTag(tag);
-                    petTag.setCreateTime(now);
-                    return petTag;
-                })
+                .map(tag -> new PetTag(null, petId, userId, tag, now))
                 .toList();
     }
 }

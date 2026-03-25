@@ -21,4 +21,9 @@ public interface RescueTaskLocationMapper extends IBaseMapper<Location> {
     default LambdaQueryWrapper<Location> queryByTask(Long taskId) {
         return lambdaQuery().eq(Location::getParentId, taskId);
     }
+
+    @Override
+    default String getMissingMessage() {
+        return "救助位置不存在";
+    }
 }

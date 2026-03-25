@@ -1,13 +1,17 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.MediaInfo;
-import com.example.backend.util.C;
+import com.example.backend.entity.MediaFile;
 import com.example.backend.util.FileUtils;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
 
+import static com.example.backend.util.C.MEDIA_TYPE_IMAGE;
+import static com.example.backend.util.C.PARENT_PET;
+
 @Data
+@AllArgsConstructor
 public class PetMediaResponse {
 
     private Long id;
@@ -20,7 +24,7 @@ public class PetMediaResponse {
     /**
      * 媒体文件路径
      */
-    private String path;
+    private String assetUrl;
 
     private String name;
 
@@ -29,18 +33,18 @@ public class PetMediaResponse {
     /**
      * 封面，仅图片
      */
-    private boolean isCover;
+    private Boolean isCover;
 
     private Date createDate;
 
-    public static PetMediaResponse fromEntity(MediaInfo media) {
-        PetMediaResponse response = new PetMediaResponse();
-        response.setType("image");
-        response.setPath(FileUtils.generateAssetUrl(C.PARENT_PET, media.getParentId(), media.getFilename()));
-        response.setName(media.getName());
-        response.setDescription(media.getDescription());
-        response.setCover(media.getIsCover());
-        response.setCreateDate(media.getCreateTime());
-        return response;
+    public static PetMediaResponse create(MediaFile media) {
+        return new PetMediaResponse(
+                media.getId(),
+                MEDIA_TYPE_IMAGE.equals(media.getType()) ? "image" : "video",
+                FileUtils.generateAssetUrl(PARENT_PET, media.getParentId(), media.getFilename()),
+                media.getName(),
+                media.getDescription(),
+                media.getIsCover(),
+                media.getCreateTime());
     }
 }

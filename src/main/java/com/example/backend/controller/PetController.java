@@ -2,10 +2,7 @@ package com.example.backend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
-import com.example.backend.entity.Pet;
-import com.example.backend.entity.PetStatusRecord;
 import com.example.backend.service.PetService;
-import com.example.backend.util.DbUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -57,12 +54,8 @@ public class PetController {
      * 获取流浪宠物列表
      */
     @GetMapping("/")
-    public Result<Page<PetResponse>> getPets(@RequestParam(name = "page", defaultValue = "1") Integer currentPage,
-                                             @RequestParam(name = "size", defaultValue = "10") Integer size,
-                                             @RequestParam(name = "sort", defaultValue = "id") String sort,
-                                             @RequestParam(name = "order", defaultValue = "ASC") String order) {
-        Page<Pet> page = DbUtils.createPage(currentPage, size, sort, order);
-        Page<PetResponse> response = petService.getPets(page);
+    public Result<Page<PetResponse>> getPets(PageRequest pageRequest) {
+        Page<PetResponse> response = petService.getPets(pageRequest);
         return Result.success(response);
     }
 
@@ -124,7 +117,7 @@ public class PetController {
      * 添加流浪宠物特征
      */
     @PutMapping("/pets/{id}/tags")
-    public Result<List<PetTagResponse>> addTags(@PathVariable("id") Long petId, @RequestBody PetTagNamesRequest request) {
+    public Result<List<PetTagResponse>> addTags(@PathVariable("id") Long petId, @RequestBody PetTagAddRequest request) {
         List<PetTagResponse> response = petService.addTags(petId, request);
         return Result.success(response);
     }
@@ -149,13 +142,8 @@ public class PetController {
      * 获取宠物状态流转记录
      */
     @GetMapping("/pets/{id}/status")
-    public Result<Page<PetStatusRecordResponse>> getStatusRecords(@PathVariable("id") Long petId,
-                                                                  @RequestParam(name = "page", defaultValue = "1") Integer currentPage,
-                                                                  @RequestParam(name = "size", defaultValue = "10") Integer size,
-                                                                  @RequestParam(name = "sort", defaultValue = "id") String sort,
-                                                                  @RequestParam(name = "order", defaultValue = "ASC") String order) {
-        Page<PetStatusRecord> page = DbUtils.createPage(currentPage, size, sort, order);
-        Page<PetStatusRecordResponse> response = petService.getStatusRecords(petId, page, Set.of());
+    public Result<Page<PetStatusRecordResponse>> getStatusRecords(@PathVariable("id") Long petId, PageRequest pageRequest) {
+        Page<PetStatusRecordResponse> response = petService.getStatusRecords(petId, pageRequest, Set.of());
         return Result.success(response);
     }
 }

@@ -19,15 +19,15 @@ public abstract class LocationRequest {
     @NotBlank(message = "请输入发现位置")
     private String detailAddress;
 
-    public Location createLocation(Long parentId) {
-        Location location = new Location();
-        location.setParentId(parentId);
-        location.setProvince(getProvince());
-        location.setCity(getCity());
-        location.setCounty(getCounty());
-        location.setDetailAddress(getDetailAddress());
-        location.setCreateTime(new Date(System.currentTimeMillis()));
-        return location;
+    public Location createLocation(Long parentId, Long userId) {
+        return new Location(null,
+                parentId,
+                userId,
+                province,
+                city,
+                county,
+                detailAddress,
+                new Date(System.currentTimeMillis()));
     }
 
     public void applyTo(Location location) {

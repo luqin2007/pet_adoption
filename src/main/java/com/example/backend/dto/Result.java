@@ -9,7 +9,7 @@ public record Result<T>(int code, T data, String message) {
         return new Result<>(200, data, "success");
     }
 
-    public static <T> Result<T> success() {
+    public static Result<Void> success() {
         return new Result<>(200, null, "success");
     }
 

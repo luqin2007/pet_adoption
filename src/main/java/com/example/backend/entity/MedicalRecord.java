@@ -1,0 +1,99 @@
+package com.example.backend.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Date;
+
+/**
+ * 就诊记录
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class MedicalRecord implements IId {
+
+    /**
+     * *主键 int*
+     */
+    private Long id;
+
+    /**
+     * 流浪宠物 id
+     * *外键:pet(id) 非空 int*
+     */
+    private Long petId;
+
+    /**
+     * 流浪宠物年龄
+     * *非空 int*
+     */
+    private Integer petAge;
+
+    /**
+     * 接诊人
+     * *外键:user(id) 非空 int*
+     */
+    private Long doctorId;
+
+    /**
+     * 领养人
+     * *外键:user(id) int*
+     */
+    private Long ownerId;
+
+    /**
+     * 领养人联系方式
+     * *外键:user(phone) varchar(11)*
+     */
+    private String ownerPhone;
+
+    /**
+     * 诊疗流程
+     * *非空 tinyint*
+     */
+    private Integer status;
+
+    /**
+     * 诊疗类型
+     * *非空 tinyint*
+     */
+    private Integer type;
+
+    /**
+     * 开始时间, null 表示未开始
+     * *datetime*
+     */
+    private Date startTime;
+
+    /**
+     * 结束时间
+     * *datetime*
+     */
+    private Date endTime;
+
+    /**
+     * 预计价格
+     * *非空 decimal(10,2)*
+     */
+    private Double price;
+
+    /**
+     * 实际花费
+     * *非空 decimal(10,2)*
+     */
+    private Double cost;
+
+    /**
+     * 创建时间
+     * *非空 datetime*
+     */
+    private Date createTime;
+
+    /**
+     * 修改时间
+     * *非空 datetime*
+     */
+    private Date updateTime;
+}

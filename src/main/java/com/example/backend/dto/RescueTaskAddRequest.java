@@ -44,15 +44,16 @@ public class RescueTaskAddRequest extends LocationRequest {
     private Integer type;
 
     public RescueTask createTask(Long userId) {
-        RescueTask task = new RescueTask();
-        task.setUserId(userId);
-        task.setPreviousId(previousId);
-        task.setSummary(summary);
-        task.setDescription(description);
-        task.setStatus(0);
-        task.setType(type);
-        task.setCreateTime(new Date(System.currentTimeMillis()));
-        task.setUpdateTime(new Date(System.currentTimeMillis()));
-        return task;
+        Date now = new Date(System.currentTimeMillis());
+        return new RescueTask(null,
+                previousId,
+                userId,
+                null,
+                summary,
+                description,
+                0,
+                type,
+                now,
+                now);
     }
 }

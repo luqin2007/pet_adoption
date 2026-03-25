@@ -2,9 +2,7 @@ package com.example.backend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
-import com.example.backend.entity.RescueTask;
 import com.example.backend.service.RescueTaskService;
-import com.example.backend.util.DbUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -33,56 +31,72 @@ import java.util.List;
  */
 @Validated
 @Controller
-@RequestMapping("/task")
+@RequestMapping("/tasks")
 @RequiredArgsConstructor
 public class RescueTaskController {
 
     private final RescueTaskService rescueTaskService;
 
     /**
+     * 获取所有信息
+     */
+    @GetMapping("/")
+    public Result<Page<RescueTaskResponse>> getRescueTasks(PageRequest pageRequest) {
+        Page<RescueTaskResponse> response = rescueTaskService.getRescueTasks(pageRequest);
+        return Result.success(response);
+    }
+
+    /**
      * 准备上报新救助任务
      */
-    @PutMapping("/tasks")
+    @PutMapping("/")
     public Result<String> beginRescueTask() {
         String id = rescueTaskService.beginRescueTask();
         return Result.success(id);
     }
 
     /**
-     * 获取救助信息列表
+     * 提交救助任务
      */
-    @PutMapping("/tasks")
-    public Result<RescueTaskResponse> addRescueTask(@RequestBody RescueTaskAddRequest request) {
+    @PostMapping("/")
+    public Result<RescueTaskResponse> addRescueTask(RescueTaskAddRequest request) {
         RescueTaskResponse response = rescueTaskService.addRescueTask(request);
         return Result.success(response);
     }
 
     /**
+     * 信息上报时上传媒体
+     */
+    @PostMapping("/{_id}/uploads")
+    public Result<String> uploadRescueTaskMedia(@PathVariable("_id") String uuid, @RequestBody MultipartFile file) {
+        String response = rescueTaskService.uploadRescueTaskMedia(uuid, file);
+        return Result.success(response);
+    }
+
+    /**
+     * 信息上报时删除媒体
+     * @param uuid 临时实体 id
+     * @param mediaName 媒体文件名
+     */
+    @DeleteMapping("/{_id}/uploads/{file}")
+    public Result<Void> deleteRescueMediaWhenAdd(@PathVariable("_id") String uuid, @PathVariable("file") String mediaName) {
+        rescueTaskService.deleteRescueTaskMedia(uuid, mediaName);
+        return Result.success();
+    }
+
+    /**
      * 获取救助任务信息
      */
-    @GetMapping("/tasks/{id}")
+    @GetMapping("/{id}")
     public Result<RescueTaskResponse> getRescueTask(@PathVariable("id") Long taskId) {
         RescueTaskResponse response = rescueTaskService.getRescueTask(taskId);
         return Result.success(response);
     }
 
     /**
-     * 获取所有信息
-     */
-    @GetMapping("/tasks")
-    public Result<Page<RescueTaskResponse>> getRescueTasks(@RequestParam(defaultValue = "1") Integer current,
-                                                           @RequestParam(defaultValue = "10") Integer size,
-                                                           @RequestParam(defaultValue = "id") String sort,
-                                                           @RequestParam(defaultValue = "ASC") String order) {
-        Page<RescueTask> page = DbUtils.createPage(current, size, sort, order);
-        Page<RescueTaskResponse> response = rescueTaskService.getRescueTasks(page);
-        return Result.success(response);
-    }
-
-    /**
      * 更新救助任务信息
      */
-    @PostMapping("/tasks/{id}")
+    @PostMapping("/{id}")
     public Result<RescueTaskResponse> updateRescueTask(@PathVariable("id") Long taskId,
                                                        @RequestBody RescueTaskUpdateRequest request) {
         RescueTaskResponse response = rescueTaskService.updateRescueTask(taskId, request);
@@ -92,66 +106,46 @@ public class RescueTaskController {
     /**
      * 删除救助任务
      */
-    @DeleteMapping("/tasks/{id}")
+    @DeleteMapping("/{id}")
     public Result<Void> deleteRescueTask(@PathVariable("id") Long taskId) {
         rescueTaskService.deleteRescueTask(taskId);
         return Result.success();
     }
 
     /**
-     * 修改任务状态
-     */
-    @PostMapping("/status/{id}")
-    public Result<Void> updateRescueTaskStatus(@PathVariable("id") Long taskId, RescueTaskRecordRequest request) {
-        rescueTaskService.updateRescueTaskRecord(taskId, request);
-        return Result.success();
-    }
-
-    /**
      * 获取任务状态记录
      */
-    @PostMapping("/status/{id}")
-    public Result<RescueTaskRecordsResponse> getRescueTaskRecords(@PathVariable("id") Long taskId) {
+    @GetMapping("/{id}/status")
+    public Result<RescueTaskRecordsResponse> getStatusRecords(@PathVariable("id") Long taskId) {
         RescueTaskRecordsResponse response = rescueTaskService.getRescueTaskRecords(taskId);
         return Result.success(response);
     }
 
     /**
+     * 修改任务状态
+     */
+    @PostMapping("/{id}/status")
+    public Result<Void> updateStatus(@PathVariable("id") Long taskId, RescueTaskRecordStatusUpdateRequest request) {
+        rescueTaskService.updateRescueTaskStatus(taskId, request);
+        return Result.success();
+    }
+
+    /**
      * 分配任务
      */
-    @PostMapping("/tasks/{id}/assign")
+    @PostMapping("/{id}/assign")
     public Result<List<UserResponse>> assignRescueTask(@PathVariable("id") Long taskId, IdsRequest request) {
         List<UserResponse> responses = rescueTaskService.assignRescueTask(taskId, request);
         return Result.success(responses);
     }
 
     /**
-     * 信息上报时上传媒体
-     */
-    @PostMapping("/media/{id}")
-    public Result<Long> updateRescueMedia(@PathVariable("id") String uuid, @RequestBody MultipartFile file) {
-        Long id = rescueTaskService.uploadMediaFile(uuid, file);
-        return Result.success(id);
-    }
-
-    /**
-     * 信息上报时删除图片
-     * @param uuid 临时实体 id
-     * @param mediaId 媒体 id
-     */
-    @DeleteMapping("/media/{id}/{mid}")
-    public Result<Void> deleteRescueMediaWhenAdd(@PathVariable("id") String uuid, @PathVariable("mid") Long mediaId) {
-        rescueTaskService.deleteRescueMedia(uuid, mediaId);
-        return Result.success();
-    }
-
-    /**
      * 删除媒体文件
      * @param mediaId 媒体 id
      */
-    @DeleteMapping("/media/{id}")
-    public Result<Void> deleteRescueMediaWhenUpdate(@PathVariable("id") Long mediaId) {
-        rescueTaskService.deleteRescueMedia(mediaId);
+    @DeleteMapping("/{id}/media/{mid}")
+    public Result<Void> deleteRescueMediaWhenUpdate(@PathVariable("id") Long taskId, @PathVariable("mid") Long mediaId) {
+        rescueTaskService.deleteRescueTaskMedia(taskId, mediaId);
         return Result.success();
     }
 }

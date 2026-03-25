@@ -19,8 +19,13 @@ public interface RescueTaskAssignMapper extends IBaseMapper<RescueTaskAssign> {
      * @param taskId 任务 id
      */
     default LambdaQueryWrapper<RescueTaskAssign> queryUserIdByTask(Long taskId) {
-        return new LambdaQueryWrapper<RescueTaskAssign>()
+        return lambdaQuery()
                 .eq(RescueTaskAssign::getTaskId, taskId)
                 .select(RescueTaskAssign::getUserId);
+    }
+
+    @Override
+    default String getMissingMessage() {
+        return "任务分配记录不存在";
     }
 }

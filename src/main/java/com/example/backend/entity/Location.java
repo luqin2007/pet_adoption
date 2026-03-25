@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 
@@ -8,25 +10,27 @@ import java.sql.Date;
  * 位置信息
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Location implements IId {
 
     /**
-     * *主键 long*
+     * *主键 int*
      */
     private Long id;
 
     /**
      * 绑定类型 id
-     * *petLocation:外键:pet(id) 非空 long*
-     * *rescueTaskLocation:外键:rescueTask(id) 非空 long*
+     * *petLocation:外键:pet(id) 非空 int*
+     * *rescueTaskLocation:外键:rescueTask(id) 非空 int*
      */
     private Long parentId;
 
     /**
      * 发现者 id
-     * *外键:user(id) 非空 long*
+     * *外键:user(id) 非空 int*
      */
-    private Long userId;
+    private Long discoverId;
 
     /**
      * 发现省份

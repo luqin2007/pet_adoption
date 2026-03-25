@@ -22,4 +22,9 @@ public interface RescueTaskRecordMapper extends IBaseMapper<RescueTaskRecord> {
     default LambdaQueryWrapper<RescueTaskRecord> queryByTask(Long taskId) {
         return lambdaQuery().eq(RescueTaskRecord::getTaskId, taskId);
     }
+
+    @Override
+    default String getMissingMessage() {
+        return "任务状态记录不存在";
+    }
 }

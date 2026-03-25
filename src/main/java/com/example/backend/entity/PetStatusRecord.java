@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 
@@ -8,22 +10,24 @@ import java.sql.Date;
  * 宠物状态变更记录
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PetStatusRecord implements IId {
 
     /**
-     * *主键 long*
+     * *主键 int*
      */
     private Long id;
 
     /**
      * 流浪宠物 id
-     * *外键:pet(id) 非空 long*
+     * *外键:pet(id) 非空 int*
      */
     private Long petId;
 
     /**
      * 提交用户 id
-     * *外键:user(id) 非空 long*
+     * *外键:user(id) 非空 int*
      */
     private Long userId;
 
@@ -40,14 +44,8 @@ public class PetStatusRecord implements IId {
     private Integer to;
 
     /**
-     * 审批状态
-     * *非空 tinyint*
-     */
-    private Integer status;
-
-    /**
      * 转移说明
-     * *可空 text*
+     * *text*
      */
     private String description;
 

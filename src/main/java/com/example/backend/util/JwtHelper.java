@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
-public class JwtUtils {
+public class JwtHelper {
 
     @Value("${jwt.secret}")
     private String secret;
@@ -42,7 +42,7 @@ public class JwtUtils {
     private static final String REFRESH_TOKEN_TYPE = "refresh";
     private static final String INVALID_TOKEN_KEY_TEMPLATE = "pet_adoption.invalid_token.%s";
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(JwtHelper.class);
 
     private final StringRedisTemplate redisTemplate;
 

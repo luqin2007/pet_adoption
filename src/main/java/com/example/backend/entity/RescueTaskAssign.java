@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 
@@ -8,28 +10,30 @@ import java.sql.Date;
  * 救助任务分配信息
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RescueTaskAssign implements IId {
 
     /**
-     * *主键 long*
+     * *主键 int*
      */
     private Long id;
 
     /**
      * 救助任务 id
-     * *外键:rescueTask(id) 非空 long*
+     * *外键:rescueTask(id) 非空 int*
      */
     private Long taskId;
 
     /**
      * 任务执行者 id
-     * *外键:user(id) 非空 long*
+     * *外键:user(id) 非空 int*
      */
     private Long userId;
 
     /**
      * 任务分配者 id
-     * *外键:user(id) 非空 long*
+     * *外键:user(id) 非空 int*
      */
     private Long assignerId;
 
@@ -40,11 +44,10 @@ public class RescueTaskAssign implements IId {
     private Date createTime;
 
     public static RescueTaskAssign create(Long taskId, Long userId, Long assignerId) {
-        RescueTaskAssign rescueTaskAssign = new RescueTaskAssign();
-        rescueTaskAssign.setTaskId(taskId);
-        rescueTaskAssign.setUserId(userId);
-        rescueTaskAssign.setAssignerId(assignerId);
-        rescueTaskAssign.setCreateTime(new Date(System.currentTimeMillis()));
-        return rescueTaskAssign;
+        return new RescueTaskAssign(null,
+                taskId,
+                userId,
+                assignerId,
+                new Date(System.currentTimeMillis()));
     }
 }

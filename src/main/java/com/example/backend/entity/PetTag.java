@@ -1,6 +1,8 @@
 package com.example.backend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Date;
 
@@ -8,22 +10,24 @@ import java.sql.Date;
  * 宠物标签
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PetTag implements IId {
 
     /**
-     * *主键 long*
+     * *主键 int*
      */
     private Long id;
 
     /**
      * 流浪宠物 id
-     * *外键:pet(id) 非空 long*
+     * *外键:pet(id) 非空 int*
      */
     private Long petId;
 
     /**
      * 添加用户 id
-     * *外键:user(id) 非空 long*
+     * *外键:user(id) 非空 int*
      */
     private Long userId;
 

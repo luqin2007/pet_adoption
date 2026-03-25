@@ -27,7 +27,7 @@ public class PasswordResetRequest {
     @Length(min = 6, message = "密码长度不能小于6位")
     private String password;
 
-    public void apply(User user, PasswordEncoder passwordEncoder) {
+    public void applyTo(User user, PasswordEncoder passwordEncoder) {
         user.setPassword(passwordEncoder.encode(password));
         user.setUpdateTime(new Date(System.currentTimeMillis()));
     }

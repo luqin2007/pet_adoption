@@ -30,15 +30,14 @@ import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.example.backend.util.C.KEY_PASSWORD_RESET;
-import static com.example.backend.util.C.MESSAGE_RESET_PWD;
+import static com.example.backend.util.C.*;
 
 @Service
 @RequiredArgsConstructor
 public class UserService extends BaseService<UserMapper, User> implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtils jwtUtils;
+    private final JwtHelper jwtHelper;
     private final AuthenticationManager authenticationManager;
 
     @Value("${host.address}")
@@ -58,8 +57,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         }
 
         // 邮箱验证码
-        String mailKey = String.format(C.KEY_MAIL_CODE, request.getEmail());
-        String code = getAndDeleteStringFromRedis(mailKey);
+        String code = redisHelper.getAndDeleteString(KEY_MAIL_CODE, request.getEmail());
         requireEqual(code, request.getCode(), "邮箱验证码错误");
 
         // 注册
@@ -93,12 +91,12 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      */
     public void sendMailCode(String email) {
         // 生成随机验证码
-        String redisKey = String.format(C.KEY_MAIL_CODE, email);
+        String redisKey = String.format(KEY_MAIL_CODE, email);
         String code = StringUtils.generateRandomString(6);
-        putToRedis(redisKey, code, 10);
+        redisHelper.putString(redisKey, code, 10);
 
         // 发送邮件
-        String content = String.format(C.MESSAGE_SEND_MAIL_CODE, code);
+        String content = String.format(MESSAGE_SEND_MAIL_CODE, code);
         String receiver = URLDecoder.decode(email, StandardCharsets.UTF_8);
         NotificationEvent event = NotificationEvent.mail("Pet Adoption 邮箱验证码", content, receiver);
         eventPublisher.publishEvent(event);
@@ -128,8 +126,8 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         // 附着 JWT 信息
         User user = principal.getUser();
         UserResponse response = UserResponse.fromEntity(user);
-        String accessToken = jwtUtils.generateAccessToken(user);
-        String refreshToken = jwtUtils.generateRefreshToken(user);
+        String accessToken = jwtHelper.generateAccessToken(user);
+        String refreshToken = jwtHelper.generateRefreshToken(user);
         response.setAccessToken(accessToken);
         response.setRefreshToken(refreshToken);
         return response;
@@ -139,23 +137,15 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      * 获取用户信息
      */
     public UserResponse getUser(Long userId) {
-        User user = requireById(userId, "用户不存在");
+        User user = requireById(userId);
         return UserResponse.fromEntity(user);
-    }
-
-    /**
-     * 获取用户名与头像，用于显示
-     */
-    public UsernameAndAvatarResponse getUsernameAndAvatar(Long userId) {
-        User user = requireOne(getBaseMapper().queryUsernameAndAvatar(userId), "用户不存在");
-        return UsernameAndAvatarResponse.fromEntity(user);
     }
 
     /**
      * 获取用户信息
      */
     public UserResponse getUser(String username) {
-        User user = requireOne(User::getUsername, username, "用户不存在");
+        User user = requireOne(User::getUsername, username);
         return UserResponse.fromEntity(user);
     }
 
@@ -165,17 +155,17 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     @Transactional
     public void removeUser(Long userId) {
         // 查找用户
-        User user = requireById(userId, "用户不存在");
+        User user = requireById(userId);
 
         // 权限校验
-        User login = AuthUtils.getLoginUser();
+        User login = getLoginUser();
         boolean allowed =
                 // 用户本人
                 Objects.equals(login.getId(), user.getId()) ||
-                // 工作人员，且被删用户非管理员
-                (login.isWorker() && !user.isAdmin()) ||
-                // 超级管理员
-                login.isAdmin();
+                        // 工作人员，且被删用户非管理员
+                        (login.isWorker() && !user.isAdmin()) ||
+                        // 超级管理员
+                        login.isAdmin();
         requirePermission(allowed);
 
         // 删除
@@ -185,12 +175,12 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     /**
      * 获取所有用户
      */
-    public Page<UserResponse> getAllUsers(Page<User> page) {
+    public Page<UserResponse> getAllUsers(PageRequest page) {
         // 权限校验
-        User login = AuthUtils.getLoginUser();
+        User login = getLoginUser();
         requirePermission(login.isWorker());
         // 数据转换
-        Page<User> result = page(page);
+        Page<User> result = page(page.createPage());
         return DbUtils.convertDto(result, UserResponse::fromEntity);
     }
 
@@ -200,13 +190,13 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     public void forgetPassword(String email) {
         // 查找用户
         email = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        User user = requireOne(User::getEmail, email, "用户不存在");
+        User user = requireOne(User::getEmail, email);
 
         // 生成随机密码，保存相关信息
         // 有效期 10min
-        String randomId = StringUtils.randomUUID(KEY_PASSWORD_RESET, redisTemplateString, 10);
+        String randomId = StringUtils.randomUUID(KEY_PASSWORD_RESET, redisHelper, 10);
         String redisKey = String.format(KEY_PASSWORD_RESET, randomId);
-        putToRedis(redisKey, user.getEmail(), 10);
+        redisHelper.putString(redisKey, user.getEmail(), 10);
 
         // 发送激活邮件
         String content = String.format(MESSAGE_RESET_PWD, hostAddress, randomId);
@@ -220,15 +210,13 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     @Transactional
     public void resetPassword(PasswordResetRequest request) {
         // 验证链接校验
-        String redisKey = String.format(KEY_PASSWORD_RESET, request.getId());
-        String email = getStringFromRedis(redisKey);
+        String email = redisHelper.getAndDeleteString(KEY_PASSWORD_RESET, request.getId());
         requireExist(email, "链接已过期");
 
         // 更新密码
-        User user = requireOne(User::getEmail, email, "用户不存在");
-        request.apply(user, passwordEncoder);
+        User user = requireOne(User::getEmail, email);
+        request.applyTo(user, passwordEncoder);
         updateById(user);
-        deleteStringFromRedis(redisKey);
     }
 
     /**
@@ -237,15 +225,15 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     @Transactional
     public UserResponse update(Long userId, UserUpdateRequest request) {
         // 校验用户权限
-        User login = AuthUtils.getLoginUser();
-        User user = requireById(userId, "用户不存在");
+        User login = getLoginUser();
+        User user = requireById(userId);
         // 管理员权限仅超级管理员可更改
         requirePermission(!user.isAdmin() || login.isAdmin());
         // 非管理员变更需要本人或救助站工作人员更改
         requirePermission(login.isWorker() || Objects.equals(login.getId(), userId));
 
         // 更新用户信息
-        request.apply(user, passwordEncoder);
+        request.applyTo(user, passwordEncoder);
         updateById(user);
         return UserResponse.fromEntity(user);
     }
@@ -255,18 +243,18 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      */
     public UserResponse uploadAvatar(Long userId, MultipartFile file) {
         // 校验用户权限
-        User login = AuthUtils.getLoginUser();
-        User user = requireById(userId, "用户不存在");
+        User login = getLoginUser();
+        User user = requireById(userId);
         requirePermission(Objects.equals(login.getId(), userId) || login.isWorker());
 
         // 检查图片
         Pair<String, Integer> extAndType = FileUtils.getFileExtensionAndType(file);
-        requireEqual(C.MEDIA_TYPE_IMAGE, extAndType.getSecond(), "不支持的图片格式");
+        requireEqual(MEDIA_TYPE_IMAGE, extAndType.getSecond(), "不支持的图片格式");
 
         // 上传图片
         Date now = new Date(System.currentTimeMillis());
         String filename = FileUtils.generateFilename(file.getOriginalFilename(), now, extAndType.getFirst());
-        Path target = FileUtils.generateFilePath(C.PARENT_USER_AVATAR, userId);
+        Path target = FileUtils.generateFilePath(PARENT_USER, userId);
         FileUtils.upload(file, filename, target);
 
         // 更新信息
@@ -277,29 +265,11 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
         // 删除旧图片
         if (oldAvatar != null) {
-            Path oldFile = FileUtils.generateFilePath(C.PARENT_USER_AVATAR, userId, oldAvatar);
+            Path oldFile = FileUtils.generateFilePath(PARENT_USER, userId, oldAvatar);
             FileUtils.tryDeleteFile(oldFile);
         }
 
         return response;
-    }
-
-    /**
-     * 根据 id 批量获取用户名和头像信息
-     */
-    public Map<Long, UsernameAndAvatarResponse> getUsernameAndAvatarBatchByIds(Set<Long> ids) {
-        if (ids.isEmpty()) return Map.of();
-        return list(getBaseMapper().queryUsernameAndAvatar(ids)).stream()
-                .map(UsernameAndAvatarResponse::fromEntity)
-                .collect(Func.toIdMap());
-    }
-
-    /**
-     * 根据 id 批量获取邮件地址，仅 id 和 email 可用
-     */
-    public Set<User> getMailsBatchByIds(Collection<Long> ids) {
-        if (ids.isEmpty()) return Set.of();
-        return new HashSet<>(list(getBaseMapper().queryIdAndEmails(ids)));
     }
 
     /**
@@ -320,14 +290,11 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         // 生成所需的 role
         Set<String> roles = (roleSet == null ? Set.<String>of() : roleSet).stream()
                 .filter(StringUtils::hasText)
-                .filter(C.ALL_ROLES::contains)
+                .filter(USER_ROLES::contains)
                 .collect(Collectors.toSet());
         if (roles.isEmpty()) return List.of();
-        Integer role = roleSet.stream()
-                .map(C.MATCH_MASK_MAP::get)
-                .filter(Objects::nonNull)
-                .reduce(0, (i, j) -> i | j);
-        role = AuthUtils.getRoleCode(role);
+        Integer role = Bits.zip(USER_ROLE_MASK_MAP, roleSet);
+        role = Bits.rezip(USER_ROLE_REZIP_MAP, role);
         return getBaseMapper().selectObjsByRole(role, column);
     }
 

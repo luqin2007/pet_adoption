@@ -2,7 +2,7 @@ package com.example.backend.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.example.backend.entity.MediaInfo;
+import com.example.backend.entity.MediaFile;
 import com.example.backend.util.C;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -14,7 +14,7 @@ import java.util.Collection;
  * - (parentType, parentId, type, createTime)
  */
 @Mapper
-public interface MediaInfoMapper extends IBaseMapper<MediaInfo> {
+public interface MediaInfoMapper extends IBaseMapper<MediaFile> {
 
     /**
      * 查询指定类型的 id 和文件名
@@ -24,11 +24,11 @@ public interface MediaInfoMapper extends IBaseMapper<MediaInfo> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaInfo> queryIdAndFilename(String parentType, Long parentId) {
+    default LambdaQueryWrapper<MediaFile> queryIdAndFilename(String parentType, Long parentId) {
         return lambdaQuery()
-                .eq(MediaInfo::getParentType, parentType)
-                .eq(MediaInfo::getParentId, parentId)
-                .select(MediaInfo::getId, MediaInfo::getFilename);
+                .eq(MediaFile::getParentType, parentType)
+                .eq(MediaFile::getParentId, parentId)
+                .select(MediaFile::getId, MediaFile::getFilename);
     }
 
     /**
@@ -39,12 +39,12 @@ public interface MediaInfoMapper extends IBaseMapper<MediaInfo> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaInfo> queryCover(String parentType, Long parentId) {
+    default LambdaQueryWrapper<MediaFile> queryCover(String parentType, Long parentId) {
         return lambdaQuery()
-                .eq(MediaInfo::getParentType, parentType)
-                .eq(MediaInfo::getParentId, parentId)
-                .eq(MediaInfo::getIsCover, true)
-                .eq(MediaInfo::getType, C.MEDIA_TYPE_IMAGE);
+                .eq(MediaFile::getParentType, parentType)
+                .eq(MediaFile::getParentId, parentId)
+                .eq(MediaFile::getIsCover, true)
+                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE);
     }
 
     /**
@@ -55,8 +55,8 @@ public interface MediaInfoMapper extends IBaseMapper<MediaInfo> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaInfo> queryCoverFilename(String parentType, Long parentId) {
-        return queryCover(parentType, parentId).select(MediaInfo::getFilename);
+    default LambdaQueryWrapper<MediaFile> queryCoverFilename(String parentType, Long parentId) {
+        return queryCover(parentType, parentId).select(MediaFile::getFilename);
     }
 
     /**
@@ -67,13 +67,13 @@ public interface MediaInfoMapper extends IBaseMapper<MediaInfo> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaInfo> queryCoverFilenames(String parentType, Collection<Long> parentId) {
+    default LambdaQueryWrapper<MediaFile> queryCoverFilenames(String parentType, Collection<Long> parentId) {
         return lambdaQuery()
-                .eq(MediaInfo::getParentType, parentType)
-                .in(MediaInfo::getParentId, parentId)
-                .eq(MediaInfo::getIsCover, true)
-                .eq(MediaInfo::getType, C.MEDIA_TYPE_IMAGE)
-                .select(MediaInfo::getParentId, MediaInfo::getFilename);
+                .eq(MediaFile::getParentType, parentType)
+                .in(MediaFile::getParentId, parentId)
+                .eq(MediaFile::getIsCover, true)
+                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .select(MediaFile::getParentId, MediaFile::getFilename);
     }
 
     /**
@@ -86,13 +86,13 @@ public interface MediaInfoMapper extends IBaseMapper<MediaInfo> {
      * @param exceptImageId 排除的图片 id
      * @return [MediaInfo]
      */
-    default LambdaQueryWrapper<MediaInfo> queryCover(String parentType, Long parentId, Long exceptImageId) {
+    default LambdaQueryWrapper<MediaFile> queryCover(String parentType, Long parentId, Long exceptImageId) {
         return lambdaQuery()
-                .eq(MediaInfo::getParentType, parentType)
-                .eq(MediaInfo::getParentId, parentId)
-                .eq(MediaInfo::getIsCover, true)
-                .eq(MediaInfo::getType, C.MEDIA_TYPE_IMAGE)
-                .ne(MediaInfo::getId, exceptImageId);
+                .eq(MediaFile::getParentType, parentType)
+                .eq(MediaFile::getParentId, parentId)
+                .eq(MediaFile::getIsCover, true)
+                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .ne(MediaFile::getId, exceptImageId);
     }
 
     /**
@@ -103,13 +103,13 @@ public interface MediaInfoMapper extends IBaseMapper<MediaInfo> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaUpdateWrapper<MediaInfo> clearCover(String parentType, Long parentId) {
+    default LambdaUpdateWrapper<MediaFile> clearCover(String parentType, Long parentId) {
         return lambdaUpdate()
-                .eq(MediaInfo::getParentType, parentType)
-                .eq(MediaInfo::getParentId, parentId)
-                .eq(MediaInfo::getIsCover, true)
-                .eq(MediaInfo::getType, C.MEDIA_TYPE_IMAGE)
-                .set(MediaInfo::getIsCover, false);
+                .eq(MediaFile::getParentType, parentType)
+                .eq(MediaFile::getParentId, parentId)
+                .eq(MediaFile::getIsCover, true)
+                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .set(MediaFile::getIsCover, false);
     }
 
     /**
@@ -120,13 +120,13 @@ public interface MediaInfoMapper extends IBaseMapper<MediaInfo> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaInfo> queryLatestImageId(String parentType, Long parentId) {
+    default LambdaQueryWrapper<MediaFile> queryLatestImageId(String parentType, Long parentId) {
         return lambdaQuery()
-                .eq(MediaInfo::getParentType, parentType)
-                .eq(MediaInfo::getParentId, parentId)
-                .eq(MediaInfo::getType, C.MEDIA_TYPE_IMAGE)
-                .orderByDesc(MediaInfo::getCreateTime)
-                .select(MediaInfo::getId);
+                .eq(MediaFile::getParentType, parentType)
+                .eq(MediaFile::getParentId, parentId)
+                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .orderByDesc(MediaFile::getCreateTime)
+                .select(MediaFile::getId);
     }
 
     /**
@@ -138,13 +138,18 @@ public interface MediaInfoMapper extends IBaseMapper<MediaInfo> {
      * @param parentId      关联 id
      * @param exceptImageId 排除的图片 id
      */
-    default LambdaQueryWrapper<MediaInfo> queryLatestImageId(String parentType, Long parentId, Long exceptImageId) {
+    default LambdaQueryWrapper<MediaFile> queryLatestImageId(String parentType, Long parentId, Long exceptImageId) {
         return lambdaQuery()
-                .eq(MediaInfo::getParentType, parentType)
-                .eq(MediaInfo::getParentId, parentId)
-                .eq(MediaInfo::getType, C.MEDIA_TYPE_IMAGE)
-                .orderByDesc(MediaInfo::getCreateTime)
-                .ne(MediaInfo::getId, exceptImageId)
-                .select(MediaInfo::getId);
+                .eq(MediaFile::getParentType, parentType)
+                .eq(MediaFile::getParentId, parentId)
+                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .orderByDesc(MediaFile::getCreateTime)
+                .ne(MediaFile::getId, exceptImageId)
+                .select(MediaFile::getId);
+    }
+
+    @Override
+    default String getMissingMessage() {
+        return "图片/视频不存在";
     }
 }
