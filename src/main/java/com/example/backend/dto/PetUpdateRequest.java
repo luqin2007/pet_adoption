@@ -22,13 +22,7 @@ public class PetUpdateRequest {
      * 宠物最小年龄
      */
     @Min(value = 0, message = "请输入正确的年龄")
-    private Integer minAge;
-
-    /**
-     * 宠物最大年龄
-     */
-    @Min(value = 0, message = "请输入正确的年龄")
-    private Integer maxAge;
+    private Integer age;
 
     /**
      * 宠物性别
@@ -68,13 +62,11 @@ public class PetUpdateRequest {
 
     public void applyTo(Pet info) {
         info.setName(name);
-        info.setMinAge(minAge);
-        info.setMaxAge(maxAge);
+        info.setAge(age);
         info.setSex(sex);
         info.setType(type);
         info.setBreed(breed);
         info.setHealth(health);
-        info.setVaccine(vaccine);
         info.setDescription(description);
         info.setUpdateTime(new Date(System.currentTimeMillis()));
     }

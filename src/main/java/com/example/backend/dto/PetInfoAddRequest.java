@@ -69,7 +69,6 @@ public class PetInfoAddRequest extends LocationRequest {
                 type,
                 StringUtils.notNull(breed),
                 StringUtils.notNull(health),
-                "",
                 StringUtils.notNull(description),
                 PET_STATUS_WAITING,
                 false,

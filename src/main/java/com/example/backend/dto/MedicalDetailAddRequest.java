@@ -14,6 +14,10 @@ public class MedicalDetailAddRequest {
     @NotNull(message = "请先创建就诊记录")
     private Long recordId;
 
+    @NotNull(message = "请简要描述")
+    @NotEmpty(message = "请简要描述")
+    private String summary;
+
     @NotNull(message = "请描述问题")
     @NotEmpty(message = "请描述问题")
     private String description;
@@ -53,7 +57,8 @@ public class MedicalDetailAddRequest {
                 new Date(),
                 new Date(),
                 false,
-                "",
+                false,
+                summary,
                 description,
                 history,
                 pastHistory,
