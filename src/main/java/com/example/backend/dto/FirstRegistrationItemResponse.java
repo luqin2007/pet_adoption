@@ -62,6 +62,6 @@ public class FirstRegistrationItemResponse {
      */
     public static FirstRegistrationItemResponse createBatch(FirstRegistration firstRegistration,
                                                             Map<Long, Pet> pets, Map<Long, User> users) {
-        return create(firstRegistration, pets.get(firstRegistration.getPetId()), users.get(firstRegistration.getUserId()));
+        return create(firstRegistration, pets.get(firstRegistration.getPetId()), users.get(firstRegistration.getRegistrarId()));
     }
 }
