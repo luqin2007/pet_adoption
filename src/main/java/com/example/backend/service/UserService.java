@@ -38,6 +38,9 @@ import static com.example.backend.entity.property.MediaType.IMAGE;
 import static com.example.backend.entity.property.ParentType.USER;
 import static com.example.backend.util.C.*;
 
+/**
+ * 用户管理
+ */
 @Service
 @RequiredArgsConstructor
 public class UserService extends BaseService<UserMapper, User> implements UserDetailsService {
@@ -53,7 +56,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      * 用户注册
      */
     @Transactional
-    public UserResponse register(UserRegisterRequest request) {
+    public UserResponse register(UserRegisterTable request) {
         // 校验必要的参数
         if (isUsernameExist(request.getUsername())) {
             throw ServiceException.conflict("用户名已存在");
@@ -69,6 +72,18 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         // 注册
         User user = request.createUser(passwordEncoder);
         save(user);
+
+        // 上传头像
+        MultipartFile avatar = request.getAvatar();
+        if (avatar != null && !avatar.isEmpty()) {
+            Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(avatar);
+            requireEqual(extAndType.getSecond(), IMAGE, "头像格式错误");
+            Pair<String, String> nameAndExt = FileUtils.getNameAndExtension(avatar.getOriginalFilename());
+            String filename = FileUtils.generateFilename(nameAndExt.getFirst(), user.getCreateTime(), extAndType.getFirst());
+            Path path = FileUtils.generateFilePath(USER, user.getId());
+            FileUtils.upload(avatar, filename, path);
+            update(getBaseMapper().updateAvatar(user.getId(), filename));
+        }
 
         // 登录
         return login(request.getUsername(), request.getPassword());
@@ -151,7 +166,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      * 获取用户信息
      */
     public UserResponse getUser(String username) {
-        User user = requireOne(User::getUsername, username);
+        User user = requireOne(baseMapper.queryByUser(username));
         return UserResponse.fromEntity(user);
     }
 
@@ -181,7 +196,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     /**
      * 获取所有用户
      */
-    public Page<UserResponse> getAllUsers(PageRequest page) {
+    public Page<UserResponse> getAllUsers(PageParams page) {
         // 权限校验
         User login = getLoginUser();
         requirePermission(login.isWorker());
@@ -196,7 +211,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     public void forgetPassword(String email) {
         // 查找用户
         email = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        User user = requireOne(User::getEmail, email);
+        User user = requireOne(baseMapper.queryByEmail(email));
 
         // 生成随机密码，保存相关信息
         // 有效期 10min
@@ -220,7 +235,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         requireExist(email, "链接已过期");
 
         // 更新密码
-        User user = requireOne(User::getEmail, email);
+        User user = requireOne(baseMapper.queryByEmail(email));
         request.applyTo(user, passwordEncoder);
         updateById(user);
     }
@@ -247,10 +262,12 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     /**
      * 上传用户头像
      */
-    public UserResponse uploadAvatar(Long userId, MultipartFile file) {
+    @Transactional
+    public String uploadAvatar(Long userId, MultipartFile file) {
         // 校验用户权限
         User login = getLoginUser();
-        User user = requireById(userId);
+        User user = requireById(userId,
+                User::getId, User::getAvatar);
         requirePermission(Objects.equals(login.getId(), userId) || login.isWorker());
 
         // 检查图片
@@ -265,9 +282,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
         // 更新信息
         String oldAvatar = user.getAvatar();
-        user.setAvatar(filename);
-        updateById(user);
-        UserResponse response = UserResponse.fromEntity(user);
+        update(baseMapper.updateAvatar(userId, filename));
 
         // 删除旧图片
         if (oldAvatar != null) {
@@ -275,7 +290,24 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
             FileUtils.tryDeleteFile(oldFile);
         }
 
-        return response;
+        return FileUtils.generateAssetUrl(USER, userId, filename);
+    }
+
+    /**
+     * 删除用户头像
+     */
+    @Transactional
+    public void deleteAvatar(Long userId) {
+        User user = getLoginUser();
+        if (StringUtils.hasText(user.getAvatar())) {
+            // 删除文件
+            Path path = FileUtils.generateFilePath(USER, userId, user.getAvatar());
+            FileUtils.tryDeleteFile(path);
+
+            // 更新
+            user.setAvatar(null);
+            update(baseMapper.updateAvatar(userId, null));
+        }
     }
 
     /**
@@ -292,12 +324,17 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         return getBatchByRoles(roleSet, User::getId);
     }
 
+    /*
+     * 根据角色批量获取用户某列
+     */
     private <T> List<T> getBatchByRoles(Set<UserRole> roleSet, SFunction<User, T> column) {
         // 生成所需的 role
         int role = Stream.ofNullable(roleSet).flatMap(Set::stream)
                 .mapToInt(UserRole::getMatchMask)
                 .reduce(0, (a, b) -> a | b);
-        return getBaseMapper().selectObjsByRole(role, column);
+        return list(baseMapper.queryByRole(role).select(column)).stream()
+                .map(column)
+                .toList();
     }
 
     @Override

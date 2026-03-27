@@ -7,7 +7,10 @@ import org.springframework.util.ObjectUtils;
 import java.util.Objects;
 import java.util.Optional;
 
-public interface IBaseCheck {
+/**
+ * 校验相关接口方法
+ */
+public interface IValidates {
 
     /**
      * 获取当前登录用户

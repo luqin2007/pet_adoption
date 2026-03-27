@@ -2,7 +2,7 @@ package com.example.backend.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.example.backend.dto.RehabPlanQueryRequest;
+import com.example.backend.dto.RehabPlanQueryParams;
 import com.example.backend.entity.RehabPlan;
 import com.example.backend.entity.property.RehabPlanStatus;
 import org.apache.ibatis.annotations.Mapper;
@@ -11,16 +11,21 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * 索引：
- * - (petId)
+ * 索引：<br>
+ * - (petId)<br>
  * - (doctorId)
  */
 @Mapper
 public interface RehabPlanMapper extends IBaseMapper<RehabPlan> {
 
-    default LambdaQueryWrapper<RehabPlan> queryByRequest(RehabPlanQueryRequest request) {
-        List<Long> users = request.getUser();
-        List<Long> pets = request.getPet();
+    /**
+     * 根据查询条件查询康复计划<br>
+     * - 索引：(petId)<br>
+     * - 索引：(doctorId)
+     */
+    default LambdaQueryWrapper<RehabPlan> queryByRequest(RehabPlanQueryParams params) {
+        List<Long> users = params.getUser();
+        List<Long> pets = params.getPet();
         require(users == null || pets == null, "无法同时查询 user 和 pet");
 
         LambdaQueryWrapper<RehabPlan> query = lambdaQuery();
@@ -35,6 +40,9 @@ public interface RehabPlanMapper extends IBaseMapper<RehabPlan> {
         return query;
     }
 
+    /**
+     * 更新康复计划状态
+     */
     default LambdaUpdateWrapper<RehabPlan> updateStatusById(Long planId, RehabPlanStatus status) {
         return lambdaUpdate()
                 .eq(RehabPlan::getId, planId)

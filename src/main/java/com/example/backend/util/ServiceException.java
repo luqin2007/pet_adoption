@@ -2,6 +2,9 @@ package com.example.backend.util;
 
 import lombok.Getter;
 
+/**
+ * 服务器错误信息
+ */
 @Getter
 public class ServiceException extends RuntimeException {
 

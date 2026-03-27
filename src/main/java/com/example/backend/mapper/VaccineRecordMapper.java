@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.Set;
 
 /**
- * 索引：
+ * 索引：<br>
  * - (petId, createTime)
  */
 @Mapper
@@ -22,6 +22,9 @@ public interface VaccineRecordMapper extends IBaseMapper<VaccineRecord> {
                 .orderByDesc(VaccineRecord::getCreateTime);
     }
 
+    /**
+     * 获取宠物的疫苗记录（倒序）
+     */
     default LambdaQueryWrapper<VaccineRecord> queryByPets(Set<Long> petIds) {
         return new LambdaQueryWrapper<VaccineRecord>()
                 .in(VaccineRecord::getPetId, petIds)

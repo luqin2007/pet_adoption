@@ -2,7 +2,8 @@ package com.example.backend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
-import com.example.backend.mapper.HealthAssessmentResponse;
+import com.example.backend.dto.HealthAssessmentResponse;
+import com.example.backend.mapper.MedicalDetailQueryParams;
 import com.example.backend.service.MedicalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -11,47 +12,49 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 医疗护理管理模块
- * - 初诊登记 ( √ × )
- * ---- 初诊登记 addFirstRegistration ( √ × )
- * ---- 获取初诊登记 getFirstRegistration ( √ × )
- * ---- 获取所有初诊登记 getFirstRegistrations ( √ × )
- * - 诊疗管理 ( √ × )
- * ---- 创建就诊记录 addMedicalRecord ( √ × )
- * ---- 更新就诊记录 updateMedicalRecord ( √ × )
- * ---- 获取就诊记录 getMedicalRecord ( √ × )
- * ---- 查询就诊记录 getMedicalRecords ( √ × )
- * - 病历创建 ( √ × )
- * ---- 创建病历 addMedicalDetail ( √ × )
- * ---- 修改病历 updateMedicalDetail ( √ × )
- * ---- 完成病历 completeMedicalDetail ( √ × )
- * ---- 添加检查诊断 addDiagnosis ( √ × )
- * ---- 废弃检查诊断 discardDiagnosis ( √ × )
- * ---- 添加治疗计划 addTreatmentPlan ( √ × )
- * ---- 废弃治疗计划 discardTreatmentPlan ( √ × )
- * - 医疗记录 ( √ × )
- * ---- 开始上传记录 beginExamination ( √ × )
- * ---- 上传记录文件 uploadExamination ( √ × )
- * ---- 删除记录文件（上传时） deleteExamination ( √ × )
- * ---- 新建记录信息 addExamination ( √ × )
- * ---- 获取检查记录 getExamination ( √ × )
- * - 疫苗接种 ( √ × )
- * ---- 接种疫苗 addVaccine ( √ × )
- * ---- 接种记录 getVaccines ( √ × )
- * ---- 最新接种记录 getLatestVaccines ( √ × )
- * - 驱虫管理 ( √ × )
- * ---- 驱虫 addDeworm ( √ × )
- * ---- 驱虫记录 getDeworms ( √ × )
- * - 康复护理 ( √ × )
- * ---- 添加康复计划 addRehabPlan ( √ × )
- * ---- 获取康复计划 getRehabPlan ( √ × )
- * ---- 获取康复计划 getRehabPlans ( √ × )
- * ---- 更新康复计划状态 updateRehabPlanStatus ( √ × )
- * ---- 添加执行记录 addRehabRecord ( √ × )
- * ---- 获取执行记录 getRehabRecords ( √ × )
- * - 健康评估 ( √ × )
- * ---- 创建健康评估 addHealthAssessment ( √ × )
- * ---- 获取健康评估 getHealthAssessment ( √ × )
+ * 医疗护理管理模块<br>
+ * - 初诊登记 ( √ × )<br>
+ * ---- 初诊登记 addFirstRegistration ( √ × )<br>
+ * ---- 获取初诊登记 getFirstRegistration ( √ × )<br>
+ * ---- 获取所有初诊登记 getFirstRegistrations ( √ × )<br>
+ * - 诊疗管理 ( √ × )<br>
+ * ---- 创建就诊记录 addMedicalRecord ( √ × )<br>
+ * ---- 更新就诊记录 updateMedicalRecord ( √ × )<br>
+ * ---- 获取就诊记录 getMedicalRecord ( √ × )<br>
+ * ---- 查询就诊记录 getMedicalRecords ( √ × )<br>
+ * - 病历创建 ( √ × )<br>
+ * ---- 创建病历 addMedicalDetail ( √ × )<br>
+ * ---- 获取病历 getMedicalDetail ( √ × )<br>
+ * ---- 获取病历 getMedicalDetails ( √ × )<br>
+ * ---- 修改病历 updateMedicalDetail ( √ × )<br>
+ * ---- 完成病历 completeMedicalDetail ( √ × )<br>
+ * ---- 添加检查诊断 addDiagnosis ( √ × )<br>
+ * ---- 废弃检查诊断 discardDiagnosis ( √ × )<br>
+ * ---- 添加治疗计划 addTreatmentPlan ( √ × )<br>
+ * ---- 废弃治疗计划 discardTreatmentPlan ( √ × )<br>
+ * - 医疗记录 ( √ × )<br>
+ * ---- 开始上传记录 beginExamination ( √ × )<br>
+ * ---- 上传记录文件 uploadExamination ( √ × )<br>
+ * ---- 删除记录文件（上传时） deleteExamination ( √ × )<br>
+ * ---- 新建记录信息 addExamination ( √ × )<br>
+ * ---- 获取检查记录 getExamination ( √ × )<br>
+ * - 疫苗接种 ( √ × )<br>
+ * ---- 接种疫苗 addVaccine ( √ × )<br>
+ * ---- 接种记录 getVaccines ( √ × )<br>
+ * ---- 最新接种记录 getLatestVaccines ( √ × )<br>
+ * - 驱虫管理 ( √ × )<br>
+ * ---- 驱虫 addDeworm ( √ × )<br>
+ * ---- 驱虫记录 getDeworms ( √ × )<br>
+ * - 康复护理 ( √ × )<br>
+ * ---- 添加康复计划 addRehabPlan ( √ × )<br>
+ * ---- 获取康复计划 getRehabPlan ( √ × )<br>
+ * ---- 获取康复计划 getRehabPlans ( √ × )<br>
+ * ---- 更新康复计划状态 updateRehabPlanStatus ( √ × )<br>
+ * ---- 添加执行记录 addRehabRecord ( √ × )<br>
+ * ---- 获取执行记录 getRehabRecords ( √ × )<br>
+ * - 健康评估 ( √ × )<br>
+ * ---- 创建健康评估 addHealthAssessment ( √ × )<br>
+ * ---- 获取健康评估 getHealthAssessment ( √ × )<br>
  * ---- 获取健康评估 getHealthAssessments ( √ × )
  */
 @Validated
@@ -69,7 +72,8 @@ public class MedicalCareController {
     }
 
     @GetMapping("/first")
-    public Result<Page<FirstRegistrationItemResponse>> getFirstVisitRegistrations(FirstRegistrationQueryRequest query, PageRequest page) {
+    public Result<Page<FirstRegistrationItemResponse>> getFirstVisitRegistrations(FirstRegistrationQueryParams query,
+                                                                                  PageParams page) {
         Page<FirstRegistrationItemResponse> response = medicalService.getFirstVisitRegistrations(query, page);
         return Result.success(response);
     }
@@ -101,19 +105,32 @@ public class MedicalCareController {
     }
 
     @GetMapping("/record")
-    public Result<Page<MedicalRecordResponse>> getMedicalRecords(MedicalRecordQueryRequest query, PageRequest page) {
+    public Result<Page<MedicalRecordResponse>> getMedicalRecords(MedicalRecordQueryParams query, PageParams page) {
         Page<MedicalRecordResponse> response = medicalService.getMedicalRecords(query, page);
         return Result.success(response);
     }
 
     @PostMapping("/detail")
-    public Result<MedicalDetailResponse> addMedicalDetail(MedicalDetailAddRequest request) {
+    public Result<MedicalDetailResponse> addMedicalDetail(@RequestBody MedicalDetailAddRequest request) {
         MedicalDetailResponse response = medicalService.addMedicalDetail(request);
         return Result.success(response);
     }
 
+    @GetMapping("/detail/{id}")
+    public Result<MedicalDetailResponse> getMedicalDetail(@PathVariable("id") Long detailId) {
+        MedicalDetailResponse response = medicalService.getMedicalDetail(detailId);
+        return Result.success(response);
+    }
+
+    @GetMapping("/detail")
+    public Result<Page<MedicalDetailResponse>> getMedicalDetails(MedicalDetailQueryParams query, PageParams page) {
+        Page<MedicalDetailResponse> response = medicalService.getMedicalDetails(query, page);
+        return Result.success(response);
+    }
+
     @PostMapping("/detail/{id}")
-    public Result<MedicalDetailResponse> updateMedicalDetail(@PathVariable("id") Long detailId, MedicalDetailUpdateRequest request) {
+    public Result<MedicalDetailResponse> updateMedicalDetail(@PathVariable("id") Long detailId,
+                                                             @RequestBody MedicalDetailUpdateRequest request) {
         MedicalDetailResponse response = medicalService.updateMedicalDetail(detailId, request);
         return Result.success(response);
     }
@@ -125,9 +142,9 @@ public class MedicalCareController {
     }
 
     @PostMapping("/detail/{id}/diagnosis")
-    public Result<ExaminationDiagnosisResponse> addDiagnosis(@PathVariable("id") Long detailId,
-                                                             @RequestBody ExaminationDiagnosisAddRequest request) {
-        ExaminationDiagnosisResponse response = medicalService.addDiagnosis(detailId, request);
+    public Result<DiagnosisResponse> addDiagnosis(@PathVariable("id") Long detailId,
+                                                  @RequestBody DiagnosisAddRequest request) {
+        DiagnosisResponse response = medicalService.addDiagnosis(detailId, request);
         return Result.success(response);
     }
 
@@ -138,7 +155,8 @@ public class MedicalCareController {
     }
 
     @PostMapping("/detail/{id}/plan")
-    public Result<TreatmentPlanResponse> addTreatmentPlan(@PathVariable("id") Long detailId, TreatmentPlanAddRequest request) {
+    public Result<TreatmentPlanResponse> addTreatmentPlan(@PathVariable("id") Long detailId,
+                                                          @RequestBody TreatmentPlanAddRequest request) {
         TreatmentPlanResponse response = medicalService.addTreatmentPlan(detailId, request);
         return Result.success(response);
     }
@@ -156,7 +174,7 @@ public class MedicalCareController {
     }
 
     @PostMapping("/exam/{_id}/doc")
-    public Result<String> uploadExamination(@PathVariable("_id") String examId, ExaminationFileUploadRequest request) {
+    public Result<String> uploadExamination(@PathVariable("_id") String examId, ExaminationFileUploadTable request) {
         String filename = medicalService.uploadExamination(examId, request);
         return Result.success(filename);
     }
@@ -168,7 +186,8 @@ public class MedicalCareController {
     }
 
     @PostMapping("/exam/{_id}")
-    public Result<ExaminationResponse> addExamination(@PathVariable("_id") String examId, ExaminationAddRequest request) {
+    public Result<ExaminationResponse> addExamination(@PathVariable("_id") String examId,
+                                                      @RequestBody ExaminationAddRequest request) {
         ExaminationResponse response = medicalService.addExamination(examId, request);
         return Result.success(response);
     }
@@ -222,7 +241,7 @@ public class MedicalCareController {
     }
 
     @GetMapping("/rehab")
-    public Result<Page<RehabPlanResponse>> getRehabPlans(RehabPlanQueryRequest query, PageRequest page) {
+    public Result<Page<RehabPlanResponse>> getRehabPlans(RehabPlanQueryParams query, PageParams page) {
         Page<RehabPlanResponse> response = medicalService.getRehabPlans(query, page);
         return Result.success(response);
     }
@@ -235,7 +254,7 @@ public class MedicalCareController {
     }
 
     @PostMapping("/rehab/{id}/record")
-    public Result<RehabRecordResponse> addRehabRecord(@PathVariable("id") Long planId, RehabRecordAddRequest request) {
+    public Result<RehabRecordResponse> addRehabRecord(@PathVariable("id") Long planId, RehabRecordAddTable request) {
         RehabRecordResponse response = medicalService.addRehabRecord(planId, request);
         return Result.success(response);
     }
@@ -260,13 +279,13 @@ public class MedicalCareController {
     }
 
     @GetMapping("/health")
-    public Result<Page<HealthAssessmentResponse>> getHealthAssessments(PageRequest page) {
+    public Result<Page<HealthAssessmentResponse>> getHealthAssessments(PageParams page) {
         Page<HealthAssessmentResponse> response = medicalService.getHealthAssessments(null, page);
         return Result.success(response);
     }
 
     @GetMapping("/health/pet/{id}")
-    public Result<Page<HealthAssessmentResponse>> getHealthAssessments(@PathVariable("id") Long petId, PageRequest page) {
+    public Result<Page<HealthAssessmentResponse>> getHealthAssessments(@PathVariable("id") Long petId, PageParams page) {
         Page<HealthAssessmentResponse> response = medicalService.getHealthAssessments(petId, page);
         return Result.success(response);
     }

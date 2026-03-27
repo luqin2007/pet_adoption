@@ -4,7 +4,6 @@ import com.example.backend.entity.property.UserRole;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -17,6 +16,9 @@ public sealed abstract class NotificationEvent permits NotificationEvent.Mail, N
 
     private String content;
 
+    /**
+     * 发送邮件
+     */
     @Data
     @EqualsAndHashCode(callSuper = true)
     public static final class Mail extends NotificationEvent {
@@ -26,6 +28,9 @@ public sealed abstract class NotificationEvent permits NotificationEvent.Mail, N
         private Set<UserRole> roles = Set.of();
     }
 
+    /**
+     * 发送站内通知
+     */
     @Data
     @EqualsAndHashCode(callSuper = true)
     public static final class System extends NotificationEvent {
@@ -37,6 +42,13 @@ public sealed abstract class NotificationEvent permits NotificationEvent.Mail, N
         private String jumpTo;
     }
 
+    /**
+     * 创建向指定邮箱发送邮件的事件
+     *
+     * @param title   标题
+     * @param content 内容
+     * @param address 邮件地址
+     */
     public static NotificationEvent.Mail mail(String title, String content, String address) {
         NotificationEvent.Mail mail = new NotificationEvent.Mail();
         mail.setTitle(title);
@@ -45,6 +57,13 @@ public sealed abstract class NotificationEvent permits NotificationEvent.Mail, N
         return mail;
     }
 
+    /**
+     * 创建向指定邮箱群发邮件的事件
+     *
+     * @param title     标题
+     * @param content   内容
+     * @param addresses 邮件地址
+     */
     public static NotificationEvent.Mail mail(String title, String content, Set<String> addresses) {
         NotificationEvent.Mail mail = new NotificationEvent.Mail();
         mail.setTitle(title);
@@ -53,7 +72,14 @@ public sealed abstract class NotificationEvent permits NotificationEvent.Mail, N
         return mail;
     }
 
-    public static NotificationEvent.Mail mailToRoles(String title, String content, UserRole role) {
+    /**
+     * 创建向指定角色用户群发邮件的事件
+     *
+     * @param title   标题
+     * @param content 内容
+     * @param role    用户角色
+     */
+    public static NotificationEvent.Mail mail(String title, String content, UserRole role) {
         NotificationEvent.Mail mail = new NotificationEvent.Mail();
         mail.setTitle(title);
         mail.setContent(content);
@@ -61,15 +87,29 @@ public sealed abstract class NotificationEvent permits NotificationEvent.Mail, N
         return mail;
     }
 
-    public static NotificationEvent.System system(String title, String content, String jumpTo, UserRole... roles) {
+    /**
+     * 创建向指定角色用户群发站内通知的事件
+     *
+     * @param title   标题
+     * @param content 内容
+     * @param role    用户角色
+     */
+    public static NotificationEvent.System system(String title, String content, String jumpTo, UserRole role) {
         NotificationEvent.System system = new NotificationEvent.System();
         system.setTitle(title);
         system.setContent(content);
         system.setJumpTo(jumpTo);
-        system.setRoles(Set.of(roles));
+        system.setRoles(Set.of(role));
         return system;
     }
 
+    /**
+     * 创建向指定用户群发站内通知的事件
+     *
+     * @param title   标题
+     * @param content 内容
+     * @param users   用户
+     */
     public static NotificationEvent.System system(String title, String content, String jumpTo, Set<Long> users) {
         NotificationEvent.System system = new NotificationEvent.System();
         system.setTitle(title);

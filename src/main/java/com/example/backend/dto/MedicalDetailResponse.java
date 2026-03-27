@@ -11,6 +11,7 @@ import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -33,7 +34,7 @@ public class MedicalDetailResponse {
     private Double heartRate;
     private Double respiratoryRate;
     private String physicalExam;
-    private List<ExaminationDiagnosisResponse> objectiveDiagnoses;
+    private List<DiagnosisResponse> objectiveDiagnoses;
 
     // ---- A 评估诊断
     private String diagnosis;
@@ -64,15 +65,11 @@ public class MedicalDetailResponse {
 
     /**
      * Pet: id, name, sex, type, breed<br>
-     * MedicalRecord: petAge<br>
-     * User: id, username, avatar<br>
-     * <br>
-     * treatments: MedicalDetail.id
+     * MedicalRecord: petId, petAge<br>
+     * User: id, username, avatar
      */
-    public static MedicalDetailResponse create(MedicalDetail detail,
-                                               MedicalRecord record,
-                                               User doctor,
-                                               List<ExaminationDiagnosisResponse> examinationDiagnoses,
+    public static MedicalDetailResponse create(MedicalDetail detail, MedicalRecord record, User doctor,
+                                               List<DiagnosisResponse> diagnoses,
                                                List<TreatmentPlanResponse> treatments,
                                                Pet pet, String cover, List<PetTagResponse> tags) {
         return new MedicalDetailResponse(
@@ -89,7 +86,7 @@ public class MedicalDetailResponse {
                 detail.getHeartRate(),
                 detail.getRespiratoryRate(),
                 detail.getPhysicalExam(),
-                examinationDiagnoses,
+                diagnoses,
                 detail.getDiagnosis(),
                 detail.getDifferential(),
                 detail.getExam(),
@@ -107,5 +104,35 @@ public class MedicalDetailResponse {
                 pet.getBreed(),
                 tags,
                 cover);
+    }
+
+    /**
+     * Pet: id, name, sex, type, breed<br>
+     * MedicalRecord: petId, petAge<br>
+     * User: id, username, avatar<br>
+     * <br>
+     * records: MedicalDetail.id<br>
+     * doctors: MedicalDetail.doctorId<br>
+     * diagnoses: MedicalDetail.id<br>
+     * treatments: MedicalDetail.id<br>
+     * pets: MedicalRecord.petId<br>
+     * covers: MedicalRecord.petId<br>
+     * tags: MedicalRecord.petId
+     */
+    public static MedicalDetailResponse createBatch(MedicalDetail detail,
+                                                    Map<Long, MedicalRecord> records,
+                                                    Map<Long, User> doctors,
+                                                    Map<Long, List<DiagnosisResponse>> diagnoses,
+                                                    Map<Long, List<TreatmentPlanResponse>> treatments,
+                                                    Map<Long, Pet> pets, Map<Long, String> covers,
+                                                    Map<Long, List<PetTagResponse>> tags) {
+        MedicalRecord record = records.get(detail.getRecordId());
+        return create(detail, record,
+                doctors.get(detail.getDoctorId()),
+                diagnoses.get(detail.getId()),
+                treatments.get(detail.getId()),
+                pets.get(record.getPetId()),
+                covers.get(record.getPetId()),
+                tags.get(record.getPetId()));
     }
 }

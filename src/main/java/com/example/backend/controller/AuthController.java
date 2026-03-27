@@ -17,10 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 /**
- * 认证相关 API
- * - 刷新认证
+ * 认证相关 API<br>
+ * - 刷新认证<br>
  * - 登出
- * TODO 是否需要创建对应 Service 层？
  */
 @Validated
 @RestController

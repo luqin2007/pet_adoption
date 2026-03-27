@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 import static com.example.backend.entity.property.MediaType.IMAGE;
 import static com.example.backend.entity.property.ParentType.PET;
 
+/**
+ * 宠物管理
+ */
 @Service
 @RequiredArgsConstructor
 public class PetService extends BaseService<PetMapper, Pet> {
@@ -53,7 +56,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
     /**
      * 获取流浪宠物列表
      */
-    public Page<PetResponse> getPets(PageRequest page) {
+    public Page<PetResponse> getPets(PageParams page) {
         Page<Pet> result = page(page.createPage());
         List<Pet> records = result.getRecords();
         Set<Long> petIds = records.stream().map(Pet::getId).collect(Collectors.toSet());
@@ -116,7 +119,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
      * 上传流浪宠物图片/视频
      */
     @Transactional
-    public PetMediaResponse uploadMedia(Long petId, PetMediaUploadRequest request) {
+    public PetMediaResponse uploadMedia(Long petId, PetMediaUploadTable request) {
         // 检查用户
         User user = getLoginUser();
 
@@ -206,7 +209,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
      * 获取宠物封面图片
      */
     public String getCoverById(Long petId) {
-        MediaFile info = mediaFileMapper.selectOne(mediaFileMapper.queryCoverFilename(PET, petId));
+        MediaFile info = mediaFileMapper.selectOne(mediaFileMapper.queryCover(PET, petId));
         return info == null ? null : FileUtils.generateAssetUrl(PET, petId, info.getFilename());
     }
 
@@ -217,6 +220,13 @@ public class PetService extends BaseService<PetMapper, Pet> {
         return petTagMapper.selectList(petTagMapper.queryByPet(petId)).stream()
                 .map(PetTagResponse::create)
                 .toList();
+    }
+
+    /**
+     * 获取流浪宠物标签
+     */
+    public Map<Long, List<PetTagResponse>> getTags(Set<Long> petIds) {
+        return petTagMapper.groupList(petTagMapper.queryByPets(petIds), PetTag::getPetId, PetTagResponse::create);
     }
 
     /**
@@ -265,12 +275,12 @@ public class PetService extends BaseService<PetMapper, Pet> {
     @Transactional
     public PetStatusRecordResponse updateStatus(Long petId, PetStatusUpdateRequest request) {
         // 校验权限
-        Pet pet = requireById(petId);
+        Pet pet = requireById(petId, Pet::getId, Pet::getStatus);
         User login = getLoginUser();
         checkUserPermission(pet, login);
 
         // 保存记录
-        PetStatusRecord record = request.buildStatusRecord(pet, login.getId());
+        PetStatusRecord record = request.create(pet, login.getId());
         petStatusRecordMapper.insert(record);
         pet.setStatus(record.getTo());
         updateById(pet);
@@ -280,22 +290,24 @@ public class PetService extends BaseService<PetMapper, Pet> {
     /**
      * 获取流浪宠物状态流转记录
      */
-    public Page<PetStatusRecordResponse> getStatusRecords(Long petId, PageRequest pageRequest, Set<Long> userFilter) {
+    public Page<PetStatusRecordResponse> getStatusRecords(Long petId, PageParams pageParams, Set<Long> userFilter) {
         // 权限校验
         User login = getLoginUser();
         requirePermission(login.isWorker());
 
         // 数据查询
         LambdaQueryWrapper<PetStatusRecord> wrapper = petStatusRecordMapper.queryByPet(petId, userFilter);
-        Page<PetStatusRecord> result = petStatusRecordMapper.selectPage(pageRequest.createPage(), wrapper);
+        Page<PetStatusRecord> result = petStatusRecordMapper.selectPage(pageParams.createPage(), wrapper);
 
         // 数据转换
         List<PetStatusRecord> records = result.getRecords();
         Set<Long> petIds = records.stream().map(PetStatusRecord::getPetId).collect(Collectors.toSet());
         Set<Long> userIds = records.stream().map(PetStatusRecord::getUserId).collect(Collectors.toSet());
-        Map<Long, Pet> pets = groupById(petIds, Pet::getId, Pet::getName);
+        Map<Long, Pet> pets = groupById(petIds,
+                Pet::getId, Pet::getName);
         Map<Long, String> covers = getCoversByPetIds(petIds);
-        Map<Long, User> users = userService.groupById(userIds);
+        Map<Long, User> users = userService.groupById(userIds,
+                User::getId, User::getUsername, User::getAvatar);
         return convertDto(result, record -> PetStatusRecordResponse.createBatch(record, pets, covers, users));
     }
 
@@ -317,7 +329,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
      * 根据 id 批量获取流浪宠物封面地址
      */
     public Map<Long, String> getCoversByPetIds(Set<Long> petIds) {
-        return mediaFileMapper.group(mediaFileMapper.queryCoverFilenames(PET, petIds), MediaFile::getFilename);
+        return mediaFileMapper.group(mediaFileMapper.queryCovers(PET, petIds), MediaFile::getFilename);
     }
 
     @Autowired

@@ -12,7 +12,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExaminationDiagnosis implements IId {
+public class Diagnosis implements IId {
 
     /**
      * *主键 int*

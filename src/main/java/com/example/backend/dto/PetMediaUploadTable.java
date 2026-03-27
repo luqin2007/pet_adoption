@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Date;
 
 @Data
-public class PetMediaUploadRequest {
+public class PetMediaUploadTable {
 
     @NotBlank(message = "名称为空")
     private String name;

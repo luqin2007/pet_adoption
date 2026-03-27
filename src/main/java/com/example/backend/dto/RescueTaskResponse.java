@@ -8,13 +8,9 @@ import lombok.Data;
 public class RescueTaskResponse {
 
     private Long id;
-
     private Long previousId;
-
     private String summary;
-
     private String description;
-
     private RescueTaskType type;
 
     public static RescueTaskResponse fromEntity(RescueTask entity) {

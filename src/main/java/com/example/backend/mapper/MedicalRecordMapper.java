@@ -1,14 +1,14 @@
 package com.example.backend.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.backend.dto.MedicalRecordQueryRequest;
+import com.example.backend.dto.MedicalRecordQueryParams;
 import com.example.backend.entity.MedicalRecord;
 
 import java.util.Date;
 
 /**
- * 索引：
- * - (petId, status, createTime)
+ * 索引：<br>
+ * - (petId, status, createTime)<br>
  * - (userId, status, createTime)
  */
 public interface MedicalRecordMapper extends IBaseMapper<MedicalRecord> {
@@ -19,16 +19,16 @@ public interface MedicalRecordMapper extends IBaseMapper<MedicalRecord> {
     }
 
     /**
-     * 索引：
-     * - (petId, type, createTime)
+     * 索引：<br>
+     * - (petId, type, createTime)<br>
      * - (userId, type, createTime)
      */
-    default LambdaQueryWrapper<MedicalRecord> queryByRequest(MedicalRecordQueryRequest request) {
+    default LambdaQueryWrapper<MedicalRecord> queryByRequest(MedicalRecordQueryParams params) {
         // 校验查询参数：pet, user 互斥
-        Long pet = request.getPet();
-        Long doctor = request.getDoctor();
-        Integer status = request.getStatus();
-        Date time0 = request.getTime0(), time1 = request.getTime1();
+        Long pet = params.getPet();
+        Long doctor = params.getDoctor();
+        Integer status = params.getStatus();
+        Date time0 = params.getTime0(), time1 = params.getTime1();
         require(pet == null || doctor == null, "无法同时查询宠物 id 与接诊人");
 
         LambdaQueryWrapper<MedicalRecord> query = lambdaQuery();

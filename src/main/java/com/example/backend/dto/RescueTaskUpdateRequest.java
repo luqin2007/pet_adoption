@@ -3,6 +3,7 @@ package com.example.backend.dto;
 import com.example.backend.entity.RescueTask;
 import com.example.backend.entity.property.RescueTaskType;
 import com.example.backend.util.StringUtils;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -10,22 +11,14 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class RescueTaskUpdateRequest extends LocationRequest {
 
-    /**
-     * 任务简介
-     */
+    @NotBlank(message = "请输入任务简介")
     private String summary;
 
-    /**
-     * 详细描述
-     */
+    @NotBlank(message = "请输入详细描述")
     private String description;
 
-    /**
-     * 任务类型
-     */
+    @NotBlank(message = "请输入任务类型")
     private String type;
-
-    private String reason;
 
     public void applyTo(RescueTask task) {
         if (StringUtils.hasText(summary)) task.setSummary(summary);

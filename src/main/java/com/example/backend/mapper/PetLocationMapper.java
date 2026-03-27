@@ -4,7 +4,7 @@ import com.example.backend.entity.Location;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * 索引：
+ * 索引：<br>
  * - (parentType, parentId)
  */
 @Mapper

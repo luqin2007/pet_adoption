@@ -38,11 +38,6 @@ public class UserUpdateRequest {
     private String email;
 
     /**
-     * 头像
-     */
-    private String avatar;
-
-    /**
      * 角色
      */
     @Range(min = 0, max = UserRole.MAX_ROLE, message = "错误权限")
@@ -54,7 +49,6 @@ public class UserUpdateRequest {
             user.setPassword(passwordEncoder.encode(password));
         user.setEmail(email);
         user.setRole(UserRole.rezip(role));
-        user.setAvatar(avatar);
         user.setUpdateTime(new Date(System.currentTimeMillis()));
     }
 }

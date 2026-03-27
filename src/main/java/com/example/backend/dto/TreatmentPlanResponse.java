@@ -16,6 +16,7 @@ import java.util.Map;
 public class TreatmentPlanResponse {
 
     private Long id;
+    private Long detailId;
     private String plan;
     private Date creatTime;
     private Date startTime;
@@ -36,6 +37,7 @@ public class TreatmentPlanResponse {
     public static TreatmentPlanResponse create(TreatmentPlan treatmentPlan, User doctor, List<OrderResponse> orders) {
         return new TreatmentPlanResponse(
                 treatmentPlan.getId(),
+                treatmentPlan.getDetailId(),
                 treatmentPlan.getPlan(),
                 treatmentPlan.getCreateTime(),
                 treatmentPlan.getStartTime(),

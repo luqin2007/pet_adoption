@@ -17,6 +17,10 @@ public interface TreatmentPlanMapper extends IBaseMapper<TreatmentPlan> {
         return lambdaQuery().eq(TreatmentPlan::getDetailId, detailId);
     }
 
+    default LambdaQueryWrapper<TreatmentPlan> selectByDetails(Set<Long> detailIds) {
+        return lambdaQuery().in(TreatmentPlan::getDetailId, detailIds);
+    }
+
     default LambdaUpdateWrapper<TreatmentPlan> discardByDetail(Long diagnosisId) {
         return lambdaUpdate()
                 .eq(TreatmentPlan::getDetailId, diagnosisId)

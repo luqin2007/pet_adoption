@@ -5,7 +5,7 @@ import lombok.Data;
 import java.sql.Date;
 
 @Data
-public class FirstRegistrationQueryRequest {
+public class FirstRegistrationQueryParams {
 
     // 筛选
     private Long registrar;

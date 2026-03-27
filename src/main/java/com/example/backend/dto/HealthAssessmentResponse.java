@@ -1,4 +1,4 @@
-package com.example.backend.mapper;
+package com.example.backend.dto;
 
 import com.example.backend.entity.HealthAssessment;
 import com.example.backend.entity.Pet;

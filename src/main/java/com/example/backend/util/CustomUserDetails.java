@@ -7,6 +7,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.stream.Collectors;
 
+/**
+ * 用于 Spring Security 的用户类
+ */
 @Getter
 public class CustomUserDetails extends org.springframework.security.core.userdetails.User {
 

@@ -1,6 +1,6 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.ExaminationDiagnosis;
+import com.example.backend.entity.Diagnosis;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -10,16 +10,16 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class ExaminationDiagnosisResponse {
+public class DiagnosisResponse {
 
     private Long id;
-    private Long medicalId;
+    private Long detailId;
     private String result;
     private Date createTime;
     private List<ExaminationResponse> examinations;
 
-    public static ExaminationDiagnosisResponse create(ExaminationDiagnosis diagnosis, List<ExaminationResponse> examinations) {
-        return new ExaminationDiagnosisResponse(
+    public static DiagnosisResponse create(Diagnosis diagnosis, List<ExaminationResponse> examinations) {
+        return new DiagnosisResponse(
                 diagnosis.getId(),
                 diagnosis.getDetailId(),
                 diagnosis.getResult(),
@@ -30,8 +30,8 @@ public class ExaminationDiagnosisResponse {
     /**
      * examinations: ExaminationDiagnosis.id
      */
-    public static ExaminationDiagnosisResponse createBatch(ExaminationDiagnosis diagnosis, Map<Long, List<ExaminationResponse>> examinations) {
-        return new ExaminationDiagnosisResponse(
+    public static DiagnosisResponse createBatch(Diagnosis diagnosis, Map<Long, List<ExaminationResponse>> examinations) {
+        return new DiagnosisResponse(
                 diagnosis.getId(),
                 diagnosis.getDetailId(),
                 diagnosis.getResult(),

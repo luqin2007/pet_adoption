@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class MedicalRecordQueryRequest {
+public class MedicalRecordQueryParams {
 
     /**
      * 流浪宠物 id

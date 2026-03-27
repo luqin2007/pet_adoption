@@ -23,11 +23,14 @@ public class PetStatusUpdateRequest {
     @NotNull
     private String reason;
 
-    public PetStatusRecord buildStatusRecord(Pet info, Long userId) {
+    /**
+     * Pet: id, status
+     */
+    public PetStatusRecord create(Pet pet, Long userId) {
         return new PetStatusRecord(null,
                 petId,
                 userId,
-                info.getStatus(),
+                pet.getStatus(),
                 status,
                 reason,
                 new Date(System.currentTimeMillis()));

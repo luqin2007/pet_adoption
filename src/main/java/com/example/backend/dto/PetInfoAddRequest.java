@@ -2,7 +2,6 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.property.PetStatus;
-import com.example.backend.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.Min;
@@ -66,9 +65,9 @@ public class PetInfoAddRequest extends LocationRequest {
                 age,
                 sex,
                 type,
-                StringUtils.notNull(breed),
-                StringUtils.notNull(health),
-                StringUtils.notNull(description),
+                breed == null ? "" : breed,
+                breed == null ? "" : health,
+                breed == null ? "" : description,
                 PetStatus.WAITING,
                 false,
                 now,

@@ -12,22 +12,19 @@ import java.util.Set;
 import static com.example.backend.entity.property.MediaType.IMAGE;
 
 /**
- * 索引：
- * - (parentType, parentId, isCover, type)
+ * 索引：<br>
+ * - (parentType, parentId, isCover, type)<br>
  * - (parentType, parentId, type, createTime)
  */
 @Mapper
 public interface MediaFileMapper extends IBaseMapper<MediaFile> {
 
     /**
-     * 查询指定类型的 id 和文件名
+     * 查询指定类型的 id 和文件名<br>
      * - 索引：(parentType, parentId)
-     * - 结果类型：[MediaInfo]
-     *
-     * @param parentType 关联类型
-     * @param parentId   关联 id
+     * - 查询：[MediaInfo(id, filename)]
      */
-    default LambdaQueryWrapper<MediaFile> queryIdAndFilename(ParentType parentType, Long parentId) {
+    default LambdaQueryWrapper<MediaFile> queryFile(ParentType parentType, Long parentId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
@@ -35,42 +32,25 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
     }
 
     /**
-     * 查找封面
+     * 查找封面文件名<br>
      * - 索引：(parentType, parentId, isCover, type)
-     * - 结果类型：[MediaInfo]
-     *
-     * @param parentType 关联类型
-     * @param parentId   关联 id
+     * - 查询：[MediaInfo(parentId, filename)]
      */
     default LambdaQueryWrapper<MediaFile> queryCover(ParentType parentType, Long parentId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
                 .eq(MediaFile::getIsCover, true)
-                .eq(MediaFile::getType, IMAGE);
+                .eq(MediaFile::getType, IMAGE)
+                .select(MediaFile::getParentId, MediaFile::getFilename);
     }
 
     /**
-     * 查找封面文件名
-     * - 索引：(parentType, parentId, isCover, type)
-     * - 结果类型：[MediaInfo(filename)]
-     *
-     * @param parentType 关联类型
-     * @param parentId   关联 id
+     * 批量查找封面文件名<br>
+     * - 索引：(parentType, parentId, isCover, type)<br>
+     * - 查询：[MediaInfo(parentId, filename)]
      */
-    default LambdaQueryWrapper<MediaFile> queryCoverFilename(ParentType parentType, Long parentId) {
-        return queryCover(parentType, parentId).select(MediaFile::getFilename);
-    }
-
-    /**
-     * 批量查找封面地址
-     * - 索引：(parentType, parentId, isCover, type)
-     * - 结果类型：[MediaInfo(parentId, filename)]
-     *
-     * @param parentType 关联类型
-     * @param parentId   关联 id
-     */
-    default LambdaQueryWrapper<MediaFile> queryCoverFilenames(ParentType parentType, Collection<Long> parentId) {
+    default LambdaQueryWrapper<MediaFile> queryCovers(ParentType parentType, Collection<Long> parentId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .in(MediaFile::getParentId, parentId)
@@ -80,14 +60,9 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
     }
 
     /**
-     * 查找封面，排除指定图片
-     * - 索引：(parentType, parentId, isCover, type)
-     * - 结果类型：[MediaInfo]
-     *
-     * @param parentType    关联类型
-     * @param parentId      关联 id
-     * @param exceptImageId 排除的图片 id
-     * @return [MediaInfo]
+     * 查找封面，排除指定图片<br>
+     * - 索引：(parentType, parentId, isCover, type)<br>
+     * - 查询：[MediaInfo]
      */
     default LambdaQueryWrapper<MediaFile> queryCover(ParentType parentType, Long parentId, Long exceptImageId) {
         return lambdaQuery()
@@ -99,12 +74,9 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
     }
 
     /**
-     * 清除封面
-     * - 索引：(parentType, parentId, isCover, type)
-     * - 结果类型：[MediaInfo]
-     *
-     * @param parentType 关联类型
-     * @param parentId   关联 id
+     * 清除封面<br>
+     * - 索引：(parentType, parentId, isCover, type)<br>
+     * - 更新：[MediaInfo] isCover=false
      */
     default LambdaUpdateWrapper<MediaFile> clearCover(ParentType parentType, Long parentId) {
         return lambdaUpdate()
@@ -116,12 +88,9 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
     }
 
     /**
-     * 查询最新图片
-     * - 索引：(parentType, parentId, type, createTime)
-     * - 结果类型：[MediaInfo(id)]
-     *
-     * @param parentType 关联类型
-     * @param parentId   关联 id
+     * 查询最新图片<br>
+     * - 索引：(parentType, parentId, type, createTime)<br>
+     * - 查询：[MediaInfo(id)]
      */
     default LambdaQueryWrapper<MediaFile> queryLatestImageId(ParentType parentType, Long parentId) {
         return lambdaQuery()
@@ -133,30 +102,25 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
     }
 
     /**
-     * 查询最新图片，排除指定图片
-     * - 索引：(parentType, parentId, type, createTime)
-     * - 结果类型：[MediaInfo(id)]
-     *
-     * @param parentType    关联类型
-     * @param parentId      关联 id
-     * @param exceptImageId 排除的图片 id
+     * 查询最新图片，排除指定图片<br>
+     * - 索引：(parentType, parentId, type, createTime)<br>
+     * - 查询：[MediaInfo(id)]
      */
     default LambdaQueryWrapper<MediaFile> queryLatestImageId(ParentType parentType, Long parentId, Long exceptImageId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
                 .eq(MediaFile::getType, IMAGE)
-                .orderByDesc(MediaFile::getCreateTime)
                 .ne(MediaFile::getId, exceptImageId)
+                .orderByDesc(MediaFile::getCreateTime)
                 .select(MediaFile::getId);
     }
 
-    default LambdaQueryWrapper<MediaFile> queryByParent(ParentType parentType, Long parentId) {
-        return lambdaQuery()
-                .eq(MediaFile::getParentType, parentType)
-                .eq(MediaFile::getParentId, parentId);
-    }
-
+    /**
+     * 查询媒体<br>
+     * - 索引：(parentType, parentId)<br>
+     * - 查询：[MediaInfo]
+     */
     default LambdaQueryWrapper<MediaFile> queryByParents(ParentType parentType, Set<Long> parentIds) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)

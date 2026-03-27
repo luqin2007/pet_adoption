@@ -4,18 +4,21 @@ import com.example.backend.entity.RescueTaskRecord;
 import com.example.backend.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class RescueTaskRecordsResponse {
 
-    List<RescueTaskRecordResponse> records;
+    private List<RescueTaskRecordResponse> records;
 
+    /**
+     * User: id, username, avatar<br>
+     * <br>
+     * users: RescueTaskRecord.userId
+     */
     public static RescueTaskRecordsResponse create(List<RescueTaskRecord> entities, Map<Long, User> users) {
         List<RescueTaskRecordResponse> result = entities.stream()
                 .map(entity -> RescueTaskRecordResponse.createBatch(entity, users))

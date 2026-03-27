@@ -5,12 +5,8 @@ import com.example.backend.entity.property.ParentType;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,16 +23,16 @@ import java.util.stream.Stream;
 import static com.example.backend.entity.property.MediaType.IMAGE;
 import static com.example.backend.entity.property.MediaType.VIDEO;
 
-@Component
-public class FileUtils implements ApplicationContextAware {
+/**
+ * 文件相关工具类
+ */
+public class FileUtils {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtils.class);
 
     public static String UPLOAD_PATH = "./uploads";
     public static String TEMP_UPLOAD_PATH = "./uploads/__temp";
-
-    private static final Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
     /**
      * 上传文件
@@ -59,7 +55,7 @@ public class FileUtils implements ApplicationContextAware {
 
             file.transferTo(filePath);
         } catch (IOException e) {
-            logger.warn("upload: 上传文件失败: {}", filename, e);
+            LOGGER.warn("upload: 上传文件失败: {}", filename, e);
             throw ServiceException.request("文件上传失败", e);
         }
     }
@@ -80,14 +76,14 @@ public class FileUtils implements ApplicationContextAware {
                 // 复制文件
                 Files.copy(tempPath, filePath);
             } catch (IOException e) {
-                logger.warn("saveTempFile: 复制文件失败: {}", filePath, e);
+                LOGGER.warn("saveTempFile: 复制文件失败: {}", filePath, e);
                 return false;
             }
             try {
                 // 删除临时文件
                 Files.deleteIfExists(tempPath);
             } catch (IOException e) {
-                logger.warn("saveTempFile: 删除文件失败: {}", filePath, e);
+                LOGGER.warn("saveTempFile: 删除文件失败: {}", filePath, e);
                 return true;
             }
         }
@@ -99,20 +95,20 @@ public class FileUtils implements ApplicationContextAware {
      */
     public static void tryDeleteFile(Path file) {
         if (!Files.exists(file)) {
-            logger.warn("deleteFile: 文件不存在: {}", file);
+            LOGGER.warn("deleteFile: 文件不存在: {}", file);
             return;
         }
 
         if (!Files.isRegularFile(file)) {
-            logger.warn("deleteFile: 删除目标非文件: {}", file);
+            LOGGER.warn("deleteFile: 删除目标非文件: {}", file);
             return;
         }
 
         try {
             Files.delete(file);
-            logger.info("deleteDirectory: 文件已删除: {}", file);
+            LOGGER.info("deleteDirectory: 文件已删除: {}", file);
         } catch (IOException e) {
-            logger.warn("deleteDirectory: 删除文件失败: {}", file, e);
+            LOGGER.warn("deleteDirectory: 删除文件失败: {}", file, e);
         }
     }
 
@@ -121,25 +117,25 @@ public class FileUtils implements ApplicationContextAware {
      */
     public static void tryDeleteDirectory(Path path, boolean onlyEmpty) {
         if (!Files.exists(path)) {
-            logger.warn("deleteDirectory: 目录不存在: {}", path);
+            LOGGER.warn("deleteDirectory: 目录不存在: {}", path);
             return;
         }
 
         try (Stream<Path> files = Files.list(path)) {
             boolean isNotEmpty = files.findFirst().isPresent();
             if (onlyEmpty && isNotEmpty) {
-                logger.warn("deleteDirectory: 目录非空: {}", path);
+                LOGGER.warn("deleteDirectory: 目录非空: {}", path);
                 return;
             }
 
             if (isNotEmpty) {
-                logger.warn("deleteDirectory: 删除非空目录: {}", path);
+                LOGGER.warn("deleteDirectory: 删除非空目录: {}", path);
             }
 
             FileSystemUtils.deleteRecursively(path);
-            logger.info("deleteDirectory: 目录已删除: {}", path);
+            LOGGER.info("deleteDirectory: 目录已删除: {}", path);
         } catch (IOException e) {
-            logger.warn("deleteDirectory: 删除目录失败: {}", path, e);
+            LOGGER.warn("deleteDirectory: 删除目录失败: {}", path, e);
         }
     }
 
@@ -278,11 +274,5 @@ public class FileUtils implements ApplicationContextAware {
             url = url.replace(File.separator, "/");
         }
         return url;
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext context) throws BeansException {
-        UPLOAD_PATH = context.getEnvironment().getProperty("file.upload.path");
-        TEMP_UPLOAD_PATH = context.getEnvironment().getProperty("file.upload.temp_path");
     }
 }

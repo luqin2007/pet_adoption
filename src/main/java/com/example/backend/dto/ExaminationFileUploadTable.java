@@ -5,7 +5,7 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
-public class ExaminationFileUploadRequest {
+public class ExaminationFileUploadTable {
 
     private String name;
 

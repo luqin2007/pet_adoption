@@ -8,7 +8,6 @@ import com.example.backend.entity.property.RescueTaskStatus;
 import com.example.backend.mapper.*;
 import com.example.backend.util.FileUtils;
 import com.example.backend.util.NotificationEvent;
-import com.example.backend.util.ServiceException;
 import com.example.backend.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,9 @@ import static com.example.backend.entity.property.UserRole.WORKER;
 import static com.example.backend.util.C.KEY_RESCUE_TASK;
 import static com.example.backend.util.C.KEY_RESCUE_TASK_MEDIA;
 
+/**
+ * 救助任务管理
+ */
 @Service
 @RequiredArgsConstructor
 public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask> {
@@ -104,7 +106,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
                 "/tasks/" + task.getId(), WORKER));
         String emailTitle = "新任务：" + task.getSummary();
         String emailContent = buildALabel(task.getSummary(), task.getId()) + "<div>" + task.getDescription() + "</div>";
-        eventPublisher.publishEvent(NotificationEvent.mailToRoles(emailTitle, emailContent, WORKER));
+        eventPublisher.publishEvent(NotificationEvent.mail(emailTitle, emailContent, WORKER));
         eventPublisher.publishEvent(NotificationEvent.system(emailTitle, emailContent, buildTaskUrl(task.getId()), WORKER));
         return RescueTaskResponse.fromEntity(task);
     }
@@ -156,17 +158,13 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         // 校验
         RescueTask task = requireById(taskId);
         User login = getLoginUser();
-        if (!Objects.equals(task.getStatus(), CREATED)) {
-            // 刚创建，允许创建者和工作人员修改
-            requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
-        } else {
-            throw ServiceException.invalidate("无法修改已通过的任务");
-        }
+        require(!Objects.equals(task.getStatus(), CREATED), "无法修改已通过的任务");
+        requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
 
         // 更新任务信息
         request.applyTo(task);
         updateById(task);
-        RescueTaskRecord record = RescueTaskRecord.create(task, login.getId(), UPDATE, task.getStatus(), request.getReason());
+        RescueTaskRecord record = RescueTaskRecord.create(task, login.getId(), UPDATE, task.getStatus(), "~~~update~~~");
         rescueTaskRecordMapper.insert(record);
 
         // 更新位置信息
@@ -242,7 +240,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
 
         // 删除数据库数据
-        List<MediaFile> mediaFiles = mediaFileMapper.selectList(mediaFileMapper.queryIdAndFilename(RESCUE_TASK, taskId));
+        List<MediaFile> mediaFiles = mediaFileMapper.selectList(mediaFileMapper.queryFile(RESCUE_TASK, taskId));
         mediaFileMapper.deleteByIds(mediaFiles);
         removeById(taskId);
 
@@ -284,14 +282,15 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         Set<Long> userIds = result.stream()
                 .map(RescueTaskRecord::getUserId)
                 .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds);
+        Map<Long, User> users = userService.groupById(userIds,
+                User::getId, User::getUsername, User::getAvatar);
         return RescueTaskRecordsResponse.create(result, users);
     }
 
     /**
      * 获取救助任务信息列表
      */
-    public Page<RescueTaskResponse> getRescueTasks(PageRequest page) {
+    public Page<RescueTaskResponse> getRescueTasks(PageParams page) {
         Page<RescueTask> result = page(page.createPage());
         return convertDto(result, RescueTaskResponse::fromEntity);
     }
@@ -308,7 +307,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         requireNotEqual(CREATED, task.getStatus(), "任务未通过审核");
 
         // 任务分配
-        Set<Long> addUsers = rescueTaskAssignMapper.selectList(rescueTaskAssignMapper.queryUserIdByTask(taskId)).stream()
+        Set<Long> addUsers = rescueTaskAssignMapper.selectList(rescueTaskAssignMapper.queryUserByTask(taskId)).stream()
                 .map(RescueTaskAssign::getUserId)
                 .collect(Collectors.toSet()); // 已分配用户
         List<RescueTaskAssign> assigns = userService.listById(request.idSet(), User::getId).stream()
@@ -320,7 +319,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         rescueTaskAssignMapper.insert(assigns);
 
         // 通知分配用户
-        Set<Long> userIds = rescueTaskAssignMapper.selectList(rescueTaskAssignMapper.queryUserIdByTask(taskId)).stream()
+        Set<Long> userIds = rescueTaskAssignMapper.selectList(rescueTaskAssignMapper.queryUserByTask(taskId)).stream()
                 .map(RescueTaskAssign::getUserId)
                 .collect(Collectors.toSet()); // 所有已分配用户
         List<User> users = userService.listById(userIds,

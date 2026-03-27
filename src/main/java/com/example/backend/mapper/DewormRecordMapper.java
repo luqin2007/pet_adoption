@@ -7,18 +7,26 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.Set;
 
 /**
- * 索引：
+ * 索引：<br>
  * - (petId, createTime)
  */
 @Mapper
 public interface DewormRecordMapper extends IBaseMapper<DewormRecord> {
 
+    /**
+     * 倒序获取宠物驱虫记录<br>
+     * 索引：(petId, createTime)
+     */
     default LambdaQueryWrapper<DewormRecord> queryByPet(Long petId) {
         return new LambdaQueryWrapper<DewormRecord>()
                 .eq(DewormRecord::getPetId, petId)
                 .orderByDesc(DewormRecord::getCreateTime);
     }
 
+    /**
+     * 倒序获取宠物驱虫记录<br>
+     * 索引：(petId, createTime)
+     */
     default LambdaQueryWrapper<DewormRecord> queryByPets(Set<Long> petIds) {
         return new LambdaQueryWrapper<DewormRecord>()
                 .in(DewormRecord::getPetId, petIds)

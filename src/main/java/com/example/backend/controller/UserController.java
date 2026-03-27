@@ -10,23 +10,24 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
- * 用户管理模块
- * - 用户注册 ( √ × )
- *   - 注册：register ( √ × )
- *   - 检查用户名重复：isUsernameExist ( √ × )
- *   - 检查邮箱重复：isMailExist ( √ × )
- *   - 发送邮箱验证码：sendMailCode ( √ × )
- * - 用户登录 ( √ × )
- *   - 登录：login ( √ × )
- *   - 获取用户信息：getUser ( √ × )
- * - 找回密码 ( √ × )
- *   - 忘记密码：forgetPassword ( √ × )
- *   - 重置密码：resetPassword ( √ × )
- * - 信息维护 ( √ × )
- *   - 修改用户信息：updateUser ( √ × )
- *   - 上传头像：uploadAvatar ( √ × )
- * - 账号状态管理 ( √ × )
- *   - 获取用户列表：getUserList ( √ × )
+ * 用户管理模块<br>
+ * - 用户注册 ( √ × )<br>
+ *   - 注册：register ( √ × )<br>
+ *   - 检查用户名重复：isUsernameExist ( √ × )<br>
+ *   - 检查邮箱重复：isMailExist ( √ × )<br>
+ *   - 发送邮箱验证码：sendMailCode ( √ × )<br>
+ * - 用户登录 ( √ × )<br>
+ *   - 登录：login ( √ × )<br>
+ *   - 获取用户信息：getUser ( √ × )<br>
+ * - 找回密码 ( √ × )<br>
+ *   - 忘记密码：forgetPassword ( √ × )<br>
+ *   - 重置密码：resetPassword ( √ × )<br>
+ * - 信息维护 ( √ × )<br>
+ *   - 修改用户信息：updateUser ( √ × )<br>
+ *   - 上传头像：uploadAvatar ( √ × )<br>
+ *   - 删除头像：deleteAvatar ( √ × )<br>
+ * - 账号状态管理 ( √ × )<br>
+ *   - 获取用户列表：getUserList ( √ × )<br>
  *   - 删除用户：deleteUser ( √ × )
  */
 @Validated
@@ -41,7 +42,7 @@ public class UserController {
      * 用户注册
      */
     @PostMapping("/register")
-    public Result<UserResponse> register(@RequestBody UserRegisterRequest user) {
+    public Result<UserResponse> register(UserRegisterTable user) {
         UserResponse response = userService.register(user);
         return Result.success(response);
     }
@@ -126,9 +127,18 @@ public class UserController {
      * 上传头像
      */
     @PostMapping("/users/{id}/avatar")
-    public Result<UserResponse> uploadAvatar(@PathVariable("id") Long userId, @RequestBody MultipartFile file) {
-        UserResponse response = userService.uploadAvatar(userId, file);
+    public Result<String> uploadAvatar(@PathVariable("id") Long userId, MultipartFile file) {
+        String response = userService.uploadAvatar(userId, file);
         return Result.success(response);
+    }
+
+    /**
+     * 删除头像
+     */
+    @DeleteMapping("/users/{id}/avatar")
+    public Result<Void> deleteAvatar(@PathVariable("id") Long userId) {
+        userService.deleteAvatar(userId);
+        return Result.success();
     }
 
     /**
@@ -144,8 +154,8 @@ public class UserController {
      * 获取用户列表
      */
     @GetMapping("/users")
-    public Result<Page<UserResponse>> getUserList(PageRequest pageRequest) {
-        Page<UserResponse> response = userService.getAllUsers(pageRequest);
+    public Result<Page<UserResponse>> getUserList(PageParams pageParams) {
+        Page<UserResponse> response = userService.getAllUsers(pageParams);
         return Result.success(response);
     }
 

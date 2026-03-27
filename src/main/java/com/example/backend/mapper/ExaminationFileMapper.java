@@ -7,22 +7,30 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.Set;
 
 /**
- * 索引：
+ * 索引：<br>
  * - (examinationId)
  */
 @Mapper
 public interface ExaminationFileMapper extends IBaseMapper<ExaminationFile> {
 
+    /**
+     * 查询指定检查的附件<br>
+     * 索引：(examinationId)
+     */
     default LambdaQueryWrapper<ExaminationFile> queryByExamination(Long examinationId) {
         return lambdaQuery().eq(ExaminationFile::getExaminationId, examinationId);
     }
 
+    /**
+     * 批量查询指定检查的附件<br>
+     * 索引：(examinationId)
+     */
     default LambdaQueryWrapper<ExaminationFile> queryByExaminations(Set<Long> examinationIds) {
         return lambdaQuery().in(ExaminationFile::getExaminationId, examinationIds);
     }
 
     @Override
     default String getMissingMessage() {
-        return "检查文档不存在";
+        return "附件不存在";
     }
 }

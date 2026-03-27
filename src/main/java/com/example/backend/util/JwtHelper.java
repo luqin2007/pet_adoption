@@ -21,6 +21,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static com.example.backend.util.C.*;
+
+/**
+ * JWT 工具类
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtHelper {
@@ -37,10 +42,6 @@ public class JwtHelper {
     private String jwtPrefix;
 
     private SecretKey secretKey;
-    private static final String TOKEN_TYPE_CLAIM = "tokenType";
-    private static final String ACCESS_TOKEN_TYPE = "access";
-    private static final String REFRESH_TOKEN_TYPE = "refresh";
-    private static final String INVALID_TOKEN_KEY_TEMPLATE = "pet_adoption.invalid_token.%s";
 
     private static final Logger logger = LoggerFactory.getLogger(JwtHelper.class);
 
@@ -58,11 +59,11 @@ public class JwtHelper {
     }
 
     public String generateAccessToken(User user) {
-        return generateToken(user, accessExpireSeconds, ACCESS_TOKEN_TYPE);
+        return generateToken(user, accessExpireSeconds, TOKEN_TYPE_ACCESS);
     }
 
     public String generateRefreshToken(User user) {
-        return generateToken(user, refreshExpireSeconds, REFRESH_TOKEN_TYPE);
+        return generateToken(user, refreshExpireSeconds, TOKEN_TYPE_REFRESH);
     }
 
     private String generateToken(User user, long expireSeconds, String tokenType) {
@@ -71,7 +72,7 @@ public class JwtHelper {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .claim("uid", user.getId())
-                .claim(TOKEN_TYPE_CLAIM, tokenType)
+                .claim(TOKEN_CLAIM_TYPE_KEY, tokenType)
                 .issuedAt(now)
                 .expiration(expireAt)
                 .signWith(secretKey)
@@ -83,11 +84,11 @@ public class JwtHelper {
     }
 
     public boolean validateAccessToken(String token) {
-        return validateToken(token, ACCESS_TOKEN_TYPE);
+        return validateToken(token, TOKEN_TYPE_ACCESS);
     }
 
     public boolean validateRefreshToken(String token) {
-        return validateToken(token, REFRESH_TOKEN_TYPE);
+        return validateToken(token, TOKEN_TYPE_REFRESH);
     }
 
     private boolean validateToken(String token, String expectedType) {
@@ -97,7 +98,7 @@ public class JwtHelper {
             return false;
         try {
             Claims claims = parseClaims(token);
-            String tokenType = claims.get(TOKEN_TYPE_CLAIM, String.class);
+            String tokenType = claims.get(TOKEN_CLAIM_TYPE_KEY, String.class);
             return Objects.equals(expectedType, tokenType);
         } catch (JwtException | IllegalArgumentException e) {
             return false;
@@ -113,11 +114,11 @@ public class JwtHelper {
     }
 
     public void invalidateAccessToken(String token) {
-        invalidateToken(token, ACCESS_TOKEN_TYPE);
+        invalidateToken(token, TOKEN_TYPE_ACCESS);
     }
 
     public void invalidateRefreshToken(String token) {
-        invalidateToken(token, REFRESH_TOKEN_TYPE);
+        invalidateToken(token, TOKEN_TYPE_REFRESH);
     }
 
     private void invalidateToken(String token, String expectedType) {
@@ -125,7 +126,7 @@ public class JwtHelper {
             return;
         try {
             Claims claims = parseClaims(token);
-            String tokenType = claims.get(TOKEN_TYPE_CLAIM, String.class);
+            String tokenType = claims.get(TOKEN_CLAIM_TYPE_KEY, String.class);
             if (!Objects.equals(expectedType, tokenType))
                 return;
 
@@ -134,14 +135,14 @@ public class JwtHelper {
             if (ttl <= 0) {
                 return;
             }
-            String redisKey = String.format(INVALID_TOKEN_KEY_TEMPLATE, token);
+            String redisKey = String.format(KEY_INVALID_TOKEN, token);
             redisTemplate.opsForValue().set(redisKey, "", ttl, TimeUnit.MILLISECONDS);
         } catch (JwtException | IllegalArgumentException ignored) {
         }
     }
 
     private boolean isTokenInvalidated(String token) {
-        String redisKey = String.format(INVALID_TOKEN_KEY_TEMPLATE, token);
+        String redisKey = String.format(KEY_INVALID_TOKEN, token);
         return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
     }
 

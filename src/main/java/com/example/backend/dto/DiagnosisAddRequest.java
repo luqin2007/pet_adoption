@@ -1,6 +1,6 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.ExaminationDiagnosis;
+import com.example.backend.entity.Diagnosis;
 import com.example.backend.entity.ExaminationDiagnosisEntry;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class ExaminationDiagnosisAddRequest {
+public class DiagnosisAddRequest {
 
     @NotNull(message = "请先登录")
     private Long userId;
@@ -22,8 +22,8 @@ public class ExaminationDiagnosisAddRequest {
     @NotEmpty(message = "请选择检查文件")
     private List<Long> examinations;
 
-    public ExaminationDiagnosis create(Long detailId) {
-        return new ExaminationDiagnosis(null,
+    public Diagnosis create(Long detailId) {
+        return new Diagnosis(null,
                 detailId,
                 result,
                 new Date(),

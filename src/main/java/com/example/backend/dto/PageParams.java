@@ -8,7 +8,7 @@ import lombok.Data;
 import java.net.URLDecoder;
 
 @Data
-public class PageRequest {
+public class PageParams {
 
     private Integer page = 1;
 

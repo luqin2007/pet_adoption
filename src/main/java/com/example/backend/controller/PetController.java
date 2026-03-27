@@ -11,26 +11,26 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 流浪宠物信息管理模块
- * - 信息录入 ( √ × )
- * ---- 添加流浪宠物信息：addPet ( √ × )
- * ---- 删除流浪宠物信息：deletePet ( √ × )
- * - 状态管理 ( √ × )
- * ---- 修改宠物状态: updateStatus ( √ × )
- * - 信息更新 ( √ × )
- * ---- 修改流浪宠物信息：updatePet ( √ × )
- * ---- 删除流浪宠物信息：deletePet ( √ × )
- * - 信息查询 ( √ × )
- * ---- 获取流浪宠物列表：getPets ( √ × )
- * ---- 获取流浪宠物信息：getPet ( √ × )
- * - 多媒体管理 ( √ × )
- * ---- 上传流浪宠物图片/视频：uploadMedia ( √ × )
- * ---- 删除流浪宠物图片/视频：deleteMedia ( √ × )
- * ---- 修改流浪宠物图片信息/视频：updateMedia ( √ × )
- * - 特征信息管理 ( √ × )
- * ---- 添加流浪宠物特征：addTags ( √ × )
- * ---- 删除流浪宠物特征：deleteTags ( √ × )
- * - 状态流转记录 ( √ × )
+ * 流浪宠物信息管理模块<br>
+ * - 信息录入 ( √ × )<br>
+ * ---- 添加流浪宠物信息：addPet ( √ × )<br>
+ * ---- 删除流浪宠物信息：deletePet ( √ × )<br>
+ * - 状态管理 ( √ × )<br>
+ * ---- 修改宠物状态: updateStatus ( √ × )<br>
+ * - 信息更新 ( √ × )<br>
+ * ---- 修改流浪宠物信息：updatePet ( √ × )<br>
+ * ---- 删除流浪宠物信息：deletePet ( √ × )<br>
+ * - 信息查询 ( √ × )<br>
+ * ---- 获取流浪宠物列表：getPets ( √ × )<br>
+ * ---- 获取流浪宠物信息：getPet ( √ × )<br>
+ * - 多媒体管理 ( √ × )<br>
+ * ---- 上传流浪宠物图片/视频：uploadMedia ( √ × )<br>
+ * ---- 删除流浪宠物图片/视频：deleteMedia ( √ × )<br>
+ * ---- 修改流浪宠物图片信息/视频：updateMedia ( √ × )<br>
+ * - 特征信息管理 ( √ × )<br>
+ * ---- 添加流浪宠物特征：addTags ( √ × )<br>
+ * ---- 删除流浪宠物特征：deleteTags ( √ × )<br>
+ * - 状态流转记录 ( √ × )<br>
  * ---- 修改宠物状态: getStatusRecords ( √ × )
  */
 @Validated
@@ -54,8 +54,8 @@ public class PetController {
      * 获取流浪宠物列表
      */
     @GetMapping("/")
-    public Result<Page<PetResponse>> getPets(PageRequest pageRequest) {
-        Page<PetResponse> response = petService.getPets(pageRequest);
+    public Result<Page<PetResponse>> getPets(PageParams pageParams) {
+        Page<PetResponse> response = petService.getPets(pageParams);
         return Result.success(response);
     }
 
@@ -90,7 +90,7 @@ public class PetController {
      * 上传流浪宠物图片/视频，使用 multipart/form-data
      */
     @PutMapping("/{id}/media")
-    public Result<PetMediaResponse> uploadMedia(@PathVariable("id") Long petId, PetMediaUploadRequest file) {
+    public Result<PetMediaResponse> uploadMedia(@PathVariable("id") Long petId, PetMediaUploadTable file) {
         PetMediaResponse response = petService.uploadMedia(petId, file);
         return Result.success(response);
     }
@@ -142,8 +142,8 @@ public class PetController {
      * 获取宠物状态流转记录
      */
     @GetMapping("/pets/{id}/status")
-    public Result<Page<PetStatusRecordResponse>> getStatusRecords(@PathVariable("id") Long petId, PageRequest pageRequest) {
-        Page<PetStatusRecordResponse> response = petService.getStatusRecords(petId, pageRequest, Set.of());
+    public Result<Page<PetStatusRecordResponse>> getStatusRecords(@PathVariable("id") Long petId, PageParams pageParams) {
+        Page<PetStatusRecordResponse> response = petService.getStatusRecords(petId, pageParams, Set.of());
         return Result.success(response);
     }
 }

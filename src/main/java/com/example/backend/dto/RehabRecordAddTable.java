@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class RehabRecordAddRequest {
+public class RehabRecordAddTable {
 
     @NotBlank(message = "请输入康复步骤")
     private String step;

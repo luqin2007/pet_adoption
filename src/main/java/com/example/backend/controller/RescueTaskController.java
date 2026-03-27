@@ -12,21 +12,21 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 /**
- * 救助任务管理模块
- * - 上报信息功能 ( × × )
- *   - 开始上报: beginRescueTask ( √ × )
- *   - 信息上报: addRescueTask ( √ × )
- *   - 媒体上传: updateRescueMedia ( √ × )
- *   - 媒体删除: deleteRescueMediaWhenAdd ( √ × )
- *   - 信息修改: updateRescueTask ( √ × )
- *   - 已上传媒体删除: deleteRescueMediaWhenUpdate ( √ × )
- *   - 信息删除: deleteRescueTask ( √ × )
- * - 任务分配功能 ( √ × )
- *   - 任务查询: getRescueTask/getRescueTasks ( √ × )
- *   - 任务分配: assignRescueTask ( √ × )
- *   - 任务提醒 ( √ × )
- * - 上报跟踪功能 ( √ × )
- *   - 上报任务结果: updateRescueTaskRecord ( √ × )
+ * 救助任务管理模块<br>
+ * - 上报信息功能 ( × × )<br>
+ *   - 开始上报: beginRescueTask ( √ × )<br>
+ *   - 信息上报: addRescueTask ( √ × )<br>
+ *   - 媒体上传: updateRescueMedia ( √ × )<br>
+ *   - 媒体删除: deleteRescueMediaWhenAdd ( √ × )<br>
+ *   - 信息修改: updateRescueTask ( √ × )<br>
+ *   - 已上传媒体删除: deleteRescueMediaWhenUpdate ( √ × )<br>
+ *   - 信息删除: deleteRescueTask ( √ × )<br>
+ * - 任务分配功能 ( √ × )<br>
+ *   - 任务查询: getRescueTask/getRescueTasks ( √ × )<br>
+ *   - 任务分配: assignRescueTask ( √ × )<br>
+ *   - 任务提醒 ( √ × )<br>
+ * - 上报跟踪功能 ( √ × )<br>
+ *   - 上报任务结果: updateRescueTaskRecord ( √ × )<br>
  *   - 获取任务进度: getRescueTaskRecords ( √ × )
  */
 @Validated
@@ -41,8 +41,8 @@ public class RescueTaskController {
      * 获取所有信息
      */
     @GetMapping("/")
-    public Result<Page<RescueTaskResponse>> getRescueTasks(PageRequest pageRequest) {
-        Page<RescueTaskResponse> response = rescueTaskService.getRescueTasks(pageRequest);
+    public Result<Page<RescueTaskResponse>> getRescueTasks(PageParams pageParams) {
+        Page<RescueTaskResponse> response = rescueTaskService.getRescueTasks(pageParams);
         return Result.success(response);
     }
 
@@ -59,7 +59,7 @@ public class RescueTaskController {
      * 提交救助任务
      */
     @PostMapping("/")
-    public Result<RescueTaskResponse> addRescueTask(RescueTaskAddRequest request) {
+    public Result<RescueTaskResponse> addRescueTask(@RequestBody RescueTaskAddRequest request) {
         RescueTaskResponse response = rescueTaskService.addRescueTask(request);
         return Result.success(response);
     }
@@ -68,7 +68,7 @@ public class RescueTaskController {
      * 信息上报时上传媒体
      */
     @PostMapping("/{_id}/uploads")
-    public Result<String> uploadRescueTaskMedia(@PathVariable("_id") String uuid, @RequestBody MultipartFile file) {
+    public Result<String> uploadRescueTaskMedia(@PathVariable("_id") String uuid, MultipartFile file) {
         String response = rescueTaskService.uploadRescueTaskMedia(uuid, file);
         return Result.success(response);
     }
@@ -125,7 +125,8 @@ public class RescueTaskController {
      * 修改任务状态
      */
     @PostMapping("/{id}/status")
-    public Result<Void> updateStatus(@PathVariable("id") Long taskId, RescueTaskRecordStatusUpdateRequest request) {
+    public Result<Void> updateStatus(@PathVariable("id") Long taskId,
+                                     @RequestBody RescueTaskRecordStatusUpdateRequest request) {
         rescueTaskService.updateRescueTaskStatus(taskId, request);
         return Result.success();
     }
@@ -134,7 +135,7 @@ public class RescueTaskController {
      * 分配任务
      */
     @PostMapping("/{id}/assign")
-    public Result<List<UserResponse>> assignRescueTask(@PathVariable("id") Long taskId, IdsRequest request) {
+    public Result<List<UserResponse>> assignRescueTask(@PathVariable("id") Long taskId, @RequestBody IdsRequest request) {
         List<UserResponse> responses = rescueTaskService.assignRescueTask(taskId, request);
         return Result.success(responses);
     }

@@ -7,12 +7,16 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.Set;
 
 /**
- * 索引：
+ * 索引：<br>
  * - (examinationId)
  */
 @Mapper
 public interface ExaminationDiagnosisEntryMapper extends IBaseMapper<ExaminationDiagnosisEntry> {
 
+    /**
+     * 获取检验结果关联的所有诊断结果<br>
+     * - 索引：(examinationId)
+     */
     default LambdaQueryWrapper<ExaminationDiagnosisEntry> queryByExaminations(Set<Long> examinationIds) {
         return lambdaQuery().in(ExaminationDiagnosisEntry::getExaminationId, examinationIds);
     }
