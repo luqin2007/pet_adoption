@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
+import com.example.backend.entity.property.MediaType;
 import com.example.backend.mapper.*;
 import com.example.backend.util.FileUtils;
 import com.example.backend.util.ServiceException;
@@ -24,7 +25,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.example.backend.util.C.*;
+import static com.example.backend.entity.property.ParentType.EXAMINATION;
+import static com.example.backend.entity.property.ParentType.REHAB_PLAN;
+import static com.example.backend.util.C.KEY_EXAMINATION;
+import static com.example.backend.util.C.KEY_EXAMINATION_FILE;
 
 /**
  * 诊疗、病历等
@@ -146,14 +150,14 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 创建就诊记录
      */
     @Transactional
-    public MedicalRecordResponse addMedicalVisitRecord(MedicalRecordRequest request) {
+    public MedicalRecordResponse addMedicalVisitRecord(Long petId, MedicalRecordRequest request) {
         // 权限/环境校验
         User login = getLoginUser();
         requirePermission(login.isDoctor());
-        firstRegistrationMapper.requireExist(firstRegistrationMapper.selectByPet(request.getPetId()));
+        firstRegistrationMapper.requireExist(firstRegistrationMapper.selectByPet(petId));
 
         // 存储数据
-        MedicalRecord record = request.createEntity();
+        MedicalRecord record = request.createEntity(petId);
         medicalRecordMapper.insert(record);
         return buildMedicalRecordResponse(record);
     }
@@ -434,7 +438,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Date now = new Date();
         Pair<String, String> nameAndExt = FileUtils.getNameAndExtension(request.getFile().getOriginalFilename());
         String filename = FileUtils.generateFilename(request.getFile().getOriginalFilename(), now, nameAndExt.getSecond());
-        Path path = FileUtils.generateTempPath(PARENT_EXAMINATION, examId);
+        Path path = FileUtils.generateTempPath(EXAMINATION, examId);
         FileUtils.upload(request.getFile(), filename, path);
 
         // 生成临时文件信息
@@ -442,7 +446,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 filename,
                 request.getName(),
                 login.getId(),
-                0,
+                MediaType.IMAGE,
                 now);
         String fileKey = String.format(KEY_EXAMINATION_FILE, examId);
         redisHelper.putObjectToHash(fileKey, filename, fileInfo);
@@ -467,7 +471,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         // 删除文件及记录
         String fileKey = String.format(KEY_EXAMINATION_FILE, examId);
         List<TempFileInfo> files = redisHelper.getAndDeleteObjectsFromHash(fileKey, filename);
-        Path path = FileUtils.generateTempPath(PARENT_EXAMINATION, examId);
+        Path path = FileUtils.generateTempPath(EXAMINATION, examId);
         for (TempFileInfo file : files)
             FileUtils.tryDeleteFile(path.resolve(file.getFilename()));
         FileUtils.tryDeleteDirectory(path, true);
@@ -496,7 +500,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         String fileKey = String.format(KEY_EXAMINATION_FILE, examId);
         List<ExaminationFile> files = redisHelper.getObjectsFromHash(fileKey, TempFileInfo.class)
                 .map(info -> info.createExamFile(examination.getId()))
-                .filter(file -> FileUtils.transferTempFile(file, examId, examination.getId(), PARENT_EXAMINATION))
+                .filter(file -> FileUtils.transferTempFile(file, examId, examination.getId(), EXAMINATION))
                 .toList();
         examinationFileMapper.insert(files);
         return ExaminationResponse.create(examination, files.stream()
@@ -797,18 +801,18 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         // 添加数据
         RehabRecord record = request.create(planId, login.getId());
         rehabRecordMapper.insert(record);
-        Path path = FileUtils.generateFilePath(PARENT_REHAB_PLAN, planId);
+        Path path = FileUtils.generateFilePath(REHAB_PLAN, planId);
         List<MediaFile> files = new ArrayList<>(request.getFiles().size());
         for (MultipartFile file : request.getFiles()) {
             Date now = new Date();
-            Pair<String, Integer> extAndType = FileUtils.getFileExtensionAndType(file);
+            Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
             Pair<String, String> nameAndExt = FileUtils.getNameAndExtension(file.getOriginalFilename());
             String filename = FileUtils.generateFilename(nameAndExt.getFirst(), now, extAndType.getFirst());
             FileUtils.upload(file, filename, path);
 
             MediaFile mediaFile = new MediaFile(null,
                     record.getId(),
-                    PARENT_REHAB_PLAN,
+                    REHAB_PLAN,
                     login.getId(),
                     filename,
                     "",
@@ -833,7 +837,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 User::getId, User::getUsername, User::getAvatar);
         Set<Long> recordIds = records.stream().map(RehabRecord::getId).collect(Collectors.toSet());
         Map<Long, List<MediaFile>> files = mediaFileMapper.groupList(
-                mediaFileMapper.queryByParents(PARENT_REHAB_PLAN, recordIds).select(MediaFile::getFilename),
+                mediaFileMapper.queryByParents(REHAB_PLAN, recordIds).select(MediaFile::getFilename),
                 MediaFile::getParentId,
                 Function.identity());
         return records.stream()

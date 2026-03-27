@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.MediaType;
+import com.example.backend.entity.property.UserRole;
 import com.example.backend.mapper.UserMapper;
 import com.example.backend.util.*;
 import jakarta.annotation.Nonnull;
@@ -27,9 +29,13 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.Date;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
+import static com.example.backend.entity.property.MediaType.IMAGE;
+import static com.example.backend.entity.property.ParentType.USER;
 import static com.example.backend.util.C.*;
 
 @Service
@@ -248,13 +254,13 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         requirePermission(Objects.equals(login.getId(), userId) || login.isWorker());
 
         // 检查图片
-        Pair<String, Integer> extAndType = FileUtils.getFileExtensionAndType(file);
-        requireEqual(MEDIA_TYPE_IMAGE, extAndType.getSecond(), "不支持的图片格式");
+        Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
+        requireEqual(IMAGE, extAndType.getSecond(), "不支持的图片格式");
 
         // 上传图片
         Date now = new Date(System.currentTimeMillis());
         String filename = FileUtils.generateFilename(file.getOriginalFilename(), now, extAndType.getFirst());
-        Path target = FileUtils.generateFilePath(PARENT_USER, userId);
+        Path target = FileUtils.generateFilePath(USER, userId);
         FileUtils.upload(file, filename, target);
 
         // 更新信息
@@ -265,7 +271,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
         // 删除旧图片
         if (oldAvatar != null) {
-            Path oldFile = FileUtils.generateFilePath(PARENT_USER, userId, oldAvatar);
+            Path oldFile = FileUtils.generateFilePath(USER, userId, oldAvatar);
             FileUtils.tryDeleteFile(oldFile);
         }
 
@@ -275,26 +281,22 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     /**
      * 根据 id 批量获取邮件地址，仅 id 和 email 可用
      */
-    public List<String> getMailsBatchByRoles(Set<String> roleSet) {
+    public List<String> getMailsBatchByRoles(Set<UserRole> roleSet) {
         return getBatchByRoles(roleSet, User::getEmail);
     }
 
     /**
      * 根据角色批量获取用户 id
      */
-    public List<Long> getIdsBatchByRoles(Set<String> roleSet) {
+    public List<Long> getIdsBatchByRoles(Set<UserRole> roleSet) {
         return getBatchByRoles(roleSet, User::getId);
     }
 
-    private <T> List<T> getBatchByRoles(Set<String> roleSet, SFunction<User, T> column) {
+    private <T> List<T> getBatchByRoles(Set<UserRole> roleSet, SFunction<User, T> column) {
         // 生成所需的 role
-        Set<String> roles = (roleSet == null ? Set.<String>of() : roleSet).stream()
-                .filter(StringUtils::hasText)
-                .filter(USER_ROLES::contains)
-                .collect(Collectors.toSet());
-        if (roles.isEmpty()) return List.of();
-        Integer role = Bits.zip(USER_ROLE_MASK_MAP, roleSet);
-        role = Bits.rezip(USER_ROLE_REZIP_MAP, role);
+        int role = Stream.ofNullable(roleSet).flatMap(Set::stream)
+                .mapToInt(UserRole::getMatchMask)
+                .reduce(0, (a, b) -> a | b);
         return getBaseMapper().selectObjsByRole(role, column);
     }
 

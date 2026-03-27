@@ -4,14 +4,15 @@ import com.example.backend.entity.IId;
 import com.example.backend.entity.MedicalRecord;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.MedicalRecordStatus;
+import com.example.backend.entity.property.MedicalRecordType;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.Map;
-
-import static com.example.backend.util.C.PARENT_USER;
 
 /**
  * 初诊登记
@@ -21,8 +22,8 @@ import static com.example.backend.util.C.PARENT_USER;
 public class MedicalRecordResponse implements IId {
 
     private Long id;
-    private Integer status;
-    private Integer type;
+    private MedicalRecordStatus status;
+    private MedicalRecordType type;
     private Date startTime;
     private Date endTime;
     private Double price;
@@ -63,10 +64,10 @@ public class MedicalRecordResponse implements IId {
                 record.getCreateTime(),
                 record.getUpdateTime(),
                 pet.getId(), pet.getName(), pet.getSex(), pet.getType(), pet.getBreed(), cover,
-                user.getId(), user.getUsername(), FileUtils.generateAssetUrl(PARENT_USER, user.getId(), user.getAvatar()),
+                user.getId(), user.getUsername(), FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()),
                 record.getOwnerId(),
                 owner == null ? null : owner.getUsername(),
-                owner == null ? null : FileUtils.generateAssetUrl(PARENT_USER, owner.getId(), owner.getAvatar()));
+                owner == null ? null : FileUtils.generateAssetUrl(ParentType.USER, owner.getId(), owner.getAvatar()));
     }
 
     /**

@@ -1,15 +1,13 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Examination;
+import com.example.backend.entity.property.ExamType;
+import com.example.backend.entity.property.TextType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
 
 import java.util.Date;
-
-import static com.example.backend.util.C.*;
-import static com.example.backend.util.C.EXAM_TYPE_MAX;
 
 @Data
 public class ExaminationAddRequest {
@@ -19,13 +17,11 @@ public class ExaminationAddRequest {
 
     private String text;
 
-    @NotNull(message = "未知文本类型")
-    @Range(min = TEXT_TYPE_MIN, max = TEXT_TYPE_MAX, message = "未知文本类型")
-    private Integer textType;
+    @NotBlank(message = "请选择文本类型")
+    private String textType;
 
-    @NotNull(message = "未知检查类型")
-    @Range(min = EXAM_TYPE_MIN, max = EXAM_TYPE_MAX, message = "未知检查类型")
-    private Integer examType;
+    @NotBlank(message = "请选择检查类型")
+     private String examType;
 
     private String filename;
 
@@ -40,8 +36,8 @@ public class ExaminationAddRequest {
                 detailId,
                 name,
                 text,
-                textType,
-                examType,
+                TextType.get(textType),
+                ExamType.get(examType),
                 filename,
                 price,
                 checkTime,

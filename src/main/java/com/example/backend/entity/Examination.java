@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.ExamType;
+import com.example.backend.entity.property.TextType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -45,15 +47,15 @@ public class Examination implements IId {
 
     /**
      * 文本类型
-     * *text*
+     * *非空 varchar(20)*
      */
-    private Integer textType;
+    private TextType textType;
 
     /**
      * 医疗记录类型
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
-    private Integer examType;
+    private ExamType examType;
 
     /**
      * 附件文件名

@@ -3,6 +3,8 @@ package com.example.backend.dto;
 import com.example.backend.entity.Item;
 import com.example.backend.entity.Order;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.OrderType;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,20 +12,18 @@ import lombok.Data;
 import java.util.Date;
 import java.util.Map;
 
-import static com.example.backend.util.C.PARENT_USER;
-
 @Data
 @AllArgsConstructor
 public class OrderResponse {
 
     private Long id;
-    private Integer type;
+    private OrderType type;
     private Double count;
     private String unit;
     private Double price;
     private Date createTime;
     private Long parentId;
-    private String parentType;
+    private ParentType parentType;
 
     // user
     private Long allowerId;
@@ -49,7 +49,7 @@ public class OrderResponse {
                 order.getParentType(),
                 allower.getId(),
                 allower.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, allower.getId(), allower.getAvatar()),
+                FileUtils.generateAssetUrl(ParentType.USER, allower.getId(), allower.getAvatar()),
                 item.getId(),
                 item.getName());
     }

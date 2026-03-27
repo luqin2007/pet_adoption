@@ -1,6 +1,8 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Examination;
+import com.example.backend.entity.property.ExamType;
+import com.example.backend.entity.property.TextType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,8 +17,8 @@ public class ExaminationResponse {
     private Long id;
     private Long detailId;
     private String text;
-    private Integer textType;
-    private Integer examType;
+    private TextType textType;
+    private ExamType examType;
     private List<ExaminationFileResponse> files;
     private Date checkTime;
     private Date createTime;

@@ -2,15 +2,13 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.Order;
 import com.example.backend.entity.TreatmentPlan;
-import com.example.backend.util.C;
+import com.example.backend.entity.property.ParentType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
-
-import static com.example.backend.util.C.PARENT_TREATMENT_PLAN;
 
 @Data
 public class TreatmentPlanAddRequest {
@@ -37,6 +35,8 @@ public class TreatmentPlanAddRequest {
     }
 
     public List<Order> createOrders(Long allowerId, Long planId) {
-        return orders.stream().map(request -> request.create(allowerId, planId, PARENT_TREATMENT_PLAN)).toList();
+        return orders.stream()
+                .map(request -> request.create(allowerId, planId, ParentType.TREATMENT_PLAN))
+                .toList();
     }
 }

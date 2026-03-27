@@ -1,14 +1,13 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.MediaFile;
+import com.example.backend.entity.property.MediaType;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
-
-import static com.example.backend.util.C.MEDIA_TYPE_IMAGE;
-import static com.example.backend.util.C.PARENT_PET;
 
 @Data
 @AllArgsConstructor
@@ -17,9 +16,9 @@ public class PetMediaResponse {
     private Long id;
 
     /**
-     * 媒体文件类型，image/video
+     * 媒体文件类型，IMAGE/VIDEO
      */
-    private String type;
+    private MediaType type;
 
     /**
      * 媒体文件路径
@@ -40,8 +39,8 @@ public class PetMediaResponse {
     public static PetMediaResponse create(MediaFile media) {
         return new PetMediaResponse(
                 media.getId(),
-                MEDIA_TYPE_IMAGE.equals(media.getType()) ? "image" : "video",
-                FileUtils.generateAssetUrl(PARENT_PET, media.getParentId(), media.getFilename()),
+                media.getType(),
+                FileUtils.generateAssetUrl(ParentType.PET, media.getParentId(), media.getFilename()),
                 media.getName(),
                 media.getDescription(),
                 media.getIsCover(),

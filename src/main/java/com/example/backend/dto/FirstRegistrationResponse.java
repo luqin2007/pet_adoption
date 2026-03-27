@@ -1,14 +1,13 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.*;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
-
-import static com.example.backend.util.C.PARENT_USER;
 
 @Data
 @AllArgsConstructor
@@ -62,6 +61,6 @@ public class FirstRegistrationResponse {
                 cover,
                 user.getId(),
                 user.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, user.getId(), user.getAvatar()));
+                FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()));
     }
 }

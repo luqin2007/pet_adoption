@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.RehabPlanStatus;
+import com.example.backend.entity.property.TextType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,10 +49,10 @@ public class RehabPlan implements IId {
     private String content;
 
     /**
-     * 文本类型
+     * 文本内容类型
      * *非空 tinyint*
      */
-    private Integer type;
+    private TextType type;
 
     /**
      * 执行频率
@@ -62,7 +64,7 @@ public class RehabPlan implements IId {
      * 状态
      * *非空 tinyint*
      */
-    private Integer status;
+    private RehabPlanStatus status;
 
     /**
      * 开始时间

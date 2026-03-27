@@ -1,6 +1,7 @@
 package com.example.backend.util;
 
 import com.example.backend.entity.IFile;
+import com.example.backend.entity.property.ParentType;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +24,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static com.example.backend.util.C.MEDIA_TYPE_IMAGE;
-import static com.example.backend.util.C.MEDIA_TYPE_VIDEO;
+import static com.example.backend.entity.property.MediaType.IMAGE;
+import static com.example.backend.entity.property.MediaType.VIDEO;
 
 @Component
 public class FileUtils implements ApplicationContextAware {
@@ -71,7 +72,7 @@ public class FileUtils implements ApplicationContextAware {
      * @param parentId   关联实体 id
      * @param parentType 关联实体类型
      */
-    public static boolean transferTempFile(IFile fileInfo, String uuid, Long parentId, String parentType) {
+    public static boolean transferTempFile(IFile fileInfo, String uuid, Long parentId, ParentType parentType) {
         Path filePath = generateFilePath(parentType, parentId, fileInfo.getFilename());
         Path tempPath = generateTempPath(parentType, uuid, fileInfo.getFilename());
         if (Files.isRegularFile(tempPath) && !Files.exists(filePath)) {
@@ -182,25 +183,25 @@ public class FileUtils implements ApplicationContextAware {
     /**
      * 获取文件扩展名和类型 (ext, type)
      */
-    public static Pair<String, Integer> getFileExtensionAndType(MultipartFile file) {
+    public static Pair<String, com.example.backend.entity.property.MediaType> getFileExtensionAndType(MultipartFile file) {
         try {
             String mime = new Tika().detect(file.getInputStream());
             return switch (mime) {
                 // 图片
-                case MediaType.IMAGE_PNG_VALUE -> Pair.of("png", MEDIA_TYPE_IMAGE);
-                case MediaType.IMAGE_GIF_VALUE -> Pair.of("gif", MEDIA_TYPE_IMAGE);
-                case MediaType.IMAGE_JPEG_VALUE -> Pair.of("jpg", MEDIA_TYPE_IMAGE);
-                case "image/bmp" -> Pair.of("bmp", MEDIA_TYPE_IMAGE);
-                case "image/webp" -> Pair.of("webp", MEDIA_TYPE_IMAGE);
-                case "image/tiff" -> Pair.of("tiff", MEDIA_TYPE_IMAGE);
+                case MediaType.IMAGE_PNG_VALUE -> Pair.of("png", IMAGE);
+                case MediaType.IMAGE_GIF_VALUE -> Pair.of("gif", IMAGE);
+                case MediaType.IMAGE_JPEG_VALUE -> Pair.of("jpg", IMAGE);
+                case "image/bmp" -> Pair.of("bmp", IMAGE);
+                case "image/webp" -> Pair.of("webp", IMAGE);
+                case "image/tiff" -> Pair.of("tiff", IMAGE);
                 // 视频
-                case "video/mp4", "video/mpeg4" -> Pair.of("mp4", MEDIA_TYPE_VIDEO);
-                case "video/x-msvideo" -> Pair.of("avi", MEDIA_TYPE_VIDEO);
-                case "video/x-ms-wmv" -> Pair.of("wmv", MEDIA_TYPE_VIDEO);
-                case "video/quicktime" -> Pair.of("mov", MEDIA_TYPE_VIDEO);
-                case "video/x-flv" -> Pair.of("flv", MEDIA_TYPE_VIDEO);
-                case "video/x-matroska" -> Pair.of("mkv", MEDIA_TYPE_VIDEO);
-                case "video/3gpp" -> Pair.of("3gp", MEDIA_TYPE_VIDEO);
+                case "video/mp4", "video/mpeg4" -> Pair.of("mp4", VIDEO);
+                case "video/x-msvideo" -> Pair.of("avi", VIDEO);
+                case "video/x-ms-wmv" -> Pair.of("wmv", VIDEO);
+                case "video/quicktime" -> Pair.of("mov", VIDEO);
+                case "video/x-flv" -> Pair.of("flv", VIDEO);
+                case "video/x-matroska" -> Pair.of("mkv", VIDEO);
+                case "video/3gpp" -> Pair.of("3gp", VIDEO);
                 // 未知类型
                 default -> {
                     LOGGER.warn("getFileExtensionAndType: 不支持的媒体格式: {} {}", mime, file.getOriginalFilename());
@@ -220,7 +221,7 @@ public class FileUtils implements ApplicationContextAware {
      * @param parentId   关联实体 id
      * @param filename   文件名
      */
-    public static Path generateFilePath(String parentType, Long parentId, String filename) {
+    public static Path generateFilePath(ParentType parentType, Long parentId, String filename) {
         return generateFilePath(parentType, parentId).resolve(filename);
     }
 
@@ -230,9 +231,9 @@ public class FileUtils implements ApplicationContextAware {
      * @param parentType 关联实体类型
      * @param parentId   关联实体 id
      */
-    public static Path generateFilePath(String parentType, Long parentId) {
+    public static Path generateFilePath(ParentType parentType, Long parentId) {
         return Paths.get(UPLOAD_PATH)
-                .resolve(parentType)
+                .resolve(parentType.getFolder())
                 .resolve(String.valueOf(parentId));
     }
 
@@ -242,9 +243,9 @@ public class FileUtils implements ApplicationContextAware {
      * @param parentType 关联实体类型
      * @param uuid       关联实体临时 id
      */
-    public static Path generateTempPath(String parentType, String uuid) {
+    public static Path generateTempPath(ParentType parentType, String uuid) {
         return Paths.get(TEMP_UPLOAD_PATH)
-                .resolve(parentType)
+                .resolve(parentType.getFolder())
                 .resolve(uuid);
     }
 
@@ -255,7 +256,7 @@ public class FileUtils implements ApplicationContextAware {
      * @param uuid       关联实体临时 id
      * @param filename   文件名
      */
-    public static Path generateTempPath(String parentType, String uuid, String filename) {
+    public static Path generateTempPath(ParentType parentType, String uuid, String filename) {
         return generateTempPath(parentType, uuid).resolve(filename);
     }
 
@@ -266,10 +267,10 @@ public class FileUtils implements ApplicationContextAware {
      * @param parentId   关联实体 id
      * @param filename   文件名
      */
-    public static String generateAssetUrl(String parentType, Long parentId, String filename) {
+    public static String generateAssetUrl(ParentType parentType, Long parentId, String filename) {
         if (!StringUtils.hasText(filename)) return null;
         Path urlPath = Paths.get("/assets")
-                .resolve(parentType)
+                .resolve(parentType.getFolder())
                 .resolve(String.valueOf(parentId))
                 .resolve(filename);
         String url = urlPath.toString();

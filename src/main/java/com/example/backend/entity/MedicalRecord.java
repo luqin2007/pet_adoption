@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.MedicalRecordType;
+import com.example.backend.entity.property.MedicalRecordStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -53,13 +55,13 @@ public class MedicalRecord implements IId {
      * 诊疗流程
      * *非空 tinyint*
      */
-    private Integer status;
+    private MedicalRecordStatus status;
 
     /**
      * 诊疗类型
      * *非空 tinyint*
      */
-    private Integer type;
+    private MedicalRecordType type;
 
     /**
      * 开始时间, null 表示未开始

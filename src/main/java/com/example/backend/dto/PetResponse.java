@@ -2,14 +2,13 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
 import java.util.Map;
-
-import static com.example.backend.util.C.PARENT_USER;
 
 @Data
 @AllArgsConstructor
@@ -56,7 +55,7 @@ public class PetResponse {
                 deworms,
                 discover.getId(),
                 discover.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, discover.getId(), discover.getAvatar()));
+                FileUtils.generateAssetUrl(ParentType.USER, discover.getId(), discover.getAvatar()));
     }
 
     /**

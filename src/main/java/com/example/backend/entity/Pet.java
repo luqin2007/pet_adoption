@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.PetStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -69,9 +70,9 @@ public class Pet implements IId {
 
     /**
      * 宠物记录状态
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
-    private Integer status;
+    private PetStatus status;
 
     /**
      * 是否被废弃

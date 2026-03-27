@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.OrderType;
+import com.example.backend.entity.property.ParentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,13 +43,13 @@ public class Order implements IId {
      * 关联类型
      * *非空 varchar(20)*
      */
-    private String parentType;
+    private ParentType parentType;
 
     /**
      * 申请类型
-     * *非空 int*
+     * *非空 varchar(20)*
      */
-    private Integer type;
+    private OrderType type;
 
     /**
      * 数量

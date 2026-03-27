@@ -4,14 +4,13 @@ import com.example.backend.entity.MedicalDetail;
 import com.example.backend.entity.MedicalRecord;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
-
-import static com.example.backend.util.C.PARENT_USER;
 
 @Data
 @AllArgsConstructor
@@ -99,7 +98,7 @@ public class MedicalDetailResponse {
                 treatments,
                 doctor.getId(),
                 doctor.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, doctor.getId(), doctor.getAvatar()),
+                FileUtils.generateAssetUrl(ParentType.USER, doctor.getId(), doctor.getAvatar()),
                 record.getPetAge(),
                 pet.getId(),
                 pet.getName(),

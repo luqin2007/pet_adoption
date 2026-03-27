@@ -3,15 +3,16 @@ package com.example.backend.dto;
 import com.example.backend.entity.Order;
 import com.example.backend.entity.RehabPlan;
 import com.example.backend.entity.RehabPlanStatus;
+import com.example.backend.entity.property.TextType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
 
 import java.util.Date;
 import java.util.List;
 
-import static com.example.backend.util.C.*;
+import static com.example.backend.entity.property.ParentType.REHAB_PLAN;
+import static com.example.backend.entity.property.RehabPlanStatus.ACTIVE;
 
 @Data
 public class RehabPlanAddRequest {
@@ -29,8 +30,7 @@ public class RehabPlanAddRequest {
     private String frequency;
 
     @NotNull(message = "无效文本类型")
-    @Range(min = TEXT_TYPE_MIN, max = TEXT_TYPE_MAX, message = "无效文本类型")
-    private Integer type;
+    private TextType type;
 
     @NotNull(message = "请输入开始时间")
     private Date startTime;
@@ -49,7 +49,7 @@ public class RehabPlanAddRequest {
                 content,
                 type,
                 frequency,
-                REHAB_PLAN_STATUS_ACTIVE,
+                ACTIVE,
                 startTime,
                 endTime,
                 new Date());
@@ -57,7 +57,7 @@ public class RehabPlanAddRequest {
 
     public List<Order> createOrders(Long allowerId, Long planId) {
         return requests.stream()
-                .map(request -> request.create(allowerId, planId, PARENT_REHAB_PLAN))
+                .map(request -> request.create(allowerId, planId, REHAB_PLAN))
                 .toList();
     }
 

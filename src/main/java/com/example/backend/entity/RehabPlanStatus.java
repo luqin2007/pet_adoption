@@ -35,7 +35,7 @@ public class RehabPlanStatus implements IId {
      * 新状态
      * *非空 tinyint*
      */
-    private Integer status;
+    private com.example.backend.entity.property.RehabPlanStatus status;
 
     /**
      * 变更原因

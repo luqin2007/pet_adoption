@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.PetStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,15 +34,15 @@ public class PetStatusRecord implements IId {
 
     /**
      * 旧状态
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
-    private Integer from;
+    private PetStatus from;
 
     /**
      * 新状态
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
-    private Integer to;
+    private PetStatus to;
 
     /**
      * 转移说明

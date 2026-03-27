@@ -3,11 +3,13 @@ package com.example.backend.mapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.backend.entity.MediaFile;
-import com.example.backend.util.C;
+import com.example.backend.entity.property.ParentType;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Collection;
 import java.util.Set;
+
+import static com.example.backend.entity.property.MediaType.IMAGE;
 
 /**
  * 索引：
@@ -25,7 +27,7 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaFile> queryIdAndFilename(String parentType, Long parentId) {
+    default LambdaQueryWrapper<MediaFile> queryIdAndFilename(ParentType parentType, Long parentId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
@@ -40,12 +42,12 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaFile> queryCover(String parentType, Long parentId) {
+    default LambdaQueryWrapper<MediaFile> queryCover(ParentType parentType, Long parentId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
                 .eq(MediaFile::getIsCover, true)
-                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE);
+                .eq(MediaFile::getType, IMAGE);
     }
 
     /**
@@ -56,7 +58,7 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaFile> queryCoverFilename(String parentType, Long parentId) {
+    default LambdaQueryWrapper<MediaFile> queryCoverFilename(ParentType parentType, Long parentId) {
         return queryCover(parentType, parentId).select(MediaFile::getFilename);
     }
 
@@ -68,12 +70,12 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaFile> queryCoverFilenames(String parentType, Collection<Long> parentId) {
+    default LambdaQueryWrapper<MediaFile> queryCoverFilenames(ParentType parentType, Collection<Long> parentId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .in(MediaFile::getParentId, parentId)
                 .eq(MediaFile::getIsCover, true)
-                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .eq(MediaFile::getType, IMAGE)
                 .select(MediaFile::getParentId, MediaFile::getFilename);
     }
 
@@ -87,12 +89,12 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
      * @param exceptImageId 排除的图片 id
      * @return [MediaInfo]
      */
-    default LambdaQueryWrapper<MediaFile> queryCover(String parentType, Long parentId, Long exceptImageId) {
+    default LambdaQueryWrapper<MediaFile> queryCover(ParentType parentType, Long parentId, Long exceptImageId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
                 .eq(MediaFile::getIsCover, true)
-                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .eq(MediaFile::getType, IMAGE)
                 .ne(MediaFile::getId, exceptImageId);
     }
 
@@ -104,12 +106,12 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaUpdateWrapper<MediaFile> clearCover(String parentType, Long parentId) {
+    default LambdaUpdateWrapper<MediaFile> clearCover(ParentType parentType, Long parentId) {
         return lambdaUpdate()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
                 .eq(MediaFile::getIsCover, true)
-                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .eq(MediaFile::getType, IMAGE)
                 .set(MediaFile::getIsCover, false);
     }
 
@@ -121,11 +123,11 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
      * @param parentType 关联类型
      * @param parentId   关联 id
      */
-    default LambdaQueryWrapper<MediaFile> queryLatestImageId(String parentType, Long parentId) {
+    default LambdaQueryWrapper<MediaFile> queryLatestImageId(ParentType parentType, Long parentId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
-                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .eq(MediaFile::getType, IMAGE)
                 .orderByDesc(MediaFile::getCreateTime)
                 .select(MediaFile::getId);
     }
@@ -139,23 +141,23 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
      * @param parentId      关联 id
      * @param exceptImageId 排除的图片 id
      */
-    default LambdaQueryWrapper<MediaFile> queryLatestImageId(String parentType, Long parentId, Long exceptImageId) {
+    default LambdaQueryWrapper<MediaFile> queryLatestImageId(ParentType parentType, Long parentId, Long exceptImageId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
-                .eq(MediaFile::getType, C.MEDIA_TYPE_IMAGE)
+                .eq(MediaFile::getType, IMAGE)
                 .orderByDesc(MediaFile::getCreateTime)
                 .ne(MediaFile::getId, exceptImageId)
                 .select(MediaFile::getId);
     }
 
-    default LambdaQueryWrapper<MediaFile> queryByParent(String parentType, Long parentId) {
+    default LambdaQueryWrapper<MediaFile> queryByParent(ParentType parentType, Long parentId) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId);
     }
 
-    default LambdaQueryWrapper<MediaFile> queryByParents(String parentType, Set<Long> parentIds) {
+    default LambdaQueryWrapper<MediaFile> queryByParents(ParentType parentType, Set<Long> parentIds) {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .in(MediaFile::getParentId, parentIds);

@@ -1,6 +1,8 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.MedicalRecord;
+import com.example.backend.entity.property.MedicalRecordStatus;
+import com.example.backend.entity.property.MedicalRecordType;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,9 +14,9 @@ public class MedicalRecordUpdateRequest {
 
     private String ownerPhone;
 
-    private Integer status;
+    private String status;
 
-    private Integer type;
+    private String type;
 
     private Date startTime;
 
@@ -25,8 +27,8 @@ public class MedicalRecordUpdateRequest {
     public void applyTo(MedicalRecord record) {
         record.setOwnerId(ownerId);
         record.setOwnerPhone(ownerPhone);
-        record.setStatus(status);
-        record.setType(type);
+        record.setStatus(MedicalRecordStatus.get(status));
+        record.setType(MedicalRecordType.get(type));
         record.setStartTime(startTime);
         record.setEndTime(endTime);
         record.setCost(cost);

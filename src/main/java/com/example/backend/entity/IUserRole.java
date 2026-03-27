@@ -1,8 +1,6 @@
 package com.example.backend.entity;
 
-import com.example.backend.util.Bits;
-
-import static com.example.backend.util.C.*;
+import com.example.backend.entity.property.UserRole;
 
 public interface IUserRole {
 
@@ -11,22 +9,22 @@ public interface IUserRole {
     void setRole(Integer role);
 
     default boolean isVolunteer() {
-        return Bits.match(getRole(), USER_ROLE_MASK_VOLUNTEER);
+        return UserRole.VOLUNTEER.match(getRole());
     }
 
     default boolean isWorker() {
-        return Bits.match(getRole(), USER_ROLE_MASK_WORKER);
+        return UserRole.WORKER.match(getRole());
     }
 
     default boolean isDonor() {
-        return Bits.match(getRole(), USER_ROLE_MASK_DONOR);
+        return UserRole.DONOR.match(getRole());
     }
 
     default boolean isDoctor() {
-        return Bits.match(getRole(), USER_ROLE_MASK_DOCTOR);
+        return UserRole.DOCTOR.match(getRole());
     }
 
     default boolean isAdmin() {
-        return Bits.match(getRole(), USER_ROLE_MASK_ADMIN);
+        return UserRole.ADMIN.match(getRole());
     }
 }

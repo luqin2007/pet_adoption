@@ -3,6 +3,7 @@ package com.example.backend.dto;
 import com.example.backend.entity.MediaFile;
 import com.example.backend.entity.RehabRecord;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,9 +11,6 @@ import lombok.Data;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import static com.example.backend.util.C.PARENT_REHAB_PLAN;
-import static com.example.backend.util.C.PARENT_USER;
 
 @Data
 @AllArgsConstructor
@@ -45,9 +43,10 @@ public class RehabRecordResponse {
                 record.getCreateTime(),
                 user.getId(),
                 user.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, user.getId(), user.getAvatar()),
+                FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()),
                 files.stream()
-                        .map(file -> FileUtils.generateAssetUrl(PARENT_REHAB_PLAN, record.getPlanId(), file.getFilename()))
+                        .map(file ->
+                                FileUtils.generateAssetUrl(ParentType.REHAB_PLAN, record.getPlanId(), file.getFilename()))
                         .toList());
     }
 

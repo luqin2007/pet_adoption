@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.RescueTaskAction;
+import com.example.backend.entity.property.RescueTaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -41,19 +43,19 @@ public class RescueTaskRecord implements IId {
      * 记录类型
      * *非空 tinyint*
      */
-    private Integer action;
+    private RescueTaskAction action;
 
     /**
      * 修改前的任务状态
      * *非空 tinyint*
      */
-    private Integer statusFrom;
+    private RescueTaskStatus statusFrom;
 
     /**
      * 修改后的任务状态
      * *非空 tinyint*
      */
-    private Integer statusTo;
+    private RescueTaskStatus statusTo;
 
     /**
      * 修改原因
@@ -70,7 +72,8 @@ public class RescueTaskRecord implements IId {
     /**
      * 记录任务变更
      */
-    public static RescueTaskRecord create(RescueTask task, Long userId, Integer action, Integer statusFrom, String reason) {
+    public static RescueTaskRecord create(RescueTask task, Long userId,
+                                          RescueTaskAction action, RescueTaskStatus statusFrom, String reason) {
         return new RescueTaskRecord(null,
                 task.getId(),
                 userId,

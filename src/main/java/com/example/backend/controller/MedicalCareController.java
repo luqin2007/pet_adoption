@@ -80,9 +80,10 @@ public class MedicalCareController {
         return Result.success(response);
     }
 
-    @PostMapping("/record")
-    public Result<MedicalRecordResponse> addMedicalRecord(@RequestBody MedicalRecordRequest request) {
-        MedicalRecordResponse response = medicalService.addMedicalVisitRecord(request);
+    @PostMapping("/record/pet/{id}")
+    public Result<MedicalRecordResponse> addMedicalRecord(@PathVariable("id") Long petId,
+                                                          @RequestBody MedicalRecordRequest request) {
+        MedicalRecordResponse response = medicalService.addMedicalVisitRecord(petId, request);
         return Result.success(response);
     }
 

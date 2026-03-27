@@ -2,14 +2,13 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.MedicalDetail;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.Map;
-
-import static com.example.backend.util.C.PARENT_USER;
 
 @Data
 @AllArgsConstructor
@@ -39,7 +38,7 @@ public class MedicalDetailItemResponse {
                 medicalDetail.getSummary(),
                 user.getId(),
                 user.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, user.getId(), user.getAvatar()));
+                FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()));
     }
 
     /**

@@ -2,8 +2,8 @@ package com.example.backend.component;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.example.backend.entity.Pet;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.mapper.PetMapper;
-import com.example.backend.util.C;
 import com.example.backend.util.FileUtils;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -37,7 +37,7 @@ public class FileCleanScheduleTask {
     private void cleanPetMediaFiles() {
         Set<Long> petIds = new HashSet<>(petMapper.selectObjs(Wrappers.<Pet>lambdaQuery()
                 .select(Pet::getId)));
-        Path pets = FileUtils.generateTempPath(C.PARENT_PET, "");
+        Path pets = FileUtils.generateTempPath(ParentType.PET, "");
         if (!Files.isDirectory(pets)) return;
 
         cleanDirectory("cleanPetMediaFiles", pets, path -> {

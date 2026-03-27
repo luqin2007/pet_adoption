@@ -2,6 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.TreatmentPlan;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,8 +10,6 @@ import lombok.Data;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import static com.example.backend.util.C.PARENT_USER;
 
 @Data
 @AllArgsConstructor
@@ -44,7 +43,7 @@ public class TreatmentPlanResponse {
                 treatmentPlan.getIsDiscard(),
                 treatmentPlan.getDoctorId(),
                 doctor.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, doctor.getId(), doctor.getAvatar()),
+                FileUtils.generateAssetUrl(ParentType.USER, doctor.getId(), doctor.getAvatar()),
                 orders);
     }
 

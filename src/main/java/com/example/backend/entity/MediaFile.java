@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.MediaType;
+import com.example.backend.entity.property.ParentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,7 +31,7 @@ public class MediaFile implements IId, IFile {
      * 关联类型
      * *非空 varchar(20)*
      */
-    private String parentType;
+    private ParentType parentType;
 
     /**
      * 上传用户 id
@@ -63,9 +65,9 @@ public class MediaFile implements IId, IFile {
 
     /**
      * 类型
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
-    private Integer type;
+    private MediaType type;
 
     /**
      * 创建时间

@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.RescueTaskStatus;
+import com.example.backend.entity.property.RescueTaskType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -51,15 +53,15 @@ public class RescueTask implements IId {
 
     /**
      * 状态
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
-    private Integer status;
+    private RescueTaskStatus status;
 
     /**
      * 类型
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
-    private Integer type;
+    private RescueTaskType type;
 
     /**
      * 创建时间

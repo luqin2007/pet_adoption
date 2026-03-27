@@ -1,6 +1,8 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.MediaFile;
+import com.example.backend.entity.property.MediaType;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import com.example.backend.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -12,8 +14,6 @@ import org.springframework.data.util.Pair;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
-
-import static com.example.backend.util.C.PARENT_PET;
 
 @Data
 public class PetMediaUploadRequest {
@@ -33,11 +33,11 @@ public class PetMediaUploadRequest {
     public MediaFile createMedia(Long parentId, Long userId, MultipartFile file) {
         String oriName = file.getOriginalFilename();
         String fileName = FileUtils.getNameWithoutExtension(oriName);
-        Pair<String, Integer> extAndType = FileUtils.getFileExtensionAndType(file);
+        Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
         Date now = new Date();
         return new MediaFile(null,
                 parentId,
-                PARENT_PET,
+                ParentType.PET,
                 userId,
                 StringUtils.hasText(name) ? name : fileName,
                 description,

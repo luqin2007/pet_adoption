@@ -1,14 +1,12 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.User;
-import com.example.backend.util.Bits;
-import com.example.backend.util.C;
+import com.example.backend.entity.property.ParentType;
+import com.example.backend.entity.property.UserRole;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import static com.example.backend.util.C.USER_ROLE_REZIP_MAP;
 
 /**
  * 用户响应，返回用户信息
@@ -63,8 +61,8 @@ public class UserResponse {
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                FileUtils.generateAssetUrl(C.PARENT_USER, user.getId(), user.getAvatar()),
-                Bits.rezip(USER_ROLE_REZIP_MAP, user.getRole()),
+                FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()),
+                UserRole.rezip(user.getRole()),
                 user.getPhone(),
                 null,
                 null

@@ -1,12 +1,13 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.ExaminationFile;
-import com.example.backend.util.C;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Date;
+
+import static com.example.backend.entity.property.ParentType.EXAMINATION;
 
 @Data
 @AllArgsConstructor
@@ -21,7 +22,7 @@ public class ExaminationFileResponse {
         return new ExaminationFileResponse(
                 file.getId(),
                 file.getFilename(),
-                FileUtils.generateAssetUrl(C.PARENT_EXAMINATION, file.getExaminationId(), file.getFilename()),
+                FileUtils.generateAssetUrl(EXAMINATION, file.getExaminationId(), file.getFilename()),
                 file.getCreateTime());
     }
 }

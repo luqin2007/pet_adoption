@@ -2,8 +2,8 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.RehabPlan;
-import com.example.backend.entity.RehabPlanStatus;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,8 +12,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.example.backend.util.C.PARENT_USER;
-
 @Data
 @AllArgsConstructor
 public class RehabPlanResponse {
@@ -21,9 +19,8 @@ public class RehabPlanResponse {
     private Long id;
     private String title;
     private String content;
-    private Integer type;
     private String frequency;
-    private Integer status;
+    private String status;
     private Date startTime;
     private Date endTime;
     private Date createTime;
@@ -53,9 +50,8 @@ public class RehabPlanResponse {
                 plan.getId(),
                 plan.getTitle(),
                 plan.getContent(),
-                plan.getType(),
                 plan.getFrequency(),
-                plan.getStatus(),
+                plan.getStatus().name(),
                 plan.getStartTime(),
                 plan.getEndTime(),
                 plan.getCreateTime(),
@@ -63,7 +59,7 @@ public class RehabPlanResponse {
                 statusRecords,
                 plan.getDoctorId(),
                 doctor.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, doctor.getId(), doctor.getAvatar()),
+                FileUtils.generateAssetUrl(ParentType.USER, doctor.getId(), doctor.getAvatar()),
                 plan.getPetId(),
                 pet.getName(),
                 pet.getSex(),

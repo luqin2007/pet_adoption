@@ -3,6 +3,8 @@ package com.example.backend.dto;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.ParentType;
+import com.example.backend.entity.property.PetStatus;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,16 +12,14 @@ import lombok.Data;
 import java.util.Date;
 import java.util.Map;
 
-import static com.example.backend.util.C.PARENT_USER;
-
 @Data
 @AllArgsConstructor
 public class PetStatusRecordResponse {
 
     // 状态记录
     private Long id;
-    private int from;
-    private int to;
+    private PetStatus from;
+    private PetStatus to;
     private Date createTime;
     private String description;
 
@@ -49,7 +49,7 @@ public class PetStatusRecordResponse {
                 cover,
                 user.getId(),
                 user.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, user.getId(), user.getAvatar()));
+                FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()));
     }
 
     /**

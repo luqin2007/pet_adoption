@@ -3,6 +3,8 @@ package com.example.backend.dto;
 import com.example.backend.entity.ExaminationFile;
 import com.example.backend.entity.IFile;
 import com.example.backend.entity.MediaFile;
+import com.example.backend.entity.property.MediaType;
+import com.example.backend.entity.property.ParentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,7 +17,7 @@ public class TempFileInfo implements IFile, Comparable<TempFileInfo> {
     private String filename;
     private String name;
     private Long userId;
-    private Integer type;
+    private MediaType type;
     private Date createTime;
 
     @Override
@@ -23,7 +25,7 @@ public class TempFileInfo implements IFile, Comparable<TempFileInfo> {
         return createTime.compareTo(o.createTime);
     }
 
-    public MediaFile createMediaFile(Long parentId, String parentType) {
+    public MediaFile createMediaFile(Long parentId, ParentType parentType) {
         return new MediaFile(null,
                 parentId,
                 parentType,

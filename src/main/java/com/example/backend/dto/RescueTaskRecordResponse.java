@@ -2,6 +2,9 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.RescueTaskRecord;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.ParentType;
+import com.example.backend.entity.property.RescueTaskAction;
+import com.example.backend.entity.property.RescueTaskStatus;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,8 +13,6 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 import java.util.Map;
 
-import static com.example.backend.util.C.PARENT_USER;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,15 +20,15 @@ public class RescueTaskRecordResponse {
 
     private Long id;
     private Long taskId;
-    private Integer action;
+    private RescueTaskAction action;
     /**
      * 修改前的任务状态
      */
-    private Integer statusFrom;
+    private RescueTaskStatus statusFrom;
     /**
      * 修改后的任务状态
      */
-    private Integer statusTo;
+    private RescueTaskStatus statusTo;
     /**
      * 修改原因
      */
@@ -53,7 +54,7 @@ public class RescueTaskRecordResponse {
                 record.getCreateTime(),
                 user.getId(),
                 user.getUsername(),
-                FileUtils.generateAssetUrl(PARENT_USER, user.getId(), user.getAvatar()));
+                FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()));
     }
 
     /**

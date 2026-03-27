@@ -1,16 +1,14 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.MedicalRecord;
+import com.example.backend.entity.property.MedicalRecordStatus;
+import com.example.backend.entity.property.MedicalRecordType;
 import lombok.Data;
 
 import java.util.Date;
 
-import static com.example.backend.util.C.MEDICAL_VISIT_STATUS_WAITING;
-
 @Data
 public class MedicalRecordRequest {
-
-    private Long petId;
 
     private int petAge;
 
@@ -20,13 +18,13 @@ public class MedicalRecordRequest {
 
     private String ownerPhone;
 
-    private Integer type;
+    private String type;
 
     private Date startTime;
 
     private Double price;
 
-    public MedicalRecord createEntity() {
+    public MedicalRecord createEntity(Long petId) {
         Date now = new Date();
         return new MedicalRecord(null,
                 petId,
@@ -34,8 +32,8 @@ public class MedicalRecordRequest {
                 userId,
                 ownerId,
                 ownerPhone,
-                MEDICAL_VISIT_STATUS_WAITING,
-                type,
+                MedicalRecordStatus.WAITING,
+                MedicalRecordType.get(type),
                 startTime,
                 null,
                 price,

@@ -1,6 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Pet;
+import com.example.backend.entity.property.PetStatus;
 import com.example.backend.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
@@ -10,8 +11,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.sql.Date;
-
-import static com.example.backend.util.C.PET_STATUS_WAITING;
 
 /**
  * 添加流浪宠物请求体
@@ -70,7 +69,7 @@ public class PetInfoAddRequest extends LocationRequest {
                 StringUtils.notNull(breed),
                 StringUtils.notNull(health),
                 StringUtils.notNull(description),
-                PET_STATUS_WAITING,
+                PetStatus.WAITING,
                 false,
                 now,
                 now);

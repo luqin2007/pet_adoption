@@ -1,19 +1,14 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.backend.dto.RehabPlanQueryRequest;
 import com.example.backend.entity.RehabPlan;
-import com.example.backend.util.IBaseCheck;
+import com.example.backend.entity.property.RehabPlanStatus;
 import org.apache.ibatis.annotations.Mapper;
-import org.hibernate.validator.constraints.Range;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 索引：
@@ -40,10 +35,10 @@ public interface RehabPlanMapper extends IBaseMapper<RehabPlan> {
         return query;
     }
 
-    default LambdaUpdateWrapper<RehabPlan> updateStatusById(Long planId, Integer status) {
+    default LambdaUpdateWrapper<RehabPlan> updateStatusById(Long planId, RehabPlanStatus status) {
         return lambdaUpdate()
                 .eq(RehabPlan::getId, planId)
-                .set(RehabPlan::getStatus, status);
+                .set(RehabPlan::getStatus, status.name());
     }
 
     @Override
