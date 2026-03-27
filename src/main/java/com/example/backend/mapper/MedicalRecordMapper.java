@@ -3,7 +3,6 @@ package com.example.backend.mapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.dto.MedicalRecordQueryRequest;
 import com.example.backend.entity.MedicalRecord;
-import com.example.backend.util.ServiceException;
 
 import java.util.Date;
 
@@ -30,8 +29,7 @@ public interface MedicalRecordMapper extends IBaseMapper<MedicalRecord> {
         Long doctor = request.getDoctor();
         Integer status = request.getStatus();
         Date time0 = request.getTime0(), time1 = request.getTime1();
-        if (pet != null && doctor != null)
-            throw ServiceException.invalidate("无法同时查询宠物 id 与接诊人");
+        require(pet == null || doctor == null, "无法同时查询宠物 id 与接诊人");
 
         LambdaQueryWrapper<MedicalRecord> query = lambdaQuery();
         query.eq(pet != null, MedicalRecord::getPetId, pet);

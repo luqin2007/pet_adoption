@@ -1,23 +1,26 @@
 package com.example.backend.service;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.mapper.*;
-import com.example.backend.util.DbUtils;
 import com.example.backend.util.FileUtils;
 import com.example.backend.util.ServiceException;
 import com.example.backend.util.StringUtils;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -46,6 +49,11 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     private final VaccineRecordMapper vaccineRecordMapper;
     private final DewormerMapper dewormerMapper;
     private final DewormRecordMapper dewormRecordMapper;
+    private final RehabPlanMapper rehabPlanMapper;
+    private final RehabPlanStatusMapper rehabPlanStatusMapper;
+    private final RehabRecordMapper rehabRecordMapper;
+    private final MediaFileMapper mediaFileMapper;
+    private final HealthAssessmentMapper healthAssessmentMapper;
 
     private PetService petService;
     private UserService userService;
@@ -97,8 +105,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 .collect(Collectors.toSet());
         Map<Long, User> users = userService.groupById(userIds,
                 User::getId, User::getUsername, User::getAvatar);
-        return DbUtils.convertDto(response, registration ->
-                FirstRegistrationItemResponse.createBatch(registration, pets, users));
+        return convertDto(response,
+                registration -> FirstRegistrationItemResponse.createBatch(registration, pets, users));
     }
 
     /**
@@ -205,8 +213,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
         Map<Long, String> covers = petService.getCoversByPetIds(petIds);
         Map<Long, User> users = userService.groupById(userIds);
-        return DbUtils.convertDto(result,
-                record -> MedicalRecordResponse.createBatch(record, pets, covers, users));
+        return convertDto(result, record -> MedicalRecordResponse.createBatch(record, pets, covers, users));
     }
 
     /**
@@ -293,7 +300,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Map<Long, Item> items = itemMapper.groupById(itemIds);
         Map<Long, List<OrderResponse>> orders = orderList.stream()
                 .map(order -> OrderResponse.createBatch(order, users, items))
-                .collect(Collectors.groupingBy(OrderResponse::getPlanId));
+                .collect(Collectors.groupingBy(OrderResponse::getParentId));
         List<TreatmentPlanResponse> treatments = plans.stream()
                 .map(plan -> TreatmentPlanResponse.createBatch(plan, users, orders))
                 .toList();
@@ -672,9 +679,225 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 .collect(Collectors.groupingBy(DewormResponse::getPetId));
     }
 
+    /**
+     * 添加康复计划
+     */
+    @Transactional
+    public RehabPlanResponse addRehabPlan(Long petId, RehabPlanAddRequest request) {
+        // 权限校验
+        User login = getLoginUser();
+        requirePermission(login.isDoctor());
+        Pet pet = petService.requireById(petId,
+                Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
+
+        // 保存
+        RehabPlan plan = request.create(login.getId(), petId);
+        rehabPlanMapper.insert(plan);
+        List<Order> orders = request.createOrders(login.getId(), plan.getId());
+        orderMapper.insert(orders);
+        RehabPlanStatus status = request.createStatus(plan);
+        rehabPlanStatusMapper.insert(status);
+
+        // 返回
+        String cover = petService.getCoverById(petId);
+        return RehabPlanResponse.create(plan, login, pet, cover,
+                List.of(RehabPlanStatusResponse.create(status, login)));
+    }
+
+    /**
+     * 获取康复计划
+     */
+    public RehabPlanResponse getRehabPlan(Long planId) {
+        RehabPlan plan = rehabPlanMapper.requireById(planId);
+        User doctor = userService.requireById(plan.getDoctorId(),
+                User::getId, User::getUsername, User::getAvatar);
+        Pet pet = petService.requireById(plan.getPetId(),
+                Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
+        String cover = petService.getCoverById(plan.getPetId());
+        List<RehabPlanStatus> plans = rehabPlanStatusMapper.selectList(rehabPlanStatusMapper.queryByPlan(planId));
+        Set<Long> userIds = plans.stream().map(RehabPlanStatus::getUserId).collect(Collectors.toSet());
+        Map<Long, User> users = userService.groupById(userIds,
+                User::getId, User::getUsername, User::getAvatar);
+        return RehabPlanResponse.create(plan, doctor, pet, cover, plans.stream()
+                .map(record -> RehabPlanStatusResponse.createBatch(record, users))
+                .toList());
+    }
+
+    /**
+     * 查询康复计划
+     */
+    public Page<RehabPlanResponse> getRehabPlans(RehabPlanQueryRequest queryRequest, PageRequest pageRequest) {
+        Page<RehabPlan> page = pageRequest.createPage();
+        LambdaQueryWrapper<RehabPlan> query = rehabPlanMapper.queryByRequest(queryRequest);
+        Page<RehabPlan> plans = rehabPlanMapper.selectPage(page, query);
+        Set<Long> planIds = plans.getRecords().stream()
+                .map(RehabPlan::getId)
+                .collect(Collectors.toSet());
+        List<RehabPlanStatus> statusRecordMap = rehabPlanStatusMapper.selectList(rehabPlanStatusMapper.queryByPlans(planIds));
+        Set<Long> userIds = Stream.concat(
+                plans.getRecords().stream().map(RehabPlan::getDoctorId),
+                statusRecordMap.stream().map(RehabPlanStatus::getUserId)
+        ).collect(Collectors.toSet());
+        Map<Long, User> users = userService.groupById(userIds,
+                User::getId, User::getUsername, User::getAvatar);
+        Set<Long> petIds = plans.getRecords().stream()
+                .map(RehabPlan::getPetId)
+                .collect(Collectors.toSet());
+        Map<Long, Pet> pets = petService.groupById(petIds,
+                Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
+        Map<Long, String> covers = petService.getCoversByPetIds(petIds);
+        Map<Long, List<RehabPlanStatusResponse>> statusRecords = statusRecordMap.stream()
+                .map(record -> RehabPlanStatusResponse.createBatch(record, users))
+                .collect(Collectors.groupingBy(RehabPlanStatusResponse::getPlanId));
+        return convertDto(plans,
+                plan -> RehabPlanResponse.createBatch(plan, users, pets, covers, statusRecords));
+    }
+
+    /**
+     * 更新康复计划结果
+     */
+    @Transactional
+    public RehabPlanResponse updateRehabPlanStatus(Long planId, RehabPlanStatusUpdateRequest request) {
+        // 权限校验
+        User login = getLoginUser();
+        requirePermission(login.isDoctor());
+        RehabPlan plan = rehabPlanMapper.requireById(planId);
+
+        // 更新
+        RehabPlanStatus status = request.create(planId, login.getId());
+        rehabPlanMapper.update(rehabPlanMapper.updateStatusById(planId, status.getStatus()));
+        rehabPlanStatusMapper.insert(status);
+
+        // 返回
+        plan.setStatus(status.getStatus());
+        User user = userService.requireById(status.getUserId(),
+                User::getId, User::getUsername, User::getAvatar);
+        Pet pet = petService.requireById(plan.getPetId(),
+                Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
+        String cover = petService.getCoverById(plan.getPetId());
+        List<RehabPlanStatus> statusRecords = rehabPlanStatusMapper.selectList(rehabPlanStatusMapper.queryByPlan(planId));
+        Set<Long> userIds = statusRecords.stream().map(RehabPlanStatus::getUserId).collect(Collectors.toSet());
+        Map<Long, User> users = userService.groupById(userIds,
+                User::getId, User::getUsername, User::getAvatar);
+        return RehabPlanResponse.create(plan, user, pet, cover, statusRecords.stream()
+                .map(record -> RehabPlanStatusResponse.createBatch(record, users))
+                .toList());
+    }
+
+    /**
+     * 添加康复记录
+     */
+    @Transactional
+    public RehabRecordResponse addRehabRecord(Long planId, RehabRecordAddRequest request) {
+        // 权限校验
+        User login = getLoginUser();
+        requirePermission(login.isDoctor() || login.isVolunteer());
+        rehabPlanMapper.requireExist(planId);
+
+        // 添加数据
+        RehabRecord record = request.create(planId, login.getId());
+        rehabRecordMapper.insert(record);
+        Path path = FileUtils.generateFilePath(PARENT_REHAB_PLAN, planId);
+        List<MediaFile> files = new ArrayList<>(request.getFiles().size());
+        for (MultipartFile file : request.getFiles()) {
+            Date now = new Date();
+            Pair<String, Integer> extAndType = FileUtils.getFileExtensionAndType(file);
+            Pair<String, String> nameAndExt = FileUtils.getNameAndExtension(file.getOriginalFilename());
+            String filename = FileUtils.generateFilename(nameAndExt.getFirst(), now, extAndType.getFirst());
+            FileUtils.upload(file, filename, path);
+
+            MediaFile mediaFile = new MediaFile(null,
+                    record.getId(),
+                    PARENT_REHAB_PLAN,
+                    login.getId(),
+                    filename,
+                    "",
+                    false,
+                    filename,
+                    extAndType.getSecond(),
+                    now);
+            files.add(mediaFile);
+        }
+        mediaFileMapper.insert(files);
+
+        return RehabRecordResponse.create(record, login, files);
+    }
+
+    /**
+     * 根据康复计划获取康复记录
+     */
+    public List<RehabRecordResponse> getRehabRecords(Long planId) {
+        List<RehabRecord> records = rehabRecordMapper.selectList(rehabRecordMapper.queryByPlan(planId));
+        Set<Long> userIds = records.stream().map(RehabRecord::getUserId).collect(Collectors.toSet());
+        Map<Long, User> users = userService.groupById(userIds,
+                User::getId, User::getUsername, User::getAvatar);
+        Set<Long> recordIds = records.stream().map(RehabRecord::getId).collect(Collectors.toSet());
+        Map<Long, List<MediaFile>> files = mediaFileMapper.groupList(
+                mediaFileMapper.queryByParents(PARENT_REHAB_PLAN, recordIds).select(MediaFile::getFilename),
+                MediaFile::getParentId,
+                Function.identity());
+        return records.stream()
+                .map(record -> RehabRecordResponse.createBatch(record, users, files))
+                .toList();
+    }
+
+    /**
+     * 添加健康评估
+     */
+    public HealthAssessmentResponse addHealthAssessment(Long petId, HealthAssessmentAddRequest request) {
+        // 权限校验
+        User login = getLoginUser();
+        requirePermission(login.isDoctor());
+        Pet pet = petService.requireById(petId,
+                Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
+
+        // 添加数据
+        HealthAssessment assessment = request.create(petId, login.getId());
+        healthAssessmentMapper.insert(assessment);
+
+        String cover = petService.getCoverById(petId);
+        return HealthAssessmentResponse.create(assessment, pet, cover, login);
+    }
+
+    /**
+     * 获取健康评估
+     */
+    public HealthAssessmentResponse getHealthAssessment(Long assessmentId) {
+        HealthAssessment assessment = healthAssessmentMapper.requireById(assessmentId);
+        Pet pet = petService.requireById(assessment.getPetId(),
+                Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
+        String cover = petService.getCoverById(pet.getId());
+        User assessor = userService.requireById(assessment.getAssessorId(),
+                User::getId, User::getUsername, User::getAvatar);
+        return HealthAssessmentResponse.create(assessment, pet, cover, assessor);
+    }
+
+    /**
+     * 获取健康评估
+     */
+    public Page<HealthAssessmentResponse> getHealthAssessments(@Nullable Long petId, PageRequest pageRequest) {
+        Page<HealthAssessment> page = pageRequest.createPage();
+        Wrapper<HealthAssessment> query = petId == null ? null : healthAssessmentMapper.queryByPet(petId);
+        Page<HealthAssessment> assessments = healthAssessmentMapper.selectPage(page, query);
+        Set<Long> petIds = assessments.getRecords().stream()
+                .map(HealthAssessment::getPetId)
+                .collect(Collectors.toSet());
+        Map<Long, Pet> pets = petService.groupById(petIds,
+                Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
+        Map<Long, String> covers = petService.getCoversByPetIds(petIds);
+        Set<Long> userIds = assessments.getRecords().stream()
+                .map(HealthAssessment::getAssessorId)
+                .collect(Collectors.toSet());
+        Map<Long, User> users = userService.groupById(userIds,
+                User::getId, User::getUsername, User::getAvatar);
+        return convertDto(assessments,
+                assessment -> HealthAssessmentResponse.createBatch(assessment, pets, covers, users));
+    }
+
     @Autowired
     public void setServices(PetService petService, UserService userService) {
         this.petService = petService;
         this.userService = userService;
     }
+
 }

@@ -1,7 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.*;
-import com.example.backend.mapper.Dewormer;
+import com.example.backend.entity.Dewormer;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;

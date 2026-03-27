@@ -26,7 +26,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
     private final RescueTaskLocationMapper rescueTaskLocationMapper;
     private final RescueTaskAssignMapper rescueTaskAssignMapper;
     private final RescueTaskRecordMapper rescueTaskRecordMapper;
-    private final MediaInfoMapper mediaInfoMapper;
+    private final MediaFileMapper mediaFileMapper;
 
     private UserService userService;
 
@@ -79,7 +79,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
                 .sorted()
                 .map(media -> media.createMediaFile(task.getId(), PARENT_RESCUE_TASK))
                 .toList();
-        mediaInfoMapper.insert(infos);
+        mediaFileMapper.insert(infos);
 
         // 清理缓存
         redisHelper.deleteString(redisKey);
@@ -198,7 +198,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
     public void deleteRescueTaskMedia(Long taskId, Long mediaId) {
         // 检查用户和任务状态
         User login = getLoginUser();
-        MediaFile media = mediaInfoMapper.requireById(mediaId);
+        MediaFile media = mediaFileMapper.requireById(mediaId);
         requireEqual(PARENT_RESCUE_TASK, media.getParentType(), "图片/视频不匹配");
         requireEqual(taskId, media.getParentId(), "图片/视频不匹配");
         RescueTask task = requireById(media.getParentId());
@@ -206,16 +206,16 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
 
         // 删除媒体文件
-        mediaInfoMapper.deleteById(mediaId);
+        mediaFileMapper.deleteById(mediaId);
         Path file = FileUtils.generateFilePath(PARENT_RESCUE_TASK, media.getParentId(), media.getFilename());
         FileUtils.tryDeleteFile(file);
         FileUtils.tryDeleteDirectory(file.getParent(), true);
 
         // 图片：重置封面
         if (Objects.equals(MEDIA_TYPE_IMAGE, media.getType()) && media.getIsCover()) {
-            MediaFile latestImage = mediaInfoMapper.selectOne(mediaInfoMapper.queryLatestImageId(PARENT_RESCUE_TASK, task.getId()));
+            MediaFile latestImage = mediaFileMapper.selectOne(mediaFileMapper.queryLatestImageId(PARENT_RESCUE_TASK, task.getId()));
             if (latestImage != null)
-                mediaInfoMapper.updateById(latestImage.getId(), MediaFile::getIsCover, true);
+                mediaFileMapper.updateById(latestImage.getId(), MediaFile::getIsCover, true);
         }
     }
 
@@ -231,8 +231,8 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
 
         // 删除数据库数据
-        List<MediaFile> mediaFiles = mediaInfoMapper.selectList(mediaInfoMapper.queryIdAndFilename(PARENT_RESCUE_TASK, taskId));
-        mediaInfoMapper.deleteByIds(mediaFiles);
+        List<MediaFile> mediaFiles = mediaFileMapper.selectList(mediaFileMapper.queryIdAndFilename(PARENT_RESCUE_TASK, taskId));
+        mediaFileMapper.deleteByIds(mediaFiles);
         removeById(taskId);
 
         // 删除媒体文件
@@ -282,7 +282,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
      */
     public Page<RescueTaskResponse> getRescueTasks(PageRequest page) {
         Page<RescueTask> result = page(page.createPage());
-        return DbUtils.convertDto(result, RescueTaskResponse::fromEntity);
+        return convertDto(result, RescueTaskResponse::fromEntity);
     }
 
     /**

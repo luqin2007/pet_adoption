@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
+import com.example.backend.mapper.HealthAssessmentResponse;
 import com.example.backend.service.MedicalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -41,15 +42,17 @@ import java.util.List;
  * - 驱虫管理 ( √ × )
  * ---- 驱虫 addDeworm ( √ × )
  * ---- 驱虫记录 getDeworms ( √ × )
- * - 康复护理 ( × × )
- * ---- 添加康复计划 addRehabPlan ( × × )
- * ---- 获取康复计划 getRehabPlans ( × × )
- * ---- 设置康复计划状态 setRehabPlanStatus ( × × )
- * ---- 添加执行记录 addRehabRecord ( × × )
- * ---- 获取执行记录 getRehabRecords ( × × )
- * - 健康评估 ( × × )
- * ---- 创建健康评估 addHealthAssessment ( × × )
- * ---- 获取健康评估 getHealthAssessments ( × × )
+ * - 康复护理 ( √ × )
+ * ---- 添加康复计划 addRehabPlan ( √ × )
+ * ---- 获取康复计划 getRehabPlan ( √ × )
+ * ---- 获取康复计划 getRehabPlans ( √ × )
+ * ---- 更新康复计划状态 updateRehabPlanStatus ( √ × )
+ * ---- 添加执行记录 addRehabRecord ( √ × )
+ * ---- 获取执行记录 getRehabRecords ( √ × )
+ * - 健康评估 ( √ × )
+ * ---- 创建健康评估 addHealthAssessment ( √ × )
+ * ---- 获取健康评估 getHealthAssessment ( √ × )
+ * ---- 获取健康评估 getHealthAssessments ( √ × )
  */
 @Validated
 @RestController
@@ -202,6 +205,68 @@ public class MedicalCareController {
     @GetMapping("/deworm/pet/{id}")
     public Result<List<DewormResponse>> getDeworms(@PathVariable("id") Long petId) {
         List<DewormResponse> response = medicalService.getDeworms(petId);
+        return Result.success(response);
+    }
+
+    @PostMapping("/rehab/pet/{id}")
+    public Result<RehabPlanResponse> addRehabPlan(@PathVariable("id") Long petId, @RequestBody RehabPlanAddRequest request) {
+        RehabPlanResponse response = medicalService.addRehabPlan(petId, request);
+        return Result.success(response);
+    }
+
+    @GetMapping("/rehab/{id}")
+    public Result<RehabPlanResponse> getRehabPlan(@PathVariable("id") Long planId) {
+        RehabPlanResponse response = medicalService.getRehabPlan(planId);
+        return Result.success(response);
+    }
+
+    @GetMapping("/rehab")
+    public Result<Page<RehabPlanResponse>> getRehabPlans(RehabPlanQueryRequest query, PageRequest page) {
+        Page<RehabPlanResponse> response = medicalService.getRehabPlans(query, page);
+        return Result.success(response);
+    }
+
+    @PostMapping("/rehab/{id}/status")
+    public Result<RehabPlanResponse> updateRehabPlanStatus(@PathVariable("id") Long planId,
+                                                           @RequestBody RehabPlanStatusUpdateRequest request) {
+        RehabPlanResponse response = medicalService.updateRehabPlanStatus(planId, request);
+        return Result.success(response);
+    }
+
+    @PostMapping("/rehab/{id}/record")
+    public Result<RehabRecordResponse> addRehabRecord(@PathVariable("id") Long planId, RehabRecordAddRequest request) {
+        RehabRecordResponse response = medicalService.addRehabRecord(planId, request);
+        return Result.success(response);
+    }
+
+    @GetMapping("/rehab/{id}/record")
+    public Result<List<RehabRecordResponse>> getRehabRecords(@PathVariable("id") Long planId) {
+        List<RehabRecordResponse> response = medicalService.getRehabRecords(planId);
+        return Result.success(response);
+    }
+
+    @PostMapping("/health/pet/{id}")
+    public Result<HealthAssessmentResponse> addHealthAssessment(@PathVariable("id") Long petId,
+                                                                @RequestBody HealthAssessmentAddRequest request) {
+        HealthAssessmentResponse response = medicalService.addHealthAssessment(petId, request);
+        return Result.success(response);
+    }
+
+    @GetMapping("/health/{id}")
+    public Result<HealthAssessmentResponse> getHealthAssessment(@PathVariable("id") Long assessmentId) {
+        HealthAssessmentResponse response = medicalService.getHealthAssessment(assessmentId);
+        return Result.success(response);
+    }
+
+    @GetMapping("/health")
+    public Result<Page<HealthAssessmentResponse>> getHealthAssessments(PageRequest page) {
+        Page<HealthAssessmentResponse> response = medicalService.getHealthAssessments(null, page);
+        return Result.success(response);
+    }
+
+    @GetMapping("/health/pet/{id}")
+    public Result<Page<HealthAssessmentResponse>> getHealthAssessments(@PathVariable("id") Long petId, PageRequest page) {
+        Page<HealthAssessmentResponse> response = medicalService.getHealthAssessments(petId, page);
         return Result.success(response);
     }
 }

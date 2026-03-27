@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.mapper.*;
-import com.example.backend.util.DbUtils;
 import com.example.backend.util.FileUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
 
     private final PetStatusRecordMapper petStatusRecordMapper;
     private final PetLocationMapper petLocationMapper;
-    private final MediaInfoMapper mediaInfoMapper;
+    private final MediaFileMapper mediaFileMapper;
     private final PetTagMapper petTagMapper;
 
     private UserService userService;
@@ -64,7 +63,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         Map<Long, String> covers = getCoversByPetIds(petIds);
         Map<Long, List<VaccineResponse>> vaccines = medicalService.getVaccinesByPetIds(petIds);
         Map<Long, List<DewormResponse>> deworms = medicalService.getDewormsByPetIds(petIds);
-        return DbUtils.convertDto(result, info -> PetResponse.createBatch(info, users, tags, covers, vaccines, deworms));
+        return convertDto(result, info -> PetResponse.createBatch(info, users, tags, covers, vaccines, deworms));
     }
 
     /**
@@ -129,13 +128,13 @@ public class PetService extends BaseService<PetMapper, Pet> {
         // 检查封面
         if (MEDIA_TYPE_IMAGE.equals(media.getType())) {
             if (Boolean.TRUE.equals(request.getIsCover())) { // 封面：清理旧封面
-                mediaInfoMapper.update(mediaInfoMapper.clearCover(PARENT_PET, petId));
+                mediaFileMapper.update(mediaFileMapper.clearCover(PARENT_PET, petId));
             } else { // 非封面：若原本没有封面则设置为封面
-                boolean hasCover = mediaInfoMapper.exists(mediaInfoMapper.queryCover(PARENT_PET, petId));
+                boolean hasCover = mediaFileMapper.exists(mediaFileMapper.queryCover(PARENT_PET, petId));
                 media.setIsCover(!hasCover);
             }
         }
-        mediaInfoMapper.insert(media);
+        mediaFileMapper.insert(media);
         return PetMediaResponse.create(media);
     }
 
@@ -145,7 +144,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
     @Transactional
     public PetMediaResponse updateMedia(Long mediaId, PetMediaUpdateRequest request) {
         // 检查图片
-        MediaFile media = mediaInfoMapper.requireById(mediaId);
+        MediaFile media = mediaFileMapper.requireById(mediaId);
         Long petId = media.getParentId();
         Pet info = requireById(petId);
 
@@ -158,17 +157,17 @@ public class PetService extends BaseService<PetMapper, Pet> {
         request.applyTo(media);
         if (isCoverChanged) { // 切换封面
             if (media.getIsCover()) { // 非封面 -> 封面 清空已有封面
-                mediaInfoMapper.update(mediaInfoMapper.clearCover(PARENT_PET, mediaId));
+                mediaFileMapper.update(mediaFileMapper.clearCover(PARENT_PET, mediaId));
             } else { // 封面 -> 非封面 设置新封面
-                if (!mediaInfoMapper.exists(mediaInfoMapper.queryCover(PARENT_PET, petId, mediaId))) {
-                    MediaFile latestImage = mediaInfoMapper.selectOne(mediaInfoMapper.queryLatestImageId(PARENT_PET, petId, mediaId));
+                if (!mediaFileMapper.exists(mediaFileMapper.queryCover(PARENT_PET, petId, mediaId))) {
+                    MediaFile latestImage = mediaFileMapper.selectOne(mediaFileMapper.queryLatestImageId(PARENT_PET, petId, mediaId));
                     if (latestImage != null)
-                        mediaInfoMapper.updateById(latestImage.getId(), MediaFile::getIsCover, true);
+                        mediaFileMapper.updateById(latestImage.getId(), MediaFile::getIsCover, true);
                 }
             }
         }
 
-        mediaInfoMapper.updateById(media);
+        mediaFileMapper.updateById(media);
         return PetMediaResponse.create(media);
     }
 
@@ -178,7 +177,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
     @Transactional
     public void deleteMedia(Long mediaId) {
         // 检查图片
-        MediaFile media = mediaInfoMapper.requireById(mediaId);
+        MediaFile media = mediaFileMapper.requireById(mediaId);
         requireEqual(PARENT_PET, media.getParentType(), "图片或视频无效");
 
         // 检查权限
@@ -188,17 +187,17 @@ public class PetService extends BaseService<PetMapper, Pet> {
         checkUserPermission(info, login);
 
         // 删除图片
-        mediaInfoMapper.deleteById(mediaId);
+        mediaFileMapper.deleteById(mediaId);
         Path imgPath = FileUtils.generateFilePath(PARENT_PET, petId, media.getFilename());
         FileUtils.tryDeleteFile(imgPath);
 
         // 处理封面
         if (MEDIA_TYPE_IMAGE.equals(media.getType()) && media.getIsCover()
-                && !mediaInfoMapper.exists(mediaInfoMapper.queryCover(PARENT_PET, petId))) {
+                && !mediaFileMapper.exists(mediaFileMapper.queryCover(PARENT_PET, petId))) {
             // 没有封面：取最后一张图片为封面
-            MediaFile latestImage = mediaInfoMapper.selectOne(mediaInfoMapper.queryLatestImageId(PARENT_PET, petId));
+            MediaFile latestImage = mediaFileMapper.selectOne(mediaFileMapper.queryLatestImageId(PARENT_PET, petId));
             if (latestImage != null)
-                mediaInfoMapper.updateById(latestImage.getId(), MediaFile::getIsCover, true);
+                mediaFileMapper.updateById(latestImage.getId(), MediaFile::getIsCover, true);
         }
     }
 
@@ -206,7 +205,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
      * 获取宠物封面图片
      */
     public String getCoverById(Long petId) {
-        MediaFile info = mediaInfoMapper.selectOne(mediaInfoMapper.queryCoverFilename(PARENT_PET, petId));
+        MediaFile info = mediaFileMapper.selectOne(mediaFileMapper.queryCoverFilename(PARENT_PET, petId));
         return info == null ? null : FileUtils.generateAssetUrl(PARENT_PET, petId, info.getFilename());
     }
 
@@ -296,7 +295,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         Map<Long, Pet> pets = groupById(petIds, Pet::getId, Pet::getName);
         Map<Long, String> covers = getCoversByPetIds(petIds);
         Map<Long, User> users = userService.groupById(userIds);
-        return DbUtils.convertDto(result, record -> PetStatusRecordResponse.createBatch(record, pets, covers, users));
+        return convertDto(result, record -> PetStatusRecordResponse.createBatch(record, pets, covers, users));
     }
 
     /*
@@ -317,7 +316,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
      * 根据 id 批量获取流浪宠物封面地址
      */
     public Map<Long, String> getCoversByPetIds(Set<Long> petIds) {
-        return mediaInfoMapper.group(mediaInfoMapper.queryCoverFilenames(PARENT_PET, petIds), MediaFile::getFilename);
+        return mediaFileMapper.group(mediaFileMapper.queryCoverFilenames(PARENT_PET, petIds), MediaFile::getFilename);
     }
 
     @Autowired

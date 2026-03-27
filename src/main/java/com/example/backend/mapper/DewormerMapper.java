@@ -1,5 +1,6 @@
 package com.example.backend.mapper;
 
+import com.example.backend.entity.Dewormer;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

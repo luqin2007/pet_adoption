@@ -11,29 +11,29 @@ public class Vaccine implements IId {
     /**
      * *主键 int*
      */
-    Long id;
+    private Long id;
 
     /**
      * 物品 id
      * *外键:item(id) 非空 int*
      */
-    Long itemId;
+    private Long itemId;
 
     /**
      * 疾病名称
      * *非空 varchar(255)*
      */
-    String illness;
+    private String illness;
 
     /**
      * 接种最小年龄
      * *非空 int*
      */
-    Integer minAge;
+    private Integer minAge;
 
     /**
      * 总针数
      * *非空 int*
      */
-    Integer times;
+    private Integer times;
 }

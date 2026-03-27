@@ -17,21 +17,21 @@ import static com.example.backend.util.C.PARENT_USER;
 public class PetStatusRecordResponse {
 
     // 状态记录
-    Long id;
-    int from;
-    int to;
-    Date createTime;
-    String description;
+    private Long id;
+    private int from;
+    private int to;
+    private Date createTime;
+    private String description;
 
     // 对应宠物信息
-    Long petId;
-    String petName;
-    String cover;
+    private Long petId;
+    private String petName;
+    private String cover;
 
     // 发起用户信息
-    Long userId;
-    String username;
-    String avatar;
+    private Long userId;
+    private String username;
+    private String avatar;
 
     /**
      * Pet: name<br>

@@ -181,7 +181,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         requirePermission(login.isWorker());
         // 数据转换
         Page<User> result = page(page.createPage());
-        return DbUtils.convertDto(result, UserResponse::fromEntity);
+        return convertDto(result, UserResponse::fromEntity);
     }
 
     /**

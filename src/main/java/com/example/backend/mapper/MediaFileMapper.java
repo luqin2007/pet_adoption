@@ -7,6 +7,7 @@ import com.example.backend.util.C;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * 索引：
@@ -14,7 +15,7 @@ import java.util.Collection;
  * - (parentType, parentId, type, createTime)
  */
 @Mapper
-public interface MediaInfoMapper extends IBaseMapper<MediaFile> {
+public interface MediaFileMapper extends IBaseMapper<MediaFile> {
 
     /**
      * 查询指定类型的 id 和文件名
@@ -146,6 +147,18 @@ public interface MediaInfoMapper extends IBaseMapper<MediaFile> {
                 .orderByDesc(MediaFile::getCreateTime)
                 .ne(MediaFile::getId, exceptImageId)
                 .select(MediaFile::getId);
+    }
+
+    default LambdaQueryWrapper<MediaFile> queryByParent(String parentType, Long parentId) {
+        return lambdaQuery()
+                .eq(MediaFile::getParentType, parentType)
+                .eq(MediaFile::getParentId, parentId);
+    }
+
+    default LambdaQueryWrapper<MediaFile> queryByParents(String parentType, Set<Long> parentIds) {
+        return lambdaQuery()
+                .eq(MediaFile::getParentType, parentType)
+                .in(MediaFile::getParentId, parentIds);
     }
 
     @Override

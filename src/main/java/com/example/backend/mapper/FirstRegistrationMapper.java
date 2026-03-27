@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.example.backend.dto.FirstRegistrationQueryRequest;
 import com.example.backend.entity.FirstRegistration;
-import com.example.backend.util.ServiceException;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Date;
@@ -38,10 +37,8 @@ public interface FirstRegistrationMapper extends IBaseMapper<FirstRegistration> 
         Date date0 = request.getDate0();
         Date date1 = request.getDate1();
         long count = Stream.of(registrar, pet, name).filter(Objects::nonNull).count();
-        if (count > 1) // user, pet, name 互斥
-            throw ServiceException.invalidate("user, pet, name 不能同时查询");
-        if (date0 != null && date1 != null && date0.after(date1)) // 日期顺序
-            throw ServiceException.invalidate("date0 > date1");
+        require(count <= 1, "user, pet, name 不能同时查询"); // user, pet, name 互斥
+        require(date0 == null || date1 == null || date0.before(date1), "date0 > date1"); // 日期顺序
 
         LambdaQueryWrapper<FirstRegistration> query = Wrappers.lambdaQuery();
         // 宠物 id

@@ -7,13 +7,14 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.example.backend.entity.IId;
+import com.example.backend.util.IBaseCheck;
 import com.example.backend.util.ServiceException;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public interface IBaseMapper<T extends IId> extends BaseMapper<T> {
+public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IBaseCheck {
 
     default LambdaQueryWrapper<T> lambdaQuery() {
         return Wrappers.lambdaQuery();

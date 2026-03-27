@@ -17,27 +17,27 @@ import static com.example.backend.util.C.PARENT_USER;
 @AllArgsConstructor
 public class RescueTaskRecordResponse {
 
-    Long id;
-    Long taskId;
-    Integer action;
+    private Long id;
+    private Long taskId;
+    private Integer action;
     /**
      * 修改前的任务状态
      */
-    Integer statusFrom;
+    private Integer statusFrom;
     /**
      * 修改后的任务状态
      */
-    Integer statusTo;
+    private Integer statusTo;
     /**
      * 修改原因
      */
-    String reason;
-    Date createTime;
+    private String reason;
+    private Date createTime;
 
     // user
-    Long userId;
-    String username;
-    String avatar;
+    private Long userId;
+    private String username;
+    private String avatar;
 
     /**
      * User: id, username, avatar

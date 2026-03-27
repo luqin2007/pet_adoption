@@ -3,11 +3,14 @@ package com.example.backend.service;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.IId;
 import com.example.backend.entity.User;
 import com.example.backend.mapper.IBaseMapper;
 import com.example.backend.util.CustomUserDetails;
+import com.example.backend.util.IBaseCheck;
 import com.example.backend.util.RedisHelper;
 import com.example.backend.util.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,53 +21,20 @@ import org.springframework.util.ObjectUtils;
 import java.util.*;
 import java.util.function.Function;
 
-public class BaseService<M extends IBaseMapper<T>, T extends IId> extends ServiceImpl<M, T> {
+public class BaseService<M extends IBaseMapper<T>, T extends IId> extends ServiceImpl<M, T> implements IBaseCheck {
 
     protected RedisHelper redisHelper;
     protected ApplicationEventPublisher eventPublisher;
 
-    // 权限校验
+    // --- page
 
-    /**
-     * 获取当前登录用户
-     */
-    public static User getLoginUser() {
-        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .map(auth -> (CustomUserDetails) auth.getPrincipal())
-                .map(CustomUserDetails::getUser)
-                .orElseThrow(() -> ServiceException.auth("请先登录"));
-    }
-
-    /**
-     * 权限校验
-     */
-    protected void requirePermission(boolean permission) {
-        if (!permission) throw ServiceException.auth("权限不足");
-    }
-
-    /**
-     * 确保对象存在
-     */
-    protected void requireExist(Object obj, String message) {
-        if (ObjectUtils.isEmpty(obj)) throw ServiceException.notFound(message);
-    }
-
-    /**
-     * 确保对象相同
-     */
-    protected void requireEqual(Object obj1, Object obj2, String message) {
-        if (obj1 != null && !obj1.equals(obj2)) {
-            throw ServiceException.invalidate(message);
-        }
-    }
-
-    /**
-     * 确保对象不同
-     */
-    protected void requireNotEqual(Object obj1, Object obj2, String message) {
-        if (!Objects.equals(obj1, obj2)) {
-            throw ServiceException.invalidate(message);
-        }
+    public <V, R> Page<R> convertDto(Page<V> result, Function<V, R> converter) {
+        Page<R> response = PageDTO.of(result.getCurrent(), result.getSize(), result.getTotal());
+        List<V> records = result.getRecords();
+        response.setRecords(records.stream()
+                .map(converter)
+                .toList());
+        return response;
     }
 
     // --- mapper

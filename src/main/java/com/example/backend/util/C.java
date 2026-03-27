@@ -229,7 +229,7 @@ public class C {
     关联实体类型 parentType
      */
     // 用户
-    public static final String PARENT_USER = "avatar";
+    public static final String PARENT_USER = "user";
     // 流浪宠物
     public static final String PARENT_PET = "pet";
     // 救助任务
