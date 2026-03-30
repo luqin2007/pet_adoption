@@ -9,17 +9,16 @@ import java.util.Date;
 public class ImmunityHistoryRequest {
 
     private String medicine;
-
+    private String illness;
     private Integer count;
-
     private Integer total;
-
     private Date immunityTime;
 
     public ImmunityHistory createEntity(Long registrationId) {
         return new ImmunityHistory(null,
                 registrationId,
                 medicine,
+                illness,
                 count,
                 total,
                 immunityTime,

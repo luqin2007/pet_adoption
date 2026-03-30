@@ -105,17 +105,17 @@ public class MedicalDetail implements IId {
      * 心率
      * *非空 integer*
      */
-    private Double heartRate;
+    private Integer heartRate;
 
     /**
      * 呼吸频率
      * *非空 integer*
      */
-    private Double respiratoryRate;
+    private Integer respiratoryRate;
 
     /**
      * 其他体检信息
-     * *非空 integer*
+     * *非空 text*
      */
     private String physicalExam;
 

@@ -35,7 +35,7 @@ public class Examination implements IId {
 
     /**
      * 检查名
-     * *text*
+     * *非空 varchar(20)*
      */
     private String name;
 

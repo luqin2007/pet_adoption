@@ -1,6 +1,6 @@
 package com.example.backend.entity;
 
-import com.example.backend.entity.property.RehabPlanStatus;
+import com.example.backend.entity.property.RehabPlanStatusProp;
 import com.example.backend.entity.property.TextType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -64,7 +64,7 @@ public class RehabPlan implements IId {
      * 状态
      * *非空 tinyint*
      */
-    private RehabPlanStatus status;
+    private RehabPlanStatusProp status;
 
     /**
      * 开始时间

@@ -2,6 +2,8 @@ package com.example.backend.entity;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 疫苗信息
  */
@@ -36,4 +38,10 @@ public class Vaccine implements IId {
      * *非空 int*
      */
     private Integer times;
+
+    /**
+     * 创建时间
+     * *非空 datetime*
+     */
+    private Date createTime;
 }

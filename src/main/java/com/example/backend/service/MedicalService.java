@@ -45,7 +45,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     private final DiagnosisMapper diagnosisMapper;
     private final ExaminationMapper examinationMapper;
     private final ExaminationFileMapper examinationFileMapper;
-    private final ExaminationDiagnosisEntryMapper examinationDiagnosisEntryMapper;
+    private final ExaminationDiagnosisMapper examinationDiagnosisMapper;
     private final TreatmentPlanMapper treatmentPlanMapper;
     private final OrderMapper orderMapper;
     private final ItemMapper itemMapper;
@@ -149,7 +149,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 创建就诊记录
      */
     @Transactional
-    public MedicalRecordResponse addMedicalVisitRecord(Long petId, MedicalRecordRequest request) {
+    public MedicalRecordResponse addMedicalRecord(Long petId, MedicalRecordRequest request) {
         // 权限/环境校验
         User login = getLoginUser();
         requirePermission(login.isDoctor());
@@ -351,9 +351,9 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 examinationFileMapper.queryByExaminations(examinationMap.keySet()),
                 ExaminationFile::getExaminationId,
                 ExaminationFileResponse::create);
-        Map<Long, List<ExaminationResponse>> examinations = examinationDiagnosisEntryMapper.groupList(
-                examinationDiagnosisEntryMapper.queryByExaminations(examinationMap.keySet()),
-                ExaminationDiagnosisEntry::getDiagnosisId,
+        Map<Long, List<ExaminationResponse>> examinations = examinationDiagnosisMapper.groupList(
+                examinationDiagnosisMapper.queryByExaminations(examinationMap.keySet()),
+                ExaminationDiagnosis::getDiagnosisId,
                 examination -> ExaminationResponse.createBatch(examination.getExaminationId(), examinationMap, files));
 
         // 构造返回值
@@ -399,11 +399,11 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
 
         Diagnosis diagnosis = request.create(detailId);
         diagnosisMapper.insert(diagnosis);
-        List<ExaminationDiagnosisEntry> entries = request.createEntries(diagnosis.getId());
-        examinationDiagnosisEntryMapper.insert(entries);
+        List<ExaminationDiagnosis> entries = request.createEntries(diagnosis.getId());
+        examinationDiagnosisMapper.insert(entries);
 
         Set<Long> examinationIds = entries.stream()
-                .map(ExaminationDiagnosisEntry::getExaminationId)
+                .map(ExaminationDiagnosis::getExaminationId)
                 .collect(Collectors.toSet());
         Map<Long, List<ExaminationFileResponse>> files = examinationFileMapper.groupList(
                 examinationFileMapper.queryByExaminations(examinationIds),

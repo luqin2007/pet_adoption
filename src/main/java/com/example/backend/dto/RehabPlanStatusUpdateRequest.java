@@ -1,6 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.RehabPlanStatus;
+import com.example.backend.entity.property.RehabPlanStatusProp;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -19,7 +20,7 @@ public class RehabPlanStatusUpdateRequest {
         return new RehabPlanStatus(null,
                 planId,
                 userId,
-                com.example.backend.entity.property.RehabPlanStatus.get(status),
+                RehabPlanStatusProp.get(status),
                 reason,
                 new Date());
     }

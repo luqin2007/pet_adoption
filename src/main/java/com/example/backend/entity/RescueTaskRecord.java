@@ -41,19 +41,19 @@ public class RescueTaskRecord implements IId {
 
     /**
      * 记录类型
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
     private RescueTaskAction action;
 
     /**
      * 修改前的任务状态
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
     private RescueTaskStatus statusFrom;
 
     /**
      * 修改后的任务状态
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
     private RescueTaskStatus statusTo;
 

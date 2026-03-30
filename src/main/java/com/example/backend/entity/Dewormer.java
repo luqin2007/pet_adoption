@@ -1,6 +1,9 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.DewormerType;
 import lombok.Data;
+
+import java.util.Date;
 
 /**
  * 驱虫药
@@ -23,7 +26,7 @@ public class Dewormer implements IId {
      * 类型，内驱/外驱/其他
      * *非空 tinyint*
      */
-    private Integer type;
+    private DewormerType type;
 
     /**
      * 适用最小年龄
@@ -36,4 +39,10 @@ public class Dewormer implements IId {
      * *非空 int*
      */
     private Integer times;
+
+    /**
+     * 创建时间
+     * *非空 datetime*
+     */
+    private Date createTime;
 }

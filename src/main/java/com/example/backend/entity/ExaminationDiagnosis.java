@@ -12,7 +12,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExaminationDiagnosisEntry implements IId {
+public class ExaminationDiagnosis implements IId {
 
     /**
      * *主键 int*
@@ -36,8 +36,4 @@ public class ExaminationDiagnosisEntry implements IId {
      * *非空 datetime*
      */
     private Date createTime;
-
-    public static ExaminationDiagnosisEntry create(Long examinationId, Long diagnosisId) {
-        return new ExaminationDiagnosisEntry(null, examinationId, diagnosisId, new Date());
-    }
 }

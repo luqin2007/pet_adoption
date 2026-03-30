@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.backend.dto.RehabPlanQueryParams;
 import com.example.backend.entity.RehabPlan;
-import com.example.backend.entity.property.RehabPlanStatus;
+import com.example.backend.entity.property.RehabPlanStatusProp;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.HashSet;
@@ -43,7 +43,7 @@ public interface RehabPlanMapper extends IBaseMapper<RehabPlan> {
     /**
      * 更新康复计划状态
      */
-    default LambdaUpdateWrapper<RehabPlan> updateStatusById(Long planId, RehabPlanStatus status) {
+    default LambdaUpdateWrapper<RehabPlan> updateStatusById(Long planId, RehabPlanStatusProp status) {
         return lambdaUpdate()
                 .eq(RehabPlan::getId, planId)
                 .set(RehabPlan::getStatus, status.name());

@@ -2,6 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.*;
 import com.example.backend.entity.Dewormer;
+import com.example.backend.entity.property.DewormerType;
 import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
@@ -21,7 +22,7 @@ public class DewormResponse implements Comparable<DewormResponse> {
     // vaccine
     private Long dewormerId;
     private Long itemId;
-    private Integer dewormerType;
+    private DewormerType dewormerType;
     private String dewormerName;
     private Integer dewormerTotal;
 

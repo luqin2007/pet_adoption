@@ -13,6 +13,10 @@ public class VaccineAddRequest {
     @NotNull(message = "未知疫苗")
     private Long vaccineId;
 
+    @NotNull(message = "请输入宠物年龄（月）")
+    @Min(value = 0, message = "请输入宠物年龄（月）")
+    private Integer petAge;
+
     @NotNull(message = "请输入第几次接种")
     @Min(value = 1, message = "请输入第几次接种")
     private Integer times;
@@ -20,6 +24,7 @@ public class VaccineAddRequest {
     public VaccineRecord create(Long petId, Long userId) {
         return new VaccineRecord(null,
                 petId,
+                petAge,
                 userId,
                 vaccineId,
                 times,

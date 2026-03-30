@@ -1,7 +1,7 @@
 package com.example.backend.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.backend.entity.ExaminationDiagnosisEntry;
+import com.example.backend.entity.ExaminationDiagnosis;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Set;
@@ -11,14 +11,14 @@ import java.util.Set;
  * - (examinationId)
  */
 @Mapper
-public interface ExaminationDiagnosisEntryMapper extends IBaseMapper<ExaminationDiagnosisEntry> {
+public interface ExaminationDiagnosisMapper extends IBaseMapper<ExaminationDiagnosis> {
 
     /**
      * 获取检验结果关联的所有诊断结果<br>
      * - 索引：(examinationId)
      */
-    default LambdaQueryWrapper<ExaminationDiagnosisEntry> queryByExaminations(Set<Long> examinationIds) {
-        return lambdaQuery().in(ExaminationDiagnosisEntry::getExaminationId, examinationIds);
+    default LambdaQueryWrapper<ExaminationDiagnosis> queryByExaminations(Set<Long> examinationIds) {
+        return lambdaQuery().in(ExaminationDiagnosis::getExaminationId, examinationIds);
     }
 
     @Override

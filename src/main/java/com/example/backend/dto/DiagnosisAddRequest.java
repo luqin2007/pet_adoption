@@ -1,7 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Diagnosis;
-import com.example.backend.entity.ExaminationDiagnosisEntry;
+import com.example.backend.entity.ExaminationDiagnosis;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -30,9 +30,10 @@ public class DiagnosisAddRequest {
                 false);
     }
 
-    public List<ExaminationDiagnosisEntry> createEntries(Long diagnosisId) {
+    public List<ExaminationDiagnosis> createEntries(Long diagnosisId) {
+        Date now = new Date();
         return examinations.stream()
-                .map(id -> ExaminationDiagnosisEntry.create(id, diagnosisId))
+                .map(id -> new ExaminationDiagnosis(null, id, diagnosisId, now))
                 .toList();
     }
 }

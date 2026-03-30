@@ -47,19 +47,19 @@ public class MedicalRecord implements IId {
 
     /**
      * 领养人联系方式
-     * *外键:user(phone) varchar(11)*
+     * *外键:user(phone) varchar(20)*
      */
     private String ownerPhone;
 
     /**
      * 诊疗流程
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
     private MedicalRecordStatus status;
 
     /**
      * 诊疗类型
-     * *非空 tinyint*
+     * *非空 varchar(20)*
      */
     private MedicalRecordType type;
 

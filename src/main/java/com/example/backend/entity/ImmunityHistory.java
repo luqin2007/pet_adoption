@@ -32,6 +32,12 @@ public class ImmunityHistory implements IId {
     private String medicine;
 
     /**
+     * 免疫疾病
+     * *非空 varchar(255)*
+     */
+    private String illness;
+
+    /**
      * 第几次免疫
      * *非空 integer*
      */

@@ -31,8 +31,8 @@ public class MedicalDetailResponse {
     // ---- O 客观检查
     private Double weight;
     private Double temperature;
-    private Double heartRate;
-    private Double respiratoryRate;
+    private Integer heartRate;
+    private Integer respiratoryRate;
     private String physicalExam;
     private List<DiagnosisResponse> objectiveDiagnoses;
 

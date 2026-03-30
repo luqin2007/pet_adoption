@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.example.backend.entity.property.ParentType.REHAB_PLAN;
-import static com.example.backend.entity.property.RehabPlanStatus.ACTIVE;
+import static com.example.backend.entity.property.RehabPlanStatusProp.ACTIVE;
 
 @Data
 public class RehabPlanAddRequest {

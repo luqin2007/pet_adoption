@@ -41,11 +41,11 @@ public class MedicalDetailAddRequest {
 
     @NotNull(message = "请输入心率")
     @Min(value = 0, message = "心率不能小于0")
-    private Double heartRate;
+    private Integer heartRate;
 
     @NotNull(message = "请输入呼吸频率")
     @Min(value = 0, message = "呼吸频率不能小于0")
-    private Double respiratoryRate;
+    private Integer respiratoryRate;
 
     @NotNull(message = "请输入其他体检信息")
     private String physicalExam;

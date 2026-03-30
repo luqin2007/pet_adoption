@@ -20,10 +20,16 @@ public class VaccineRecord implements IId {
     private Long id;
 
     /**
-     * 宠物id
+     * 宠物 id
      * *外键:pet(id) 非空 int*
      */
     private Long petId;
+
+    /**
+     * 宠物年龄（月）
+     * *非空 int*
+     */
+    private Integer petAge;
 
     /**
      * 医生 id
