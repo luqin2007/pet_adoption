@@ -7,16 +7,16 @@ import java.util.Locale;
 /**
  * 领养跟踪任务状态
  */
-public enum AdoptFollowStatus {
+public enum FollowTaskStatus {
     PENDING, // 待执行
     NOTIFIED, // 已通知领养人
     IN_PROGRESS, // 执行中
     DELAY, // 推迟
     FINISH; // 已完成
 
-    public static AdoptFollowStatus get(String name) {
+    public static FollowTaskStatus get(String name) {
         try {
-            return AdoptFollowStatus.valueOf(name.toUpperCase(Locale.ROOT));
+            return FollowTaskStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw ServiceException.invalidate("无效跟踪任务状态 " + name);
         }

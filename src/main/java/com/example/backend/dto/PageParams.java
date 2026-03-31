@@ -2,6 +2,7 @@ package com.example.backend.dto;
 
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.backend.entity.IId;
 import com.example.backend.util.StringUtils;
 import lombok.Data;
 
@@ -18,7 +19,7 @@ public class PageParams {
 
     private String order = null;
 
-    public <T> Page<T> createPage() {
+    public <T extends IId> Page<T> createPage() {
         Page<T> page = Page.of(this.page, size, true);
         String rSort = URLDecoder.decode(sort).trim();
         if (StringUtils.hasText(rSort)) {

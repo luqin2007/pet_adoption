@@ -11,6 +11,7 @@ import com.example.backend.util.IValidates;
 import com.example.backend.util.RedisHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends Servic
 
     protected RedisHelper redisHelper;
     protected ApplicationEventPublisher eventPublisher;
+    protected ObjectMapper objectMapper;
 
     // --- page
 
@@ -43,6 +45,7 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends Servic
      */
     @SafeVarargs
     public final T selectById(Long id, SFunction<T, ?>... columns) {
+        if (id == null) return null;
         return baseMapper.selectById(id, columns);
     }
 
@@ -95,8 +98,11 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends Servic
     // ---
 
     @Autowired
-    public void setObjects(RedisHelper redisHelper, ApplicationEventPublisher eventPublisher) {
+    public void setObjects(RedisHelper redisHelper,
+                           ApplicationEventPublisher eventPublisher,
+                           ObjectMapper objectMapper) {
         this.redisHelper = redisHelper;
         this.eventPublisher = eventPublisher;
+        this.objectMapper = objectMapper;
     }
 }

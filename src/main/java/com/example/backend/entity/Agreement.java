@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.AgreementType;
 import com.example.backend.entity.property.ParentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,6 +38,12 @@ public class Agreement implements IId {
      * *text*
      */
     private String content;
+
+    /**
+     * 协议类型
+     * *非空 varchar(20)*
+     */
+    private AgreementType type;
 
     /**
      * 签名图片

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
@@ -274,5 +275,18 @@ public class FileUtils {
             url = url.replace(File.separator, "/");
         }
         return url;
+    }
+
+    /**
+     * 移动目录内容
+     */
+    public static void moveDirectory(Path source, Path target) {
+        if (!Files.isDirectory(source)) return;
+        try {
+            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+            FileSystemUtils.deleteRecursively(source);
+        } catch (IOException e) {
+            throw ServiceException.request("无法移动目录: " + source, e);
+        }
     }
 }

@@ -12,7 +12,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AgreementFile implements IFile {
+public class AgreementFile implements IId, IFile, Comparable<AgreementFile> {
 
     /**
      * *主键 int*
@@ -41,5 +41,10 @@ public class AgreementFile implements IFile {
      * 上传时间
      * *非空 datetime*
      */
-    private Date updateTime;
+    private Date createTime;
+
+    @Override
+    public int compareTo(AgreementFile o) {
+        return page.compareTo(o.page);
+    }
 }

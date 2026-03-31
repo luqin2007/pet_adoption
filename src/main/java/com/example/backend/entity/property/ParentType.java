@@ -1,7 +1,11 @@
 package com.example.backend.entity.property;
 
+import com.example.backend.util.ServiceException;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.Locale;
 
 @Getter
 @AllArgsConstructor
@@ -20,4 +24,12 @@ public enum ParentType {
     ;
 
     private final String folder;
+
+    public static ParentType get(String name) {
+        try {
+            return ParentType.valueOf(name.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw ServiceException.invalidate("无效类型 " + name);
+        }
+    }
 }

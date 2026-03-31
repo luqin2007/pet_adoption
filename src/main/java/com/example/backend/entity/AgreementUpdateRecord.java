@@ -5,13 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 /**
  * 协议更新记录
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AgreementUpdateRecord {
+public class AgreementUpdateRecord implements IId {
 
     /**
      * *主键 int*
@@ -35,4 +37,10 @@ public class AgreementUpdateRecord {
      * *非空 varchar(20)*
      */
     private AgreementUpdateType type;
+
+    /**
+     * 创建时间
+     * *非空 datetime*
+     */
+    private Date createTime;
 }

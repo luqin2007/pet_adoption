@@ -24,5 +24,9 @@ public enum AdoptBreadingStatus {
             throw ServiceException.invalidate("无效申请状态 " + name);
         }
     }
+
+    public boolean isChangeable() {
+        return this != CANCEL && this != FINISH;
+    }
 }
 

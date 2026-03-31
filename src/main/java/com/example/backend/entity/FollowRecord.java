@@ -32,6 +32,12 @@ public class FollowRecord implements IId {
     private Long volunteerId;
 
     /**
+     * 简介状况
+     * *非空 varchar(255)*
+     */
+    private String summary;
+
+    /**
      * 回访时间
      * *非空 datetime*
      */

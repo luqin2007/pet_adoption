@@ -1,6 +1,6 @@
 package com.example.backend.entity;
 
-import com.example.backend.entity.property.AdoptFollowStatus;
+import com.example.backend.entity.property.FollowTaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,28 +39,22 @@ public class FollowTask implements IId {
     private Long volunteerId;
 
     /**
-     * 上次访问时间
-     * *datetime*
-     */
-    private Date lastTime;
-
-    /**
-     * 计划访问时间
-     * *非空 datetime*
-     */
-    private Date planTime;
-
-    /**
      * 状态
      * *非空 varchar(20)*
      */
-    private AdoptFollowStatus status;
+    private FollowTaskStatus status;
 
     /**
      * 备注（如节假日顺延等）
      * *text*
      */
     private String remark;
+
+    /**
+     * 计划访问时间
+     * *非空 datetime*
+     */
+    private Date planTime;
 
     /**
      * 创建时间

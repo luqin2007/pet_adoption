@@ -78,8 +78,8 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         if (avatar != null && !avatar.isEmpty()) {
             Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(avatar);
             requireEqual(extAndType.getSecond(), IMAGE, "头像格式错误");
-            Pair<String, String> nameAndExt = FileUtils.getNameAndExtension(avatar.getOriginalFilename());
-            String filename = FileUtils.generateFilename(nameAndExt.getFirst(), user.getCreateTime(), extAndType.getFirst());
+            String name = FileUtils.getNameWithoutExtension(avatar.getOriginalFilename());
+            String filename = FileUtils.generateFilename(name, user.getCreateTime(), extAndType.getFirst());
             Path path = FileUtils.generateFilePath(USER, user.getId());
             FileUtils.upload(avatar, filename, path);
             update(getBaseMapper().updateAvatar(user.getId(), filename));

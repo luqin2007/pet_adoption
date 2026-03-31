@@ -509,7 +509,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         // 接收文件
         Date now = new Date();
         Pair<String, String> nameAndExt = FileUtils.getNameAndExtension(request.getFile().getOriginalFilename());
-        String filename = FileUtils.generateFilename(request.getFile().getOriginalFilename(), now, nameAndExt.getSecond());
+        String filename = FileUtils.generateFilename(nameAndExt.getFirst(), now, nameAndExt.getSecond());
         Path path = FileUtils.generateTempPath(EXAMINATION, examId);
         FileUtils.upload(request.getFile(), filename, path);
 
@@ -878,8 +878,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         for (MultipartFile file : request.getFiles()) {
             Date now = new Date();
             Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
-            Pair<String, String> nameAndExt = FileUtils.getNameAndExtension(file.getOriginalFilename());
-            String filename = FileUtils.generateFilename(nameAndExt.getFirst(), now, extAndType.getFirst());
+            String name = FileUtils.getNameWithoutExtension(file.getOriginalFilename());
+            String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
             FileUtils.upload(file, filename, path);
 
             MediaFile mediaFile = new MediaFile(null,

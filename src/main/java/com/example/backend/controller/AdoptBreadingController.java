@@ -1,8 +1,8 @@
 package com.example.backend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.backend.dto.PageParams;
-import com.example.backend.dto.Result;
+import com.example.backend.dto.*;
+import com.example.backend.service.AdoptBreadingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -44,11 +44,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdoptBreadingController {
 
+    private final AdoptBreadingService adoptBreadingService;
+
     /**
      * 申请领养
      */
     @PostMapping("/adopt")
-    public Result<AdoptResponse> addAdopt(@RequestBody AdoptRequest request) {
+    public Result<AdoptResponse> addAdopt(@RequestBody AdoptAddRequest request) {
+        AdoptResponse response = adoptBreadingService.addAdopt(request);
+        return Result.success(response);
     }
 
     /**
@@ -56,28 +60,36 @@ public class AdoptBreadingController {
      */
     @GetMapping("/adopt/{id}")
     public Result<AdoptResponse> getAdoptApplication(@PathVariable("id") Long adoptId) {
+        AdoptResponse response = adoptBreadingService.getAdoptApplication(adoptId);
+        return Result.success(response);
     }
 
     /**
      * 获取领养申请
      */
     @GetMapping("/adopt")
-    public Result<AdoptResponse> getAdoptApplications(AdoptQueryParams params, PageParams page) {
+    public Result<Page<AdoptResponse>> getAdoptApplications(AdoptQueryParams params, PageParams page) {
+        Page<AdoptResponse> response = adoptBreadingService.getAdoptApplications(params, page);
+        return Result.success(response);
     }
 
     /**
      * 申请领养审核
      */
     @PostMapping("/adopt/{id}/{st}")
-    public Result<AdoptResponse> reviewAdoptApplication(@PathVariable("id") Long adoptId,
-                                                        @PathVariable("st") String status) {
+    public Result<AdoptResponse> updateAdoptApplicationStatus(@PathVariable("id") Long adoptId,
+                                                              @PathVariable("st") String status) {
+        AdoptResponse response = adoptBreadingService.updateAdoptApplicationStatus(adoptId, status);
+        return Result.success(response);
     }
 
     /**
      * 申请寄养
      */
     @PostMapping("/breading")
-    public Result<BreadingResponse> addBreading(@RequestBody BreadingRequest request) {
+    public Result<BreadingResponse> addBreading(@RequestBody BreadingAddRequest request) {
+        BreadingResponse response = adoptBreadingService.addBreading(request);
+        return Result.success(response);
     }
 
     /**
@@ -85,6 +97,8 @@ public class AdoptBreadingController {
      */
     @GetMapping("/breading/{id}")
     public Result<BreadingResponse> getBreadingApplication(@PathVariable("id") Long breadingId) {
+        BreadingResponse response = adoptBreadingService.getBreadingApplication(breadingId);
+        return Result.success(response);
     }
 
     /**
@@ -92,14 +106,18 @@ public class AdoptBreadingController {
      */
     @GetMapping("/breading")
     public Result<Page<BreadingResponse>> getBreadingApplications(BreadingQueryParams params, PageParams page) {
+        Page<BreadingResponse> response = adoptBreadingService.getBreadingApplications(params, page);
+        return Result.success(response);
     }
 
     /**
      * 更新寄养审核状态
      */
     @PostMapping("/breading/{id}/{st}")
-    public Result<BreadingResponse> reviewBreadingApplication(@PathVariable("id") Long breadingId,
-                                                              @PathVariable("st") String status) {
+    public Result<BreadingResponse> updateBreadingApplicationStatus(@PathVariable("id") Long breadingId,
+                                                                    @PathVariable("st") String status) {
+        BreadingResponse response = adoptBreadingService.updateBreadingApplicationStatus(breadingId, status);
+        return Result.success(response);
     }
 
     /**
@@ -107,6 +125,8 @@ public class AdoptBreadingController {
      */
     @PostMapping("/agreement")
     public Result<AgreementResponse> addAgreement(@RequestBody AgreementAddRequest request) {
+        AgreementResponse response = adoptBreadingService.addAgreement(request);
+        return Result.success(response);
     }
 
     /**
@@ -115,20 +135,28 @@ public class AdoptBreadingController {
     @PostMapping("/agreement/{id}")
     public Result<AgreementResponse> updateAgreement(@PathVariable("id") Long agreementId,
                                                      @RequestBody AgreementUpdateRequest request) {
+        AgreementResponse response = adoptBreadingService.updateAgreement(agreementId, request);
+        return Result.success(response);
     }
 
     /**
      * 上传协议扫描件
      */
-    @PostMapping("/agreement/{id}")
-    public Result<List<String>> uploadAgreement(@PathVariable("id") Long agreementId, List<MultipartFile> files) {
+    @PostMapping("/agreement/{id}/files")
+    public Result<List<AgreementFileResponse>> uploadAgreement(@PathVariable("id") Long agreementId,
+                                                               AgreementFilesUploadTable files) {
+        List<AgreementFileResponse> response = adoptBreadingService.uploadAgreement(agreementId, files);
+        return Result.success(response);
     }
 
     /**
      * 签署协议
      */
     @PostMapping("/agreement/{id}/sign")
-    public Result<AgreementResponse> signAgreement(@PathVariable("id") Long agreementId, MultipartFile sign) {
+    public Result<AgreementResponse> signAgreement(@PathVariable("id") Long agreementId,
+                                                   @RequestParam("sign") MultipartFile sign) {
+        AgreementResponse response = adoptBreadingService.signAgreement(agreementId, sign);
+        return Result.success(response);
     }
 
     /**
@@ -136,6 +164,8 @@ public class AdoptBreadingController {
      */
     @GetMapping("/agreement/{id}")
     public Result<AgreementResponse> getAgreement(@PathVariable("id") Long agreementId) {
+        AgreementResponse response = adoptBreadingService.getAgreement(agreementId);
+        return Result.success(response);
     }
 
     /**
@@ -143,6 +173,8 @@ public class AdoptBreadingController {
      */
     @GetMapping("/agreement")
     public Result<Page<AgreementResponse>> getAgreements(AgreementQueryParams query, PageParams page) {
+        Page<AgreementResponse> response = adoptBreadingService.getAgreements(query, page);
+        return Result.success(response);
     }
 
     /**
@@ -151,6 +183,8 @@ public class AdoptBreadingController {
     @PostMapping("/follow/adopt/{id}")
     public Result<FollowTaskResponse> addFollowTask(@PathVariable("id") Long applicationId,
                                                     @RequestBody FollowTaskAddRequest request) {
+        FollowTaskResponse response = adoptBreadingService.addFollowTask(applicationId, request);
+        return Result.success(response);
     }
 
     /**
@@ -159,6 +193,8 @@ public class AdoptBreadingController {
     @PostMapping("/follow/{id}")
     public Result<FollowTaskResponse> updateFollowTask(@PathVariable("id") Long taskId,
                                                        @RequestBody FollowTaskUpdateRequest request) {
+        FollowTaskResponse response = adoptBreadingService.updateFollowTask(taskId, request);
+        return Result.success(response);
     }
 
     /**
@@ -166,6 +202,8 @@ public class AdoptBreadingController {
      */
     @GetMapping("/follow/{id}")
     public Result<FollowTaskResponse> getFollowTask(@PathVariable("id") Long taskId) {
+        FollowTaskResponse response = adoptBreadingService.getFollowTask(taskId);
+        return Result.success(response);
     }
 
     /**
@@ -173,20 +211,26 @@ public class AdoptBreadingController {
      */
     @GetMapping("/follow")
     public Result<Page<FollowTaskResponse>> getFollowTasks(FollowTaskQueryParams query, PageParams page) {
+        Page<FollowTaskResponse> response = adoptBreadingService.getFollowTasks(query, page);
+        return Result.success(response);
     }
 
     /**
      * 提交跟踪记录
      */
-    @PostMapping("/follow/record")
-    public Result<FollowRecordResponse> addFollowRecord(@RequestBody FollowRecordAddRequest request) {
+    @PostMapping("/follow/{id}/record")
+    public Result<FollowRecordResponse> addFollowRecord(@PathVariable("id") Long taskId, @RequestBody FollowRecordAddRequest request) {
+        FollowRecordResponse response = adoptBreadingService.addFollowRecord(taskId, request);
+        return Result.success(response);
     }
 
     /**
      * 获取跟踪记录
      */
-    @GetMapping("/follow/record/{id}")
-    public Result<Page<FollowRecordResponse>> getFollowRecords(@PathVariable("id") Long taskId) {
+    @GetMapping("/follow/{id}/record")
+    public Result<Page<FollowRecordResponse>> getFollowRecords(@PathVariable("id") Long taskId, PageParams page) {
+        Page<FollowRecordResponse> response = adoptBreadingService.getFollowRecords(taskId, page);
+        return Result.success(response);
     }
 
     /**
@@ -194,6 +238,7 @@ public class AdoptBreadingController {
      */
     @GetMapping("/follow/record")
     public Result<Page<FollowRecordResponse>> getFollowRecords(FollowRecordQueryParams query, PageParams page) {
+        Page<FollowRecordResponse> response = adoptBreadingService.getFollowRecords(query, page);
+        return Result.success(response);
     }
 }
-

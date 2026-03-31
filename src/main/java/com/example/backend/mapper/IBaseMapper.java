@@ -11,6 +11,7 @@ import com.example.backend.util.IValidates;
 import com.example.backend.util.ServiceException;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -84,6 +85,7 @@ public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
 
     @SuppressWarnings("unchecked")
     default Map<Long, T> groupById(Set<Long> ids, SFunction<T, ?>... columns) {
+        if (ids.isEmpty()) return Map.of();
         return selectList(ids, columns).stream().collect(Collectors.toMap(T::getId, Function.identity()));
     }
 
@@ -94,6 +96,17 @@ public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
             Long key = keyColumn.apply(result);
             R element = converter.apply(result);
             map.computeIfAbsent(key, k -> new ArrayList<>()).add(element);
+        }
+        return map;
+    }
+
+    default <R> Map<Long, R> groupFirst(Wrapper<T> wrapper, SFunction<T, Long> keyColumn, Function<T, R> converter) {
+        List<T> results = selectList(wrapper);
+        Map<Long, R> map = new HashMap<>();
+        for (T result : results) {
+            Long key = keyColumn.apply(result);
+            if (!map.containsKey(key))
+                map.put(key, converter.apply(result));
         }
         return map;
     }
