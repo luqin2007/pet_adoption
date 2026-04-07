@@ -10,14 +10,8 @@ import org.springframework.stereotype.Component;
 public class StockEventListener {
 
     @Async
-    @EventListener(StockEvent.InStockEvent.class)
-    public void onInStock(StockEvent.InStockEvent event) {
-
-    }
-
-    @Async
-    @EventListener(StockEvent.OutStockEvent.class)
-    public void onOutStock(StockEvent.OutStockEvent event) {
+    @EventListener(StockEvent.class)
+    public void stockChange(StockEvent event) {
 
     }
 }
