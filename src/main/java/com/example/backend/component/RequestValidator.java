@@ -10,6 +10,7 @@ import org.springframework.validation.Validator;
  * 自定义请求体验证
  */
 @Component
+@SuppressWarnings("NullableProblems")
 public class RequestValidator implements Validator {
 
     @Override

@@ -63,7 +63,7 @@ public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
     }
 
     @SuppressWarnings("unchecked")
-    default <V> List<T> selectList(LambdaQueryWrapper<T> wrapper, SFunction<T, ?>... columns) {
+    default List<T> selectList(LambdaQueryWrapper<T> wrapper, SFunction<T, ?>... columns) {
         return selectList(wrapper.select(columns));
     }
 

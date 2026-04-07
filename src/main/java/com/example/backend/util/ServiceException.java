@@ -19,7 +19,6 @@ public class ServiceException extends RuntimeException {
     public static final int E_INVALIDATE = 422; // 请求可被解析，但拒绝请求/校验错误
     public static final int E_SYSTEM = 503; // 系统错误
     public static final int E_UNAVAILABLE = 503; // 服务暂时不可用
-    public static final int E_TIMEOUT = 504; // 服务超时
 
     private final int code;
 

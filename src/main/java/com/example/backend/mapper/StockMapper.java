@@ -9,7 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Set;
 
 /**
  * 索引：
@@ -27,14 +26,6 @@ public interface StockMapper extends IBaseMapper<Stock> {
                 .querySet(query, Stock::getSourceType, SourceType::get, params.getSource())
                 .queryTime(query, Stock::getCreateTime, params.getTime0(), params.getTime1());
         return query;
-    }
-
-    default LambdaQueryWrapper<Stock> queryByItem(Long itemId) {
-        return lambdaQuery().eq(Stock::getItemId, itemId);
-    }
-
-    default LambdaQueryWrapper<Stock> queryByItems(Set<Long> itemIds) {
-        return lambdaQuery().in(Stock::getItemId, itemIds);
     }
 
     default LambdaUpdateWrapper<Stock> updateCount(Long stockId, BigDecimal count) {

@@ -21,6 +21,7 @@ public class FirstRegistrationQueryParams implements IParam<FirstRegistration>, 
     @Override
     public void validate(Errors errors) {
         validateTime(errors, FirstRegistrationQueryParams::getDate0, FirstRegistrationQueryParams::getDate1);
+        //noinspection unchecked
         validateOne(errors,
                 FirstRegistrationQueryParams::getRegistrar,
                 FirstRegistrationQueryParams::getPet,

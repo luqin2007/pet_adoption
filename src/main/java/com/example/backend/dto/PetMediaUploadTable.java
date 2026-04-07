@@ -7,7 +7,6 @@ import com.example.backend.util.FileUtils;
 import com.example.backend.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.springframework.data.util.Pair;
 import org.springframework.web.multipart.MultipartFile;

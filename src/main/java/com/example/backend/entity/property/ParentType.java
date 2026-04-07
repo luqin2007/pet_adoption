@@ -1,7 +1,6 @@
 package com.example.backend.entity.property;
 
 import com.example.backend.util.ServiceException;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

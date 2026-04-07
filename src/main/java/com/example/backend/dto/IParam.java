@@ -59,7 +59,7 @@ public interface IParam<T> extends IRequest {
         return self();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "UnusedReturnValue"})
     default IParam<T> queryText(LambdaQueryWrapper<T> query, SFunction<T, ?> column, String text, SFunction<T, ?>... otherColumns) {
         query.like(text != null, column, text);
         for (SFunction<T, ?> c : otherColumns) {

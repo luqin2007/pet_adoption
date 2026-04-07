@@ -15,6 +15,7 @@ public class RehabPlanQueryParams implements IParam<RehabPlan>, IRequestValidate
 
     @Override
     public void validate(Errors errors) {
+        //noinspection unchecked
         validateOne(errors, RehabPlanQueryParams::getPet, RehabPlanQueryParams::getDoctor);
     }
 }

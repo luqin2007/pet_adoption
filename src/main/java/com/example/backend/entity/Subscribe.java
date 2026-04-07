@@ -1,6 +1,5 @@
 package com.example.backend.entity;
 
-import com.example.backend.entity.property.ParentType;
 import com.example.backend.entity.property.SubscribeAction;
 import lombok.AllArgsConstructor;
 import lombok.Data;

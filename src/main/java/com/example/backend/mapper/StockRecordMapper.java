@@ -18,9 +18,6 @@ import java.util.Set;
 @Mapper
 public interface StockRecordMapper extends IBaseMapper<StockRecord> {
 
-    /**
-     * 按库存批次、物资、来源类型和动作查询记录
-     */
     default LambdaQueryWrapper<StockRecord> queryByRequest(StockRecordQueryParams params) {
         LambdaQueryWrapper<StockRecord> query = lambdaQuery();
         //noinspection unchecked
@@ -39,15 +36,6 @@ public interface StockRecordMapper extends IBaseMapper<StockRecord> {
 
     /**
      * 索引：
-     * - (stockId)
-     */
-    default LambdaQueryWrapper<StockRecord> queryByStock(Long stockId) {
-        return lambdaQuery()
-                .eq(StockRecord::getStockId, stockId);
-    }
-
-    /**
-     * 索引：
      * - (stockId, createTime)
      */
     default LambdaQueryWrapper<StockRecord> queryByStock(Long stockId, int count) {
@@ -60,6 +48,7 @@ public interface StockRecordMapper extends IBaseMapper<StockRecord> {
     /**
      * 索引：
      * - (stockId, createTime)
+     * TODO 检查数据库字段命名
      */
     /* 窗口函数 ？
     SELECT * FROM (
