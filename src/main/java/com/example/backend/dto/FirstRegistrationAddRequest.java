@@ -3,44 +3,36 @@ package com.example.backend.dto;
 import com.example.backend.entity.AllergyHistory;
 import com.example.backend.entity.FirstRegistration;
 import com.example.backend.entity.ImmunityHistory;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
 import java.util.Date;
 import java.util.List;
 
 @Data
-public class FirstRegistrationAddRequest {
+public class FirstRegistrationAddRequest implements IRequest, IRequestValidate {
 
-    @NotBlank
+    @NotBlank(message = "request.pet.id")
     private Long petId;
 
-    @NotBlank
-    private Long userId;
+    @NotBlank(message = "request.pet.name")
+    private String name;
 
-    @JsonSetter(nulls = Nulls.SKIP)
-    private String name = "";
-
-    @NotBlank(message = "请输入宠物年龄")
+    @NotBlank(message = "request.pet.age")
     private Integer age;
 
-    @NotNull(message = "请输入疫苗信息")
-    private String vaccine;
-
-    @NotBlank(message = "请输入宠物体重")
+    @NotBlank(message = "request.medical.weight")
     private Double weight;
 
-    @NotBlank(message = "请输入宠物体温")
+    @NotBlank(message = "request.medical.temperature")
     private Double temperature;
 
     // 免疫史
-    private List<ImmunityHistoryRequest> immunity;
+    private List<ImmunityHistoryRequest> immunities;
 
     // 过敏史
-    private List<AllergyHistoryAddRequest> allergy;
+    private List<AllergyHistoryAddRequest> allergies;
 
     private String description;
 
@@ -56,10 +48,17 @@ public class FirstRegistrationAddRequest {
     }
 
     public List<ImmunityHistory> createImmunityHistories(Long registrationId) {
-        return immunity.stream().map(request -> request.createEntity(registrationId)).toList();
+        return immunities.stream().map(request -> request.createEntity(registrationId)).toList();
     }
 
     public List<AllergyHistory> createAllergyHistories(Long registrationId) {
-        return allergy.stream().map(request -> request.build(registrationId)).toList();
+        return allergies.stream().map(request -> request.build(registrationId)).toList();
+    }
+
+    @Override
+    public void validate(Errors errors) {
+        for (ImmunityHistoryRequest req : immunities) {
+            req.validate(errors);
+        }
     }
 }

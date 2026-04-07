@@ -16,19 +16,19 @@ import java.util.Date;
 public class Adopt implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 宠物 id
-     * *外键:pet(id) 非空 int*
+     * *外键:pet(id) 非空 bigint*
      */
     private Long petId;
 
     /**
      * 申请人
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long applicantId;
 
@@ -40,7 +40,7 @@ public class Adopt implements IId {
 
     /**
      * 审核人
-     * *外键:user(id) int*
+     * *外键:user(id) bigint*
      */
     private Long reviewerId;
 

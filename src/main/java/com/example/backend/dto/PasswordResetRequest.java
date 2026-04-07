@@ -12,19 +12,19 @@ import java.sql.Date;
  * 重置密码请求体
  */
 @Data
-public class PasswordResetRequest {
+public class PasswordResetRequest implements IRequest {
 
     /**
      * 请求 ID
      */
-    @NotBlank(message = "无效请求")
+    @NotBlank(message = "request.user.reset.id")
     private String id;
 
     /**
      * 新密码
      */
-    @NotBlank(message = "密码不能为空")
-    @Length(min = 6, message = "密码长度不能小于6位")
+    @NotBlank(message = "request.user.password")
+    @Length(min = 6, message = "request.user.password.short")
     private String password;
 
     public void applyTo(User user, PasswordEncoder passwordEncoder) {

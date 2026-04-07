@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class DiagnosisResponse {
+public class DiagnosisResponse implements IResponse {
 
     private Long id;
     private Long detailId;

@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class FirstRegistrationResponse {
+public class FirstRegistrationResponse implements IResponse {
 
     private Long id;
     private String name;

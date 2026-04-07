@@ -15,13 +15,13 @@ import java.util.Date;
 public class AllergyHistory implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 初诊登记 id
-     * *外键:firstVisitRegistration(id) 非空 long*
+     * *外键:firstVisitRegistration(id) 非空 bigint*
      */
     private Long registrationId;
 

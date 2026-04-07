@@ -17,25 +17,25 @@ import java.util.Date;
 public class RescueTaskRecord implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 救助任务 id
-     * *外键:rescueTask(id) 非空 int*
+     * *外键:rescueTask(id) 非空 bigint*
      */
     private Long taskId;
 
     /**
      * 发起者 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long userId;
 
     /**
      * 状态审核者 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long approveId;
 

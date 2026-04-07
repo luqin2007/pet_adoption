@@ -9,12 +9,12 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class AdoptAddRequest {
+public class AdoptAddRequest implements IRequest {
 
-    @NotNull(message = "请选择宠物")
+    @NotNull(message = "request.pet.id")
     private Long petId;
 
-    @NotBlank(message = "请填写申请人手机号")
+    @NotBlank(message = "request.adopt_breading.phone")
     private String applicantPhone;
 
     private String requirement;

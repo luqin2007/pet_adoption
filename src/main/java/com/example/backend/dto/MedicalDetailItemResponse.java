@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class MedicalDetailItemResponse {
+public class MedicalDetailItemResponse implements IResponse {
 
     private Long id;
     private Long recordId;

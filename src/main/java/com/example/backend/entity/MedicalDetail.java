@@ -15,19 +15,19 @@ import java.util.Date;
 public class MedicalDetail implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 就诊记录 id
-     * *外键:medicalRecord(id) 非空 int*
+     * *外键:medicalRecord(id) 非空 bigint*
      */
     private Long recordId;
 
     /**
      * 兽医 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long doctorId;
 

@@ -15,19 +15,19 @@ import java.util.Date;
 public class FollowRecord implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 跟踪任务 id
-     * *外键:followTask(id) 非空 int*
+     * *外键:followTask(id) 非空 bigint*
      */
     private Long taskId;
 
     /**
      * 志愿者 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long volunteerId;
 

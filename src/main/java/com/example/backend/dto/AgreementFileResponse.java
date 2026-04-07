@@ -11,7 +11,7 @@ import static com.example.backend.entity.property.ParentType.AGREEMENT;
 
 @Data
 @AllArgsConstructor
-public class AgreementFileResponse {
+public class AgreementFileResponse implements IResponse {
 
     private Long id;
 

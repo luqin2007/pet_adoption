@@ -14,6 +14,8 @@ public class C {
     public static final String KEY_RESCUE_TASK_MEDIA = "pet_adoption:rescue_task.media.%s";
     public static final String KEY_EXAMINATION = "pet_adoption:medical.exam.%s";
     public static final String KEY_EXAMINATION_FILE = "pet_adoption:medical.exam.file.%s";
+    public static final String KEY_DONATION = "pet_adoption:donation.%s";
+    public static final String KEY_DONATION_FILE = "pet_adoption:donation.file.%s";
 
     /*
     Token 相关

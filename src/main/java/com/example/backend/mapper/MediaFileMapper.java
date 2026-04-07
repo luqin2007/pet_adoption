@@ -127,6 +127,12 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
                 .in(MediaFile::getParentId, parentIds);
     }
 
+    default LambdaUpdateWrapper<MediaFile> updateCover(Long mediaId, boolean isCover) {
+        return lambdaUpdate()
+                .eq(MediaFile::getId, mediaId)
+                .set(MediaFile::getIsCover, isCover);
+    }
+
     @Override
     default String getMissingMessage() {
         return "图片/视频不存在";

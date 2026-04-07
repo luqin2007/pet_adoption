@@ -7,7 +7,6 @@ import com.example.backend.util.FileUtils;
 import com.example.backend.util.StringUtils;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import org.springframework.data.util.Pair;
@@ -16,18 +15,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Date;
 
 @Data
-public class PetMediaUploadTable {
+public class PetMediaUploadTable implements ITable {
 
-    @NotBlank(message = "名称为空")
     private String name;
 
-    @JsonSetter(nulls = Nulls.SKIP)
-    private String description = "";
+    private String description;
 
     @JsonSetter(nulls = Nulls.SKIP)
     private Boolean isCover = false;
 
-    @NotEmpty(message = "文件为空")
     private MultipartFile file;
 
     public MediaFile createMedia(Long parentId, Long userId, MultipartFile file) {

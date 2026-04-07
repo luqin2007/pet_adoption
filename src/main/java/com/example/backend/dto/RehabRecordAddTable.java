@@ -9,15 +9,15 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class RehabRecordAddTable {
+public class RehabRecordAddTable implements ITable {
 
-    @NotBlank(message = "请输入康复步骤")
+    @NotBlank(message = "request.medical.rehab.record.step")
     private String step;
 
-    @NotBlank(message = "请输入宠物反应")
+    @NotBlank(message = "request.medical.rehab.record.reaction")
     private String reaction;
 
-    @NotBlank(message = "请输入备注")
+    @NotBlank(message = "request.medical.rehab.record.note")
     private String note;
 
     private List<MultipartFile> files;

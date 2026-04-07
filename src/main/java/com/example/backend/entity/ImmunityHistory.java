@@ -15,7 +15,7 @@ import java.util.Date;
 public class ImmunityHistory implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 

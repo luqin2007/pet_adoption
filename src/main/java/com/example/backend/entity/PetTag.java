@@ -15,19 +15,19 @@ import java.sql.Date;
 public class PetTag implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 流浪宠物 id
-     * *外键:pet(id) 非空 int*
+     * *外键:pet(id) 非空 bigint*
      */
     private Long petId;
 
     /**
      * 添加用户 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long userId;
 

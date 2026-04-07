@@ -60,8 +60,8 @@ public class PetService extends BaseService<PetMapper, Pet> {
         Page<Pet> result = page(page.createPage());
         List<Pet> records = result.getRecords();
         Set<Long> petIds = records.stream().map(Pet::getId).collect(Collectors.toSet());
-        Set<Long> userIds = records.stream().map(Pet::getDiscoverId).collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                records.stream().map(Pet::getDiscoverId),
                 User::getId, User::getUsername, User::getAvatar);
         Map<Long, List<PetTagResponse>> tags = petTagMapper.groupList(petTagMapper.queryByPets(petIds), PetTag::getPetId, PetTagResponse::create);
         Map<Long, String> covers = getCoversByPetIds(petIds);
@@ -166,7 +166,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
                 if (!mediaFileMapper.exists(mediaFileMapper.queryCover(PET, petId, mediaId))) {
                     MediaFile latestImage = mediaFileMapper.selectOne(mediaFileMapper.queryLatestImageId(PET, petId, mediaId));
                     if (latestImage != null)
-                        mediaFileMapper.updateById(latestImage.getId(), MediaFile::getIsCover, true);
+                        mediaFileMapper.update(mediaFileMapper.updateCover(latestImage.getId(), true));
                 }
             }
         }
@@ -201,7 +201,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
             // 没有封面：取最后一张图片为封面
             MediaFile latestImage = mediaFileMapper.selectOne(mediaFileMapper.queryLatestImageId(PET, petId));
             if (latestImage != null)
-                mediaFileMapper.updateById(latestImage.getId(), MediaFile::getIsCover, true);
+                mediaFileMapper.update(mediaFileMapper.updateCover(latestImage.getId(), true));
         }
     }
 
@@ -280,9 +280,8 @@ public class PetService extends BaseService<PetMapper, Pet> {
         checkUserPermission(pet, login);
 
         // 保存记录
-        PetStatusRecord record = request.create(pet, login.getId());
+        PetStatusRecord record = request.applyTo(pet, login.getId());
         petStatusRecordMapper.insert(record);
-        pet.setStatus(record.getTo());
         updateById(pet);
         return PetStatusRecordResponse.create(record, pet, getCoverById(petId), login);
     }
@@ -302,11 +301,11 @@ public class PetService extends BaseService<PetMapper, Pet> {
         // 数据转换
         List<PetStatusRecord> records = result.getRecords();
         Set<Long> petIds = records.stream().map(PetStatusRecord::getPetId).collect(Collectors.toSet());
-        Set<Long> userIds = records.stream().map(PetStatusRecord::getUserId).collect(Collectors.toSet());
         Map<Long, Pet> pets = groupById(petIds,
                 Pet::getId, Pet::getName);
         Map<Long, String> covers = getCoversByPetIds(petIds);
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                records.stream().map(PetStatusRecord::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(result, record -> PetStatusRecordResponse.createBatch(record, pets, covers, users));
     }

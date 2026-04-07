@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -17,25 +18,25 @@ import java.util.Date;
 public class Order implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 申请人 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long allowerId;
 
     /**
      * 物品 id
-     * *外键:item(id) 非空 int*
+     * *外键:item(id) 非空 bigint*
      */
     private Long itemId;
 
     /**
      * 与之关联的资源 id
-     * *非空 long*
+     * *非空 bigint*
      */
     private Long parentId;
 
@@ -55,7 +56,7 @@ public class Order implements IId {
      * 数量
      * *非空 decimal(10,5)*
      */
-    private Double count;
+    private BigDecimal count;
 
     /**
      * 单位
@@ -67,7 +68,7 @@ public class Order implements IId {
      * 价格
      * *非空 decimal(10,2)*
      */
-    private Double price;
+    private BigDecimal price;
 
     /**
      * 创建时间

@@ -6,37 +6,38 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
 import java.util.Date;
 
 @Data
-public class BreadingAddRequest {
+public class BreadingAddRequest implements IRequest, IRequestValidate {
 
-    @NotBlank(message = "请输入宠物名称")
+    @NotBlank(message = "request.pet.name")
     private String petName;
 
-    @NotNull(message = "请输入宠物年龄（月）")
-    @Min(value = 0, message = "请输入宠物年龄（月）")
+    @NotNull(message = "request.pet.age")
+    @Min(value = 0, message = "request.pet.age")
     private Integer petAge;
 
-    @NotBlank(message = "请输入宠物类型")
+    @NotBlank(message = "request.pet.type")
     private String petType;
 
-    @NotBlank(message = "请输入宠物品种")
+    @NotBlank(message = "request.pet.breed")
     private String petBreed;
 
     private String petDescription;
 
-    @NotBlank(message = "请输入联系电话")
+    @NotBlank(message = "request.adopt_breading.phone")
     private String applicantPhone;
 
     private String requirement;
 
-    @NotNull(message = "请选择开始时间")
-    private Date startTime;
+    @NotNull(message = "request.start_time")
+    private Date time0;
 
-    @NotNull(message = "请选择结束时间")
-    private Date endTime;
+    @NotNull(message = "request.adopt_breading.breading.end_time")
+    private Date time1;
 
     public Breading create(Long applicantId) {
         Date now = new Date();
@@ -53,9 +54,14 @@ public class BreadingAddRequest {
                 requirement,
                 null,
                 null,
-                startTime,
-                endTime,
+                time0,
+                time1,
                 now,
                 now);
+    }
+
+    @Override
+    public void validate(Errors errors) {
+        validateTime(errors, BreadingAddRequest::getTime0, BreadingAddRequest::getTime1);
     }
 }

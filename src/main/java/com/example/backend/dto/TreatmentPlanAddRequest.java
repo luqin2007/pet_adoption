@@ -11,14 +11,14 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class TreatmentPlanAddRequest {
+public class TreatmentPlanAddRequest implements IRequest {
 
-    @NotEmpty(message = "请填写治疗方案")
+    @NotEmpty(message = "request.medical.treatment_plan.plan")
     private String plan;
 
     private List<OrderRequest> orders;
 
-    @NotNull(message = "请填写开始时间")
+    @NotNull(message = "request.start_time")
     private Date startTime;
 
     private Date endTime;

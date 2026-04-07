@@ -15,13 +15,13 @@ import java.util.Date;
 public class ExaminationFile implements IId, IFile {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 检验 id
-     * *外键:examination(id) 非空 int*
+     * *外键:examination(id) 非空 bigint*
      */
     private Long examinationId;
 

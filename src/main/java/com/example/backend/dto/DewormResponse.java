@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class DewormResponse implements Comparable<DewormResponse> {
+public class DewormResponse implements Comparable<DewormResponse>, IResponse {
 
     private Long id;
     private Integer times;

@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class PetAddResponse {
+public class PetAddResponse implements IResponse {
 
     private Long id;
     private String name;

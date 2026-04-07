@@ -15,20 +15,19 @@ import java.sql.Date;
 public class Location implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 绑定类型 id
-     * *petLocation:外键:pet(id) 非空 int*
-     * *rescueTaskLocation:外键:rescueTask(id) 非空 int*
+     * *非空 bigint*
      */
     private Long parentId;
 
     /**
      * 发现者 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long discoverId;
 

@@ -15,19 +15,19 @@ import java.util.Date;
 public class RehabRecord implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 康复计划 id
-     * *外键:rehabPlan(id) 非空 int*
+     * *外键:rehabPlan(id) 非空 bigint*
      */
     private Long planId;
 
     /**
      * 执行人员 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long userId;
 

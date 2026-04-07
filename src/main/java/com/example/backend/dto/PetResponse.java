@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class PetResponse {
+public class PetResponse implements IResponse {
 
     private Long id;
     private String name;

@@ -16,13 +16,13 @@ import java.sql.Date;
 public class Pet implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 发现该宠物的用户 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long discoverId;
 

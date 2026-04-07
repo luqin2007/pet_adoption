@@ -1,5 +1,6 @@
 package com.example.backend.dto;
 
+import com.example.backend.entity.DonationFile;
 import com.example.backend.entity.ExaminationFile;
 import com.example.backend.entity.IFile;
 import com.example.backend.entity.MediaFile;
@@ -42,6 +43,14 @@ public class TempFileInfo implements IFile, Comparable<TempFileInfo> {
         return new ExaminationFile(null,
                 examId,
                 name,
+                filename,
+                createTime);
+    }
+
+    public DonationFile createDonationFile(Long donationId) {
+        return new DonationFile(null,
+                donationId,
+                type,
                 filename,
                 createTime);
     }

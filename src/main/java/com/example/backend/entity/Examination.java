@@ -17,19 +17,19 @@ import java.util.Date;
 public class Examination implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 检查人
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long userId;
 
     /**
      * 绑定病历 id
-     * *外键:medicalDetail(id) 非空 int*
+     * *外键:medicalDetail(id) 非空 bigint*
      */
     private Long detailId;
 
@@ -62,12 +62,6 @@ public class Examination implements IId {
      * *varchar(255)*
      */
     private String filename;
-
-    /**
-     * 价格
-     * *非空 decimal(10,2)*
-     */
-    private Double price;
 
     /**
      * 检查时间

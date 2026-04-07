@@ -1,6 +1,5 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.IId;
 import com.example.backend.entity.MedicalRecord;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.User;
@@ -19,15 +18,15 @@ import java.util.Map;
  */
 @Data
 @AllArgsConstructor
-public class MedicalRecordResponse implements IId {
+public class MedicalRecordResponse implements IResponse {
 
     private Long id;
     private MedicalRecordStatus status;
     private MedicalRecordType type;
     private Date startTime;
     private Date endTime;
-    private Double price;
-    private Double cost;
+    private String price;
+    private String cost;
     private String ownerPhone;
     private Date createTime;
     private Date updateTime;
@@ -58,8 +57,8 @@ public class MedicalRecordResponse implements IId {
                 record.getType(),
                 record.getStartTime(),
                 record.getEndTime(),
-                record.getPrice(),
-                record.getCost(),
+                String.valueOf(record.getPrice()),
+                String.valueOf(record.getCost()),
                 record.getOwnerPhone(),
                 record.getCreateTime(),
                 record.getUpdateTime(),

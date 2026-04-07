@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class FollowTaskResponse {
+public class FollowTaskResponse implements IResponse {
 
     private Long id;
     private Long adoptId;

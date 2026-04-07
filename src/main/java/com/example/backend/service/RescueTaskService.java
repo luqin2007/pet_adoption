@@ -5,9 +5,9 @@ import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.entity.property.MediaType;
 import com.example.backend.entity.property.RescueTaskStatus;
+import com.example.backend.event.NotificationEvent;
 import com.example.backend.mapper.*;
 import com.example.backend.util.FileUtils;
-import com.example.backend.util.NotificationEvent;
 import com.example.backend.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -224,7 +224,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         if (Objects.equals(IMAGE, media.getType()) && media.getIsCover()) {
             MediaFile latestImage = mediaFileMapper.selectOne(mediaFileMapper.queryLatestImageId(RESCUE_TASK, task.getId()));
             if (latestImage != null)
-                mediaFileMapper.updateById(latestImage.getId(), MediaFile::getIsCover, true);
+                mediaFileMapper.update(mediaFileMapper.updateCover(latestImage.getId(), true));
         }
     }
 
@@ -279,10 +279,8 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
      */
     public RescueTaskRecordsResponse getRescueTaskRecords(Long taskId) {
         List<RescueTaskRecord> result = rescueTaskRecordMapper.selectList(rescueTaskRecordMapper.queryByTask(taskId));
-        Set<Long> userIds = result.stream()
-                .map(RescueTaskRecord::getUserId)
-                .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                result.stream().map(RescueTaskRecord::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
         return RescueTaskRecordsResponse.create(result, users);
     }

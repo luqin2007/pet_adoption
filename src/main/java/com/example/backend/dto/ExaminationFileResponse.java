@@ -11,7 +11,7 @@ import static com.example.backend.entity.property.ParentType.EXAMINATION;
 
 @Data
 @AllArgsConstructor
-public class ExaminationFileResponse {
+public class ExaminationFileResponse implements IResponse {
 
     private Long id;
     private String name;

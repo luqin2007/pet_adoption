@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class FollowRecordAddRequest {
+public class FollowRecordAddRequest implements IRequest {
 
     private Date visitTime;
 

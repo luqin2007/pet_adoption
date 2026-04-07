@@ -8,17 +8,17 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class VaccineAddRequest {
+public class VaccineAddRequest implements IRequest {
 
-    @NotNull(message = "未知疫苗")
+    @NotNull(message = "request.medical.vaccine.id")
     private Long vaccineId;
 
-    @NotNull(message = "请输入宠物年龄（月）")
-    @Min(value = 0, message = "请输入宠物年龄（月）")
+    @NotNull(message = "request.pet.age")
+    @Min(value = 0, message = "request.pet.age")
     private Integer petAge;
 
-    @NotNull(message = "请输入第几次接种")
-    @Min(value = 1, message = "请输入第几次接种")
+    @NotNull(message = "request.medical.vaccine.times")
+    @Min(value = 1, message = "request.medical.vaccine.times")
     private Integer times;
 
     public VaccineRecord create(Long petId, Long userId) {

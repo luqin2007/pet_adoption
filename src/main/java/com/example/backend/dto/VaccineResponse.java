@@ -11,7 +11,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class VaccineResponse implements Comparable<VaccineResponse> {
+public class VaccineResponse implements Comparable<VaccineResponse>, IResponse {
 
     private Long id;
     private Integer times;

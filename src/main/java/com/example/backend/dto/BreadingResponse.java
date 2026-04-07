@@ -3,7 +3,6 @@ package com.example.backend.dto;
 import com.example.backend.entity.Breading;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.AdoptBreadingStatus;
-import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,9 +10,11 @@ import lombok.Data;
 import java.util.Date;
 import java.util.Map;
 
+import static com.example.backend.entity.property.ParentType.USER;
+
 @Data
 @AllArgsConstructor
-public class BreadingResponse {
+public class BreadingResponse implements IResponse {
 
     private Long id;
     private String petName;
@@ -59,12 +60,12 @@ public class BreadingResponse {
                 breading.getCreateTime(),
                 breading.getUpdateTime(),
                 breading.getApplicantId(),
-                applicant == null ? null : applicant.getUsername(),
-                FileUtils.generateAssetUrl(ParentType.USER, applicant.getId(), applicant.getAvatar()),
+                applicant.getUsername(),
+                FileUtils.generateAssetUrl(USER, applicant.getId(), applicant.getAvatar()),
                 breading.getApplicantPhone(),
                 breading.getReviewerId(),
                 reviewer == null ? null : reviewer.getUsername(),
-                reviewer == null ? null : FileUtils.generateAssetUrl(ParentType.USER, reviewer.getId(), reviewer.getAvatar()));
+                reviewer == null ? null : FileUtils.generateAssetUrl(USER, reviewer.getId(), reviewer.getAvatar()));
     }
 
     /**

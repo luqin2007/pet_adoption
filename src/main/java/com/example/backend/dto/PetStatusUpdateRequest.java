@@ -3,13 +3,15 @@ package com.example.backend.dto;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
 import com.example.backend.entity.property.PetStatus;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
 import java.sql.Date;
 
 @Data
-public class PetStatusUpdateRequest {
+public class PetStatusUpdateRequest implements IRequest, IRequestValidate {
 
     @NotNull
     private Long id;
@@ -17,8 +19,8 @@ public class PetStatusUpdateRequest {
     @NotNull
     private Long petId;
 
-    @NotNull(message = "错误状态")
-    private PetStatus status;
+    @NotBlank(message = "request.pet.status")
+    private String status;
 
     @NotNull
     private String reason;
@@ -26,13 +28,20 @@ public class PetStatusUpdateRequest {
     /**
      * Pet: id, status
      */
-    public PetStatusRecord create(Pet pet, Long userId) {
+    public PetStatusRecord applyTo(Pet pet, Long userId) {
+        PetStatus oldStatus = pet.getStatus();
+        pet.setStatus(PetStatus.get(status));
         return new PetStatusRecord(null,
                 petId,
                 userId,
+                oldStatus,
                 pet.getStatus(),
-                status,
                 reason,
                 new Date(System.currentTimeMillis()));
+    }
+
+    @Override
+    public void validate(Errors errors) {
+        validateEnum(errors, PetStatusUpdateRequest::getStatus, PetStatus.class, "request.pet.status");
     }
 }

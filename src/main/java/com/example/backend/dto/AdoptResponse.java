@@ -1,7 +1,6 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Adopt;
-import com.example.backend.entity.FollowTask;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.AdoptBreadingStatus;
@@ -16,7 +15,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class AdoptResponse {
+public class AdoptResponse implements IResponse {
 
     private Long id;
     private AdoptBreadingStatus status;

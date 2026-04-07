@@ -1,7 +1,6 @@
-package com.example.backend.controller;
+package com.example.backend.event;
 
 import com.example.backend.service.UserService;
-import com.example.backend.util.NotificationEvent;
 import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

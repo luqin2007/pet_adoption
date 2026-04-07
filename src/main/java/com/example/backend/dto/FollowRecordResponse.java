@@ -2,7 +2,6 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.FollowRecord;
 import com.example.backend.entity.User;
-import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +13,7 @@ import static com.example.backend.entity.property.ParentType.USER;
 
 @Data
 @AllArgsConstructor
-public class FollowRecordResponse {
+public class FollowRecordResponse implements IResponse {
 
     private Long id;
     private Long taskId;

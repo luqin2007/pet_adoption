@@ -4,8 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class RefreshTokenRequest {
+public class RefreshTokenRequest implements IRequest {
 
-    @NotBlank(message = "RefreshToken 错误")
+    @NotBlank(message = "request.token.refresh")
     private String refreshToken;
 }

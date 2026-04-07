@@ -16,31 +16,31 @@ import java.sql.Date;
  * 用户更新 请求体
  */
 @Data
-public class UserUpdateRequest {
+public class UserUpdateRequest implements IRequest {
 
     /**
      * 用户名
      */
-    @NotBlank(message = "请输入用户名")
+    @NotBlank(message = "request.user.username")
     private String username;
 
     /**
      * 密码
      */
-    @NotBlank(message = "请输入密码")
-    @Length(min = 6, message = "密码长度不能小于6位")
+    @NotBlank(message = "request.user.password")
+    @Length(min = 6, message = "request.user.password.short")
     private String password;
 
     /**
      * 邮箱
      */
-    @Email(message = "邮箱格式错误")
+    @Email(message = "request.user.email")
     private String email;
 
     /**
      * 角色
      */
-    @Range(min = 0, max = UserRole.MAX_ROLE, message = "错误权限")
+    @Range(min = 0, max = UserRole.MAX_ROLE, message = "request.user.role")
     private int role;
 
     public void applyTo(User user, PasswordEncoder passwordEncoder) {

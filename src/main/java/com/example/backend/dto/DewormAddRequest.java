@@ -8,13 +8,13 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class DewormAddRequest {
+public class DewormAddRequest implements IRequest {
 
-    @NotNull(message = "未知驱虫药")
+    @NotNull(message = "request.medical.deworm.dewormer")
     private Long dewormerId;
 
-    @NotNull(message = "请输入第几次驱虫")
-    @Min(value = 1, message = "请输入第几次驱虫")
+    @NotNull(message = "request.medical.deworm.times")
+    @Min(value = 1, message = "request.medical.deworm.times")
     private Integer times;
 
     public DewormRecord create(Long petId, Long userId) {

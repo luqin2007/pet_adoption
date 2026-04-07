@@ -21,6 +21,7 @@ public enum ParentType {
     AGREEMENT("agreement"), // 领养/寄养协议
     AGREEMENT_UPDATE("agreement_update"), // 协议备份
     FOLLOW("follow"), // 领养跟踪
+    DONATION("donation"), // 领养跟踪
     ;
 
     private final String folder;

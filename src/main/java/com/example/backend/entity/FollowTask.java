@@ -16,25 +16,25 @@ import java.util.Date;
 public class FollowTask implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 申请 id
-     * *外键:adopt(id) 非空 int*
+     * *外键:adopt(id) 非空 bigint*
      */
     private Long adoptId;
 
     /**
      * 安排人员
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long workerId;
 
     /**
      * 志愿者 id
-     * *外键:user(id) int*
+     * *外键:user(id) bigint*
      */
     private Long volunteerId;
 

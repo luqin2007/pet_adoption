@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class FirstRegistrationItemResponse {
+public class FirstRegistrationItemResponse implements IResponse {
 
     private Long id;
     private String name;

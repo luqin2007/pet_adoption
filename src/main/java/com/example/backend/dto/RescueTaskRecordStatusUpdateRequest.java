@@ -4,11 +4,11 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class RescueTaskRecordStatusUpdateRequest {
+public class RescueTaskRecordStatusUpdateRequest implements IRequest {
 
-    @NotBlank(message = "异常状态")
+    @NotBlank(message = "request.rescue_task.status")
     private String status;
 
-    @NotBlank(message = "请输入原因")
+    @NotBlank(message = "request.rescue_task.reason")
     private String reason;
 }

@@ -14,13 +14,13 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class OrderResponse {
+public class OrderResponse implements IResponse {
 
     private Long id;
     private OrderType type;
-    private Double count;
+    private String count;
     private String unit;
-    private Double price;
+    private String price;
     private Date createTime;
     private Long parentId;
     private ParentType parentType;
@@ -41,9 +41,9 @@ public class OrderResponse {
     public static OrderResponse create(Order order, User allower, Item item) {
         return new OrderResponse(order.getId(),
                 order.getType(),
-                order.getCount(),
+                String.valueOf(order.getCount()),
                 order.getUnit(),
-                order.getPrice(),
+                String.valueOf(order.getPrice()),
                 order.getCreateTime(),
                 order.getParentId(),
                 order.getParentType(),

@@ -8,22 +8,23 @@ import com.example.backend.entity.property.ParentType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
 import java.util.Date;
 
 @Data
-public class AgreementAddRequest {
+public class AgreementAddRequest implements IRequest, IRequestValidate {
 
-    @NotNull(message = "未知项目")
+    @NotNull(message = "request.adopt_breading.agreement.parent")
     private Long parentId;
 
-    @NotBlank(message = "未知项目")
+    @NotBlank(message = "request.adopt_breading.agreement.parent")
     private String parentType;
 
-    @NotBlank(message = "错误类型")
+    @NotBlank(message = "request.adopt_breading.agreement.type")
     private String type;
 
-    @NotBlank(message = "请填写协议内容")
+    @NotBlank(message = "request.adopt_breading.agreement.content")
     private String content;
 
     public Agreement create() {
@@ -45,5 +46,10 @@ public class AgreementAddRequest {
                 "",
                 AgreementUpdateType.CREATE,
                 new Date());
+    }
+
+    @Override
+    public void validate(Errors errors) {
+        validateEnum(errors, AgreementAddRequest::getType, AgreementType.class, "request.adopt_breading.agreement.type");
     }
 }

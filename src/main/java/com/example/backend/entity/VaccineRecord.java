@@ -15,13 +15,13 @@ import java.util.Date;
 public class VaccineRecord implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 宠物 id
-     * *外键:pet(id) 非空 int*
+     * *外键:pet(id) 非空 bigint*
      */
     private Long petId;
 
@@ -33,13 +33,13 @@ public class VaccineRecord implements IId {
 
     /**
      * 医生 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long doctorId;
 
     /**
      * 疫苗 id
-     * *外键:vaccine(id) 非空 int*
+     * *外键:vaccine(id) 非空 bigint*
      */
     private Long vaccineId;
 

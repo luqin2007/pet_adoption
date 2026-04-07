@@ -2,6 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.MedicalDetail;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -9,45 +10,42 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class MedicalDetailAddRequest {
+public class MedicalDetailAddRequest implements IRequest {
 
-    @NotNull(message = "请先创建就诊记录")
+    @NotNull(message = "request.medical.detail.record")
     private Long recordId;
 
-    @NotNull(message = "请简要描述")
-    @NotEmpty(message = "请简要描述")
+    @NotBlank(message = "request.medical.detail.summary")
     private String summary;
 
-    @NotNull(message = "请描述问题")
-    @NotEmpty(message = "请描述问题")
+    @NotEmpty(message = "request.medical.detail.description")
     private String description;
 
-    @NotNull(message = "请描述现病史")
+    @NotNull(message = "request.medical.detail.history")
     private String history;
 
-    @NotNull(message = "请描述既往史")
+    @NotNull(message = "request.medical.detail.past_history")
     private String pastHistory;
 
-    @NotNull(message = "请描述生活习性")
+    @NotNull(message = "request.medical.detail.life_habit")
     private String lifeHabit;
 
-    @NotNull(message = "请输入宠物体重")
-    @Min(value = 0, message = "体重不能小于0")
+    @NotNull(message = "request.medical.weight")
+    @Min(value = 0, message = "request.medical.weight")
     private Double weight;
 
-    @NotNull(message = "请输入宠物体温")
-    @Min(value = 0, message = "体温不能小于0")
+    @NotNull(message = "request.medical.temperature")
+    @Min(value = 0, message = "request.medical.temperature")
     private Double temperature;
 
-    @NotNull(message = "请输入心率")
-    @Min(value = 0, message = "心率不能小于0")
+    @NotNull(message = "request.medical.detail.heart")
+    @Min(value = 0, message = "request.medical.detail.heart")
     private Integer heartRate;
 
-    @NotNull(message = "请输入呼吸频率")
-    @Min(value = 0, message = "呼吸频率不能小于0")
+    @NotNull(message = "request.medical.detail.respiratory")
+    @Min(value = 0, message = "request.medical.detail.respiratory")
     private Integer respiratoryRate;
 
-    @NotNull(message = "请输入其他体检信息")
     private String physicalExam;
 
     public MedicalDetail createEntity(Long userId) {

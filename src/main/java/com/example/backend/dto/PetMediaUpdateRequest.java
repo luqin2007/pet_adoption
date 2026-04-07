@@ -7,9 +7,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class PetMediaUpdateRequest {
+public class PetMediaUpdateRequest implements IRequest {
 
-    @NotBlank(message = "名称为空")
+    @NotBlank(message = "request.pet.name")
     private String name;
 
     @JsonSetter(nulls = Nulls.SKIP)

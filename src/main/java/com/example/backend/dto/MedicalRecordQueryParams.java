@@ -1,29 +1,25 @@
 package com.example.backend.dto;
 
+import com.example.backend.entity.MedicalRecord;
+import com.example.backend.entity.property.MedicalRecordStatus;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
 import java.util.Date;
 
 @Data
-public class MedicalRecordQueryParams {
+public class MedicalRecordQueryParams implements IParam<MedicalRecord>, IRequestValidate {
 
-    /**
-     * 流浪宠物 id
-     */
     private Long pet;
-
-    /**
-     * 接诊人 id
-     */
     private Long doctor;
-
-    /**
-     * 记录状态
-     */
-    private Integer status;
-
-    /**
-     * 创建时间
-     */
+    private String status;
     private Date time0, time1;
+
+    @Override
+    public void validate(Errors errors) {
+        //noinspection unchecked
+        validateOne(errors, MedicalRecordQueryParams::getPet, MedicalRecordQueryParams::getDoctor);
+        validateTime(errors, MedicalRecordQueryParams::getTime0, MedicalRecordQueryParams::getTime1);
+        validateEnum(errors, MedicalRecordQueryParams::getStatus, MedicalRecordStatus.class, "request.medical.record.status");
+    }
 }

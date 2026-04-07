@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -17,13 +18,13 @@ import java.util.Date;
 public class MedicalRecord implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 流浪宠物 id
-     * *外键:pet(id) 非空 int*
+     * *外键:pet(id) 非空 bigint*
      */
     private Long petId;
 
@@ -35,13 +36,13 @@ public class MedicalRecord implements IId {
 
     /**
      * 接诊人
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long doctorId;
 
     /**
      * 领养人
-     * *外键:user(id) int*
+     * *外键:user(id) bigint*
      */
     private Long ownerId;
 
@@ -77,15 +78,15 @@ public class MedicalRecord implements IId {
 
     /**
      * 预计价格
-     * *非空 decimal(10,2)*
+     * *非空 decimal*
      */
-    private Double price;
+    private BigDecimal price;
 
     /**
      * 实际花费
-     * *非空 decimal(10,2)*
+     * *非空 decimal*
      */
-    private Double cost;
+    private BigDecimal cost;
 
     /**
      * 创建时间

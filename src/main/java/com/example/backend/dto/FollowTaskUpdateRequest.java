@@ -2,26 +2,36 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.FollowTask;
 import com.example.backend.entity.property.FollowTaskStatus;
-import com.example.backend.util.StringUtils;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
 import java.util.Date;
 
 @Data
-public class FollowTaskUpdateRequest {
+public class FollowTaskUpdateRequest implements IRequest, IRequestValidate {
 
+    @NotNull(message = "request.adopt_breading.follow_task.volunteer")
     private Long volunteerId;
+
+    @NotNull(message = "request.adopt_breading.follow_task.plan")
     private Date planTime;
+
+    @NotNull(message = "request.adopt_breading.follow_task.status")
     private String status;
+
     private String remark;
 
     public void applyTo(FollowTask task) {
-        task.setVolunteerId(volunteerId == null ? task.getVolunteerId() : volunteerId);
-        task.setPlanTime(planTime == null ? task.getPlanTime() : planTime);
-        task.setRemark(remark == null ? task.getRemark() : remark);
-        if (StringUtils.hasText(status)) {
-            task.setStatus(FollowTaskStatus.get(status));
-        }
+        task.setVolunteerId(volunteerId);
+        task.setPlanTime(planTime);
+        task.setRemark(remark);
+        task.setStatus(FollowTaskStatus.get(status));
         task.setUpdateTime(new Date());
+    }
+
+    @Override
+    public void validate(Errors errors) {
+        validateEnum(errors, FollowTaskUpdateRequest::getStatus, FollowTaskStatus.class, "request.adopt_breading.follow_task.status");
     }
 }

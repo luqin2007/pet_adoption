@@ -12,7 +12,7 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class UserResponse {
+public class UserResponse implements IResponse {
 
     private Long id;
     private String username;

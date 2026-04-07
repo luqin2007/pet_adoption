@@ -15,7 +15,7 @@ import java.sql.Date;
 public class User implements IUserRole, IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 

@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class RehabPlanResponse {
+public class RehabPlanResponse implements IResponse {
 
     private Long id;
     private String title;

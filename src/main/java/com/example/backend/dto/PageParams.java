@@ -9,7 +9,7 @@ import lombok.Data;
 import java.net.URLDecoder;
 
 @Data
-public class PageParams {
+public class PageParams implements IParam<Page<?>> {
 
     private Integer page = 1;
 

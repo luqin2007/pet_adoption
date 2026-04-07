@@ -16,7 +16,7 @@ import java.sql.Date;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class PetInfoAddRequest extends LocationRequest {
+public class PetInfoAddRequest extends LocationRequest implements IRequest {
 
     /**
      * 宠物名称，可由爱心人士起，或留空
@@ -27,19 +27,19 @@ public class PetInfoAddRequest extends LocationRequest {
     /**
      * 最小年龄，确定流浪宠物年龄大致范围
      */
-    @Min(value = 0, message = "请输入正确的年龄")
+    @Min(value = 0, message = "request.pet.age")
     private Integer age;
 
     /**
      * 性别
      */
-    @NotBlank(message = "请选择性别")
+    @NotBlank(message = "request.pet.sex")
     private String sex;
 
     /**
-     * 宠物类型 (猫、狗等)
+     * 宠物类型
      */
-    @NotBlank(message = "请输入宠物类型")
+    @NotBlank(message = "request.pet.type")
     private String type;
 
     /**
@@ -66,8 +66,8 @@ public class PetInfoAddRequest extends LocationRequest {
                 sex,
                 type,
                 breed == null ? "" : breed,
-                breed == null ? "" : health,
-                breed == null ? "" : description,
+                health == null ? "" : health,
+                description == null ? "" : description,
                 PetStatus.WAITING,
                 false,
                 now,

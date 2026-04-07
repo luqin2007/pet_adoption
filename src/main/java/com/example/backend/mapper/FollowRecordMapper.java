@@ -5,7 +5,6 @@ import com.example.backend.dto.FollowRecordQueryParams;
 import com.example.backend.entity.FollowRecord;
 import org.apache.ibatis.annotations.Mapper;
 
-import java.util.Date;
 import java.util.Set;
 
 /**
@@ -30,17 +29,11 @@ public interface FollowRecordMapper extends IBaseMapper<FollowRecord> {
     }
 
     default LambdaQueryWrapper<FollowRecord> queryByRequest(FollowRecordQueryParams params) {
-        Long task = params.getTask();
-        Long volunteer = params.getVolunteer();
-        Date time0 = params.getTime0();
-        Date time1 = params.getTime1();
-
-        return lambdaQuery()
-                .eq(task != null, FollowRecord::getTaskId, task)
-                .eq(volunteer != null, FollowRecord::getVolunteerId, volunteer)
-                .in(time0 != null && time1 != null, FollowRecord::getVisitTime, time0, time1)
-                .ge(time0 != null && time1 == null, FollowRecord::getVisitTime, time0)
-                .le(time0 == null && time1 != null, FollowRecord::getVisitTime, time1);
+        LambdaQueryWrapper<FollowRecord> query = lambdaQuery();
+        params.query(query, FollowRecord::getTaskId, params.getTask())
+                .query(query, FollowRecord::getVolunteerId, params.getVolunteer())
+                .queryTime(query, FollowRecord::getVisitTime, params.getTime0(), params.getTime1());
+        return query;
     }
 
     @Override

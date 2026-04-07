@@ -5,33 +5,34 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.validator.constraints.Range;
 
 import java.util.Date;
 
 @Data
-public class HealthAssessmentAddRequest {
+public class HealthAssessmentAddRequest implements IRequest {
 
-    @NotNull(message = "请输入年龄")
-    @Min(value = 0, message = "请输入正确的年龄")
+    @NotNull(message = "request.pet.age")
+    @Min(value = 0, message = "request.pet.age")
     private Integer age;
 
-    @NotNull(message = "请输入体重")
-    @Min(value = 0, message = "请输入正确的体重")
+    @NotNull(message = "request.medical.weight")
+    @Min(value = 0, message = "request.medical.weight")
     private Double weight;
 
-    @NotNull(message = "请输入分数")
-    @Min(value = 0, message = "请输入正确的分数")
+    @NotNull(message = "request.medical.assessment.score")
+    @Range(min = 0, max = 100, message = "request.medical.assessment.right_score")
     private Integer scoreBcs;
 
-    @NotNull(message = "请输入分数")
-    @Min(value = 0, message = "请输入正确的分数")
+    @NotNull(message = "request.medical.assessment.score")
+    @Range(min = 0, max = 100, message = "request.medical.assessment.right_score")
     private Integer scoreMental;
 
-    @NotNull(message = "请输入分数")
-    @Min(value = 0, message = "请输入正确的分数")
+    @NotNull(message = "request.medical.assessment.score")
+    @Range(min = 0, max = 100, message = "request.medical.assessment.right_score")
     private Integer scoreAppetite;
 
-    @NotBlank(message = "请输入评估结果")
+    @NotBlank(message = "request.medical.assessment.summary")
     private String summary;
 
     public HealthAssessment create(Long petId, Long assessorId) {

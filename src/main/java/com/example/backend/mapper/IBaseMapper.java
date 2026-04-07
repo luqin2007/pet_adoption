@@ -11,9 +11,9 @@ import com.example.backend.util.IValidates;
 import com.example.backend.util.ServiceException;
 
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
 
@@ -28,10 +28,6 @@ public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
     @SuppressWarnings("unchecked")
     default T selectById(Long id, SFunction<T, ?>... columns) {
         return selectOne(lambdaQuery().eq(T::getId, id).select(columns));
-    }
-
-    default <V> void updateById(Long id, SFunction<T, V> column, V value) {
-        update(lambdaUpdate().set(column, value).eq(T::getId, id));
     }
 
     default T requireById(Long id) {
@@ -87,6 +83,16 @@ public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
     default Map<Long, T> groupById(Set<Long> ids, SFunction<T, ?>... columns) {
         if (ids.isEmpty()) return Map.of();
         return selectList(ids, columns).stream().collect(Collectors.toMap(T::getId, Function.identity()));
+    }
+
+    @SuppressWarnings("unchecked")
+    default Map<Long, T> groupById(Stream<Long> ids, SFunction<T, ?>... columns) {
+        return groupById(ids.filter(Objects::nonNull).collect(Collectors.toSet()), columns);
+    }
+
+    @SuppressWarnings("unchecked")
+    default Map<Long, T> groupById(Stream<Long> ids1, Stream<Long> ids2, SFunction<T, ?>... columns) {
+        return groupById(Stream.concat(ids1, ids2).filter(Objects::nonNull).collect(Collectors.toSet()), columns);
     }
 
     default <R> Map<Long, List<R>> groupList(Wrapper<T> wrapper, SFunction<T, Long> keyColumn, Function<T, R> converter) {

@@ -60,7 +60,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     /**
      * 获取领养申请
      */
-    public AdoptResponse getAdoptApplication(Long adoptId) {
+    public AdoptResponse getAdopt(Long adoptId) {
         Adopt adopt = requireById(adoptId);
         return buildAdoptResponse(adopt);
     }
@@ -68,7 +68,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     /**
      * 查询领养申请
      */
-    public Page<AdoptResponse> getAdoptApplications(AdoptQueryParams paramRequest, PageParams pageRequest) {
+    public Page<AdoptResponse> getAdopts(AdoptQueryParams paramRequest, PageParams pageRequest) {
         Page<Adopt> page = pageRequest.createPage();
         LambdaQueryWrapper<Adopt> query = getBaseMapper().queryByRequest(paramRequest);
         Page<Adopt> result = page(page, query);
@@ -82,14 +82,9 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName);
         Map<Long, String> covers = petService.getCoversByPetIds(petIds);
-        Set<Long> userIds = Stream.concat(
-                        result.getRecords().stream().flatMap(adopt ->
-                                Stream.of(adopt.getApplicantId(), adopt.getReviewerId())),
-                        tasks.stream().flatMap(task ->
-                                Stream.of(task.getWorkerId(), task.getVolunteerId())))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                result.getRecords().stream().flatMap(adopt -> Stream.of(adopt.getApplicantId(), adopt.getReviewerId())),
+                tasks.stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
                 User::getId, User::getUsername, User::getAvatar);
         Set<Long> taskIds = tasks.stream()
                 .map(FollowTask::getId)
@@ -110,7 +105,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 修改领养记录状态
      */
     @Transactional
-    public AdoptResponse updateAdoptApplicationStatus(Long adoptId, String status) {
+    public AdoptResponse updateAdoptStatus(Long adoptId, String status) {
         // 校验
         User login = getLoginUser();
         requirePermission(login.isWorker());
@@ -143,7 +138,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     /**
      * 获取寄养申请
      */
-    public BreadingResponse getBreadingApplication(Long breadingId) {
+    public BreadingResponse getBreading(Long breadingId) {
         Breading breading = breadingMapper.requireById(breadingId);
         return buildBreadingResponse(breading);
     }
@@ -151,15 +146,12 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     /**
      * 查询寄养申请
      */
-    public Page<BreadingResponse> getBreadingApplications(BreadingQueryParams queryRequest, PageParams pageRequest) {
+    public Page<BreadingResponse> getBreadingPets(BreadingQueryParams queryRequest, PageParams pageRequest) {
         Page<Breading> page = pageRequest.createPage();
         LambdaQueryWrapper<Breading> query = breadingMapper.queryByRequest(queryRequest);
         Page<Breading> result = breadingMapper.selectPage(page, query);
-        Set<Long> userIds = result.getRecords().stream()
-                .flatMap(info -> Stream.of(info.getApplicantId(), info.getReviewerId()))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                result.getRecords().stream().flatMap(info -> Stream.of(info.getApplicantId(), info.getReviewerId())),
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(result, breading -> BreadingResponse.createBatch(breading, users));
     }
@@ -168,7 +160,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 修改寄养状态
      */
     @Transactional
-    public BreadingResponse updateBreadingApplicationStatus(Long breadingId, String status) {
+    public BreadingResponse updateBreadingStatus(Long breadingId, String status) {
         User login = getLoginUser();
         requirePermission(login.isWorker());
         Breading breading = breadingMapper.requireById(breadingId);
@@ -205,7 +197,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
             case ADOPT -> update(baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT));
             case BREADING ->
                     breadingMapper.update(breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT));
-            default -> throw ServiceException.invalidate("无效类型 " + parentType);
+            default -> throw ServiceException.invalidate("无效协议 " + parentType);
         }
         return buildAgreementResponse(agreement);
     }
@@ -418,19 +410,16 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public Page<FollowTaskResponse> getFollowTasks(FollowTaskQueryParams query, PageParams page) {
         Page<FollowTask> result = followTaskMapper.selectPage(page.createPage(), followTaskMapper.queryByRequest(query));
-        Set<Long> userIds = result.getRecords().stream()
-                .flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId()))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds, User::getId, User::getUsername);
+        Map<Long, User> users = userService.groupById(
+                result.getRecords().stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
+                User::getId, User::getUsername);
         Set<Long> followIds = result.getRecords().stream()
                 .map(FollowTask::getId)
                 .collect(Collectors.toSet());
         Map<Long, FollowRecord> records = followRecordMapper.group(
                 followRecordMapper.queryByTasks(followIds)
                         .select(FollowRecord::getId, FollowRecord::getSummary, FollowRecord::getVisitTime));
-        return convertDto(result,
-                task -> FollowTaskResponse.createBatch(task, users, records));
+        return convertDto(result, task -> FollowTaskResponse.createBatch(task, users, records));
     }
 
     /**
@@ -460,11 +449,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public Page<FollowRecordResponse> getFollowRecords(Long taskId, PageParams request) {
         Page<FollowRecord> page = request.createPage();
         Page<FollowRecord> records = followRecordMapper.selectPage(page, followRecordMapper.queryByTask(taskId));
-        Set<Long> userIds = records.getRecords().stream()
-                .map(FollowRecord::getVolunteerId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                records.getRecords().stream().map(FollowRecord::getVolunteerId),
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(records,
                 record -> FollowRecordResponse.createBatch(record, users));
@@ -477,11 +463,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Page<FollowRecord> page = pageRequest.createPage();
         LambdaQueryWrapper<FollowRecord> query = followRecordMapper.queryByRequest(queryRequest);
         Page<FollowRecord> result = followRecordMapper.selectPage(page, query);
-        Set<Long> userIds = result.getRecords().stream()
-                .map(FollowRecord::getVolunteerId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                result.getRecords().stream().map(FollowRecord::getVolunteerId),
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(result, record -> FollowRecordResponse.createBatch(record, users));
     }
@@ -491,13 +474,9 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
                 Pet::getId, Pet::getName);
         String cover = petService.getCoverById(adopt.getPetId());
         List<FollowTask> tasks = followTaskMapper.selectList(followTaskMapper.queryByAdopt(adopt.getId()));
-        Set<Long> userIds = Stream.concat(
-                        Stream.of(adopt.getApplicantId(), adopt.getReviewerId()),
-                        tasks.stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId()))
-                )
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                Stream.of(adopt.getApplicantId(), adopt.getReviewerId()),
+                tasks.stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
                 User::getId, User::getUsername, User::getAvatar);
         Set<Long> taskIds = tasks.stream()
                 .map(FollowTask::getId)

@@ -59,8 +59,8 @@ public class AdoptBreadingController {
      * 获取领养申请
      */
     @GetMapping("/adopt/{id}")
-    public Result<AdoptResponse> getAdoptApplication(@PathVariable("id") Long adoptId) {
-        AdoptResponse response = adoptBreadingService.getAdoptApplication(adoptId);
+    public Result<AdoptResponse> getAdopt(@PathVariable("id") Long adoptId) {
+        AdoptResponse response = adoptBreadingService.getAdopt(adoptId);
         return Result.success(response);
     }
 
@@ -68,8 +68,8 @@ public class AdoptBreadingController {
      * 获取领养申请
      */
     @GetMapping("/adopt")
-    public Result<Page<AdoptResponse>> getAdoptApplications(AdoptQueryParams params, PageParams page) {
-        Page<AdoptResponse> response = adoptBreadingService.getAdoptApplications(params, page);
+    public Result<Page<AdoptResponse>> getAdopts(AdoptQueryParams params, PageParams page) {
+        Page<AdoptResponse> response = adoptBreadingService.getAdopts(params, page);
         return Result.success(response);
     }
 
@@ -77,9 +77,9 @@ public class AdoptBreadingController {
      * 申请领养审核
      */
     @PostMapping("/adopt/{id}/{st}")
-    public Result<AdoptResponse> updateAdoptApplicationStatus(@PathVariable("id") Long adoptId,
-                                                              @PathVariable("st") String status) {
-        AdoptResponse response = adoptBreadingService.updateAdoptApplicationStatus(adoptId, status);
+    public Result<AdoptResponse> updateAdoptStatus(@PathVariable("id") Long adoptId,
+                                                   @PathVariable("st") String status) {
+        AdoptResponse response = adoptBreadingService.updateAdoptStatus(adoptId, status);
         return Result.success(response);
     }
 
@@ -96,8 +96,8 @@ public class AdoptBreadingController {
      * 获取寄养申请
      */
     @GetMapping("/breading/{id}")
-    public Result<BreadingResponse> getBreadingApplication(@PathVariable("id") Long breadingId) {
-        BreadingResponse response = adoptBreadingService.getBreadingApplication(breadingId);
+    public Result<BreadingResponse> getBreading(@PathVariable("id") Long breadingId) {
+        BreadingResponse response = adoptBreadingService.getBreading(breadingId);
         return Result.success(response);
     }
 
@@ -105,8 +105,8 @@ public class AdoptBreadingController {
      * 获取寄养申请
      */
     @GetMapping("/breading")
-    public Result<Page<BreadingResponse>> getBreadingApplications(BreadingQueryParams params, PageParams page) {
-        Page<BreadingResponse> response = adoptBreadingService.getBreadingApplications(params, page);
+    public Result<Page<BreadingResponse>> getBreadingPets(BreadingQueryParams params, PageParams page) {
+        Page<BreadingResponse> response = adoptBreadingService.getBreadingPets(params, page);
         return Result.success(response);
     }
 
@@ -114,9 +114,9 @@ public class AdoptBreadingController {
      * 更新寄养审核状态
      */
     @PostMapping("/breading/{id}/{st}")
-    public Result<BreadingResponse> updateBreadingApplicationStatus(@PathVariable("id") Long breadingId,
-                                                                    @PathVariable("st") String status) {
-        BreadingResponse response = adoptBreadingService.updateBreadingApplicationStatus(breadingId, status);
+    public Result<BreadingResponse> updateBreadingStatus(@PathVariable("id") Long breadingId,
+                                                         @PathVariable("st") String status) {
+        BreadingResponse response = adoptBreadingService.updateBreadingStatus(breadingId, status);
         return Result.success(response);
     }
 

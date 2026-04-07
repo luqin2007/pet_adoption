@@ -15,19 +15,19 @@ import java.util.Date;
 public class TreatmentPlan implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 兽医 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long doctorId;
 
     /**
      * 病历 id
-     * *外键:medicalDetail(id) int*
+     * *外键:medicalDetail(id) bigint*
      */
     private Long detailId;
 

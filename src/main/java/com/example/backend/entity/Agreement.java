@@ -17,13 +17,13 @@ import java.util.Date;
 public class Agreement implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 申请 id
-     * *非空 int*
+     * *非空 bigint*
      */
     private Long parentId;
 

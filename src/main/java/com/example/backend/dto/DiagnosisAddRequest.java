@@ -4,22 +4,18 @@ import com.example.backend.entity.Diagnosis;
 import com.example.backend.entity.ExaminationDiagnosis;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
 
 @Data
-public class DiagnosisAddRequest {
+public class DiagnosisAddRequest implements IRequest {
 
-    @NotNull(message = "请先登录")
-    private Long userId;
-
-    @NotBlank(message = "诊断结果非空")
+    @NotBlank(message = "request.medical.diagnosis.result")
     private String result;
 
-    @NotEmpty(message = "请选择检查文件")
+    @NotEmpty(message = "request.medical.diagnosis.exam")
     private List<Long> examinations;
 
     public Diagnosis create(Long detailId) {

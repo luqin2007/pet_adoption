@@ -17,7 +17,7 @@ import java.util.Date;
 public class RescueTask implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
@@ -29,13 +29,13 @@ public class RescueTask implements IId {
 
     /**
      * 创建者
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long userId;
 
     /**
      * 审核者
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long approveId;
 

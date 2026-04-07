@@ -5,12 +5,12 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 @Data
-public class UserLoginRequest {
+public class UserLoginRequest implements IRequest {
 
-    @NotBlank(message = "请输入用户名")
+    @NotBlank(message = "request.user.username")
     private String username;
 
-    @NotBlank(message = "请输入密码")
-    @Length(min = 6, message = "密码长度不能小于6位")
+    @NotBlank(message = "request.user.password")
+    @Length(min = 6, message = "request.user.password.short")
     private String password;
 }

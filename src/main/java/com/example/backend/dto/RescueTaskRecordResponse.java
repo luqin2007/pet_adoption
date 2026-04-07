@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class RescueTaskRecordResponse {
+public class RescueTaskRecordResponse implements IResponse {
 
     private Long id;
     private Long taskId;

@@ -7,6 +7,7 @@ import com.example.backend.entity.property.TextType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
 import java.util.Date;
 import java.util.List;
@@ -15,30 +16,30 @@ import static com.example.backend.entity.property.ParentType.REHAB_PLAN;
 import static com.example.backend.entity.property.RehabPlanStatusProp.ACTIVE;
 
 @Data
-public class RehabPlanAddRequest {
+public class RehabPlanAddRequest implements IRequest, IRequestValidate {
 
-    @NotBlank(message = "请输入宠物年龄")
+    @NotBlank(message = "request.pet.age")
     private Integer age;
 
-    @NotBlank(message = "请输入标题")
+    @NotBlank(message = "request.medical.rehab.task.title")
     private String title;
 
-    @NotBlank(message = "请输入内容")
+    @NotBlank(message = "request.medical.rehab.task.content")
     private String content;
 
-    @NotBlank(message = "请输入频率")
+    @NotBlank(message = "request.medical.rehab.task.frequency")
     private String frequency;
 
-    @NotNull(message = "无效文本类型")
-    private TextType type;
+    @NotNull(message = "request.medical.exam.text_type")
+    private String type;
 
-    @NotNull(message = "请输入开始时间")
+    @NotNull(message = "request.start_time")
     private Date startTime;
 
-    @NotNull(message = "请输入（预计）结束时间")
+    @NotNull(message = "request.medical.rehab.task.end_time")
     private Date endTime;
 
-    private List<OrderRequest> requests;
+    private List<OrderRequest> orders;
 
     public RehabPlan create(Long doctorId, Long petId) {
         return new RehabPlan(null,
@@ -47,7 +48,7 @@ public class RehabPlanAddRequest {
                 age,
                 title,
                 content,
-                type,
+                TextType.get(type),
                 frequency,
                 ACTIVE,
                 startTime,
@@ -56,7 +57,7 @@ public class RehabPlanAddRequest {
     }
 
     public List<Order> createOrders(Long allowerId, Long planId) {
-        return requests.stream()
+        return orders.stream()
                 .map(request -> request.create(allowerId, planId, REHAB_PLAN))
                 .toList();
     }
@@ -68,5 +69,10 @@ public class RehabPlanAddRequest {
                 plan.getStatus(),
                 "~~~create~~~",
                 plan.getCreateTime());
+    }
+
+    @Override
+    public void validate(Errors errors) {
+        validateEnum(errors, RehabPlanAddRequest::getType, TextType.class, "request.medical.exam.text_type");
     }
 }

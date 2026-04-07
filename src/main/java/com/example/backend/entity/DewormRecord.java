@@ -12,25 +12,25 @@ import java.util.Date;
 public class DewormRecord implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 宠物id
-     * *外键:pet(id) 非空 int*
+     * *外键:pet(id) 非空 bigint*
      */
     private Long petId;
 
     /**
      * 医生 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long doctorId;
 
     /**
      * 驱虫药 id
-     * *外键:dewormer(id) 非空 int*
+     * *外键:dewormer(id) 非空 bigint*
      */
     private Long dewormerId;
 

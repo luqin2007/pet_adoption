@@ -3,31 +3,31 @@ package com.example.backend.dto;
 import com.example.backend.entity.Order;
 import com.example.backend.entity.property.OrderType;
 import com.example.backend.entity.property.ParentType;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-public class OrderRequest {
+public class OrderRequest implements IRequest, IRequestValidate {
 
-    @NotNull(message = "请选择物品")
+    @NotNull(message = "request.item_donation.item")
     private Long itemId;
 
-    @NotBlank(message = "请选择物品类型")
+    @NotBlank(message = "request.item_donation.order.type")
     private String type;
 
-    @NotNull(message = "请填写数量")
-    @Min(value = 0, message = "数量错误")
-    private Double count;
+    @NotNull(message = "request.item_donation.count")
+    private String count;
 
-    @NotNull(message = "请填写单位")
+    @NotNull(message = "request.item_donation.unit")
     private String unit;
 
-    @NotNull(message = "请填写价格")
-    private Double price;
+    @NotNull(message = "request.item_donation.order.price")
+    private String price;
 
     public Order create(Long allowerId, Long parentId, ParentType parentType) {
         return new Order(null,
@@ -36,9 +36,15 @@ public class OrderRequest {
                 parentId,
                 parentType,
                 OrderType.get(type),
-                count,
+                new BigDecimal(count),
                 unit,
-                price,
+                new BigDecimal(price),
                 new Date());
+    }
+
+    @Override
+    public void validate(Errors errors) {
+        validateNumber(errors, OrderRequest::getCount, "request.item_donation.count");
+        validateNumber(errors, OrderRequest::getPrice, "request.item_donation.order.price");
     }
 }

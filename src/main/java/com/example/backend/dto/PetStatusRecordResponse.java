@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class PetStatusRecordResponse {
+public class PetStatusRecordResponse implements IResponse {
 
     // 状态记录
     private Long id;

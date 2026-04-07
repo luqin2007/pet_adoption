@@ -15,19 +15,19 @@ import java.util.Date;
 public class ExaminationDiagnosis implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 医疗记录 id
-     * *外键:examination(id) 非空 int*
+     * *外键:examination(id) 非空 bigint*
      */
     private Long examinationId;
 
     /**
      * 诊断结果 id
-     * *外键:examinationDiagnosis(id) 非空 int*
+     * *外键:examinationDiagnosis(id) 非空 bigint*
      */
     private Long diagnosisId;
 

@@ -16,7 +16,7 @@ import java.util.Date;
 public class Breading implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
@@ -52,7 +52,7 @@ public class Breading implements IId {
 
     /**
      * 申请人
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long applicantId;
 
@@ -64,7 +64,7 @@ public class Breading implements IId {
 
     /**
      * 审核人
-     * *外键:user(id) int*
+     * *外键:user(id) bigint*
      */
     private Long reviewerId;
 

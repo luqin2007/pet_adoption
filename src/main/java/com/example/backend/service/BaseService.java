@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class BaseService<M extends IBaseMapper<T>, T extends IId> extends ServiceImpl<M, T> implements IValidates {
 
@@ -86,13 +87,28 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends Servic
         return baseMapper.selectList(ids, columns);
     }
 
-
     /**
      * 根据给定 id 组获取指定列，并以 id 为键创建 Map
      */
     @SafeVarargs
     public final Map<Long, T> groupById(Set<Long> ids, SFunction<T, ?>... columns) {
         return baseMapper.groupById(ids, columns);
+    }
+
+    /**
+     * 根据给定 id 组获取指定列，并以 id 为键创建 Map
+     */
+    @SafeVarargs
+    public final Map<Long, T> groupById(Stream<Long> ids, SFunction<T, ?>... columns) {
+        return baseMapper.groupById(ids, columns);
+    }
+
+    /**
+     * 根据给定 id 组获取指定列，并以 id 为键创建 Map
+     */
+    @SafeVarargs
+    public final Map<Long, T> groupById(Stream<Long> ids1, Stream<Long> ids2, SFunction<T, ?>... columns) {
+        return baseMapper.groupById(ids1, ids2, columns);
     }
 
     // ---

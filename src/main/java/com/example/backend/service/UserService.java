@@ -6,6 +6,7 @@ import com.example.backend.dto.*;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.MediaType;
 import com.example.backend.entity.property.UserRole;
+import com.example.backend.event.NotificationEvent;
 import com.example.backend.mapper.UserMapper;
 import com.example.backend.util.*;
 import jakarta.annotation.Nonnull;

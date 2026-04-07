@@ -15,7 +15,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class MedicalDetailResponse {
+public class MedicalDetailResponse implements IResponse {
 
     private Long id;
     private Long recordId;

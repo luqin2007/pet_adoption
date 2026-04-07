@@ -95,18 +95,11 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Page<FirstRegistration> page = request.createPage();
         Page<FirstRegistration> response = firstRegistrationMapper.selectPage(page, firstRegistrationMapper.selectByRequest(params));
 
-        // pets
-        Set<Long> petIds = response.getRecords().stream()
-                .map(FirstRegistration::getPetId)
-                .collect(Collectors.toSet());
-        Map<Long, Pet> pets = petService.groupById(petIds,
+        Map<Long, Pet> pets = petService.groupById(
+                response.getRecords().stream().map(FirstRegistration::getPetId),
                 Pet::getId, Pet::getSex, Pet::getType, Pet::getBreed);
-
-        // users
-        Set<Long> userIds = response.getRecords().stream()
-                .map(FirstRegistration::getRegistrarId)
-                .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                response.getRecords().stream().map(FirstRegistration::getRegistrarId),
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(response,
                 registration -> FirstRegistrationItemResponse.createBatch(registration, pets, users));
@@ -135,8 +128,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 MedicalDetail::getCreateTime,
                 MedicalDetail::getIsCompleted,
                 MedicalDetail::getSummary);
-        Set<Long> userIds = details.stream().map(MedicalDetail::getDoctorId).collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                details.stream().map(MedicalDetail::getDoctorId),
                 User::getId, User::getUsername, User::getAvatar);
         List<MedicalDetailItemResponse> detailResponses = details
                 .stream()
@@ -149,14 +142,14 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 创建就诊记录
      */
     @Transactional
-    public MedicalRecordResponse addMedicalRecord(Long petId, MedicalRecordRequest request) {
+    public MedicalRecordResponse addMedicalRecord(Long petId, MedicalRecordAddRequest request) {
         // 权限/环境校验
         User login = getLoginUser();
         requirePermission(login.isDoctor());
         firstRegistrationMapper.requireExist(firstRegistrationMapper.selectByPet(petId));
 
         // 存储数据
-        MedicalRecord record = request.createEntity(petId);
+        MedicalRecord record = request.createEntity(petId, login.getId());
         medicalRecordMapper.insert(record);
         return buildMedicalRecordResponse(record);
     }
@@ -207,15 +200,11 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Set<Long> petIds = result.getRecords().stream()
                 .map(MedicalRecord::getPetId)
                 .collect(Collectors.toSet());
-        Set<Long> userIds = result.getRecords().stream()
-                .flatMap(record -> Stream.of(record.getDoctorId(), record.getOwnerId()))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
         Map<Long, String> covers = petService.getCoversByPetIds(petIds);
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                result.getRecords().stream().flatMap(record -> Stream.of(record.getDoctorId(), record.getOwnerId())),
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(result, record -> MedicalRecordResponse.createBatch(record, pets, covers, users));
     }
@@ -258,24 +247,19 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         LambdaQueryWrapper<MedicalDetail> wrapper = baseMapper.queryByParams(params);
         Page<MedicalDetail> result = page(page, wrapper);
 
+        Map<Long, MedicalRecord> records = medicalRecordMapper.groupById(
+                result.getRecords().stream().map(MedicalDetail::getRecordId),
+                MedicalRecord::getId, MedicalRecord::getPetId, MedicalRecord::getPetAge);
         Set<Long> detailIds = result.getRecords().stream()
                 .map(MedicalDetail::getId)
                 .collect(Collectors.toSet());
-        Set<Long> recordIds = result.getRecords().stream()
-                .map(MedicalDetail::getRecordId)
-                .collect(Collectors.toSet());
-        Map<Long, MedicalRecord> records = medicalRecordMapper.groupById(recordIds,
-                MedicalRecord::getId, MedicalRecord::getPetId, MedicalRecord::getPetAge);
         Map<Long, TreatmentPlan> plans = treatmentPlanMapper.group(treatmentPlanMapper.selectByDetails(detailIds));
         List<Order> orderList = orderMapper.selectList(orderMapper.queryByTreatmentPlans(plans.keySet()));
-        Set<Long> userIds = Stream.concat(
-                result.getRecords().stream().map(MedicalDetail::getDoctorId),
-                Stream.concat(
+        Map<Long, User> users = userService.groupById(
+                Stream.of(
+                        result.getRecords().stream().map(MedicalDetail::getDoctorId),
                         plans.values().stream().map(TreatmentPlan::getDoctorId),
-                        orderList.stream().map(Order::getAllowerId)
-                )
-        ).collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+                        orderList.stream().map(Order::getAllowerId)).flatMap(Function.identity()),
                 User::getId, User::getUsername, User::getAvatar);
         Map<Long, Diagnosis> diagnosisMap = diagnosisMapper.group(diagnosisMapper.queryByDetails(detailIds));
         Map<Long, Examination> examinationMap = examinationMapper.group(examinationMapper.queryByDetails(detailIds));
@@ -289,10 +273,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Map<Long, List<DiagnosisResponse>> diagnoses = diagnosisMap.values().stream()
                 .map(diagnosis -> DiagnosisResponse.createBatch(diagnosis, examinations))
                 .collect(Collectors.groupingBy(DiagnosisResponse::getDetailId));
-        Set<Long> itemIds = orderList.stream()
-                .map(Order::getItemId)
-                .collect(Collectors.toSet());
-        Map<Long, Item> items = itemMapper.groupById(itemIds,
+        Map<Long, Item> items = itemMapper.groupById(
+                orderList.stream().map(Order::getItemId),
                 Item::getId, Item::getName);
         Map<Long, List<OrderResponse>> orders = orderList.stream()
                 .map(order -> OrderResponse.createBatch(order, users, items))
@@ -300,8 +282,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Map<Long, List<TreatmentPlanResponse>> treatments = plans.values().stream()
                 .map(plan -> TreatmentPlanResponse.createBatch(plan, users, orders))
                 .collect(Collectors.groupingBy(TreatmentPlanResponse::getDetailId));
-        Set<Long> petIds = records.values().stream()
-                .map(MedicalRecord::getPetId)
+        Set<Long> petIds = records.values().stream().map(MedicalRecord::getPetId)
                 .collect(Collectors.toSet());
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
@@ -364,16 +345,11 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         List<TreatmentPlan> plans = treatmentPlanMapper.selectList(treatmentPlanMapper.selectByDetail(detailId));
         Set<Long> planIds = plans.stream().map(TreatmentPlan::getId).collect(Collectors.toSet());
         List<Order> orderList = orderMapper.selectList(orderMapper.queryByTreatmentPlans(planIds));
-        Set<Long> userIds = Stream.concat(
+        Map<Long, User> users = userService.groupById(
                 plans.stream().map(TreatmentPlan::getDoctorId),
-                orderList.stream().map(Order::getAllowerId)
-        ).collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+                orderList.stream().map(Order::getAllowerId),
                 User::getId, User::getUsername, User::getAvatar);
-        Set<Long> itemIds = orderList.stream()
-                .map(Order::getItemId)
-                .collect(Collectors.toSet());
-        Map<Long, Item> items = itemMapper.groupById(itemIds);
+        Map<Long, Item> items = itemMapper.groupById(orderList.stream().map(Order::getItemId));
         Map<Long, List<OrderResponse>> orders = orderList.stream()
                 .map(order -> OrderResponse.createBatch(order, users, items))
                 .collect(Collectors.groupingBy(OrderResponse::getParentId));
@@ -445,10 +421,12 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         List<Order> orders = request.createOrders(login.getId(), plan.getId());
         orderMapper.insert(orders);
 
-        Set<Long> userIds = orders.stream().map(Order::getAllowerId).collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds, User::getId, User::getUsername, User::getAvatar);
-        Set<Long> itemIds = orders.stream().map(Order::getItemId).collect(Collectors.toSet());
-        Map<Long, Item> items = itemMapper.groupById(itemIds, Item::getId, Item::getName);
+        Map<Long, User> users = userService.groupById(
+                orders.stream().map(Order::getAllowerId),
+                User::getId, User::getUsername, User::getAvatar);
+        Map<Long, Item> items = itemMapper.groupById(
+                orders.stream().map(Order::getItemId),
+                Item::getId, Item::getName);
         return TreatmentPlanResponse.create(plan, login, orders.stream()
                 .map(order -> OrderResponse.createBatch(order, users, items))
                 .toList());
@@ -516,7 +494,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         // 生成临时文件信息
         TempFileInfo fileInfo = new TempFileInfo(
                 filename,
-                request.getName(),
+                request.getName(filename),
                 login.getId(),
                 MediaType.IMAGE,
                 now);
@@ -632,12 +610,13 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
         String cover = petService.getCoverById(petId);
         List<VaccineRecord> vaccines = vaccineRecordMapper.selectList(vaccineRecordMapper.queryByPet(petId));
-        Set<Long> vaccineIds = vaccines.stream().map(VaccineRecord::getVaccineId).collect(Collectors.toSet());
-        Map<Long, Vaccine> vaccineMap = vaccineMapper.groupById(vaccineIds);
-        Set<Long> itemIds = vaccineMap.values().stream().map(Vaccine::getItemId).collect(Collectors.toSet());
-        Map<Long, Item> itemMap = itemMapper.groupById(itemIds, Item::getId, Item::getName);
-        Set<Long> doctorIds = vaccines.stream().map(VaccineRecord::getDoctorId).collect(Collectors.toSet());
-        Map<Long, User> doctorMap = userService.groupById(doctorIds, User::getId, User::getUsername, User::getAvatar);
+        Map<Long, Vaccine> vaccineMap = vaccineMapper.groupById(vaccines.stream().map(VaccineRecord::getVaccineId));
+        Map<Long, Item> itemMap = itemMapper.groupById(
+                vaccineMap.values().stream().map(Vaccine::getItemId),
+                Item::getId, Item::getName);
+        Map<Long, User> doctorMap = userService.groupById(
+                vaccines.stream().map(VaccineRecord::getDoctorId),
+                User::getId, User::getUsername, User::getAvatar);
         return vaccines.stream()
                 .map(record -> VaccineResponse.createBatch(record, pet, cover, vaccineMap, itemMap, doctorMap))
                 .toList();
@@ -656,13 +635,12 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 // 取分组第一项
                 .collect(Collectors.groupingBy(VaccineRecord::getVaccineId, LinkedHashMap::new, Collectors.reducing((a, b) -> a)));
         Map<Long, Vaccine> vaccineMap = vaccineMapper.groupById(vaccines.keySet());
-        Set<Long> itemIds = vaccineMap.values().stream().map(Vaccine::getItemId).collect(Collectors.toSet());
-        Map<Long, Item> itemMap = itemMapper.groupById(itemIds, Item::getId, Item::getName);
-        Set<Long> doctorIds = vaccines.values().stream()
-                .map(Optional::orElseThrow)
-                .map(VaccineRecord::getDoctorId)
-                .collect(Collectors.toSet());
-        Map<Long, User> doctorMap = userService.groupById(doctorIds, User::getId, User::getUsername, User::getAvatar);
+        Map<Long, Item> itemMap = itemMapper.groupById(
+                vaccineMap.values().stream().map(Vaccine::getItemId),
+                Item::getId, Item::getName);
+        Map<Long, User> doctorMap = userService.groupById(
+                vaccines.values().stream().map(Optional::orElseThrow).map(VaccineRecord::getDoctorId),
+                User::getId, User::getUsername, User::getAvatar);
         return vaccines.values().stream()
                 .map(Optional::orElseThrow)
                 .map(record -> VaccineResponse.createBatch(record, pet, cover, vaccineMap, itemMap, doctorMap))
@@ -701,13 +679,12 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
 
         String cover = petService.getCoverById(petId);
         List<DewormRecord> deworms = dewormRecordMapper.selectList(dewormRecordMapper.queryByPet(petId));
-        Set<Long> dewormerIds = deworms.stream().map(DewormRecord::getDewormerId).collect(Collectors.toSet());
-        Map<Long, Dewormer> dewormerMap = dewormerMapper.groupById(dewormerIds);
-        Set<Long> itemIds = dewormerMap.values().stream().map(Dewormer::getItemId).collect(Collectors.toSet());
-        Map<Long, Item> itemMap = itemMapper.groupById(itemIds,
+        Map<Long, Dewormer> dewormerMap = dewormerMapper.groupById(deworms.stream().map(DewormRecord::getDewormerId));
+        Map<Long, Item> itemMap = itemMapper.groupById(
+                dewormerMap.values().stream().map(Dewormer::getItemId),
                 Item::getId, Item::getName);
-        Set<Long> doctorIds = deworms.stream().map(DewormRecord::getDoctorId).collect(Collectors.toSet());
-        Map<Long, User> doctorMap = userService.groupById(doctorIds,
+        Map<Long, User> doctorMap = userService.groupById(
+                deworms.stream().map(DewormRecord::getDoctorId),
                 User::getId, User::getUsername, User::getAvatar);
         return deworms.stream()
                 .map(record -> DewormResponse.createBatch(record, pet, cover, dewormerMap, itemMap, doctorMap))
@@ -722,12 +699,13 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
         Map<Long, String> covers = petService.getCoversByPetIds(petIds);
         List<VaccineRecord> vaccines = vaccineRecordMapper.selectList(vaccineRecordMapper.queryByPets(petIds));
-        Set<Long> vaccineIds = vaccines.stream().map(VaccineRecord::getVaccineId).collect(Collectors.toSet());
-        Map<Long, Vaccine> vaccineMap = vaccineMapper.groupById(vaccineIds);
-        Set<Long> itemIds = vaccineMap.values().stream().map(Vaccine::getItemId).collect(Collectors.toSet());
-        Map<Long, Item> itemMap = itemMapper.groupById(itemIds, Item::getId, Item::getName);
-        Set<Long> doctorIds = vaccines.stream().map(VaccineRecord::getDoctorId).collect(Collectors.toSet());
-        Map<Long, User> doctorMap = userService.groupById(doctorIds, User::getId, User::getUsername, User::getAvatar);
+        Map<Long, Vaccine> vaccineMap = vaccineMapper.groupById(vaccines.stream().map(VaccineRecord::getVaccineId));
+        Map<Long, Item> itemMap = itemMapper.groupById(
+                vaccineMap.values().stream().map(Vaccine::getItemId),
+                Item::getId, Item::getName);
+        Map<Long, User> doctorMap = userService.groupById(
+                vaccines.stream().map(VaccineRecord::getDoctorId),
+                User::getId, User::getUsername, User::getAvatar);
         return vaccines.stream()
                 .map(record -> VaccineResponse.createBatch(record, pets, covers, vaccineMap, itemMap, doctorMap))
                 .collect(Collectors.groupingBy(VaccineResponse::getPetId));
@@ -742,13 +720,12 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
         Map<Long, String> covers = petService.getCoversByPetIds(petIds);
         List<DewormRecord> deworms = dewormRecordMapper.selectList(dewormRecordMapper.queryByPets(petIds));
-        Set<Long> dewormerIds = deworms.stream().map(DewormRecord::getDewormerId).collect(Collectors.toSet());
-        Map<Long, Dewormer> dewormerMap = dewormerMapper.groupById(dewormerIds);
-        Set<Long> itemIds = dewormerMap.values().stream().map(Dewormer::getItemId).collect(Collectors.toSet());
-        Map<Long, Item> itemMap = itemMapper.groupById(itemIds,
+        Map<Long, Dewormer> dewormerMap = dewormerMapper.groupById(deworms.stream().map(DewormRecord::getDewormerId));
+        Map<Long, Item> itemMap = itemMapper.groupById(
+                dewormerMap.values().stream().map(Dewormer::getItemId),
                 Item::getId, Item::getName);
-        Set<Long> doctorIds = deworms.stream().map(DewormRecord::getDoctorId).collect(Collectors.toSet());
-        Map<Long, User> doctorMap = userService.groupById(doctorIds,
+        Map<Long, User> doctorMap = userService.groupById(
+                deworms.stream().map(DewormRecord::getDoctorId),
                 User::getId, User::getUsername, User::getAvatar);
         return deworms.stream()
                 .map(record -> DewormResponse.createBatch(record, pets, covers, dewormerMap, itemMap, doctorMap))
@@ -791,8 +768,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
         String cover = petService.getCoverById(plan.getPetId());
         List<RehabPlanStatus> plans = rehabPlanStatusMapper.selectList(rehabPlanStatusMapper.queryByPlan(planId));
-        Set<Long> userIds = plans.stream().map(RehabPlanStatus::getUserId).collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                plans.stream().map(RehabPlanStatus::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
         return RehabPlanResponse.create(plan, doctor, pet, cover, plans.stream()
                 .map(record -> RehabPlanStatusResponse.createBatch(record, users))
@@ -810,14 +787,11 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 .map(RehabPlan::getId)
                 .collect(Collectors.toSet());
         List<RehabPlanStatus> statusRecordMap = rehabPlanStatusMapper.selectList(rehabPlanStatusMapper.queryByPlans(planIds));
-        Set<Long> userIds = Stream.concat(
+        Map<Long, User> users = userService.groupById(
                 plans.getRecords().stream().map(RehabPlan::getDoctorId),
-                statusRecordMap.stream().map(RehabPlanStatus::getUserId)
-        ).collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+                statusRecordMap.stream().map(RehabPlanStatus::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
-        Set<Long> petIds = plans.getRecords().stream()
-                .map(RehabPlan::getPetId)
+        Set<Long> petIds = plans.getRecords().stream().map(RehabPlan::getPetId)
                 .collect(Collectors.toSet());
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
@@ -852,8 +826,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
         String cover = petService.getCoverById(plan.getPetId());
         List<RehabPlanStatus> statusRecords = rehabPlanStatusMapper.selectList(rehabPlanStatusMapper.queryByPlan(planId));
-        Set<Long> userIds = statusRecords.stream().map(RehabPlanStatus::getUserId).collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                statusRecords.stream().map(RehabPlanStatus::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
         return RehabPlanResponse.create(plan, user, pet, cover, statusRecords.stream()
                 .map(record -> RehabPlanStatusResponse.createBatch(record, users))
@@ -904,8 +878,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     public List<RehabRecordResponse> getRehabRecords(Long planId) {
         List<RehabRecord> records = rehabRecordMapper.selectList(rehabRecordMapper.queryByPlan(planId));
-        Set<Long> userIds = records.stream().map(RehabRecord::getUserId).collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                records.stream().map(RehabRecord::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
         Set<Long> recordIds = records.stream().map(RehabRecord::getId).collect(Collectors.toSet());
         Map<Long, List<MediaFile>> files = mediaFileMapper.groupList(
@@ -961,10 +935,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
         Map<Long, String> covers = petService.getCoversByPetIds(petIds);
-        Set<Long> userIds = assessments.getRecords().stream()
-                .map(HealthAssessment::getAssessorId)
-                .collect(Collectors.toSet());
-        Map<Long, User> users = userService.groupById(userIds,
+        Map<Long, User> users = userService.groupById(
+                assessments.getRecords().stream().map(HealthAssessment::getAssessorId),
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(assessments,
                 assessment -> HealthAssessmentResponse.createBatch(assessment, pets, covers, users));

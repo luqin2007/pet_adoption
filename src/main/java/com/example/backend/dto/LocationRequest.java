@@ -7,16 +7,19 @@ import lombok.Data;
 import java.sql.Date;
 
 @Data
-public abstract class LocationRequest {
+public abstract class LocationRequest implements IRequest {
 
     // 地址信息
-    @NotBlank(message = "请输入发现位置")
+    @NotBlank(message = "request.location")
     private String province;
-    @NotBlank(message = "请输入发现位置")
+
+    @NotBlank(message = "request.location")
     private String city;
-    @NotBlank(message = "请输入发现位置")
+
+    @NotBlank(message = "request.location")
     private String county;
-    @NotBlank(message = "请输入发现位置")
+
+    @NotBlank(message = "request.location")
     private String detailAddress;
 
     public Location createLocation(Long parentId, Long userId) {

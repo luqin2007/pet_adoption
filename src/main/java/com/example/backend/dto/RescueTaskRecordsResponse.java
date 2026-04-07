@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class RescueTaskRecordsResponse {
+public class RescueTaskRecordsResponse implements IResponse {
 
     private List<RescueTaskRecordResponse> records;
 

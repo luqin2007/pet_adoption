@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Data
 @AllArgsConstructor
-public class PetMediaResponse {
+public class PetMediaResponse implements IResponse {
 
     private Long id;
 

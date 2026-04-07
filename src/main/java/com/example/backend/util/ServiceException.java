@@ -45,10 +45,6 @@ public class ServiceException extends RuntimeException {
         return new ServiceException(E_TOKEN, message);
     }
 
-    public static ServiceException token(String message, Throwable cause) {
-        return new ServiceException(E_TOKEN, message, cause);
-    }
-
     public static ServiceException auth(String message) {
         return new ServiceException(E_AUTH, message);
     }
@@ -61,16 +57,8 @@ public class ServiceException extends RuntimeException {
         return new ServiceException(E_NOT_FOUND, message);
     }
 
-    public static ServiceException notFound(String message, Throwable cause) {
-        return new ServiceException(E_NOT_FOUND, message, cause);
-    }
-
     public static ServiceException conflict(String message) {
         return new ServiceException(E_CONFLICT, message);
-    }
-
-    public static ServiceException conflict(String message, Throwable cause) {
-        return new ServiceException(E_CONFLICT, message, cause);
     }
 
     public static ServiceException invalidate(String message) {
@@ -91,9 +79,5 @@ public class ServiceException extends RuntimeException {
 
     public static ServiceException unavailable(String message) {
         return new ServiceException(E_UNAVAILABLE, message);
-    }
-
-    public static ServiceException unavailable(String message, Throwable cause) {
-        return new ServiceException(E_UNAVAILABLE, message, cause);
     }
 }

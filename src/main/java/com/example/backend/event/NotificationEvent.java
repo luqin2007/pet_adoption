@@ -1,4 +1,4 @@
-package com.example.backend.util;
+package com.example.backend.event;
 
 import com.example.backend.entity.property.UserRole;
 import lombok.Data;

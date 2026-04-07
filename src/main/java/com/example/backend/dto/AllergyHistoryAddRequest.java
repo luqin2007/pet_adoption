@@ -7,12 +7,12 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class AllergyHistoryAddRequest {
+public class AllergyHistoryAddRequest implements IRequest {
 
-    @NotBlank(message = "请输入过敏源")
+    @NotBlank(message = "request.medical.allergy.source")
     private String source;
 
-    @NotBlank(message = "发现时间")
+    @NotBlank(message = "request.medical.allergy.discovery")
     private Date discoveryTime;
 
     public AllergyHistory build(Long registrationId) {

@@ -6,28 +6,27 @@ import com.example.backend.entity.property.TextType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.validation.Errors;
 
 import java.util.Date;
 
 @Data
-public class ExaminationAddRequest {
+public class ExaminationAddRequest implements IRequest, IRequestValidate {
 
-    @NotBlank
+    @NotBlank(message = "request.medical.exam.name")
     private String name;
 
     private String text;
 
-    @NotBlank(message = "请选择文本类型")
+    @NotBlank(message = "request.medical.exam.text_type")
     private String textType;
 
-    @NotBlank(message = "请选择检查类型")
-     private String examType;
+    @NotBlank(message = "request.medical.exam.exam_type")
+    private String examType;
 
     private String filename;
 
-    private Double price;
-
-    @NotNull
+    @NotNull(message = "request.medical.exam.time")
     private Date checkTime;
 
     public Examination create(Long userId, Long detailId) {
@@ -39,8 +38,15 @@ public class ExaminationAddRequest {
                 TextType.get(textType),
                 ExamType.get(examType),
                 filename,
-                price,
                 checkTime,
                 new Date());
+    }
+
+    @Override
+    public void validate(Errors errors) {
+        validateEnum(errors, ExaminationAddRequest::getTextType, TextType.class, "request.medical.exam.text_type");
+        validateEnum(errors, ExaminationAddRequest::getExamType, ExamType.class, "request.medical.exam.exam_type");
+        if (text == null && filename == null) // 检查结果
+            errors.rejectValue("text", "request.medical.exam.content");
     }
 }

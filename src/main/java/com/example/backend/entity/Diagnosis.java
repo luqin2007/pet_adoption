@@ -15,13 +15,13 @@ import java.util.Date;
 public class Diagnosis implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 病历 id
-     * *外键:medicalDetail(id) 非空 int*
+     * *外键:medicalDetail(id) 非空 bigint*
      */
     private Long detailId;
 

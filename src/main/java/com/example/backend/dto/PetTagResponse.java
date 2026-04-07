@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class PetTagResponse {
+public class PetTagResponse implements IResponse {
 
     private Long id;
     private String tag;

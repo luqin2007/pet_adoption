@@ -9,9 +9,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
-public class IdsRequest {
+public class IdsRequest implements IRequest {
 
-    @NotEmpty
+    @NotEmpty(message = "request.empty_id")
     private List<Long> ids = List.of();
 
     public Set<Long> idSet() {

@@ -16,19 +16,19 @@ import java.util.Date;
 public class RehabPlanStatus implements IId {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 提交用户 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long userId;
 
     /**
      * 康复计划 id
-     * *外键:plan(id) 非空 int*
+     * *外键:plan(id) 非空 bigint*
      */
     private Long planId;
 

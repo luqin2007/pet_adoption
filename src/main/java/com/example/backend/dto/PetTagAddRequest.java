@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Set;
 
 @Data
-public class PetTagAddRequest {
+public class PetTagAddRequest implements IRequest {
 
-    @NotEmpty(message = "请输入宠物特征")
+    @NotEmpty(message = "request.pet.tags")
     private List<String> tags;
 
     public List<PetTag> create(Long petId, Long userId, Set<String> currentTags) {

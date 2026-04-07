@@ -86,7 +86,7 @@ public class MedicalCareController {
 
     @PostMapping("/record/pet/{id}")
     public Result<MedicalRecordResponse> addMedicalRecord(@PathVariable("id") Long petId,
-                                                          @RequestBody MedicalRecordRequest request) {
+                                                          @RequestBody MedicalRecordAddRequest request) {
         MedicalRecordResponse response = medicalService.addMedicalRecord(petId, request);
         return Result.success(response);
     }

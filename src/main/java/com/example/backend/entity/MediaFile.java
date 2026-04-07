@@ -17,13 +17,13 @@ import java.util.Date;
 public class MediaFile implements IId, IFile {
 
     /**
-     * *主键 int*
+     * *主键 bigint*
      */
     private Long id;
 
     /**
      * 与之关联的资源 id
-     * *非空 long*
+     * *非空 bigint*
      */
     private Long parentId;
 
@@ -35,7 +35,7 @@ public class MediaFile implements IId, IFile {
 
     /**
      * 上传用户 id
-     * *外键:user(id) 非空 int*
+     * *外键:user(id) 非空 bigint*
      */
     private Long userId;
 
@@ -47,7 +47,7 @@ public class MediaFile implements IId, IFile {
 
     /**
      * 资源介绍
-     * *text*
+     * *varchar(255)*
      */
     private String description;
 

@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class ExaminationResponse {
+public class ExaminationResponse implements IResponse {
 
     private Long id;
     private Long detailId;

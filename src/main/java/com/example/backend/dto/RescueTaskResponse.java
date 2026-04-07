@@ -5,7 +5,7 @@ import com.example.backend.entity.property.RescueTaskType;
 import lombok.Data;
 
 @Data
-public class RescueTaskResponse {
+public class RescueTaskResponse implements IResponse {
 
     private Long id;
     private Long previousId;
