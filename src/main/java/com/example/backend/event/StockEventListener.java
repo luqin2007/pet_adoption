@@ -12,6 +12,6 @@ public class StockEventListener {
     @Async
     @EventListener(StockEvent.class)
     public void stockChange(StockEvent event) {
-
+        // TODO 通知
     }
 }
