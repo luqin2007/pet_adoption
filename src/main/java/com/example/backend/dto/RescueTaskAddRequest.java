@@ -1,6 +1,8 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.RescueTask;
+import com.example.backend.entity.RescueTaskRecord;
+import com.example.backend.entity.property.RescueTaskAction;
 import com.example.backend.entity.property.RescueTaskStatus;
 import com.example.backend.entity.property.RescueTaskType;
 import jakarta.validation.constraints.NotBlank;
@@ -12,7 +14,7 @@ import java.util.Date;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class RescueTaskAddRequest extends LocationRequest implements IRequest, IRequestValidate {
+public class RescueTaskAddRequest extends LocationRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.timeout")
     private String id;
@@ -52,6 +54,18 @@ public class RescueTaskAddRequest extends LocationRequest implements IRequest, I
                 RescueTaskType.get(type),
                 now,
                 now);
+    }
+
+    public RescueTaskRecord createRecord(RescueTask task, Long userId) {
+        return new RescueTaskRecord(null,
+                task.getId(),
+                userId,
+                null,
+                RescueTaskAction.CREATE,
+                RescueTaskStatus.CREATED,
+                task.getStatus(),
+                task.getSummary(),
+                new Date());
     }
 
     @Override

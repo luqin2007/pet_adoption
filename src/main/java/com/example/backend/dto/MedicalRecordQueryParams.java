@@ -1,6 +1,5 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.MedicalRecord;
 import com.example.backend.entity.property.MedicalRecordStatus;
 import lombok.Data;
 import org.springframework.validation.Errors;
@@ -8,7 +7,7 @@ import org.springframework.validation.Errors;
 import java.util.Date;
 
 @Data
-public class MedicalRecordQueryParams implements IParam<MedicalRecord>, IRequestValidate {
+public class MedicalRecordQueryParams implements IParam, IValidatedRequest {
 
     private Long pet;
     private Long doctor;

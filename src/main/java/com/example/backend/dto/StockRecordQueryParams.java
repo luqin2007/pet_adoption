@@ -1,8 +1,7 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.StockRecord;
 import com.example.backend.entity.property.SourceType;
-import com.example.backend.entity.property.StockRecordAction;
+import com.example.backend.entity.property.StockAction;
 import lombok.Data;
 import org.springframework.validation.Errors;
 
@@ -13,7 +12,7 @@ import java.util.Set;
  * 库存查询参数
  */
 @Data
-public class StockRecordQueryParams implements IParam<StockRecord>, IRequestValidate {
+public class StockRecordQueryParams implements IParam, IValidatedRequest {
 
     private Set<Long> stock;
     private Set<Long> user;
@@ -28,7 +27,7 @@ public class StockRecordQueryParams implements IParam<StockRecord>, IRequestVali
 
     @Override
     public void validate(Errors errors) {
-        validateEnums(errors, StockRecordQueryParams::getAction, StockRecordAction.class, "request.item_donation.stock.action");
+        validateEnums(errors, StockRecordQueryParams::getAction, StockAction.class, "request.item_donation.stock.action");
         validateEnums(errors, StockRecordQueryParams::getSource, SourceType.class, "request.item_donation.stock.source_type");
         validateTime(errors, StockRecordQueryParams::getTime0, StockRecordQueryParams::getTime1);
         validateRange(errors, StockRecordQueryParams::getCount0, StockRecordQueryParams::getCount1, "request.item_donation.count");

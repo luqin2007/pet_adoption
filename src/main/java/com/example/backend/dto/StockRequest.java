@@ -2,7 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.Stock;
 import com.example.backend.entity.StockRecord;
-import com.example.backend.entity.property.StockRecordAction;
+import com.example.backend.entity.property.StockAction;
 import com.example.backend.entity.property.SourceType;
 import com.example.backend.util.ServiceException;
 import com.example.backend.util.StringUtils;
@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-public class StockRequest implements IRequest, IRequestValidate {
+public class StockRequest implements IRequest, IValidatedRequest {
 
     /**
      * 使用已有库存
@@ -60,7 +60,7 @@ public class StockRequest implements IRequest, IRequestValidate {
         return new StockRecord(null,
                 stock.getId(),
                 operatorId,
-                StockRecordAction.get(action),
+                StockAction.get(action),
                 SourceType.get(sourceType),
                 new BigDecimal(count),
                 stock.getCount(),
@@ -78,8 +78,8 @@ public class StockRequest implements IRequest, IRequestValidate {
         validateNumber(errors, StockRequest::getTotalPrice, "request.price");
 
         try { // 入库、出库、销毁操作校验
-            StockRecordAction action = StockRecordAction.get(this.action);
-            if (action == StockRecordAction.IN) {
+            StockAction action = StockAction.get(this.action);
+            if (action == StockAction.IN) {
                 // 物资来源
                 if (sourceType == null) {
                     errors.rejectValue("sourceType", "request.item_donation.stock.source_type");

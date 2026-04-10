@@ -4,13 +4,19 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.backend.entity.IId;
 import com.example.backend.mapper.IBaseMapper;
 import com.example.backend.util.IValidates;
 import com.example.backend.util.RedisHelper;
+import com.example.backend.util.ServiceException;
+import com.example.backend.util.StringUtils;
+import com.github.yulichang.base.MPJBaseServiceImpl;
+import org.hibernate.validator.internal.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
@@ -19,11 +25,38 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-public class BaseService<M extends IBaseMapper<T>, T extends IId> extends ServiceImpl<M, T> implements IValidates {
+public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBaseServiceImpl<M, T> implements IValidates {
 
     protected RedisHelper redisHelper;
     protected ApplicationEventPublisher eventPublisher;
     protected ObjectMapper objectMapper;
+    protected MessageSource messageSource;
+
+    @Value("${application.key_timeout}")
+    protected long keyTimeout;
+
+    // --- redis
+
+    public String beginRedisUuid(String keyTemplate, String content) {
+        String uuid = StringUtils.randomUUID(keyTemplate, redisHelper, 10);
+        String redisKey = String.format(keyTemplate, uuid);
+        redisHelper.putString(redisKey, content, keyTimeout);
+        return uuid;
+    }
+
+    public String requireRedisUuid(String keyTemplate, String uuid) {
+        String redisKey = String.format(keyTemplate, uuid);
+        if (!redisHelper.hasString(keyTemplate, uuid))
+            throw ServiceException.invalidate("添加超时，请刷新重试");
+        redisHelper.expireString(redisKey, keyTimeout);
+        return redisKey;
+    }
+
+    // message
+
+    public String getMessage(String key, Object... params) {
+        return messageSource.getMessage(key, params, LocaleContextHolder.getLocale());
+    }
 
     // --- page
 
@@ -114,11 +147,13 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends Servic
     // ---
 
     @Autowired
-    public void setObjects(RedisHelper redisHelper,
-                           ApplicationEventPublisher eventPublisher,
-                           ObjectMapper objectMapper) {
+    public void setObjects(RedisHelper redisHelper, // redis
+                           ApplicationEventPublisher eventPublisher, // 事件
+                           ObjectMapper objectMapper, // json
+                           MessageSource messageSource) { // i18n
         this.redisHelper = redisHelper;
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
+        this.messageSource = messageSource;
     }
 }

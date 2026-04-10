@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.dto.SubscribeQueryParams;
 import com.example.backend.entity.Subscribe;
 import com.example.backend.entity.property.SubscribeAction;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Set;
@@ -22,18 +23,22 @@ public interface SubscribeMapper extends IBaseMapper<Subscribe> {
                 .eq(Subscribe::getUserId, id);
     }
 
-    default LambdaQueryWrapper<Subscribe> queryByRequest(SubscribeQueryParams params) {
-        LambdaQueryWrapper<Subscribe> query = lambdaQuery();
-        params.querySet(query, Subscribe::getUserId, params.getUser())
-                .querySet(query, Subscribe::getAction, SubscribeAction::get, params.getAction())
-                .querySet(query, Subscribe::getElementId, params.getElement())
-                .queryDecimal(query, Subscribe::getCount, params.getMin(), params.getMax())
-                .queryTime(query, Subscribe::getCreateTime, params.getTime0(), params.getTime1());
-        return query;
+    default MPLambdaQuery<Subscribe> queryByRequest(SubscribeQueryParams params) {
+        return lambdaQuery()
+                .in(Subscribe::getUserId, params.getUser())
+                .in(Subscribe::getAction, SubscribeAction::get, params.getAction())
+                .in(Subscribe::getElementId, params.getElement())
+                .in(Subscribe::getCount, params.getMin(), params.getMax())
+                .in(Subscribe::getCreateTime, params.getTime0(), params.getTime1());
     }
 
     @Override
     default String getMissingMessage() {
         return "订阅不存在";
+    }
+
+    @Override
+    default Class<Subscribe> getEntityClass() {
+        return Subscribe.class;
     }
 }

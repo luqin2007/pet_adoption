@@ -14,7 +14,7 @@ public class AdoptAddRequest implements IRequest {
     @NotNull(message = "request.pet.id")
     private Long petId;
 
-    @NotBlank(message = "request.adopt_breading.phone")
+    @NotBlank(message = "request.phone")
     private String applicantPhone;
 
     private String requirement;

@@ -3,39 +3,29 @@ package com.example.backend.dto;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
 import com.example.backend.entity.property.PetStatus;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.validation.Errors;
 
 import java.sql.Date;
 
 @Data
-public class PetStatusUpdateRequest implements IRequest, IRequestValidate {
-
-    @NotNull
-    private Long id;
+@EqualsAndHashCode(callSuper = true)
+public class PetStatusUpdateRequest extends StatusUpdateRequest {
 
     @NotNull
     private Long petId;
 
-    @NotBlank(message = "request.pet.status")
-    private String status;
-
-    @NotNull
-    private String reason;
-
     /**
      * Pet: id, status
      */
-    public PetStatusRecord applyTo(Pet pet, Long userId) {
-        PetStatus oldStatus = pet.getStatus();
-        pet.setStatus(PetStatus.get(status));
+    public PetStatusRecord create(Pet pet, Long userId) {
         return new PetStatusRecord(null,
                 petId,
                 userId,
-                oldStatus,
                 pet.getStatus(),
+                PetStatus.get(status),
                 reason,
                 new Date(System.currentTimeMillis()));
     }

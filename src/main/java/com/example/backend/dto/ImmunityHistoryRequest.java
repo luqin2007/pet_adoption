@@ -9,7 +9,7 @@ import org.springframework.validation.Errors;
 import java.util.Date;
 
 @Data
-public class ImmunityHistoryRequest implements IRequest, IRequestValidate {
+public class ImmunityHistoryRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.medical.immunity.medicine")
     private String medicine;

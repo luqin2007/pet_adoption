@@ -1,10 +1,10 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.backend.dto.StockQueryParams;
 import com.example.backend.entity.Stock;
 import com.example.backend.entity.property.SourceType;
+import com.example.backend.util.MPLambdaQuery;
+import com.example.backend.util.MPLambdaUpdate;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.math.BigDecimal;
@@ -19,16 +19,15 @@ import java.util.Date;
 @Mapper
 public interface StockMapper extends IBaseMapper<Stock> {
 
-    default LambdaQueryWrapper<Stock> queryByRequest(StockQueryParams params) {
-        LambdaQueryWrapper<Stock> query = lambdaQuery();
-        params.querySet(query, Stock::getItemId, params.getItem())
-                .querySet(query, Stock::getUserId, params.getUser())
-                .querySet(query, Stock::getSourceType, SourceType::get, params.getSource())
-                .queryTime(query, Stock::getCreateTime, params.getTime0(), params.getTime1());
-        return query;
+    default MPLambdaQuery<Stock> queryByRequest(StockQueryParams params) {
+        return lambdaQuery()
+                .in(Stock::getItemId, params.getItem())
+                .in(Stock::getUserId, params.getUser())
+                .in(Stock::getSourceType, SourceType::get, params.getSource())
+                .in(Stock::getCreateTime, params.getTime0(), params.getTime1());
     }
 
-    default LambdaUpdateWrapper<Stock> updateCount(Long stockId, BigDecimal count) {
+    default MPLambdaUpdate<Stock> updateCount(Long stockId, BigDecimal count) {
         return lambdaUpdate()
                 .eq(Stock::getId, stockId)
                 .set(Stock::getCount, count)
@@ -38,5 +37,10 @@ public interface StockMapper extends IBaseMapper<Stock> {
     @Override
     default String getMissingMessage() {
         return "库存记录不存在";
+    }
+
+    @Override
+    default Class<Stock> getEntityClass() {
+        return Stock.class;
     }
 }

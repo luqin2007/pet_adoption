@@ -1,6 +1,5 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.FollowTask;
 import com.example.backend.entity.property.FollowTaskStatus;
 import lombok.Data;
 import org.springframework.validation.Errors;
@@ -9,7 +8,7 @@ import java.util.Date;
 import java.util.Set;
 
 @Data
-public class FollowTaskQueryParams implements IParam<FollowTask>, IRequestValidate {
+public class FollowTaskQueryParams implements IParam, IValidatedRequest {
 
     private Long adopt;
     private Long volunteer;

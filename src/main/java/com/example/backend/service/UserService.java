@@ -1,12 +1,10 @@
 package com.example.backend.service;
 
-import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.MediaType;
-import com.example.backend.entity.property.UserRole;
-import com.example.backend.event.NotificationEvent;
+import com.example.backend.event.MailSendEvent;
 import com.example.backend.mapper.UserMapper;
 import com.example.backend.util.*;
 import jakarta.annotation.Nonnull;
@@ -30,14 +28,10 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.Date;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import static com.example.backend.entity.property.MediaType.IMAGE;
 import static com.example.backend.entity.property.ParentType.USER;
-import static com.example.backend.util.C.*;
 
 /**
  * 用户管理
@@ -52,6 +46,10 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
     @Value("${host.address}")
     private String hostAddress;
+    @Value("${key.mail_code}")
+    private String mailKeyTemplate;
+    @Value("${key.password_reset}")
+    private String pwdKeyTemplate;
 
     /**
      * 用户注册
@@ -67,7 +65,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         }
 
         // 邮箱验证码
-        String code = redisHelper.getAndDeleteString(KEY_MAIL_CODE, request.getEmail());
+        String code = redisHelper.getAndDeleteString(mailKeyTemplate, request.getEmail());
         requireEqual(code, request.getCode(), "邮箱验证码错误");
 
         // 注册
@@ -83,7 +81,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
             String filename = FileUtils.generateFilename(name, user.getCreateTime(), extAndType.getFirst());
             Path path = FileUtils.generateFilePath(USER, user.getId());
             FileUtils.upload(avatar, filename, path);
-            update(getBaseMapper().updateAvatar(user.getId(), filename));
+            getBaseMapper().updateAvatar(user.getId(), filename).update();
         }
 
         // 登录
@@ -96,7 +94,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     public boolean isUsernameExist(String username) {
         if (!StringUtils.hasText(username)) return false;
         username = URLDecoder.decode(username, StandardCharsets.UTF_8);
-        return exists(getBaseMapper().queryByUser(username));
+        return getBaseMapper().queryByUser(username).exists();
     }
 
     /**
@@ -105,7 +103,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     public boolean isEmailExist(String email) {
         if (!StringUtils.hasText(email)) return false;
         email = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        return exists(getBaseMapper().queryByEmail(email));
+        return getBaseMapper().queryByEmail(email).exists();
     }
 
     /**
@@ -113,15 +111,14 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      */
     public void sendMailCode(String email) {
         // 生成随机验证码
-        String redisKey = String.format(KEY_MAIL_CODE, email);
+        String redisKey = String.format(mailKeyTemplate, email);
         String code = StringUtils.generateRandomString(6);
         redisHelper.putString(redisKey, code, 10);
 
         // 发送邮件
-        String content = String.format(MESSAGE_SEND_MAIL_CODE, code);
+        String content = getMessage("mail.send_mail_code", code);
         String receiver = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        NotificationEvent event = NotificationEvent.mail("Pet Adoption 邮箱验证码", content, receiver);
-        eventPublisher.publishEvent(event);
+        eventPublisher.publishEvent(new MailSendEvent("Pet Adoption 邮箱验证码", content, receiver));
     }
 
     /**
@@ -147,7 +144,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
         // 附着 JWT 信息
         User user = principal.getUser();
-        UserResponse response = UserResponse.fromEntity(user);
+        UserResponse response = UserResponse.create(user);
         String accessToken = jwtHelper.generateAccessToken(user);
         String refreshToken = jwtHelper.generateRefreshToken(user);
         response.setAccessToken(accessToken);
@@ -160,15 +157,15 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      */
     public UserResponse getUser(Long userId) {
         User user = requireById(userId);
-        return UserResponse.fromEntity(user);
+        return UserResponse.create(user);
     }
 
     /**
      * 获取用户信息
      */
     public UserResponse getUser(String username) {
-        User user = requireOne(baseMapper.queryByUser(username));
-        return UserResponse.fromEntity(user);
+        User user = baseMapper.queryByUser(username).require();
+        return UserResponse.create(user);
     }
 
     /**
@@ -180,7 +177,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         User user = requireById(userId);
 
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         boolean allowed =
                 // 用户本人
                 Objects.equals(login.getId(), user.getId()) ||
@@ -199,11 +196,11 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      */
     public Page<UserResponse> getAllUsers(PageParams page) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         // 数据转换
         Page<User> result = page(page.createPage());
-        return convertDto(result, UserResponse::fromEntity);
+        return convertDto(result, UserResponse::create);
     }
 
     /**
@@ -212,18 +209,13 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     public void forgetPassword(String email) {
         // 查找用户
         email = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        User user = requireOne(baseMapper.queryByEmail(email));
-
-        // 生成随机密码，保存相关信息
-        // 有效期 10min
-        String randomId = StringUtils.randomUUID(KEY_PASSWORD_RESET, redisHelper, 10);
-        String redisKey = String.format(KEY_PASSWORD_RESET, randomId);
-        redisHelper.putString(redisKey, user.getEmail(), 10);
+        User user = baseMapper.queryByEmail(email).require();
 
         // 发送激活邮件
-        String content = String.format(MESSAGE_RESET_PWD, hostAddress, randomId);
-        NotificationEvent event = NotificationEvent.mail("Pet Adoption 密码重置", content, user.getEmail());
-        eventPublisher.publishEvent(event);
+        // 有效期 10min
+        String uuid = beginRedisUuid(pwdKeyTemplate, user.getEmail());
+        String content = getMessage("mail.reset_password", hostAddress, uuid);
+        eventPublisher.publishEvent(new MailSendEvent("Pet Adoption 密码重置", content, user.getEmail()));
     }
 
     /**
@@ -232,11 +224,11 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     @Transactional
     public void resetPassword(PasswordResetRequest request) {
         // 验证链接校验
-        String email = redisHelper.getAndDeleteString(KEY_PASSWORD_RESET, request.getId());
+        String email = redisHelper.getAndDeleteString(pwdKeyTemplate, request.getId());
         requireExist(email, "链接已过期");
 
         // 更新密码
-        User user = requireOne(baseMapper.queryByEmail(email));
+        User user = baseMapper.queryByEmail(email).require();
         request.applyTo(user, passwordEncoder);
         updateById(user);
     }
@@ -247,7 +239,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     @Transactional
     public UserResponse update(Long userId, UserUpdateRequest request) {
         // 校验用户权限
-        User login = getLoginUser();
+        User login = requireLoginUser();
         User user = requireById(userId);
         // 管理员权限仅超级管理员可更改
         requirePermission(!user.isAdmin() || login.isAdmin());
@@ -257,7 +249,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         // 更新用户信息
         request.applyTo(user, passwordEncoder);
         updateById(user);
-        return UserResponse.fromEntity(user);
+        return UserResponse.create(user);
     }
 
     /**
@@ -266,7 +258,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     @Transactional
     public String uploadAvatar(Long userId, MultipartFile file) {
         // 校验用户权限
-        User login = getLoginUser();
+        User login = requireLoginUser();
         User user = requireById(userId,
                 User::getId, User::getAvatar);
         requirePermission(Objects.equals(login.getId(), userId) || login.isWorker());
@@ -283,7 +275,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
         // 更新信息
         String oldAvatar = user.getAvatar();
-        update(baseMapper.updateAvatar(userId, filename));
+        baseMapper.updateAvatar(userId, filename).update();
 
         // 删除旧图片
         if (oldAvatar != null) {
@@ -299,7 +291,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      */
     @Transactional
     public void deleteAvatar(Long userId) {
-        User user = getLoginUser();
+        User user = requireLoginUser();
         if (StringUtils.hasText(user.getAvatar())) {
             // 删除文件
             Path path = FileUtils.generateFilePath(USER, userId, user.getAvatar());
@@ -307,41 +299,14 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
             // 更新
             user.setAvatar(null);
-            update(baseMapper.updateAvatar(userId, null));
+            baseMapper.updateAvatar(userId, null).update();
         }
-    }
-
-    /**
-     * 根据 id 批量获取邮件地址，仅 id 和 email 可用
-     */
-    public List<String> getMailsBatchByRoles(Set<UserRole> roleSet) {
-        return getBatchByRoles(roleSet, User::getEmail);
-    }
-
-    /**
-     * 根据角色批量获取用户 id
-     */
-    public List<Long> getIdsBatchByRoles(Set<UserRole> roleSet) {
-        return getBatchByRoles(roleSet, User::getId);
-    }
-
-    /*
-     * 根据角色批量获取用户某列
-     */
-    private <T> List<T> getBatchByRoles(Set<UserRole> roleSet, SFunction<User, T> column) {
-        // 生成所需的 role
-        int role = Stream.ofNullable(roleSet).flatMap(Set::stream)
-                .mapToInt(UserRole::getMatchMask)
-                .reduce(0, (a, b) -> a | b);
-        return list(baseMapper.queryByRole(role).select(column)).stream()
-                .map(column)
-                .toList();
     }
 
     @Override
     @Nonnull
     public UserDetails loadUserByUsername(@Nonnull String username) throws UsernameNotFoundException {
-        return getOneOpt(getBaseMapper().queryByUser(username))
+        return getBaseMapper().queryByUser(username).opt()
                 .map(CustomUserDetails::new)
                 .orElseThrow(() -> UsernameNotFoundException.fromUsername(username));
     }

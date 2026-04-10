@@ -1,7 +1,7 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.entity.DonationFile;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Set;
@@ -13,11 +13,21 @@ import java.util.Set;
 @Mapper
 public interface DonationFileMapper extends IBaseMapper<DonationFile> {
 
-    default LambdaQueryWrapper<DonationFile> queryByDonation(Long donationId) {
+    default MPLambdaQuery<DonationFile> queryByDonation(Long donationId) {
         return lambdaQuery().eq(DonationFile::getDonationId, donationId);
     }
 
-    default LambdaQueryWrapper<DonationFile> queryByDonations(Set<Long> donationIds) {
+    default MPLambdaQuery<DonationFile> queryByDonations(Set<Long> donationIds) {
         return lambdaQuery().in(DonationFile::getDonationId, donationIds);
+    }
+
+    @Override
+    default String getMissingMessage() {
+        return "捐赠文件不存在";
+    }
+
+    @Override
+    default Class<DonationFile> getEntityClass() {
+        return DonationFile.class;
     }
 }

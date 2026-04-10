@@ -2,26 +2,26 @@ package com.example.backend.dto;
 
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.backend.entity.IId;
 import com.example.backend.util.StringUtils;
 import lombok.Data;
 
 import java.net.URLDecoder;
 
 @Data
-public class PageParams implements IParam<Page<?>> {
+public class PageParams implements IParam {
 
     private Integer page = 1;
 
     private Integer size = 10;
 
-    private String sort = "id";
+    private String sort;
 
-    private String order = null;
+    private String order;
 
-    public <T extends IId> Page<T> createPage() {
+    public <T> Page<T> createPage() {
         Page<T> page = Page.of(this.page, size, true);
-        String rSort = URLDecoder.decode(sort).trim();
+        @SuppressWarnings("deprecation")
+        String rSort = sort == null ? null : URLDecoder.decode(sort).trim();
         if (StringUtils.hasText(rSort)) {
             boolean asc = StringUtils.hasText(this.order)
                     ? this.order.trim().equalsIgnoreCase("asc")

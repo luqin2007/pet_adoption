@@ -1,34 +1,24 @@
 package com.example.backend.service;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
-import com.example.backend.entity.property.MediaType;
 import com.example.backend.mapper.*;
-import com.example.backend.util.FileUtils;
 import com.example.backend.util.ServiceException;
-import com.example.backend.util.StringUtils;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.example.backend.entity.property.ParentType.EXAMINATION;
-import static com.example.backend.entity.property.ParentType.REHAB_PLAN;
-import static com.example.backend.util.C.KEY_EXAMINATION;
-import static com.example.backend.util.C.KEY_EXAMINATION_FILE;
+import static com.example.backend.entity.property.ParentType.*;
 
 /**
  * 诊疗、病历等
@@ -56,13 +46,18 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     private final RehabPlanMapper rehabPlanMapper;
     private final RehabPlanStatusMapper rehabPlanStatusMapper;
     private final RehabRecordMapper rehabRecordMapper;
-    private final MediaFileMapper mediaFileMapper;
     private final HealthAssessmentMapper healthAssessmentMapper;
 
     private PetService petService;
     private UserService userService;
+    private FileService fileService;
 
     private final long KEY_TIMEOUT_MINUTES = 10;
+
+    @Value("${key.examination.uuid}")
+    private String uuidKeyTemplate;
+    @Value("${key.examination.file}")
+    private String fileKeyTemplate;
 
     /**
      * 初诊登记
@@ -71,7 +66,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     public FirstRegistrationResponse addFirstVisitRegistration(FirstRegistrationAddRequest request) {
         // 校验
         petService.requireExist(request.getPetId());
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor() || login.isVolunteer());
 
         // 添加
@@ -84,7 +79,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
 
         // 返回
         Pet pet = petService.selectById(registration.getPetId(), Pet::getId, Pet::getSex, Pet::getType, Pet::getBreed);
-        String cover = petService.getCoverById(registration.getPetId());
+        String cover = fileService.getCoverUrl(registration.getPetId(), PET);
         return FirstRegistrationResponse.create(registration, immunityHistories, allergyHistories, List.of(), pet, cover, login);
     }
 
@@ -92,9 +87,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取初诊登记
      */
     public Page<FirstRegistrationItemResponse> getFirstVisitRegistrations(FirstRegistrationQueryParams params, PageParams request) {
-        Page<FirstRegistration> page = request.createPage();
-        Page<FirstRegistration> response = firstRegistrationMapper.selectPage(page, firstRegistrationMapper.selectByRequest(params));
-
+        Page<FirstRegistration> response = firstRegistrationMapper.selectByRequest(params).page(request);
         Map<Long, Pet> pets = petService.groupById(
                 response.getRecords().stream().map(FirstRegistration::getPetId),
                 Pet::getId, Pet::getSex, Pet::getType, Pet::getBreed);
@@ -110,17 +103,18 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     public FirstRegistrationResponse getFirstVisitRegistration(Long registrationId) {
         FirstRegistration registration = firstRegistrationMapper.requireById(registrationId);
-        List<ImmunityHistory> immunityHistories = immunityHistoryMapper.selectList(immunityHistoryMapper.queryByRegistration(registrationId));
-        List<AllergyHistory> allergyHistories = allergyHistoryMapper.selectList(allergyHistoryMapper.queryByRegistration(registrationId));
+        List<ImmunityHistory> immunityHistories = immunityHistoryMapper.queryByRegistration(registrationId).list();
+        List<AllergyHistory> allergyHistories = allergyHistoryMapper.queryByRegistration(registrationId).list();
         Pet pet = petService.selectById(registration.getPetId(),
                 Pet::getId, Pet::getSex, Pet::getType, Pet::getBreed);
-        String cover = petService.getCoverById(registration.getPetId());
+        String cover = fileService.getCoverUrl(registration.getPetId(), PET);
         User user = userService.selectById(registration.getRegistrarId(),
                 User::getId, User::getUsername, User::getAvatar);
 
         // 病历
-        Set<Long> detailIds = medicalRecordMapper.selectList(medicalRecordMapper.selectByPet(registration.getPetId()), MedicalRecord::getId)
-                .stream().map(MedicalRecord::getId).collect(Collectors.toSet());
+        Set<Long> detailIds = medicalRecordMapper.selectByPet(registration.getPetId())
+                .list(MedicalRecord::getId)
+                .collect(Collectors.toSet());
         List<MedicalDetail> details = listById(detailIds,
                 MedicalDetail::getId,
                 MedicalDetail::getRecordId,
@@ -144,9 +138,9 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public MedicalRecordResponse addMedicalRecord(Long petId, MedicalRecordAddRequest request) {
         // 权限/环境校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
-        firstRegistrationMapper.requireExist(firstRegistrationMapper.selectByPet(petId));
+        firstRegistrationMapper.selectByPet(petId).requireExist();
 
         // 存储数据
         MedicalRecord record = request.createEntity(petId, login.getId());
@@ -160,7 +154,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public MedicalRecordResponse updateMedicalRecord(Long recordId, MedicalRecordUpdateRequest request) {
         // 权限/环境校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker() || login.isDoctor());
         MedicalRecord record = medicalRecordMapper.requireById(recordId);
 
@@ -181,7 +175,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     private MedicalRecordResponse buildMedicalRecordResponse(MedicalRecord record) {
         Pet pet = petService.selectById(record.getPetId(),
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        String cover = petService.getCoverById(record.getPetId());
+        String cover = fileService.getCoverUrl(record.getPetId(), PET);
         User user = userService.selectById(record.getDoctorId(),
                 User::getId, User::getUsername, User::getAvatar);
         User owner = record.getOwnerId() == null ? null
@@ -193,16 +187,13 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取就诊记录列表
      */
     public Page<MedicalRecordResponse> getMedicalRecords(MedicalRecordQueryParams queryRequest, PageParams pageParams) {
-        LambdaQueryWrapper<MedicalRecord> query = medicalRecordMapper.queryByRequest(queryRequest);
-        Page<MedicalRecord> page = pageParams.createPage();
-        Page<MedicalRecord> result = medicalRecordMapper.selectPage(page, query);
-
+        Page<MedicalRecord> result = medicalRecordMapper.queryByRequest(queryRequest).page(pageParams);
         Set<Long> petIds = result.getRecords().stream()
                 .map(MedicalRecord::getPetId)
                 .collect(Collectors.toSet());
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        Map<Long, String> covers = petService.getCoversByPetIds(petIds);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().flatMap(record -> Stream.of(record.getDoctorId(), record.getOwnerId())),
                 User::getId, User::getUsername, User::getAvatar);
@@ -215,7 +206,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public MedicalDetailResponse addMedicalDetail(MedicalDetailAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         MedicalRecord record = medicalRecordMapper.selectById(request.getRecordId(), MedicalRecord::getPetAge);
 
@@ -226,7 +217,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         // 返回
         Pet pet = petService.selectById(record.getPetId(),
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        String cover = petService.getCoverById(record.getPetId());
+        String cover = fileService.getCoverUrl(record.getPetId(), PET);
         List<PetTagResponse> tags = petService.getTags(pet.getId());
         return MedicalDetailResponse.create(detail, record, login, List.of(), List.of(), pet, cover, tags);
     }
@@ -243,30 +234,26 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取病历
      */
     public Page<MedicalDetailResponse> getMedicalDetails(MedicalDetailQueryParams params, PageParams request) {
-        Page<MedicalDetail> page = request.createPage();
-        LambdaQueryWrapper<MedicalDetail> wrapper = baseMapper.queryByParams(params);
-        Page<MedicalDetail> result = page(page, wrapper);
-
+        Page<MedicalDetail> result = baseMapper.queryByParams(params).page(request);
         Map<Long, MedicalRecord> records = medicalRecordMapper.groupById(
                 result.getRecords().stream().map(MedicalDetail::getRecordId),
                 MedicalRecord::getId, MedicalRecord::getPetId, MedicalRecord::getPetAge);
         Set<Long> detailIds = result.getRecords().stream()
                 .map(MedicalDetail::getId)
                 .collect(Collectors.toSet());
-        Map<Long, TreatmentPlan> plans = treatmentPlanMapper.group(treatmentPlanMapper.selectByDetails(detailIds));
-        List<Order> orderList = orderMapper.selectList(orderMapper.queryByTreatmentPlans(plans.keySet()));
+        Map<Long, TreatmentPlan> plans = treatmentPlanMapper.selectByDetails(detailIds).groupById();
+        List<Order> orderList = orderMapper.queryByTreatmentPlans(plans.keySet()).list();
         Map<Long, User> users = userService.groupById(
                 Stream.of(
                         result.getRecords().stream().map(MedicalDetail::getDoctorId),
                         plans.values().stream().map(TreatmentPlan::getDoctorId),
                         orderList.stream().map(Order::getAllowerId)).flatMap(Function.identity()),
                 User::getId, User::getUsername, User::getAvatar);
-        Map<Long, Diagnosis> diagnosisMap = diagnosisMapper.group(diagnosisMapper.queryByDetails(detailIds));
-        Map<Long, Examination> examinationMap = examinationMapper.group(examinationMapper.queryByDetails(detailIds));
-        Map<Long, List<ExaminationFileResponse>> examinationFiles = examinationFileMapper.groupList(
-                examinationFileMapper.queryByExaminations(examinationMap.keySet()),
-                ExaminationFile::getExaminationId,
-                ExaminationFileResponse::create);
+        Map<Long, Diagnosis> diagnosisMap = diagnosisMapper.queryByDetails(detailIds).groupById();
+        Map<Long, Examination> examinationMap = examinationMapper.queryByDetails(detailIds).groupById();
+        Map<Long, List<ExaminationFileResponse>> examinationFiles = examinationFileMapper
+                .queryByExaminations(examinationMap.keySet())
+                .groupList(ExaminationFile::getExaminationId, ExaminationFileResponse::create);
         Map<Long, List<ExaminationResponse>> examinations = examinationMap.values().stream()
                 .map(exam -> ExaminationResponse.createBatch(exam, examinationFiles))
                 .collect(Collectors.groupingBy(ExaminationResponse::getDetailId));
@@ -286,7 +273,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 .collect(Collectors.toSet());
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        Map<Long, String> covers = petService.getCoversByPetIds(petIds);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
         Map<Long, List<PetTagResponse>> tags = petService.getTags(petIds);
         return convertDto(result, detail ->
                 MedicalDetailResponse.createBatch(detail, records, users, diagnoses, treatments, pets, covers, tags));
@@ -298,7 +285,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public MedicalDetailResponse updateMedicalDetail(Long detailId, MedicalDetailUpdateRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         MedicalDetail detail = requireDetailOpen(detailId);
 
@@ -314,7 +301,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public MedicalDetailResponse completeMedicalDetail(Long detailId) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         MedicalDetail detail = requireDetailOpen(detailId);
 
@@ -327,24 +314,23 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Long detailId = detail.getId();
         MedicalRecord record = medicalRecordMapper.requireById(detail.getRecordId(), MedicalRecord::getPetAge);
         User doctor = userService.selectById(detail.getDoctorId(), User::getId, User::getUsername, User::getAvatar);
-        Map<Long, Examination> examinationMap = examinationMapper.group(examinationMapper.queryByDetail(detailId));
-        Map<Long, List<ExaminationFileResponse>> files = examinationFileMapper.groupList(
-                examinationFileMapper.queryByExaminations(examinationMap.keySet()),
-                ExaminationFile::getExaminationId,
-                ExaminationFileResponse::create);
-        Map<Long, List<ExaminationResponse>> examinations = examinationDiagnosisMapper.groupList(
-                examinationDiagnosisMapper.queryByExaminations(examinationMap.keySet()),
-                ExaminationDiagnosis::getDiagnosisId,
-                examination -> ExaminationResponse.createBatch(examination.getExaminationId(), examinationMap, files));
+        Map<Long, Examination> examinationMap = examinationMapper.queryByDetail(detailId).groupById();
+        Map<Long, List<ExaminationFileResponse>> files = examinationFileMapper
+                .queryByExaminations(examinationMap.keySet())
+                .groupList(ExaminationFile::getExaminationId, ExaminationFileResponse::create);
+
+        Map<Long, List<ExaminationResponse>> examinations = examinationDiagnosisMapper
+                .queryByExaminations(examinationMap.keySet())
+                .groupList(ExaminationDiagnosis::getDiagnosisId,
+                        exam -> ExaminationResponse.createBatch(exam.getExaminationId(), examinationMap, files));
 
         // 构造返回值
-        List<DiagnosisResponse> examinationDiagnoses = diagnosisMapper
-                .selectList(diagnosisMapper.queryByDetail(detailId)).stream()
+        List<DiagnosisResponse> examinationDiagnoses = diagnosisMapper.queryByDetail(detailId).list().stream()
                 .map(diagnosis -> DiagnosisResponse.createBatch(diagnosis, examinations))
                 .toList();
-        List<TreatmentPlan> plans = treatmentPlanMapper.selectList(treatmentPlanMapper.selectByDetail(detailId));
+        List<TreatmentPlan> plans = treatmentPlanMapper.selectByDetail(detailId).list();
         Set<Long> planIds = plans.stream().map(TreatmentPlan::getId).collect(Collectors.toSet());
-        List<Order> orderList = orderMapper.selectList(orderMapper.queryByTreatmentPlans(planIds));
+        List<Order> orderList = orderMapper.queryByTreatmentPlans(planIds).list();
         Map<Long, User> users = userService.groupById(
                 plans.stream().map(TreatmentPlan::getDoctorId),
                 orderList.stream().map(Order::getAllowerId),
@@ -358,7 +344,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 .toList();
         Pet pet = petService.selectById(record.getPetId(),
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        String cover = petService.getCoverById(record.getPetId());
+        String cover = fileService.getCoverUrl(record.getPetId(), PET);
         List<PetTagResponse> tags = petService.getTags(pet.getId());
         return MedicalDetailResponse.create(detail, record, doctor, examinationDiagnoses, treatments, pet, cover, tags);
     }
@@ -369,7 +355,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public DiagnosisResponse addDiagnosis(Long detailId, DiagnosisAddRequest request) {
         // 检查权限
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         requireDetailOpen(detailId, MedicalDetail::getIsCompleted, MedicalDetail::getIsDiscard);
 
@@ -381,10 +367,9 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Set<Long> examinationIds = entries.stream()
                 .map(ExaminationDiagnosis::getExaminationId)
                 .collect(Collectors.toSet());
-        Map<Long, List<ExaminationFileResponse>> files = examinationFileMapper.groupList(
-                examinationFileMapper.queryByExaminations(examinationIds),
-                ExaminationFile::getExaminationId,
-                ExaminationFileResponse::create);
+        Map<Long, List<ExaminationFileResponse>> files = examinationFileMapper
+                .queryByExaminations(examinationIds)
+                .groupList(ExaminationFile::getExaminationId, ExaminationFileResponse::create);
         List<ExaminationResponse> examinations = examinationMapper.selectByIds(examinationIds).stream()
                 .map(examination -> ExaminationResponse.createBatch(examination, files))
                 .toList();
@@ -396,13 +381,13 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     @Transactional
     public void discardDiagnosis(Long diagnosisId) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         Long detailId = diagnosisMapper
                 .requireById(diagnosisId, Diagnosis::getDetailId)
                 .getDetailId();
         requireDetailOpen(detailId, MedicalDetail::getIsCompleted, MedicalDetail::getIsDiscard);
-        diagnosisMapper.update(diagnosisMapper.discardById(diagnosisId));
+        diagnosisMapper.discardById(diagnosisId).update();
     }
 
     /**
@@ -411,7 +396,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public TreatmentPlanResponse addTreatmentPlan(Long detailId, TreatmentPlanAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         requireDetailOpen(detailId, MedicalDetail::getIsCompleted, MedicalDetail::getIsDiscard);
 
@@ -438,7 +423,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public void discardTreatmentPlan(IdsRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         HashSet<Long> planIds = new HashSet<>(request.getIds());
         List<TreatmentPlan> plans = treatmentPlanMapper.selectList(planIds,
@@ -454,7 +439,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         if (hasReadonlyDetail)
             throw ServiceException.invalidate("病历已完成或已废弃");
 
-        treatmentPlanMapper.update(treatmentPlanMapper.discardByIds(planIds));
+        treatmentPlanMapper.discardByIds(planIds).update();
     }
 
     /**
@@ -462,84 +447,55 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     public String beginExamination(Long detailId) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         requireDetailOpen(detailId, MedicalDetail::getIsCompleted, MedicalDetail::getIsDiscard);
 
         // 生成随机 uuid
-        // 30 分钟有效期
-        String uuid = StringUtils.randomUUID(KEY_EXAMINATION, redisHelper, 10);
-        String redisKey = String.format(KEY_EXAMINATION, uuid);
-        redisHelper.putString(redisKey, String.valueOf(detailId), KEY_TIMEOUT_MINUTES);
-        return uuid;
+        return beginRedisUuid(uuidKeyTemplate, String.valueOf(detailId));
     }
 
     /**
      * 上传文件
      */
-    public String uploadExamination(String examId, ExaminationFileUploadTable request) {
+    public String uploadExamination(String uuid, ExaminationFileUploadTable request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
-        Long detailId = Long.valueOf(redisHelper.getString(String.format(KEY_EXAMINATION, examId)));
+        String redisKey = requireRedisUuid(uuidKeyTemplate, uuid);
+        Long detailId = Long.valueOf(redisHelper.getString(redisKey));
         requireDetailOpen(detailId, MedicalDetail::getIsCompleted, MedicalDetail::getIsDiscard);
 
-        // 接收文件
-        Date now = new Date();
-        Pair<String, String> nameAndExt = FileUtils.getNameAndExtension(request.getFile().getOriginalFilename());
-        String filename = FileUtils.generateFilename(nameAndExt.getFirst(), now, nameAndExt.getSecond());
-        Path path = FileUtils.generateTempPath(EXAMINATION, examId);
-        FileUtils.upload(request.getFile(), filename, path);
-
-        // 生成临时文件信息
-        TempFileInfo fileInfo = new TempFileInfo(
-                filename,
-                request.getName(filename),
-                login.getId(),
-                MediaType.IMAGE,
-                now);
-        String fileKey = String.format(KEY_EXAMINATION_FILE, examId);
-        redisHelper.putObjectToHash(fileKey, filename, fileInfo);
-
-        // 刷新 Redis 键
-        String redisKey = String.format(KEY_EXAMINATION, examId);
-        redisHelper.expireString(redisKey, KEY_TIMEOUT_MINUTES);
-        redisHelper.expireObject(fileKey, KEY_TIMEOUT_MINUTES);
-        return filename;
+        // 上传文件
+        return fileService
+                .uploadFileToTemp(request.getFile(), request.getName(), uuid, fileKeyTemplate, EXAMINATION)
+                .getFilename();
     }
 
     /**
      * 删除文件（上传时）
      */
-    public void deleteExamination(String examId, String filename) {
+    public void deleteExamination(String uuid, String filename) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
-        Long detailId = Long.valueOf(redisHelper.getString(String.format(KEY_EXAMINATION, examId)));
+        String redisKey = requireRedisUuid(uuidKeyTemplate, uuid);
+        Long detailId = Long.valueOf(redisHelper.getString(redisKey));
         requireDetailOpen(detailId, MedicalDetail::getIsCompleted, MedicalDetail::getIsDiscard);
 
         // 删除文件及记录
-        String fileKey = String.format(KEY_EXAMINATION_FILE, examId);
-        List<TempFileInfo> files = redisHelper.getAndDeleteObjectsFromHash(fileKey, filename);
-        Path path = FileUtils.generateTempPath(EXAMINATION, examId);
-        for (TempFileInfo file : files)
-            FileUtils.tryDeleteFile(path.resolve(file.getFilename()));
-        FileUtils.tryDeleteDirectory(path, true);
-
-        // 刷新 Redis 键
-        String redisKey = String.format(KEY_EXAMINATION, examId);
-        redisHelper.expireString(redisKey, KEY_TIMEOUT_MINUTES);
-        redisHelper.expireObject(fileKey, KEY_TIMEOUT_MINUTES);
+        fileService.deleteTempFile(fileKeyTemplate, uuid, filename, EXAMINATION);
     }
 
     /**
      * 添加检查
      */
-    public ExaminationResponse addExamination(String examId, ExaminationAddRequest request) {
+    public ExaminationResponse addExamination(String uuid, ExaminationAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
-        Long detailId = Long.valueOf(redisHelper.getString(String.format(KEY_EXAMINATION, examId)));
+        String redisKey = requireRedisUuid(uuidKeyTemplate, uuid);
+        Long detailId = Long.valueOf(redisHelper.getString(redisKey));
         requireDetailOpen(detailId, MedicalDetail::getIsCompleted, MedicalDetail::getIsDiscard);
 
         // 创建检查结果
@@ -547,12 +503,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         examinationMapper.insert(examination);
 
         // 创建检查结果文件
-        String fileKey = String.format(KEY_EXAMINATION_FILE, examId);
-        List<ExaminationFile> files = redisHelper.getObjectsFromHash(fileKey, TempFileInfo.class)
-                .map(info -> info.createExamFile(examination.getId()))
-                .filter(file -> FileUtils.transferTempFile(file, examId, examination.getId(), EXAMINATION))
-                .toList();
-        examinationFileMapper.insert(files);
+        List<ExaminationFile> files = fileService.saveTempExaminations(fileKeyTemplate, uuid, examination);
         return ExaminationResponse.create(examination, files.stream()
                 .map(ExaminationFileResponse::create)
                 .toList());
@@ -563,8 +514,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     public ExaminationResponse getExamination(Long examId) {
         Examination examination = examinationMapper.requireById(examId);
-        List<ExaminationFileResponse> files = examinationFileMapper
-                .selectList(examinationFileMapper.queryByExamination(examId)).stream()
+        List<ExaminationFileResponse> files = examinationFileMapper.queryByExamination(examId).list().stream()
                 .map(ExaminationFileResponse::create)
                 .toList();
         return ExaminationResponse.create(examination, files);
@@ -586,7 +536,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     public VaccineResponse addVaccine(Long petId, VaccineAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         Pet pet = petService.requireById(petId,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
@@ -598,7 +548,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
 
         // 返回值
         Item item = itemMapper.requireById(vaccine.getItemId(), Item::getId, Item::getName);
-        String cover = petService.getCoverById(petId);
+        String cover = fileService.getCoverUrl(petId, PET);
         return VaccineResponse.create(record, vaccine, item, pet, cover, login);
     }
 
@@ -608,7 +558,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     public List<VaccineResponse> getVaccines(Long petId) {
         Pet pet = petService.requireById(petId,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
-        String cover = petService.getCoverById(petId);
+        String cover = fileService.getCoverUrl(petId, PET);
         List<VaccineRecord> vaccines = vaccineRecordMapper.selectList(vaccineRecordMapper.queryByPet(petId));
         Map<Long, Vaccine> vaccineMap = vaccineMapper.groupById(vaccines.stream().map(VaccineRecord::getVaccineId));
         Map<Long, Item> itemMap = itemMapper.groupById(
@@ -628,7 +578,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     public List<VaccineResponse> getLatestVaccines(Long petId) {
         Pet pet = petService.requireById(petId,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
-        String cover = petService.getCoverById(petId);
+        String cover = fileService.getCoverUrl(petId, PET);
         Map<Long, Optional<VaccineRecord>> vaccines = vaccineRecordMapper
                 // 获取疫苗记录（倒序）
                 .selectList(vaccineRecordMapper.queryByPet(petId)).stream()
@@ -654,7 +604,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public DewormResponse addDeworm(Long petId, DewormAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor() || login.isWorker());
         Dewormer dewormer = dewormerMapper.requireById(request.getDewormerId());
         Item dewormerItem = itemMapper.requireById(dewormer.getItemId(),
@@ -665,7 +615,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         DewormRecord record = request.create(petId, login.getId());
         dewormRecordMapper.insert(record);
 
-        String cover = petService.getCoverById(petId);
+        String cover = fileService.getCoverUrl(petId, PET);
         return DewormResponse.create(record, dewormer, dewormerItem, pet, cover, login);
     }
 
@@ -673,11 +623,11 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取驱虫记录
      */
     public List<DewormResponse> getDeworms(Long petId) {
-        getLoginUser();
+        requireLoginUser();
         Pet pet = petService.requireById(petId,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
 
-        String cover = petService.getCoverById(petId);
+        String cover = fileService.getCoverUrl(petId, PET);
         List<DewormRecord> deworms = dewormRecordMapper.selectList(dewormRecordMapper.queryByPet(petId));
         Map<Long, Dewormer> dewormerMap = dewormerMapper.groupById(deworms.stream().map(DewormRecord::getDewormerId));
         Map<Long, Item> itemMap = itemMapper.groupById(
@@ -697,7 +647,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     public Map<Long, List<VaccineResponse>> getVaccinesByPetIds(Set<Long> petIds) {
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
-        Map<Long, String> covers = petService.getCoversByPetIds(petIds);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
         List<VaccineRecord> vaccines = vaccineRecordMapper.selectList(vaccineRecordMapper.queryByPets(petIds));
         Map<Long, Vaccine> vaccineMap = vaccineMapper.groupById(vaccines.stream().map(VaccineRecord::getVaccineId));
         Map<Long, Item> itemMap = itemMapper.groupById(
@@ -715,10 +665,10 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取驱虫记录
      */
     public Map<Long, List<DewormResponse>> getDewormsByPetIds(Set<Long> petIds) {
-        getLoginUser();
+        requireLoginUser();
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
-        Map<Long, String> covers = petService.getCoversByPetIds(petIds);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
         List<DewormRecord> deworms = dewormRecordMapper.selectList(dewormRecordMapper.queryByPets(petIds));
         Map<Long, Dewormer> dewormerMap = dewormerMapper.groupById(deworms.stream().map(DewormRecord::getDewormerId));
         Map<Long, Item> itemMap = itemMapper.groupById(
@@ -738,7 +688,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public RehabPlanResponse addRehabPlan(Long petId, RehabPlanAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         Pet pet = petService.requireById(petId,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
@@ -752,7 +702,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         rehabPlanStatusMapper.insert(status);
 
         // 返回
-        String cover = petService.getCoverById(petId);
+        String cover = fileService.getCoverUrl(petId, PET);
         return RehabPlanResponse.create(plan, login, pet, cover,
                 List.of(RehabPlanStatusResponse.create(status, login)));
     }
@@ -766,7 +716,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 User::getId, User::getUsername, User::getAvatar);
         Pet pet = petService.requireById(plan.getPetId(),
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        String cover = petService.getCoverById(plan.getPetId());
+        String cover = fileService.getCoverUrl(plan.getPetId(), PET);
         List<RehabPlanStatus> plans = rehabPlanStatusMapper.selectList(rehabPlanStatusMapper.queryByPlan(planId));
         Map<Long, User> users = userService.groupById(
                 plans.stream().map(RehabPlanStatus::getUserId),
@@ -780,9 +730,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 查询康复计划
      */
     public Page<RehabPlanResponse> getRehabPlans(RehabPlanQueryParams queryRequest, PageParams pageParams) {
-        Page<RehabPlan> page = pageParams.createPage();
-        LambdaQueryWrapper<RehabPlan> query = rehabPlanMapper.queryByRequest(queryRequest);
-        Page<RehabPlan> plans = rehabPlanMapper.selectPage(page, query);
+        Page<RehabPlan> plans = rehabPlanMapper.queryByRequest(queryRequest).page(pageParams);
         Set<Long> planIds = plans.getRecords().stream()
                 .map(RehabPlan::getId)
                 .collect(Collectors.toSet());
@@ -795,7 +743,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 .collect(Collectors.toSet());
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        Map<Long, String> covers = petService.getCoversByPetIds(petIds);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
         Map<Long, List<RehabPlanStatusResponse>> statusRecords = statusRecordMap.stream()
                 .map(record -> RehabPlanStatusResponse.createBatch(record, users))
                 .collect(Collectors.groupingBy(RehabPlanStatusResponse::getPlanId));
@@ -809,13 +757,13 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public RehabPlanResponse updateRehabPlanStatus(Long planId, RehabPlanStatusUpdateRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         RehabPlan plan = rehabPlanMapper.requireById(planId);
 
         // 更新
         RehabPlanStatus status = request.create(planId, login.getId());
-        rehabPlanMapper.update(rehabPlanMapper.updateStatusById(planId, status.getStatus()));
+        rehabPlanMapper.updateStatusById(planId, status.getStatus()).update();
         rehabPlanStatusMapper.insert(status);
 
         // 返回
@@ -824,7 +772,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 User::getId, User::getUsername, User::getAvatar);
         Pet pet = petService.requireById(plan.getPetId(),
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        String cover = petService.getCoverById(plan.getPetId());
+        String cover = fileService.getCoverUrl(plan.getPetId(), PET);
         List<RehabPlanStatus> statusRecords = rehabPlanStatusMapper.selectList(rehabPlanStatusMapper.queryByPlan(planId));
         Map<Long, User> users = userService.groupById(
                 statusRecords.stream().map(RehabPlanStatus::getUserId),
@@ -840,36 +788,14 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     @Transactional
     public RehabRecordResponse addRehabRecord(Long planId, RehabRecordAddTable request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor() || login.isVolunteer());
         rehabPlanMapper.requireExist(planId);
 
         // 添加数据
         RehabRecord record = request.create(planId, login.getId());
         rehabRecordMapper.insert(record);
-        Path path = FileUtils.generateFilePath(REHAB_PLAN, planId);
-        List<MediaFile> files = new ArrayList<>(request.getFiles().size());
-        for (MultipartFile file : request.getFiles()) {
-            Date now = new Date();
-            Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
-            String name = FileUtils.getNameWithoutExtension(file.getOriginalFilename());
-            String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
-            FileUtils.upload(file, filename, path);
-
-            MediaFile mediaFile = new MediaFile(null,
-                    record.getId(),
-                    REHAB_PLAN,
-                    login.getId(),
-                    filename,
-                    "",
-                    false,
-                    filename,
-                    extAndType.getSecond(),
-                    now);
-            files.add(mediaFile);
-        }
-        mediaFileMapper.insert(files);
-
+        List<MediaFile> files = fileService.uploadMediaFiles(request.getFiles(), record.getId(), REHAB_PLAN);
         return RehabRecordResponse.create(record, login, files);
     }
 
@@ -882,10 +808,9 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 records.stream().map(RehabRecord::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
         Set<Long> recordIds = records.stream().map(RehabRecord::getId).collect(Collectors.toSet());
-        Map<Long, List<MediaFile>> files = mediaFileMapper.groupList(
-                mediaFileMapper.queryByParents(REHAB_PLAN, recordIds).select(MediaFile::getFilename),
-                MediaFile::getParentId,
-                Function.identity());
+        Map<Long, List<MediaFile>> files = fileService.getBaseMapper().queryByParents(REHAB_PLAN, recordIds)
+                .select(MediaFile::getFilename)
+                .groupList(MediaFile::getParentId);
         return records.stream()
                 .map(record -> RehabRecordResponse.createBatch(record, users, files))
                 .toList();
@@ -896,7 +821,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     public HealthAssessmentResponse addHealthAssessment(Long petId, HealthAssessmentAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isDoctor());
         Pet pet = petService.requireById(petId,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
@@ -905,7 +830,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         HealthAssessment assessment = request.create(petId, login.getId());
         healthAssessmentMapper.insert(assessment);
 
-        String cover = petService.getCoverById(petId);
+        String cover = fileService.getCoverUrl(petId, PET);
         return HealthAssessmentResponse.create(assessment, pet, cover, login);
     }
 
@@ -916,7 +841,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         HealthAssessment assessment = healthAssessmentMapper.requireById(assessmentId);
         Pet pet = petService.requireById(assessment.getPetId(),
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        String cover = petService.getCoverById(pet.getId());
+        String cover = fileService.getCoverUrl(pet.getId(), PET);
         User assessor = userService.requireById(assessment.getAssessorId(),
                 User::getId, User::getUsername, User::getAvatar);
         return HealthAssessmentResponse.create(assessment, pet, cover, assessor);
@@ -926,15 +851,15 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取健康评估
      */
     public Page<HealthAssessmentResponse> getHealthAssessments(@Nullable Long petId, PageParams pageParams) {
-        Page<HealthAssessment> page = pageParams.createPage();
-        Wrapper<HealthAssessment> query = petId == null ? null : healthAssessmentMapper.queryByPet(petId);
-        Page<HealthAssessment> assessments = healthAssessmentMapper.selectPage(page, query);
+        Page<HealthAssessment> assessments = petId == null
+                ? healthAssessmentMapper.selectPage(pageParams.createPage(), null)
+                : healthAssessmentMapper.queryByPet(petId).page(pageParams);
         Set<Long> petIds = assessments.getRecords().stream()
                 .map(HealthAssessment::getPetId)
                 .collect(Collectors.toSet());
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed);
-        Map<Long, String> covers = petService.getCoversByPetIds(petIds);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
         Map<Long, User> users = userService.groupById(
                 assessments.getRecords().stream().map(HealthAssessment::getAssessorId),
                 User::getId, User::getUsername, User::getAvatar);
@@ -943,8 +868,9 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     }
 
     @Autowired
-    public void setServices(PetService petService, UserService userService) {
+    public void setServices(PetService petService, UserService userService, FileService fileService) {
         this.petService = petService;
         this.userService = userService;
+        this.fileService = fileService;
     }
 }

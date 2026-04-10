@@ -1,7 +1,7 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.entity.ExaminationDiagnosis;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Set;
@@ -17,12 +17,17 @@ public interface ExaminationDiagnosisMapper extends IBaseMapper<ExaminationDiagn
      * 获取检验结果关联的所有诊断结果<br>
      * - 索引：(examinationId)
      */
-    default LambdaQueryWrapper<ExaminationDiagnosis> queryByExaminations(Set<Long> examinationIds) {
+    default MPLambdaQuery<ExaminationDiagnosis> queryByExaminations(Set<Long> examinationIds) {
         return lambdaQuery().in(ExaminationDiagnosis::getExaminationId, examinationIds);
     }
 
     @Override
     default String getMissingMessage() {
         return "诊断关系不存在";
+    }
+
+    @Override
+    default Class<ExaminationDiagnosis> getEntityClass() {
+        return ExaminationDiagnosis.class;
     }
 }

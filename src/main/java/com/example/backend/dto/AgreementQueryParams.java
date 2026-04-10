@@ -1,6 +1,5 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.Agreement;
 import com.example.backend.entity.property.ParentType;
 import lombok.Data;
 import org.springframework.validation.Errors;
@@ -8,7 +7,7 @@ import org.springframework.validation.Errors;
 import java.util.Date;
 
 @Data
-public class AgreementQueryParams implements IParam<Agreement>, IRequestValidate {
+public class AgreementQueryParams implements IParam, IValidatedRequest {
 
     private Long parentId;
     private String parentType;

@@ -3,20 +3,15 @@ package com.example.backend.dto;
 import com.example.backend.entity.Donation;
 import com.example.backend.entity.DonationStatusUpdateRecord;
 import com.example.backend.entity.property.DonationStatus;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.validation.Errors;
 
 import java.util.Date;
 
 @Data
-public class DonationStatusUpdateRequest implements IRequest, IRequestValidate {
-
-    @NotBlank(message = "request.item_donation.donation.status")
-    private String status;
-
-    @NotBlank(message = "request.item_donation.donation.status_reason")
-    private String reason;
+@EqualsAndHashCode(callSuper = true)
+public class DonationStatusUpdateRequest extends StatusUpdateRequest {
 
     /**
      * Donation: id, status

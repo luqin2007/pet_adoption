@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class FirstRegistrationAddRequest implements IRequest, IRequestValidate {
+public class FirstRegistrationAddRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.pet.id")
     private Long petId;

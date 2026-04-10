@@ -26,25 +26,25 @@ public class Location implements IId {
     private Long parentId;
 
     /**
-     * 发现者 id
+     * 发现/记录者 id
      * *外键:user(id) 非空 bigint*
      */
-    private Long discoverId;
+    private Long userId;
 
     /**
-     * 发现省份
+     * 省份
      * *非空 varchar(20)*
      */
     private String province;
 
     /**
-     * 发现城市
+     * 城市
      * *非空 varchar(20)*
      */
     private String city;
 
     /**
-     * 发现县/县级市
+     * 县/县级市
      * *非空 varchar(20)*
      */
     private String county;
@@ -56,7 +56,7 @@ public class Location implements IId {
     private String detailAddress;
 
     /**
-     * 发现时间
+     * 创建时间
      * *非空 datetime*
      */
     private Date createTime;

@@ -1,7 +1,7 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.entity.DonationStatusUpdateRecord;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Set;
@@ -13,15 +13,25 @@ import java.util.Set;
 @Mapper
 public interface DonationStatusUpdateMapper extends IBaseMapper<DonationStatusUpdateRecord> {
 
-    default LambdaQueryWrapper<DonationStatusUpdateRecord> queryByDonation(Long donationId) {
+    default MPLambdaQuery<DonationStatusUpdateRecord> queryByDonation(Long donationId) {
         return lambdaQuery()
                 .eq(DonationStatusUpdateRecord::getDonationId, donationId)
-                .orderByDesc(DonationStatusUpdateRecord::getCreateTime);
+                .desc(DonationStatusUpdateRecord::getCreateTime);
     }
 
-    default LambdaQueryWrapper<DonationStatusUpdateRecord> queryByDonations(Set<Long> donationIds) {
+    default MPLambdaQuery<DonationStatusUpdateRecord> queryByDonations(Set<Long> donationIds) {
         return lambdaQuery()
                 .in(DonationStatusUpdateRecord::getDonationId, donationIds)
-                .orderByDesc(DonationStatusUpdateRecord::getCreateTime);
+                .desc(DonationStatusUpdateRecord::getCreateTime);
+    }
+
+    @Override
+    default String getMissingMessage() {
+        return "捐赠状态记录不存在";
+    }
+
+    @Override
+    default Class<DonationStatusUpdateRecord> getEntityClass() {
+        return DonationStatusUpdateRecord.class;
     }
 }

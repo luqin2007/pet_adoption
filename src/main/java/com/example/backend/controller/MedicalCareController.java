@@ -174,21 +174,20 @@ public class MedicalCareController {
     }
 
     @PostMapping("/exam/{_id}/doc")
-    public Result<String> uploadExamination(@PathVariable("_id") String examId, ExaminationFileUploadTable request) {
-        String filename = medicalService.uploadExamination(examId, request);
+    public Result<String> uploadExamination(@PathVariable("_id") String uuid, ExaminationFileUploadTable request) {
+        String filename = medicalService.uploadExamination(uuid, request);
         return Result.success(filename);
     }
 
     @DeleteMapping("/exam/{_id}/doc/{name}")
-    public Result<Void> deleteExamination(@PathVariable("_id") String examId, @PathVariable("name") String filename) {
-        medicalService.deleteExamination(examId, filename);
+    public Result<Void> deleteExamination(@PathVariable("_id") String uuid, @PathVariable("name") String filename) {
+        medicalService.deleteExamination(uuid, filename);
         return Result.success();
     }
 
     @PostMapping("/exam/{_id}")
-    public Result<ExaminationResponse> addExamination(@PathVariable("_id") String examId,
-                                                      @RequestBody ExaminationAddRequest request) {
-        ExaminationResponse response = medicalService.addExamination(examId, request);
+    public Result<ExaminationResponse> addExamination(@PathVariable("_id") String uuid, @RequestBody ExaminationAddRequest request) {
+        ExaminationResponse response = medicalService.addExamination(uuid, request);
         return Result.success(response);
     }
 

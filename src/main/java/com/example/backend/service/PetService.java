@@ -1,25 +1,28 @@
 package com.example.backend.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
-import com.example.backend.mapper.*;
-import com.example.backend.util.FileUtils;
+import com.example.backend.entity.query.PetLocations;
+import com.example.backend.event.PetAddEvent;
+import com.example.backend.event.PetLocationEvent;
+import com.example.backend.event.PetStatusChangeEvent;
+import com.example.backend.mapper.PetLocationMapper;
+import com.example.backend.mapper.PetMapper;
+import com.example.backend.mapper.PetStatusRecordMapper;
+import com.example.backend.mapper.PetTagMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.example.backend.entity.property.MediaType.IMAGE;
 import static com.example.backend.entity.property.ParentType.PET;
 
 /**
@@ -31,7 +34,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
 
     private final PetStatusRecordMapper petStatusRecordMapper;
     private final PetLocationMapper petLocationMapper;
-    private final MediaFileMapper mediaFileMapper;
+    private final FileService fileService;
     private final PetTagMapper petTagMapper;
 
     private UserService userService;
@@ -43,28 +46,41 @@ public class PetService extends BaseService<PetMapper, Pet> {
     @Transactional
     public PetAddResponse addPet(PetInfoAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         // 宠物信息
-        Pet information = request.createInfo(login.getId());
-        save(information);
+        Pet pet = request.createInfo(login.getId());
+        save(pet);
         // 位置信息
-        Location location = request.createLocation(information.getId(), login.getId());
+        Location location = request.createLocation(pet.getId(), login.getId());
         petLocationMapper.insert(location);
-        return PetAddResponse.create(information);
+
+        eventPublisher.publishEvent(new PetAddEvent(pet, login, location));
+        return PetAddResponse.create(pet);
+    }
+
+    /**
+     * 添加宠物位置信息
+     */
+    @Transactional
+    public PetResponse addLocation(Long petId, LocationRequest request) {
+        User login = requireLoginUser();
+        Location location = request.createLocation(petId, login.getId());
+        petLocationMapper.insert(location);
+        eventPublisher.publishEvent(new PetLocationEvent(location));
+        return getPet(petId);
     }
 
     /**
      * 获取流浪宠物列表
      */
-    public Page<PetResponse> getPets(PageParams page) {
-        Page<Pet> result = page(page.createPage());
-        List<Pet> records = result.getRecords();
-        Set<Long> petIds = records.stream().map(Pet::getId).collect(Collectors.toSet());
+    public Page<PetResponse> getPets(PetQueryParams paramRequest, PageParams pageRequest) {
+        Page<PetLocations> result = baseMapper.queryByParams(paramRequest).page(pageRequest);
+        Set<Long> petIds = result.getRecords().stream().map(Pet::getId).collect(Collectors.toSet());
         Map<Long, User> users = userService.groupById(
-                records.stream().map(Pet::getDiscoverId),
+                result.getRecords().stream().map(Pet::getDiscoverId),
                 User::getId, User::getUsername, User::getAvatar);
-        Map<Long, List<PetTagResponse>> tags = petTagMapper.groupList(petTagMapper.queryByPets(petIds), PetTag::getPetId, PetTagResponse::create);
-        Map<Long, String> covers = getCoversByPetIds(petIds);
+        Map<Long, List<PetTagResponse>> tags = petTagMapper.queryByPets(petIds).groupList(PetTag::getPetId, PetTagResponse::create);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
         Map<Long, List<VaccineResponse>> vaccines = medicalService.getVaccinesByPetIds(petIds);
         Map<Long, List<DewormResponse>> deworms = medicalService.getDewormsByPetIds(petIds);
         return convertDto(result, info -> PetResponse.createBatch(info, users, tags, covers, vaccines, deworms));
@@ -77,10 +93,11 @@ public class PetService extends BaseService<PetMapper, Pet> {
         Pet info = requireById(petId);
         List<PetTagResponse> tags = getTags(petId);
         User discover = userService.selectById(info.getDiscoverId(), User::getId, User::getUsername, User::getAvatar);
-        String cover = getCoverById(petId);
+        String cover = fileService.getCoverUrl(petId, PET);
         List<VaccineResponse> vaccines = medicalService.getVaccines(petId);
         List<DewormResponse> deworms = medicalService.getDeworms(petId);
-        return PetResponse.create(info, cover, discover, tags, vaccines, deworms);
+        List<Location> locations = petLocationMapper.queryByPet(petId).list();
+        return PetResponse.create(info, cover, discover, tags, vaccines, deworms, locations);
     }
 
     /**
@@ -90,7 +107,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
     public PetResponse updatePet(Long petId, PetUpdateRequest request) {
         // 检查宠物是否存在
         Pet info = requireById(petId);
-        User login = getLoginUser();
+        User login = requireLoginUser();
         checkUserPermission(info, login);
 
         // 更新宠物信息
@@ -99,10 +116,11 @@ public class PetService extends BaseService<PetMapper, Pet> {
 
         User discover = userService.selectById(info.getDiscoverId(), User::getId, User::getUsername, User::getAvatar);
         List<PetTagResponse> tags = getTags(petId);
-        String cover = getCoverById(petId);
+        String cover = fileService.getCoverUrl(petId, PET);
         List<VaccineResponse> vaccines = medicalService.getVaccines(petId);
         List<DewormResponse> deworms = medicalService.getDeworms(petId);
-        return PetResponse.create(info, cover, discover, tags, vaccines, deworms);
+        List<Location> locations = petLocationMapper.queryByPet(petId).list();
+        return PetResponse.create(info, cover, discover, tags, vaccines, deworms, locations);
     }
 
     /**
@@ -110,9 +128,9 @@ public class PetService extends BaseService<PetMapper, Pet> {
      */
     @Transactional
     public void deletePet(Long petId) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
-        update(getBaseMapper().discardPetById(petId));
+        getBaseMapper().discardPetById(petId).update();
     }
 
     /**
@@ -121,24 +139,12 @@ public class PetService extends BaseService<PetMapper, Pet> {
     @Transactional
     public PetMediaResponse uploadMedia(Long petId, PetMediaUploadTable request) {
         // 检查用户
-        User user = getLoginUser();
+        User user = requireLoginUser();
 
         // 保存图片/视频
         MultipartFile file = request.getFile();
         MediaFile media = request.createMedia(petId, user.getId(), file);
-        Path resources = FileUtils.generateFilePath(PET, petId);
-        FileUtils.upload(file, media.getFilename(), resources);
-
-        // 检查封面
-        if (IMAGE == media.getType()) {
-            if (Boolean.TRUE.equals(request.getIsCover())) { // 封面：清理旧封面
-                mediaFileMapper.update(mediaFileMapper.clearCover(PET, petId));
-            } else { // 非封面：若原本没有封面则设置为封面
-                boolean hasCover = mediaFileMapper.exists(mediaFileMapper.queryCover(PET, petId));
-                media.setIsCover(!hasCover);
-            }
-        }
-        mediaFileMapper.insert(media);
+        fileService.uploadMediaFile(file, media, petId, PET);
         return PetMediaResponse.create(media);
     }
 
@@ -146,32 +152,14 @@ public class PetService extends BaseService<PetMapper, Pet> {
      * 更新流浪宠物图片/视频信息
      */
     @Transactional
-    public PetMediaResponse updateMedia(Long mediaId, PetMediaUpdateRequest request) {
-        // 检查图片
-        MediaFile media = mediaFileMapper.requireById(mediaId);
-        Long petId = media.getParentId();
-        Pet info = requireById(petId);
-
+    public PetMediaResponse updateMedia(Long petId, Long mediaId, PetMediaUpdateRequest request) {
         // 检查权限
-        User login = getLoginUser();
+        User login = requireLoginUser();
+        Pet info = requireById(petId);
         checkUserPermission(info, login);
 
         // 更新图片信息
-        boolean isCoverChanged = !Objects.equals(media.getIsCover(), request.getIsCover());
-        request.applyTo(media);
-        if (isCoverChanged) { // 切换封面
-            if (media.getIsCover()) { // 非封面 -> 封面 清空已有封面
-                mediaFileMapper.update(mediaFileMapper.clearCover(PET, mediaId));
-            } else { // 封面 -> 非封面 设置新封面
-                if (!mediaFileMapper.exists(mediaFileMapper.queryCover(PET, petId, mediaId))) {
-                    MediaFile latestImage = mediaFileMapper.selectOne(mediaFileMapper.queryLatestImageId(PET, petId, mediaId));
-                    if (latestImage != null)
-                        mediaFileMapper.update(mediaFileMapper.updateCover(latestImage.getId(), true));
-                }
-            }
-        }
-
-        mediaFileMapper.updateById(media);
+        MediaFile media = fileService.updateMediaFile(mediaId, petId, PET, request::applyTo);
         return PetMediaResponse.create(media);
     }
 
@@ -179,45 +167,21 @@ public class PetService extends BaseService<PetMapper, Pet> {
      * 删除流浪宠物图片/视频
      */
     @Transactional
-    public void deleteMedia(Long mediaId) {
-        // 检查图片
-        MediaFile media = mediaFileMapper.requireById(mediaId);
-        requireEqual(PET, media.getParentType(), "图片或视频无效");
-
+    public void deleteMedia(Long petId, Long mediaId) {
         // 检查权限
-        Long petId = media.getParentId();
         Pet info = requireById(petId);
-        User login = getLoginUser();
+        User login = requireLoginUser();
         checkUserPermission(info, login);
 
         // 删除图片
-        mediaFileMapper.deleteById(mediaId);
-        Path imgPath = FileUtils.generateFilePath(PET, petId, media.getFilename());
-        FileUtils.tryDeleteFile(imgPath);
-
-        // 处理封面
-        if (IMAGE == media.getType() && media.getIsCover()
-                && !mediaFileMapper.exists(mediaFileMapper.queryCover(PET, petId))) {
-            // 没有封面：取最后一张图片为封面
-            MediaFile latestImage = mediaFileMapper.selectOne(mediaFileMapper.queryLatestImageId(PET, petId));
-            if (latestImage != null)
-                mediaFileMapper.update(mediaFileMapper.updateCover(latestImage.getId(), true));
-        }
-    }
-
-    /**
-     * 获取宠物封面图片
-     */
-    public String getCoverById(Long petId) {
-        MediaFile info = mediaFileMapper.selectOne(mediaFileMapper.queryCover(PET, petId));
-        return info == null ? null : FileUtils.generateAssetUrl(PET, petId, info.getFilename());
+        fileService.deleteMediaFile(mediaId, petId, PET);
     }
 
     /**
      * 获取流浪宠物标签
      */
     public List<PetTagResponse> getTags(Long petId) {
-        return petTagMapper.selectList(petTagMapper.queryByPet(petId)).stream()
+        return petTagMapper.queryByPet(petId).list().stream()
                 .map(PetTagResponse::create)
                 .toList();
     }
@@ -226,7 +190,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
      * 获取流浪宠物标签
      */
     public Map<Long, List<PetTagResponse>> getTags(Set<Long> petIds) {
-        return petTagMapper.groupList(petTagMapper.queryByPets(petIds), PetTag::getPetId, PetTagResponse::create);
+        return petTagMapper.queryByPets(petIds).groupList(PetTag::getPetId, PetTagResponse::create);
     }
 
     /**
@@ -236,7 +200,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
     public List<PetTagResponse> addTags(Long petId, PetTagAddRequest request) {
         // 检查权限
         Pet info = requireById(petId);
-        User login = getLoginUser();
+        User login = requireLoginUser();
         checkUserPermission(info, login);
 
         // 筛选标签
@@ -259,12 +223,12 @@ public class PetService extends BaseService<PetMapper, Pet> {
     public List<PetTagResponse> deleteTags(Long petId, IdsRequest request) {
         // 检查权限
         Pet info = requireById(petId);
-        User login = getLoginUser();
+        User login = requireLoginUser();
         checkUserPermission(info, login);
 
         // 删除标签
         if (!request.getIds().isEmpty())
-            petTagMapper.delete(petTagMapper.deleteByPetAndIds(petId, request.getIds()));
+            petTagMapper.deleteByPetAndIds(petId, request.getIds()).delete();
 
         return getTags(petId);
     }
@@ -276,14 +240,16 @@ public class PetService extends BaseService<PetMapper, Pet> {
     public PetStatusRecordResponse updateStatus(Long petId, PetStatusUpdateRequest request) {
         // 校验权限
         Pet pet = requireById(petId, Pet::getId, Pet::getStatus);
-        User login = getLoginUser();
+        User login = requireLoginUser();
         checkUserPermission(pet, login);
 
         // 保存记录
-        PetStatusRecord record = request.applyTo(pet, login.getId());
+        PetStatusRecord record = request.create(pet, login.getId());
+        baseMapper.updateStatus(petId, record.getTo()).update();
         petStatusRecordMapper.insert(record);
-        updateById(pet);
-        return PetStatusRecordResponse.create(record, pet, getCoverById(petId), login);
+        eventPublisher.publishEvent(new PetStatusChangeEvent(record));
+        String cover = fileService.getCoverUrl(petId, PET);
+        return PetStatusRecordResponse.create(record, pet, cover, login);
     }
 
     /**
@@ -291,28 +257,27 @@ public class PetService extends BaseService<PetMapper, Pet> {
      */
     public Page<PetStatusRecordResponse> getStatusRecords(Long petId, PageParams pageParams, Set<Long> userFilter) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
 
         // 数据查询
-        LambdaQueryWrapper<PetStatusRecord> wrapper = petStatusRecordMapper.queryByPet(petId, userFilter);
-        Page<PetStatusRecord> result = petStatusRecordMapper.selectPage(pageParams.createPage(), wrapper);
+        Page<PetStatusRecord> result = petStatusRecordMapper.queryByPet(petId, userFilter).page(pageParams);
 
         // 数据转换
         List<PetStatusRecord> records = result.getRecords();
         Set<Long> petIds = records.stream().map(PetStatusRecord::getPetId).collect(Collectors.toSet());
         Map<Long, Pet> pets = groupById(petIds,
                 Pet::getId, Pet::getName);
-        Map<Long, String> covers = getCoversByPetIds(petIds);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
         Map<Long, User> users = userService.groupById(
                 records.stream().map(PetStatusRecord::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(result, record -> PetStatusRecordResponse.createBatch(record, pets, covers, users));
     }
-
     /*
      * 权限校验
      */
+
     private void checkUserPermission(Pet info, User login) {
         boolean allowed = login.isWorker() || switch (info.getStatus()) { // 工作人员、管理员在任何情况下都可以修改
             case WAITING, AGAINST -> // 待审核、未通过审核的宠物，可由第一次发现的志愿者修改
@@ -322,13 +287,6 @@ public class PetService extends BaseService<PetMapper, Pet> {
                     login.isVolunteer() || login.isDoctor();
         };
         requirePermission(allowed);
-    }
-
-    /**
-     * 根据 id 批量获取流浪宠物封面地址
-     */
-    public Map<Long, String> getCoversByPetIds(Set<Long> petIds) {
-        return mediaFileMapper.group(mediaFileMapper.queryCovers(PET, petIds), MediaFile::getFilename);
     }
 
     @Autowired

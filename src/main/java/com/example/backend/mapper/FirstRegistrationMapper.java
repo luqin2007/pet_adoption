@@ -1,10 +1,8 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.example.backend.dto.FirstRegistrationQueryParams;
 import com.example.backend.entity.FirstRegistration;
-import com.example.backend.util.StringUtils;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -19,7 +17,7 @@ public interface FirstRegistrationMapper extends IBaseMapper<FirstRegistration> 
      * 根据宠物 id 查询初诊登记<br>
      * - 索引：(pet, createTime)
      */
-    default LambdaQueryWrapper<FirstRegistration> selectByPet(Long petId) {
+    default MPLambdaQuery<FirstRegistration> selectByPet(Long petId) {
         return lambdaQuery().eq(FirstRegistration::getPetId, petId);
     }
 
@@ -28,17 +26,21 @@ public interface FirstRegistrationMapper extends IBaseMapper<FirstRegistration> 
      * - 索引：(petId, createTime)<br>
      * - 索引：(registrarId, createTime)
      */
-    default LambdaQueryWrapper<FirstRegistration> selectByRequest(FirstRegistrationQueryParams params) {
-        LambdaQueryWrapper<FirstRegistration> query = Wrappers.lambdaQuery();
-        params.query(query, FirstRegistration::getPetId, params.getPet())
-                .query(query, FirstRegistration::getRegistrarId, params.getRegistrar())
-                .queryTime(query, FirstRegistration::getCreateTime, params.getDate0(), params.getDate1());
-        query.like(StringUtils.hasText(params.getName()), FirstRegistration::getName, params.getName());
-        return query;
+    default MPLambdaQuery<FirstRegistration> selectByRequest(FirstRegistrationQueryParams params) {
+        return lambdaQuery()
+                .eq(FirstRegistration::getPetId, params.getPet())
+                .eq(FirstRegistration::getRegistrarId, params.getRegistrar())
+                .in(FirstRegistration::getCreateTime, params.getDate0(), params.getDate1())
+                .like(FirstRegistration::getName, params.getName());
     }
 
     @Override
     default String getMissingMessage() {
         return "初诊信息不存在";
+    }
+
+    @Override
+    default Class<FirstRegistration> getEntityClass() {
+        return FirstRegistration.class;
     }
 }

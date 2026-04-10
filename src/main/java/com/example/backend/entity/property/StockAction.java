@@ -4,7 +4,7 @@ import com.example.backend.util.ServiceException;
 
 import java.util.Locale;
 
-public enum StockRecordAction {
+public enum StockAction {
     IN, // 入库
     OUT, // 出库
     DESTROY; // 销毁
@@ -13,9 +13,9 @@ public enum StockRecordAction {
         return this == IN;
     }
 
-    public static StockRecordAction get(String name) {
+    public static StockAction get(String name) {
         try {
-            return StockRecordAction.valueOf(name.toUpperCase(Locale.ROOT));
+            return StockAction.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw ServiceException.invalidate("无效物资记录动作 " + name);
         }

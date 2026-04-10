@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class DonationAddRequest implements IRequest, IRequestValidate {
+public class DonationAddRequest implements IRequest, IValidatedRequest {
 
     @NotEmpty(message = "request.timeout")
     private String uuid;

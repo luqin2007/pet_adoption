@@ -1,7 +1,7 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.entity.PetTag;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Collection;
@@ -17,7 +17,7 @@ public interface PetTagMapper extends IBaseMapper<PetTag> {
      * 查询某宠物所有 Tag<br>
      * - 索引：(petId)
      */
-    default LambdaQueryWrapper<PetTag> queryByPet(Long petId) {
+    default MPLambdaQuery<PetTag> queryByPet(Long petId) {
         return lambdaQuery().eq(PetTag::getPetId, petId);
     }
 
@@ -25,7 +25,7 @@ public interface PetTagMapper extends IBaseMapper<PetTag> {
      * 批量宠物 Tag<br>
      * - 索引：(petId)
      */
-    default LambdaQueryWrapper<PetTag> queryByPets(Collection<Long> petIds) {
+    default MPLambdaQuery<PetTag> queryByPets(Collection<Long> petIds) {
         return lambdaQuery().in(PetTag::getPetId, petIds);
     }
 
@@ -33,7 +33,7 @@ public interface PetTagMapper extends IBaseMapper<PetTag> {
      * 筛选某宠物的 Tag，用于删除<br>
      * - 索引：(petId)
      */
-    default LambdaQueryWrapper<PetTag> deleteByPetAndIds(Long petId, Collection<Long> ids) {
+    default MPLambdaQuery<PetTag> deleteByPetAndIds(Long petId, Collection<Long> ids) {
         return lambdaQuery()
                 .eq(PetTag::getPetId, petId)
                 .in(PetTag::getId, ids);
@@ -42,5 +42,10 @@ public interface PetTagMapper extends IBaseMapper<PetTag> {
     @Override
     default String getMissingMessage() {
         return "标签信息不存在";
+    }
+
+    @Override
+    default Class<PetTag> getEntityClass() {
+        return PetTag.class;
     }
 }

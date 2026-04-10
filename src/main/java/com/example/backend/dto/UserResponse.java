@@ -29,7 +29,7 @@ public class UserResponse implements IResponse {
      */
     private String refreshToken;
 
-    public static UserResponse fromEntity(User user) {
+    public static UserResponse create(User user) {
         return new UserResponse(
                 user.getId(),
                 user.getUsername(),

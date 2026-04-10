@@ -1,10 +1,10 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.dto.StockRecordQueryParams;
 import com.example.backend.entity.StockRecord;
 import com.example.backend.entity.property.SourceType;
-import com.example.backend.entity.property.StockRecordAction;
+import com.example.backend.entity.property.StockAction;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -18,31 +18,29 @@ import java.util.Set;
 @Mapper
 public interface StockRecordMapper extends IBaseMapper<StockRecord> {
 
-    default LambdaQueryWrapper<StockRecord> queryByRequest(StockRecordQueryParams params) {
-        LambdaQueryWrapper<StockRecord> query = lambdaQuery();
-        //noinspection unchecked
-        params.querySet(query, StockRecord::getStockId, params.getStock())
-                .querySet(query, StockRecord::getUserId, params.getUser())
-                .querySet(query, StockRecord::getAction, StockRecordAction::get, params.getAction())
-                .querySet(query, StockRecord::getSourceType, SourceType::get, params.getSource())
-                .queryDecimal(query, StockRecord::getCount, params.getCount0(), params.getCount1())
-                .queryDecimal(query, StockRecord::getRemainCount, params.getRemain0(), params.getRemain1())
-                .queryDecimal(query, StockRecord::getPrice, params.getPrice0(), params.getPrice1())
-                .queryDecimal(query, StockRecord::getTotalPrice, params.getTotal0(), params.getTotal1())
-                .queryTime(query, StockRecord::getCreateTime, params.getTime0(), params.getTime1())
-                .queryText(query, StockRecord::getPurpose, params.getPurpose());
-        return query;
+    default MPLambdaQuery<StockRecord> queryByRequest(StockRecordQueryParams params) {
+        return lambdaQuery()
+                .in(StockRecord::getStockId, params.getStock())
+                .in(StockRecord::getUserId, params.getUser())
+                .in(StockRecord::getAction, StockAction::get, params.getAction())
+                .in(StockRecord::getSourceType, SourceType::get, params.getSource())
+                .in(StockRecord::getCount, params.getCount0(), params.getCount1())
+                .in(StockRecord::getRemain, params.getRemain0(), params.getRemain1())
+                .in(StockRecord::getPrice, params.getPrice0(), params.getPrice1())
+                .in(StockRecord::getTotalPrice, params.getTotal0(), params.getTotal1())
+                .in(StockRecord::getCreateTime, params.getTime0(), params.getTime1())
+                .like(StockRecord::getPurpose, params.getPurpose());
     }
 
     /**
      * 索引：
      * - (stockId, createTime)
      */
-    default LambdaQueryWrapper<StockRecord> queryByStock(Long stockId, int count) {
+    default MPLambdaQuery<StockRecord> queryByStock(Long stockId, int count) {
         return lambdaQuery()
                 .eq(StockRecord::getStockId, stockId)
-                .orderByAsc(StockRecord::getCreateTime)
-                .last("LIMIT " + count);
+                .asc(StockRecord::getCreateTime)
+                .limit(count);
     }
 
     /**
@@ -70,5 +68,10 @@ public interface StockRecordMapper extends IBaseMapper<StockRecord> {
     @Override
     default String getMissingMessage() {
         return "物资使用记录不存在";
+    }
+
+    @Override
+    default Class<StockRecord> getEntityClass() {
+        return StockRecord.class;
     }
 }

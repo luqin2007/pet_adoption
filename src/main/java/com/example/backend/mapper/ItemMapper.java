@@ -1,9 +1,9 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.backend.dto.ItemQueryParams;
 import com.example.backend.entity.Item;
+import com.example.backend.util.MPLambdaQuery;
+import com.example.backend.util.MPLambdaUpdate;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -13,21 +13,19 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ItemMapper extends IBaseMapper<Item> {
 
-    @SuppressWarnings("unchecked")
-    default LambdaQueryWrapper<Item> queryByRequest(ItemQueryParams params) {
-        LambdaQueryWrapper<Item> query = lambdaQuery();
-        params.querySet(query, Item::getCategoryId, params.getCategory())
-                .queryText(query, Item::getName, params.getKeyword(), Item::getDescription);
-        return query;
+    default MPLambdaQuery<Item> queryByRequest(ItemQueryParams params) {
+        return lambdaQuery()
+                .in(Item::getCategoryId, params.getCategory())
+                .like(Item::getName, params.getKeyword(), Item::getDescription);
     }
 
-    default LambdaQueryWrapper<Item> queryByCategory(Long categoryId) {
+    default MPLambdaQuery<Item> queryByCategory(Long categoryId) {
         return lambdaQuery()
                 .eq(Item::getCategoryId, categoryId)
                 .ne(Item::getIsDiscard, true);
     }
 
-    default LambdaUpdateWrapper<Item> discardItem(Long itemId) {
+    default MPLambdaUpdate<Item> discardItem(Long itemId) {
         return lambdaUpdate()
                 .eq(Item::getId, itemId)
                 .set(Item::getIsDiscard, true);
@@ -36,5 +34,10 @@ public interface ItemMapper extends IBaseMapper<Item> {
     @Override
     default String getMissingMessage() {
         return "物品不存在";
+    }
+
+    @Override
+    default Class<Item> getEntityClass() {
+        return Item.class;
     }
 }

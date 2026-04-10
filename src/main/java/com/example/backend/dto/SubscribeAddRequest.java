@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-public class SubscribeAddRequest implements IRequest, IRequestValidate {
+public class SubscribeAddRequest implements IRequest, IValidatedRequest {
 
     private Long elementId;
 

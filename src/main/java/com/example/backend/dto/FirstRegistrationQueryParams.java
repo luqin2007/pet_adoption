@@ -1,13 +1,12 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.FirstRegistration;
 import lombok.Data;
 import org.springframework.validation.Errors;
 
 import java.sql.Date;
 
 @Data
-public class FirstRegistrationQueryParams implements IParam<FirstRegistration>, IRequestValidate {
+public class FirstRegistrationQueryParams implements IParam, IValidatedRequest {
 
     // 筛选
     private Long registrar;

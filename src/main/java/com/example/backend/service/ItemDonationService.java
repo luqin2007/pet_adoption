@@ -1,16 +1,18 @@
 package com.example.backend.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.entity.property.*;
+import com.example.backend.event.DonationAddEvent;
+import com.example.backend.event.DonationStatusEvent;
+import com.example.backend.event.DonationUpdateEvent;
 import com.example.backend.event.StockEvent;
 import com.example.backend.mapper.*;
 import com.example.backend.util.FileUtils;
 import com.example.backend.util.ServiceException;
-import com.example.backend.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.example.backend.entity.property.ParentType.DONATION;
-import static com.example.backend.util.C.KEY_DONATION;
-import static com.example.backend.util.C.KEY_DONATION_FILE;
 
 /**
  * 物资与捐赠管理
@@ -44,16 +44,17 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
 
     private final UserService userService;
 
+    @Value("${key.donation.uuid}")
+    private String donationTemplate;
+    @Value("${key.donation.file}")
+    private String donationFileTemplate;
+
     /**
      * 准备物资捐赠
      */
     public String beginDonation() {
-        User user = getLoginUser();
-
-        String uuid = StringUtils.randomUUID(KEY_DONATION, redisHelper, 10);
-        String redisKey = String.format(KEY_DONATION, uuid);
-        redisHelper.putString(redisKey, String.valueOf(user.getId()), 30);
-        return uuid;
+        User user = requireLoginUser();
+        return beginRedisUuid(donationTemplate, String.valueOf(user.getId()));
     }
 
     /**
@@ -61,9 +62,8 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     public String uploadDonationFile(String uuid, MultipartFile file) {
         // 权限校验
-        User user = getLoginUser();
-        String redisKey = String.format(KEY_DONATION, uuid);
-        redisHelper.requireString(redisKey, "创建超时");
+        User user = requireLoginUser();
+        String redisKey = requireRedisUuid(donationTemplate, uuid);
         Long userId = Long.valueOf(redisHelper.getString(redisKey));
         requireEqual(user.getId(), userId, "用户错误");
 
@@ -77,7 +77,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
 
         // 保存文件信息
         TempFileInfo fileInfo = new TempFileInfo(filename, filename, userId, extAndType.getSecond(), now);
-        String fileKey = String.format(KEY_DONATION_FILE, uuid);
+        String fileKey = String.format(donationFileTemplate, uuid);
         redisHelper.putObjectToHash(fileKey, filename, fileInfo);
         redisHelper.expireObject(fileKey, 30);
         redisHelper.expireString(redisKey, 30);
@@ -89,9 +89,8 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     public void deleteDonationFile(String uuid, String filename) {
         // 权限校验
-        User user = getLoginUser();
-        String redisKey = String.format(KEY_DONATION, uuid);
-        redisHelper.requireString(redisKey, "创建超时");
+        User user = requireLoginUser();
+        String redisKey = requireRedisUuid(donationTemplate, uuid);
         Long userId = Long.valueOf(redisHelper.getString(redisKey));
         requireEqual(user.getId(), userId, "用户错误");
 
@@ -107,19 +106,21 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     @Transactional
     public DonationResponse addDonation(DonationAddRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         String uuid = request.getUuid();
-        String redisKey = String.format(KEY_DONATION, uuid);
-        redisHelper.requireString(redisKey, "创建超时");
+        requireRedisUuid(donationTemplate, uuid);
 
         // 保存数据
         Donation donation = request.create(login.getId());
         donationMapper.insert(donation);
         List<DonationItem> items = request.createItems(donation);
         donationItemMapper.insert(items);
+        // 更新用户身份
+        login.setRole(login.getRole() | UserRole.DONOR.getSetMask());
+        userService.updateById(login);
 
         // 转移临时文件
-        String fileKey = String.format(KEY_DONATION_FILE, uuid);
+        String fileKey = String.format(donationFileTemplate, uuid);
         List<DonationFile> files = redisHelper.getObjectsFromHash(fileKey, TempFileInfo.class)
                 .filter(file -> FileUtils.transferTempFile(file, uuid, donation.getId(), DONATION))
                 .map(file -> file.createDonationFile(donation.getId()))
@@ -129,6 +130,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         // 清理
         Path tempPath = FileUtils.generateTempPath(DONATION, uuid);
         FileUtils.tryDeleteDirectory(tempPath, false);
+        eventPublisher.publishEvent(new DonationAddEvent(donation, items));
         return buildDonationResponse(donation, items, files, login);
     }
 
@@ -138,7 +140,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
     @Transactional
     public DonationResponse updateDonation(Long donationId, DonationUpdateRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         Donation donation = donationMapper.requireById(donationId);
         if (donation.getStatus() == DonationStatus.CREATED) // CREATED 状态下可由用户修改
             requirePermission(login.is(donation.getUserId()) || login.isWorker());
@@ -149,9 +151,10 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         request.apply(donation);
         donationMapper.updateById(donation);
         List<DonationItem> items = request.createItems(donation);
-        donationItemMapper.delete(donationItemMapper.queryByDonation(donationId));
+        donationItemMapper.queryByDonation(donationId).delete();
         donationItemMapper.insert(items);
 
+        eventPublisher.publishEvent(new DonationUpdateEvent(donation, items));
         return buildDonationResponse(donation, items, null, null);
     }
 
@@ -161,7 +164,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
     @Transactional
     public DonationResponse updateDonationStatus(Long donationId, DonationStatusUpdateRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         Donation donation = donationMapper.requireById(donationId);
         DonationStatus status = DonationStatus.get(request.getStatus());
         // 仅 BACKING -> CLOSED 可由用户修改
@@ -173,7 +176,8 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         // 保存数据
         DonationStatusUpdateRecord updateRecord = request.create(donation, login.getId());
         donationStatusUpdateMapper.insert(updateRecord);
-        donationMapper.update(donationMapper.updateStatus(donationId, status));
+        donationMapper.updateStatus(donationId, status).update();
+        eventPublisher.publishEvent(new DonationStatusEvent(donation, updateRecord));
         return buildDonationResponse(donation, null, null, null);
     }
 
@@ -189,18 +193,14 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      * 查询捐赠信息
      */
     public Page<DonationResponse> getDonations(DonationQueryParams paramRequest, PageParams pageRequest) {
-        Page<Donation> page = pageRequest.createPage();
-        LambdaQueryWrapper<Donation> query = donationMapper.queryByRequest(paramRequest);
-        Page<Donation> result = donationMapper.selectPage(page, query);
-
+        Page<Donation> result = donationMapper.queryByRequest(paramRequest).page(pageRequest);
         Set<Long> donationIds = result.getRecords().stream()
                 .map(Donation::getId)
                 .collect(Collectors.toSet());
-        Map<Long, List<DonationFileResponse>> files = donationFileMapper.groupList(
-                donationFileMapper.queryByDonations(donationIds),
-                DonationFile::getDonationId,
-                DonationFileResponse::create);
-        List<DonationItem> itemList = donationItemMapper.selectList(donationItemMapper.queryByDonations(donationIds));
+        Map<Long, List<DonationFileResponse>> files = donationFileMapper
+                .queryByDonations(donationIds)
+                .groupList(DonationFile::getDonationId, DonationFileResponse::create);
+        List<DonationItem> itemList = donationItemMapper.queryByDonations(donationIds).list();
         Map<Long, Item> items = groupById(
                 itemList.stream().map(DonationItem::getItemId).filter(Objects::nonNull),
                 Item::getId, Item::getName, Item::getCategoryId, Item::getUnit);
@@ -211,8 +211,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         Map<Long, List<DonationItemResponse>> donationItems = itemList.stream()
                 .map(item -> DonationItemResponse.createBatch(item, items, categories))
                 .collect(Collectors.groupingBy(DonationItemResponse::getDonationId));
-        List<DonationStatusUpdateRecord> updateRecordList = donationStatusUpdateMapper
-                .selectList(donationStatusUpdateMapper.queryByDonations(donationIds));
+        List<DonationStatusUpdateRecord> updateRecordList = donationStatusUpdateMapper.queryByDonations(donationIds).list();
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().map(Donation::getUserId),
                 updateRecordList.stream().map(DonationStatusUpdateRecord::getUserId),
@@ -229,9 +228,9 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
                                                    List<DonationFile> files,
                                                    User user) {
         if (items == null)
-            items = donationItemMapper.selectList(donationItemMapper.queryByDonation(donation.getId()));
+            items = donationItemMapper.queryByDonation(donation.getId()).list();
         if (files == null)
-            files = donationFileMapper.selectList(donationFileMapper.queryByDonation(donation.getId()));
+            files = donationFileMapper.queryByDonation(donation.getId()).list();
         if (user == null || !user.is(donation.getUserId()))
             user = userService.requireById(donation.getUserId(), User::getId, User::getUsername, User::getAvatar);
 
@@ -242,8 +241,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
                 itemMap.values().stream().map(Item::getCategoryId),
                 items.stream().map(DonationItem::getCategoryId),
                 Category::getId, Category::getName);
-        List<DonationStatusUpdateRecord> updateRecords = donationStatusUpdateMapper
-                .selectList(donationStatusUpdateMapper.queryByDonation(donation.getId()));
+        List<DonationStatusUpdateRecord> updateRecords = donationStatusUpdateMapper.queryByDonation(donation.getId()).list();
         Map<Long, User> users = userService.groupById(
                 updateRecords.stream().map(DonationStatusUpdateRecord::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
@@ -264,7 +262,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     @Transactional
     public ItemResponse addItem(ItemAddRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         categoryMapper.requireExist(request.getCategoryId());
 
@@ -278,7 +276,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     @Transactional
     public ItemResponse updateItem(Long itemId, ItemUpdateRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         categoryMapper.requireExist(request.getCategoryId());
 
@@ -300,10 +298,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      * 查询物资信息
      */
     public Page<ItemResponse> getItems(ItemQueryParams queryRequest, PageParams pageRequest) {
-        Page<Item> page = pageRequest.createPage();
-        LambdaQueryWrapper<Item> query = getBaseMapper().queryByRequest(queryRequest);
-        Page<Item> result = page(page, query);
-
+        Page<Item> result = getBaseMapper().queryByRequest(queryRequest).page(pageRequest);
         Set<Long> categoryIds = result.getRecords().stream()
                 .map(Item::getCategoryId)
                 .filter(Objects::nonNull)
@@ -317,9 +312,9 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     @Transactional
     public void discardItem(Long itemId) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
-        update(baseMapper.discardItem(itemId));
+        baseMapper.discardItem(itemId).update();
     }
 
     private ItemResponse buildItemResponse(Item item) {
@@ -332,7 +327,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     @Transactional
     public Category addCategory(CategoryAddRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
 
         Category category = request.create();
@@ -345,7 +340,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     @Transactional
     public Category updateCategory(Long categoryId, CategoryUpdateRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         Category category = categoryMapper.requireById(categoryId);
 
@@ -359,11 +354,11 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     @Transactional
     public void discardCategory(Long categoryId) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         categoryMapper.requireExist(categoryId);
 
-        boolean used = exists(baseMapper.queryByCategory(categoryId));
+        boolean used = baseMapper.queryByCategory(categoryId).exists();
         require(!used, "分类非空");
         categoryMapper.update(categoryMapper.discard(categoryId));
     }
@@ -388,9 +383,9 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     @Transactional
     public StockResponse addStockRecord(StockRequest request) {
-        User login = getLoginUser(); // 工作人员、兽医
+        User login = requireLoginUser(); // 工作人员、兽医
         requirePermission(login.isWorker() || login.isDoctor());
-        StockRecordAction action = StockRecordAction.get(request.getAction());
+        StockAction action = StockAction.get(request.getAction());
 
         // 创建库存
         Stock stock;
@@ -401,7 +396,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
                     Stock::getId, Stock::getItemId, Stock::getSourceType, Stock::getExpireTime);
         }
         // 库存检查
-        boolean firstRecord = action == StockRecordAction.IN && stock.getId() == null;
+        boolean firstRecord = action == StockAction.IN && stock.getId() == null;
         BigDecimal count = new BigDecimal(request.getCount());
         switch (action) {
             case IN: // 入库
@@ -419,11 +414,11 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         }
         // 更新库存记录
         stock.setCount(count);
-        stockMapper.update(stockMapper.updateCount(stock.getId(), stock.getCount()));
+        stockMapper.updateCount(stock.getId(), stock.getCount()).update();
         StockRecord record = request.createRecord(stock, login.getId());
         stockRecordMapper.insert(record);
         // 通知
-        eventPublisher.publishEvent(new StockEvent(record));
+        eventPublisher.publishEvent(new StockEvent(stock, record));
 
         User user = login.is(stock.getUserId()) ? login : null;
         List<StockRecordItemResponse> records = firstRecord
@@ -436,7 +431,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      * 获取库存记录
      */
     public StockResponse getStock(Long stockId) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         Stock stock = stockMapper.requireById(stockId);
         User user = login.is(stock.getUserId()) ? login : null;
         return buildStockResponse(stock, user, null);
@@ -446,17 +441,13 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      * 查询库存物品
      */
     public Page<StockResponse> getStocks(StockQueryParams paramRequest, PageParams pageRequest) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         if (!login.isWorker()) { // 非工作人员只能查看捐赠物品
             paramRequest.setSource(Set.of(SourceType.DONATION.name()));
         }
 
         // 查询 Stock
-        Page<Stock> page = pageRequest.createPage();
-        LambdaQueryWrapper<Stock> query = stockMapper.queryByRequest(paramRequest);
-        Page<Stock> result = stockMapper.selectPage(page, query);
-
-        // 查询其他数据
+        Page<Stock> result = stockMapper.queryByRequest(paramRequest).page(pageRequest);
         Map<Long, Item> items = groupById(
                 result.getRecords().stream().map(Stock::getItemId),
                 Item::getId, Item::getCategoryId, Item::getName, Item::getCategoryId);
@@ -484,15 +475,12 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      * 查询库存物品
      */
     public Page<StockRecordResponse> getStockRecords(StockRecordQueryParams paramRequest, PageParams pageRequest) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         if (!login.isWorker()) { // 非工作人员只能查看捐赠物品
             paramRequest.setSource(Set.of(SourceType.DONATION.name()));
         }
 
-        Page<StockRecord> page = pageRequest.createPage();
-        LambdaQueryWrapper<StockRecord> query = stockRecordMapper.queryByRequest(paramRequest);
-        Page<StockRecord> result = stockRecordMapper.selectPage(page, query);
-
+        Page<StockRecord> result = stockRecordMapper.queryByRequest(paramRequest).page(pageRequest);
         Map<Long, Stock> stocks = stockMapper.groupById(
                 result.getRecords().stream().map(StockRecord::getStockId),
                 Stock::getId, Stock::getItemId, Stock::getSourceType, Stock::getExpireTime, Stock::getCreateTime);
@@ -518,8 +506,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
             user = userService.requireById(stock.getUserId(),
                     User::getId, User::getUsername, User::getAvatar);
         if (records == null) {
-            List<StockRecord> recordList = stockRecordMapper
-                    .selectList(stockRecordMapper.queryByStock(stock.getId(), 5));
+            List<StockRecord> recordList = stockRecordMapper.queryByStock(stock.getId(), 5).list();
             Map<Long, User> users = userService.groupById(
                     recordList.stream().map(StockRecord::getUserId),
                     User::getId, User::getUsername, User::getAvatar);
@@ -534,7 +521,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      * 添加预警
      */
     public SubscribeResponse addSubscribe(SubscribeAddRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         Subscribe subscribe = request.create(login.getId());
         subscribeMapper.insert(subscribe);
         return buildSubscribeResponse(subscribe, login);
@@ -585,9 +572,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      * 获取预警
      */
     public Page<SubscribeResponse> getSubscribes(SubscribeQueryParams paramRequest, PageParams pageRequest) {
-        Page<Subscribe> page = pageRequest.createPage();
-        LambdaQueryWrapper<Subscribe> query = subscribeMapper.queryByRequest(paramRequest);
-        Page<Subscribe> result = subscribeMapper.selectPage(page, query);
+        Page<Subscribe> result = subscribeMapper.queryByRequest(paramRequest).page(pageRequest);
 
         Map<Long, Stock> stocks = stockMapper.groupById(
                 result.getRecords().stream().filter(s -> s.getAction().bindStock()).map(Subscribe::getElementId),
@@ -612,7 +597,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      * 取消预警
      */
     public void cancelSubscribe(Set<Long> subscribeIds) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         if (login.isWorker())
             subscribeMapper.deleteByIds(subscribeIds);
         else

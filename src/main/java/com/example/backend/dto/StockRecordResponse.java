@@ -2,7 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.*;
 import com.example.backend.entity.property.SourceType;
-import com.example.backend.entity.property.StockRecordAction;
+import com.example.backend.entity.property.StockAction;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +18,7 @@ import static com.example.backend.entity.property.ParentType.USER;
 public class StockRecordResponse implements IResponse {
 
     private Long id;
-    private StockRecordAction action;
+    private StockAction action;
     private BigDecimal count;
     private BigDecimal remainCount;
     private BigDecimal price;
@@ -56,7 +56,7 @@ public class StockRecordResponse implements IResponse {
                 record.getId(),
                 record.getAction(),
                 record.getCount(),
-                record.getRemainCount(),
+                record.getRemain(),
                 record.getPrice(),
                 record.getTotalPrice(),
                 record.getPurpose(),

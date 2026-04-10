@@ -11,7 +11,7 @@ import org.springframework.validation.Errors;
 import java.util.Date;
 
 @Data
-public class ExaminationAddRequest implements IRequest, IRequestValidate {
+public class ExaminationAddRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.medical.exam.name")
     private String name;

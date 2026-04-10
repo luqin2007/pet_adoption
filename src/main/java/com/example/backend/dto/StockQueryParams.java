@@ -1,6 +1,5 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.Stock;
 import com.example.backend.entity.property.SourceType;
 import lombok.Data;
 import org.springframework.validation.Errors;
@@ -12,7 +11,7 @@ import java.util.Set;
  * 库存查询参数
  */
 @Data
-public class StockQueryParams implements IParam<Stock>, IRequestValidate {
+public class StockQueryParams implements IParam, IValidatedRequest {
 
     private Set<Long> item;
     private Set<Long> user;

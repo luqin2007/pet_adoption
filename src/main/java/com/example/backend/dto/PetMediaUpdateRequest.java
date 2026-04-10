@@ -9,11 +9,10 @@ import lombok.Data;
 @Data
 public class PetMediaUpdateRequest implements IRequest {
 
-    @NotBlank(message = "request.pet.name")
+    @NotBlank(message = "request.pet.media")
     private String name;
 
-    @JsonSetter(nulls = Nulls.SKIP)
-    private String description = "";
+    private String description;
 
     @JsonSetter(nulls = Nulls.SKIP)
     private Boolean isCover = false;

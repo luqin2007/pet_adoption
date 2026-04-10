@@ -21,14 +21,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static com.example.backend.util.C.*;
-
 /**
  * JWT 工具类
  */
 @Component
 @RequiredArgsConstructor
 public class JwtHelper {
+
+    public static final String TOKEN_CLAIM_TYPE_KEY = "tokenType";
+    public static final String TOKEN_TYPE_ACCESS = "access";
+    public static final String TOKEN_TYPE_REFRESH = "refresh";
 
     @Value("${jwt.secret}")
     private String secret;
@@ -40,6 +42,8 @@ public class JwtHelper {
     private String jwtHeader;
     @Value("${jwt.prefix}")
     private String jwtPrefix;
+    @Value("${key.token_invalid}")
+    private String validateKey;
 
     private SecretKey secretKey;
 
@@ -135,14 +139,14 @@ public class JwtHelper {
             if (ttl <= 0) {
                 return;
             }
-            String redisKey = String.format(KEY_INVALID_TOKEN, token);
+            String redisKey = String.format(validateKey, token);
             redisTemplate.opsForValue().set(redisKey, "", ttl, TimeUnit.MILLISECONDS);
         } catch (JwtException | IllegalArgumentException ignored) {
         }
     }
 
     private boolean isTokenInvalidated(String token) {
-        String redisKey = String.format(KEY_INVALID_TOKEN, token);
+        String redisKey = String.format(validateKey, token);
         return Boolean.TRUE.equals(redisTemplate.hasKey(redisKey));
     }
 

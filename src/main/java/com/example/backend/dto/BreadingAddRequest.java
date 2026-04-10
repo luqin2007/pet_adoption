@@ -11,7 +11,7 @@ import org.springframework.validation.Errors;
 import java.util.Date;
 
 @Data
-public class BreadingAddRequest implements IRequest, IRequestValidate {
+public class BreadingAddRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.pet.name")
     private String petName;
@@ -28,7 +28,7 @@ public class BreadingAddRequest implements IRequest, IRequestValidate {
 
     private String petDescription;
 
-    @NotBlank(message = "request.adopt_breading.phone")
+    @NotBlank(message = "request.phone")
     private String applicantPhone;
 
     private String requirement;

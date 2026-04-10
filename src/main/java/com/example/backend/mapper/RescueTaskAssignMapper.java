@@ -1,7 +1,7 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.entity.RescueTaskAssign;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -16,7 +16,7 @@ public interface RescueTaskAssignMapper extends IBaseMapper<RescueTaskAssign> {
      * - 索引：(taskId, userId)
      * - 查询：[RescueTaskAssign(userId)]
      */
-    default LambdaQueryWrapper<RescueTaskAssign> queryUserByTask(Long taskId) {
+    default MPLambdaQuery<RescueTaskAssign> queryUserByTask(Long taskId) {
         return lambdaQuery()
                 .eq(RescueTaskAssign::getTaskId, taskId)
                 .select(RescueTaskAssign::getUserId);
@@ -25,5 +25,10 @@ public interface RescueTaskAssignMapper extends IBaseMapper<RescueTaskAssign> {
     @Override
     default String getMissingMessage() {
         return "任务分配记录不存在";
+    }
+
+    @Override
+    default Class<RescueTaskAssign> getEntityClass() {
+        return RescueTaskAssign.class;
     }
 }

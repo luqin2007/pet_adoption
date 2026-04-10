@@ -1,7 +1,7 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.entity.PetStatusRecord;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.util.ObjectUtils;
 
@@ -20,8 +20,8 @@ public interface PetStatusRecordMapper extends IBaseMapper<PetStatusRecord> {
      *
      * @param userIds 用户 id, 为空则查询所有用户
      */
-    default LambdaQueryWrapper<PetStatusRecord> queryByPet(Long petId, Collection<Long> userIds) {
-        LambdaQueryWrapper<PetStatusRecord> wrapper = lambdaQuery()
+    default MPLambdaQuery<PetStatusRecord> queryByPet(Long petId, Collection<Long> userIds) {
+        MPLambdaQuery<PetStatusRecord> wrapper = lambdaQuery()
                 .eq(PetStatusRecord::getPetId, petId);
         return ObjectUtils.isEmpty(userIds) ? wrapper : wrapper.in(PetStatusRecord::getUserId, userIds);
     }
@@ -29,5 +29,10 @@ public interface PetStatusRecordMapper extends IBaseMapper<PetStatusRecord> {
     @Override
     default String getMissingMessage() {
         return "状态记录不存在";
+    }
+
+    @Override
+    default Class<PetStatusRecord> getEntityClass() {
+        return PetStatusRecord.class;
     }
 }

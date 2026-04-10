@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-public class DonationAddItemRequest implements IRequest, IRequestValidate {
+public class DonationAddItemRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.item_donation.item.name")
     private String name;

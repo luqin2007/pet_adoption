@@ -15,7 +15,7 @@ import java.util.Locale;
  * -- 对应类：Request，Param，Table<br>
  * -- 只检查字段值，不检查数据库
  */
-public interface IRequestValidate extends IRequest {
+public interface IValidatedRequest extends IRequest {
 
     void validate(Errors errors);
 
@@ -73,6 +73,15 @@ public interface IRequestValidate extends IRequest {
             BigDecimal value0 = new BigDecimal(field0.value);
             BigDecimal value1 = new BigDecimal(field1.value);
             if (value0.compareTo(value1) > 0)
+                errors.rejectValue(field0.name, errorCode);
+        }
+    }
+
+    default <T> void validateIntRange(Errors errors, SFunction<T, Integer> fieldRef0, SFunction<T, Integer> fieldRef1, String errorCode) {
+        FieldWrapper<Integer> field0 = getNameAndValue(fieldRef0);
+        FieldWrapper<Integer> field1 = getNameAndValue(fieldRef1);
+        if (!field0.isEmpty() && !field1.isEmpty()) {
+            if (field0.value.compareTo(field1.value) > 0)
                 errors.rejectValue(field0.name, errorCode);
         }
     }

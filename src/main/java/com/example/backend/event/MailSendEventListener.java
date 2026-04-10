@@ -1,7 +1,7 @@
 package com.example.backend.event;
 
-import com.example.backend.service.UserService;
 import com.example.backend.util.ServiceException;
+import com.example.backend.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
@@ -10,45 +10,37 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.Set;
 
-/**
- * TODO 通知
- */
 @Component
 @RequiredArgsConstructor
-public class NotificationEventListener {
+public class MailSendEventListener {
 
     @Value("${spring.mail.username}")
     private String mailFrom;
 
-    private final UserService userService;
     private final MailSender mailSender;
 
     @Async
-    @EventListener(NotificationEvent.Mail.class)
-    public void onNotification(NotificationEvent.Mail event) {
-        Set<String> emails = new HashSet<>(event.getAddresses());
-        emails.addAll(userService.getMailsBatchByRoles(event.getRoles()));
+    @EventListener(MailSendEvent.class)
+    public void onMailSend(MailSendEvent event) {
+        // 检查邮件
+        String[] addresses = Set.of(event.addresses())
+                .stream()
+                .filter(StringUtils::hasText)
+                .filter(address -> address.contains("@"))
+                .toArray(String[]::new);
+        if (addresses.length == 0) return;
         // 发送邮件
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setFrom(mailFrom);
-        mail.setTo(emails.toArray(String[]::new));
-        mail.setSubject(event.getTitle());
-        mail.setText(event.getContent());
+        mail.setTo(addresses);
+        mail.setSubject(event.title());
+        mail.setText(event.content());
         try {
             mailSender.send(mail);
         } catch (Exception e) {
             throw ServiceException.system("邮件发送失败: " + e.getMessage(), e);
         }
-    }
-
-    @Async
-    @EventListener(NotificationEvent.System.class)
-    public void onNotification(NotificationEvent.System event) {
-        Set<Long> ids = new HashSet<>(event.getUsers());
-        ids.addAll(userService.getIdsBatchByRoles(event.getRoles()));
-        // TODO 发送通知
     }
 }

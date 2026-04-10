@@ -1,6 +1,5 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.Adopt;
 import lombok.Data;
 import org.springframework.validation.Errors;
 
@@ -8,7 +7,7 @@ import java.util.Date;
 import java.util.Set;
 
 @Data
-public class AdoptQueryParams implements IParam<Adopt>, IRequestValidate {
+public class AdoptQueryParams implements IParam, IValidatedRequest {
 
     private Set<Long> pet;
     private Set<Long> user;

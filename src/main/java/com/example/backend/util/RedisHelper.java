@@ -19,17 +19,6 @@ public class RedisHelper {
     private final RedisTemplate<String, String> redisTemplateString;
 
     /**
-     * 检查字符串键 key 是否存在
-     *
-     * @param key     键
-     * @param message 错误信息
-     */
-    public void requireString(String key, String message) {
-        if (!redisTemplateString.hasKey(key))
-            throw ServiceException.invalidate(message);
-    }
-
-    /**
      * 存储字符串
      *
      * @param key   键

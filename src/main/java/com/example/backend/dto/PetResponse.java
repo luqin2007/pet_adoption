@@ -1,14 +1,17 @@
 package com.example.backend.dto;
 
+import com.example.backend.entity.Location;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.User;
-import com.example.backend.entity.property.ParentType;
+import com.example.backend.entity.query.PetLocations;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
 import java.util.Map;
+
+import static com.example.backend.entity.property.ParentType.USER;
 
 @Data
 @AllArgsConstructor
@@ -32,6 +35,9 @@ public class PetResponse implements IResponse {
     private String username;
     private String avatar;
 
+    // location
+    private List<Location> locations;
+
     /**
      * User: id, username, avatar
      */
@@ -39,7 +45,8 @@ public class PetResponse implements IResponse {
                                      User discover,
                                      List<PetTagResponse> tags,
                                      List<VaccineResponse> vaccines,
-                                     List<DewormResponse> deworms) {
+                                     List<DewormResponse> deworms,
+                                     List<Location> locations) {
         return new PetResponse(
                 pet.getId(),
                 pet.getName(),
@@ -55,7 +62,8 @@ public class PetResponse implements IResponse {
                 deworms,
                 discover.getId(),
                 discover.getUsername(),
-                FileUtils.generateAssetUrl(ParentType.USER, discover.getId(), discover.getAvatar()));
+                FileUtils.generateAssetUrl(USER, discover.getId(), discover.getAvatar()),
+                locations);
     }
 
     /**
@@ -65,9 +73,10 @@ public class PetResponse implements IResponse {
      * tags: pet.id<br>
      * covers: pet.id<br>
      * vaccines: pet.id<br>
-     * deworms: pet.id
+     * deworms: pet.id<br>
+     * locations: pet.id
      */
-    public static PetResponse createBatch(Pet pet,
+    public static PetResponse createBatch(PetLocations pet,
                                           Map<Long, User> users,
                                           Map<Long, List<PetTagResponse>> tags,
                                           Map<Long, String> covers,
@@ -77,6 +86,7 @@ public class PetResponse implements IResponse {
                 users.get(pet.getDiscoverId()),
                 tags.get(pet.getId()),
                 vaccines.get(pet.getId()),
-                deworms.get(pet.getId()));
+                deworms.get(pet.getId()),
+                pet.getLocations());
     }
 }

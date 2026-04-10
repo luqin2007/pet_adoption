@@ -1,15 +1,19 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.RescueTask;
+import com.example.backend.entity.RescueTaskRecord;
+import com.example.backend.entity.property.RescueTaskAction;
 import com.example.backend.entity.property.RescueTaskType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.validation.Errors;
 
+import java.util.Date;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class RescueTaskUpdateRequest extends LocationRequest implements IRequest, IRequestValidate {
+public class RescueTaskUpdateRequest extends LocationRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.rescue_task.summary")
     private String summary;
@@ -24,6 +28,18 @@ public class RescueTaskUpdateRequest extends LocationRequest implements IRequest
         task.setSummary(summary);
         task.setDescription(description);
         task.setType(RescueTaskType.get(type));
+    }
+
+    public RescueTaskRecord createRecord(RescueTask task, Long userId) {
+        return new RescueTaskRecord(null,
+                task.getId(),
+                userId,
+                null,
+                RescueTaskAction.UPDATE,
+                task.getStatus(),
+                task.getStatus(),
+                task.getSummary(),
+                new Date(System.currentTimeMillis()));
     }
 
     @Override

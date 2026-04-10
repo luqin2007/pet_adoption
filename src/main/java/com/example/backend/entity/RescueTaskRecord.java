@@ -68,20 +68,4 @@ public class RescueTaskRecord implements IId {
      * *非空 datetime*
      */
     private Date createTime;
-
-    /**
-     * 记录任务变更
-     */
-    public static RescueTaskRecord create(RescueTask task, Long userId,
-                                          RescueTaskAction action, RescueTaskStatus statusFrom, String reason) {
-        return new RescueTaskRecord(null,
-                task.getId(),
-                userId,
-                null,
-                action,
-                statusFrom,
-                task.getStatus(),
-                reason,
-                new Date(System.currentTimeMillis()));
-    }
 }

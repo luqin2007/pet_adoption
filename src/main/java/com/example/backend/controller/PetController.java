@@ -14,7 +14,7 @@ import java.util.Set;
  * 流浪宠物信息管理模块<br>
  * - 信息录入 ( √ × )<br>
  * ---- 添加流浪宠物信息：addPet ( √ × )<br>
- * ---- 删除流浪宠物信息：deletePet ( √ × )<br>
+ * ---- 添加宠物位置信息：addLocation ( √ × )<br>
  * - 状态管理 ( √ × )<br>
  * ---- 修改宠物状态: updateStatus ( √ × )<br>
  * - 信息更新 ( √ × )<br>
@@ -51,11 +51,20 @@ public class PetController {
     }
 
     /**
+     * 添加宠物位置信息
+     */
+    @PostMapping("/{id}/location")
+    public Result<PetResponse> addLocation(@PathVariable("id") Long petId, @RequestBody LocationRequest request) {
+        PetResponse response = petService.addLocation(petId, request);
+        return Result.success(response);
+    }
+
+    /**
      * 获取流浪宠物列表
      */
     @GetMapping("/")
-    public Result<Page<PetResponse>> getPets(PageParams pageParams) {
-        Page<PetResponse> response = petService.getPets(pageParams);
+    public Result<Page<PetResponse>> getPets(PetQueryParams query, PageParams page) {
+        Page<PetResponse> response = petService.getPets(query, page);
         return Result.success(response);
     }
 
@@ -98,25 +107,27 @@ public class PetController {
     /**
      * 修改流浪宠物图片/视频信息
      */
-    @PostMapping("/{id}/media")
-    public Result<PetMediaResponse> updateMedia(@PathVariable("id") Long petId, @RequestBody PetMediaUpdateRequest image) {
-        PetMediaResponse response = petService.updateMedia(petId, image);
+    @PostMapping("/{id}/media/{mid}")
+    public Result<PetMediaResponse> updateMedia(@PathVariable("id") Long petId,
+                                                @PathVariable("mid") Long mediaId,
+                                                @RequestBody PetMediaUpdateRequest request) {
+        PetMediaResponse response = petService.updateMedia(petId, mediaId, request);
         return Result.success(response);
     }
 
     /**
      * 删除流浪宠物图片/视频
      */
-    @DeleteMapping("/{id}/media")
-    public Result<Void> deleteMedia(@PathVariable("id") Long imageId) {
-        petService.deleteMedia(imageId);
+    @DeleteMapping("/{id}/media/{mid}")
+    public Result<Void> deleteMedia(@PathVariable("id") Long petId, @PathVariable("mid") Long mediaId) {
+        petService.deleteMedia(petId, mediaId);
         return Result.success();
     }
 
     /**
      * 添加流浪宠物特征
      */
-    @PutMapping("/pets/{id}/tags")
+    @PutMapping("/{id}/tags")
     public Result<List<PetTagResponse>> addTags(@PathVariable("id") Long petId, @RequestBody PetTagAddRequest request) {
         List<PetTagResponse> response = petService.addTags(petId, request);
         return Result.success(response);
@@ -125,13 +136,13 @@ public class PetController {
     /**
      * 删除流浪宠物特征
      */
-    @DeleteMapping("/pets/{id}/tags")
+    @DeleteMapping("/{id}/tags")
     public Result<List<PetTagResponse>> deleteTags(@PathVariable("id") Long petId, @RequestBody IdsRequest request) {
         List<PetTagResponse> response = petService.deleteTags(petId, request);
         return Result.success(response);
     }
 
-    @PostMapping("/pets/{id}/status")
+    @PostMapping("/{id}/status")
     public Result<PetStatusRecordResponse> updateStatus(@PathVariable("id") Long petId,
                                                         @RequestBody PetStatusUpdateRequest request) {
         PetStatusRecordResponse response = petService.updateStatus(petId, request);
@@ -141,7 +152,7 @@ public class PetController {
     /**
      * 获取宠物状态流转记录
      */
-    @GetMapping("/pets/{id}/status")
+    @GetMapping("/{id}/status")
     public Result<Page<PetStatusRecordResponse>> getStatusRecords(@PathVariable("id") Long petId, PageParams pageParams) {
         Page<PetStatusRecordResponse> response = petService.getStatusRecords(petId, pageParams, Set.of());
         return Result.success(response);

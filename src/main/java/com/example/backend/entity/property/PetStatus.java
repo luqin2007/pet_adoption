@@ -15,7 +15,8 @@ public enum PetStatus {
     TIMEOUT, // 已超时，放弃救助
     SHELTERED, // 已收容
     HEALTH, // 已完成体检，可领养
-    ADOPTED; // 已领养
+    ADOPTED, // 已领养
+    HOME; // 丢失宠物，已找到
 
     public static PetStatus get(String name) {
         try {

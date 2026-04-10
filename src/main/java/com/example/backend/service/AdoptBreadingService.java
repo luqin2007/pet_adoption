@@ -1,31 +1,29 @@
 package com.example.backend.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.entity.property.*;
+import com.example.backend.event.*;
 import com.example.backend.mapper.*;
 import com.example.backend.util.FileUtils;
 import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.example.backend.entity.property.AdoptBreadingStatus.AGREEMENT_DRAFT;
 import static com.example.backend.entity.property.AdoptBreadingStatus.AGREEMENT_SIGNED;
-import static com.example.backend.entity.property.ParentType.AGREEMENT;
-import static com.example.backend.entity.property.ParentType.AGREEMENT_UPDATE;
+import static com.example.backend.entity.property.ParentType.*;
 
 @SuppressWarnings("unchecked")
 @Service
@@ -39,8 +37,9 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     private final FollowTaskMapper followTaskMapper;
     private final FollowRecordMapper followRecordMapper;
 
-    private final PetService petService;
-    private final UserService userService;
+    private PetService petService;
+    private UserService userService;
+    private FileService fileService;
 
     /**
      * 申请领养
@@ -48,12 +47,13 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     @Transactional
     public AdoptResponse addAdopt(AdoptAddRequest request) {
         // 校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         petService.requireExist(request.getPetId());
 
         // 保存
         Adopt adopt = request.create(login.getId());
         save(adopt);
+        eventPublisher.publishEvent(new AdoptAddEvent(adopt));
         return buildAdoptResponse(adopt);
     }
 
@@ -69,19 +69,17 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询领养申请
      */
     public Page<AdoptResponse> getAdopts(AdoptQueryParams paramRequest, PageParams pageRequest) {
-        Page<Adopt> page = pageRequest.createPage();
-        LambdaQueryWrapper<Adopt> query = getBaseMapper().queryByRequest(paramRequest);
-        Page<Adopt> result = page(page, query);
+        Page<Adopt> result = getBaseMapper().queryByRequest(paramRequest).page(pageRequest);
         Set<Long> adoptIds = result.getRecords().stream()
                 .map(Adopt::getId)
                 .collect(Collectors.toSet());
-        List<FollowTask> tasks = followTaskMapper.selectList(followTaskMapper.queryByAdopts(adoptIds));
+        List<FollowTask> tasks = followTaskMapper.queryByAdopts(adoptIds).list();
         Set<Long> petIds = result.getRecords().stream()
                 .map(Adopt::getPetId)
                 .collect(Collectors.toSet());
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName);
-        Map<Long, String> covers = petService.getCoversByPetIds(petIds);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().flatMap(adopt -> Stream.of(adopt.getApplicantId(), adopt.getReviewerId())),
                 tasks.stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
@@ -89,12 +87,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Set<Long> taskIds = tasks.stream()
                 .map(FollowTask::getId)
                 .collect(Collectors.toSet());
-        Map<Long, FollowRecord> records = followRecordMapper.groupFirst(
-                followRecordMapper
-                        .queryByTasks(taskIds)
-                        .select(FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime),
-                FollowRecord::getTaskId,
-                Function.identity());
+        Map<Long, FollowRecord> records = followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
+                FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
         Map<Long, List<FollowTaskResponse>> followTasks = tasks.stream()
                 .map(task -> FollowTaskResponse.createBatch(task, users, records))
                 .collect(Collectors.groupingBy(FollowTaskResponse::getAdoptId));
@@ -107,11 +101,12 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     @Transactional
     public AdoptResponse updateAdoptStatus(Long adoptId, String status) {
         // 校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         Adopt adopt = requireById(adoptId);
         AdoptBreadingStatus target = AdoptBreadingStatus.get(status);
-        require(adopt.getStatus().isChangeable(), "领养状态异常");
+        AdoptBreadingStatus oldStatus = adopt.getStatus();
+        require(oldStatus.isChangeable(), "领养状态异常");
         // 签订状态仅能通过 signAgreement 方法实现
         require(target != AdoptBreadingStatus.AGREEMENT_SIGNED, "领养状态异常");
 
@@ -121,6 +116,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         adopt.setUpdateTime(now);
         if (target == AdoptBreadingStatus.PASS || target == AdoptBreadingStatus.REJECT)
             adopt.setReviewTime(now);
+        eventPublisher.publishEvent(new AdoptStatusEvent(adopt, oldStatus));
         return buildAdoptResponse(adopt);
     }
 
@@ -129,9 +125,10 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     @Transactional
     public BreadingResponse addBreading(BreadingAddRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         Breading breading = request.create(login.getId());
         breadingMapper.insert(breading);
+        eventPublisher.publishEvent(new BreadingAddEvent(breading));
         return buildBreadingResponse(breading);
     }
 
@@ -147,9 +144,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询寄养申请
      */
     public Page<BreadingResponse> getBreadingPets(BreadingQueryParams queryRequest, PageParams pageRequest) {
-        Page<Breading> page = pageRequest.createPage();
-        LambdaQueryWrapper<Breading> query = breadingMapper.queryByRequest(queryRequest);
-        Page<Breading> result = breadingMapper.selectPage(page, query);
+        Page<Breading> result = breadingMapper.queryByRequest(queryRequest).page(pageRequest);
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().flatMap(info -> Stream.of(info.getApplicantId(), info.getReviewerId())),
                 User::getId, User::getUsername, User::getAvatar);
@@ -161,11 +156,12 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     @Transactional
     public BreadingResponse updateBreadingStatus(Long breadingId, String status) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         Breading breading = breadingMapper.requireById(breadingId);
         AdoptBreadingStatus target = AdoptBreadingStatus.get(status);
-        require(breading.getStatus().isChangeable(), "寄养状态异常");
+        AdoptBreadingStatus oldStatus = breading.getStatus();
+        require(oldStatus.isChangeable(), "寄养状态异常");
         require(target != AdoptBreadingStatus.AGREEMENT_SIGNED, "寄养状态异常");
 
         Date now = new Date();
@@ -174,6 +170,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         if (target == AdoptBreadingStatus.PASS || target == AdoptBreadingStatus.REJECT)
             breading.setReviewTime(now);
         breadingMapper.updateById(breading);
+        eventPublisher.publishEvent(new BreadingStatusEvent(breading, oldStatus));
         return buildBreadingResponse(breading);
     }
 
@@ -182,7 +179,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     @Transactional
     public AgreementResponse addAgreement(AgreementAddRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
 
         // 保存协议
@@ -194,11 +191,11 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         // 更新记录状态
         ParentType parentType = agreement.getParentType();
         switch (parentType) {
-            case ADOPT -> update(baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT));
-            case BREADING ->
-                    breadingMapper.update(breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT));
+            case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
+            case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
             default -> throw ServiceException.invalidate("无效协议 " + parentType);
         }
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, updateRecord, login));
         return buildAgreementResponse(agreement);
     }
 
@@ -207,7 +204,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     @Transactional
     public AgreementResponse updateAgreement(Long agreementId, AgreementUpdateRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
         requireEqual(AgreementType.ELECTRONIC, agreement.getType(), "仅适用于电子协议");
@@ -215,6 +212,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         agreementMapper.updateById(agreement);
         AgreementUpdateRecord updateRecord = request.applyTo(agreement);
         agreementUpdateRecordMapper.insert(updateRecord);
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, updateRecord, login));
         return buildAgreementResponse(agreement);
     }
 
@@ -223,7 +221,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     @Transactional
     public List<AgreementFileResponse> uploadAgreement(Long agreementId, AgreementFilesUploadTable request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId,
                 Agreement::getType);
@@ -238,17 +236,15 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         require(onlyImage, "不支持的图片格式");
 
         // 已上传 - 创建更改记录
-        List<AgreementFile> agreementFiles = agreementFileMapper.selectList(agreementFileMapper.queryByAgreement(agreementId));
+        List<AgreementFile> agreementFiles = agreementFileMapper.queryByAgreement(agreementId).list();
         Path path = FileUtils.generateFilePath(AGREEMENT, agreementId);
-        if (!ObjectUtils.isEmpty(agreementFiles)) {
-            AgreementUpdateRecord updateRecord = request.createUpdateRecord(agreementId, agreementFiles, objectMapper);
-            agreementUpdateRecordMapper.insert(updateRecord);
-            // 文件已存在 - 移动
-            Path newPath = FileUtils.generateFilePath(AGREEMENT_UPDATE, updateRecord.getId());
-            FileUtils.moveDirectory(path, newPath);
-            // 删除文件记录
-            agreementFileMapper.deleteByIds(agreementFiles);
-        }
+        AgreementUpdateRecord updateRecord = request.createUpdateRecord(agreementId, agreementFiles, objectMapper);
+        agreementUpdateRecordMapper.insert(updateRecord);
+        // 文件已存在 - 移动
+        Path newPath = FileUtils.generateFilePath(AGREEMENT_UPDATE, updateRecord.getId());
+        FileUtils.moveDirectory(path, newPath);
+        // 删除文件记录
+        agreementFileMapper.deleteByIds(agreementFiles);
         if (Files.isDirectory(path))
             throw ServiceException.system("文件转移异常，请联系管理员手动处理");
 
@@ -272,7 +268,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
 
         // 更新协议
         agreement.setUpdateTime(new Date());
-        agreementMapper.update(agreementMapper.setUpdateTime(agreementId));
+        agreementMapper.setUpdateTime(agreementId).update();
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, updateRecord, login));
         return files.stream()
                 .map(AgreementFileResponse::create)
                 .toList();
@@ -283,7 +280,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     @Transactional
     public AgreementResponse signAgreement(Long agreementId, MultipartFile sign) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         Agreement agreement = agreementMapper.requireById(agreementId);
         requirePermission(login.isWorker());
         require(null == agreement.getSign(), "协议已签署");
@@ -310,7 +307,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         String content = switch (agreement.getType()) {
             case ELECTRONIC -> agreement.getContent();
             case PAPER -> {
-                List<AgreementFile> files = agreementFileMapper.selectList(agreementFileMapper.queryByAgreement(agreementId));
+                List<AgreementFile> files = agreementFileMapper.queryByAgreement(agreementId).list();
                 yield objectMapper.writeValueAsString(files);
             }
         };
@@ -323,10 +320,11 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         AgreementFile file = new AgreementFile(null, agreementId, filename, 0, now);
         agreementFileMapper.insert(file);
         switch (agreement.getParentType()) {
-            case ADOPT -> update(baseMapper.updateStatus(parentId, AGREEMENT_SIGNED));
-            case BREADING -> breadingMapper.update(breadingMapper.updateStatus(parentId, AGREEMENT_SIGNED));
+            case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
+            case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
             default -> throw ServiceException.invalidate("无效类型 " + agreement.getParentType());
         }
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, updateRecord, login));
         return buildAgreementResponse(agreement);
     }
 
@@ -342,16 +340,13 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询协议列表
      */
     public Page<AgreementResponse> getAgreements(AgreementQueryParams queryRequest, PageParams pageRequest) {
-        Page<Agreement> page = pageRequest.createPage();
-        LambdaQueryWrapper<Agreement> query = agreementMapper.queryByRequest(queryRequest);
-        Page<Agreement> result = agreementMapper.selectPage(page, query);
+        Page<Agreement> result = agreementMapper.queryByRequest(queryRequest).page(pageRequest);
         Set<Long> agreementIds = result.getRecords().stream()
                 .map(Agreement::getId)
                 .collect(Collectors.toSet());
-        Map<Long, List<AgreementFileResponse>> files = agreementFileMapper.groupList(
-                agreementFileMapper.queryByAgreements(agreementIds),
-                AgreementFile::getAgreementId,
-                AgreementFileResponse::create);
+        Map<Long, List<AgreementFileResponse>> files = agreementFileMapper
+                .queryByAgreements(agreementIds)
+                .groupList(AgreementFile::getAgreementId, AgreementFileResponse::create);
         return convertDto(result, agreement -> AgreementResponse.createBatch(agreement, files));
     }
 
@@ -361,7 +356,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     @Transactional
     public FollowTaskResponse addFollowTask(Long adoptId, FollowTaskAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         requirePermission(login.isWorker());
         Long volunteerId = request.getVolunteerId();
         User volunteer = userService.requireById(volunteerId, User::getRole);
@@ -373,6 +368,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         // 记录
         FollowTask task = request.create(adoptId, login.getId());
         followTaskMapper.insert(task);
+        eventPublisher.publishEvent(new FollowTaskAddEvent(task, login));
         return buildFollowTaskResponse(task);
     }
 
@@ -381,7 +377,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     @Transactional
     public FollowTaskResponse updateFollowTask(Long taskId, FollowTaskUpdateRequest request) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         FollowTask task = followTaskMapper.requireById(taskId);
         requirePermission(login.isWorker() || login.is(task.getVolunteerId()));
         if (!login.isWorker()) {
@@ -394,6 +390,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
 
         request.applyTo(task);
         followTaskMapper.updateById(task);
+        eventPublisher.publishEvent(new FollowTaskUpdateEvent(task, login));
         return buildFollowTaskResponse(task);
     }
 
@@ -409,16 +406,15 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询跟踪任务列表
      */
     public Page<FollowTaskResponse> getFollowTasks(FollowTaskQueryParams query, PageParams page) {
-        Page<FollowTask> result = followTaskMapper.selectPage(page.createPage(), followTaskMapper.queryByRequest(query));
+        Page<FollowTask> result = followTaskMapper.queryByRequest(query).page(page);
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
                 User::getId, User::getUsername);
         Set<Long> followIds = result.getRecords().stream()
                 .map(FollowTask::getId)
                 .collect(Collectors.toSet());
-        Map<Long, FollowRecord> records = followRecordMapper.group(
-                followRecordMapper.queryByTasks(followIds)
-                        .select(FollowRecord::getId, FollowRecord::getSummary, FollowRecord::getVisitTime));
+        Map<Long, FollowRecord> records = followRecordMapper.queryByTasks(followIds).groupById(
+                FollowRecord::getId, FollowRecord::getSummary, FollowRecord::getVisitTime);
         return convertDto(result, task -> FollowTaskResponse.createBatch(task, users, records));
     }
 
@@ -428,16 +424,17 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     @Transactional
     public FollowRecordResponse addFollowRecord(Long taskId, FollowRecordAddRequest request) {
         // 权限校验
-        User login = getLoginUser();
+        User login = requireLoginUser();
         FollowTask task = followTaskMapper.requireById(taskId,
                 FollowTask::getStatus);
         requireEqual(FollowTaskStatus.IN_PROGRESS, task.getStatus(), "跟踪任务状态错误");
         boolean allowed = login.isWorker() || Objects.equals(task.getVolunteerId(), login.getId());
         requirePermission(allowed);
-        require(!followRecordMapper.exists(followRecordMapper.queryByTask(taskId)), "跟踪记录已存在");
+        require(!followRecordMapper.queryByTask(taskId).exists(), "跟踪记录已存在");
 
         FollowRecord record = request.create(taskId, login.getId());
         followRecordMapper.insert(record);
+        eventPublisher.publishEvent(new FollowRecordEvent(record));
         User volunteer = userService.selectById(record.getVolunteerId(),
                 User::getId, User::getUsername, User::getAvatar);
         return FollowRecordResponse.create(record, volunteer);
@@ -447,8 +444,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 获取跟踪记录
      */
     public Page<FollowRecordResponse> getFollowRecords(Long taskId, PageParams request) {
-        Page<FollowRecord> page = request.createPage();
-        Page<FollowRecord> records = followRecordMapper.selectPage(page, followRecordMapper.queryByTask(taskId));
+        Page<FollowRecord> records = followRecordMapper.queryByTask(taskId).page(request);
         Map<Long, User> users = userService.groupById(
                 records.getRecords().stream().map(FollowRecord::getVolunteerId),
                 User::getId, User::getUsername, User::getAvatar);
@@ -460,9 +456,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询跟踪记录
      */
     public Page<FollowRecordResponse> getFollowRecords(FollowRecordQueryParams queryRequest, PageParams pageRequest) {
-        Page<FollowRecord> page = pageRequest.createPage();
-        LambdaQueryWrapper<FollowRecord> query = followRecordMapper.queryByRequest(queryRequest);
-        Page<FollowRecord> result = followRecordMapper.selectPage(page, query);
+        Page<FollowRecord> result = followRecordMapper.queryByRequest(queryRequest).page(pageRequest);
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().map(FollowRecord::getVolunteerId),
                 User::getId, User::getUsername, User::getAvatar);
@@ -472,8 +466,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     private AdoptResponse buildAdoptResponse(Adopt adopt) {
         Pet pet = petService.selectById(adopt.getPetId(),
                 Pet::getId, Pet::getName);
-        String cover = petService.getCoverById(adopt.getPetId());
-        List<FollowTask> tasks = followTaskMapper.selectList(followTaskMapper.queryByAdopt(adopt.getId()));
+        String cover = fileService.getCoverUrl(adopt.getPetId(), PET);
+        List<FollowTask> tasks = followTaskMapper.queryByAdopt(adopt.getId()).list();
         Map<Long, User> users = userService.groupById(
                 Stream.of(adopt.getApplicantId(), adopt.getReviewerId()),
                 tasks.stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
@@ -481,12 +475,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Set<Long> taskIds = tasks.stream()
                 .map(FollowTask::getId)
                 .collect(Collectors.toSet());
-        Map<Long, FollowRecord> records = followRecordMapper.groupFirst(
-                followRecordMapper
-                        .queryByTasks(taskIds)
-                        .select(FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime),
-                FollowRecord::getTaskId,
-                Function.identity());
+        Map<Long, FollowRecord> records = followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
+                FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
         return AdoptResponse.create(adopt,
                 pet, cover,
                 users.get(adopt.getApplicantId()),
@@ -495,7 +485,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     private BreadingResponse buildBreadingResponse(Breading breading) {
-        User login = getLoginUser();
+        User login = requireLoginUser();
         User applicant = login.is(breading.getApplicantId()) ? login : userService.requireById(breading.getApplicantId(),
                 User::getId, User::getUsername, User::getAvatar);
         User reviewer = login.is(breading.getReviewerId()) ? login : userService.selectById(breading.getReviewerId(),
@@ -504,8 +494,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     private AgreementResponse buildAgreementResponse(Agreement agreement) {
-        LambdaQueryWrapper<AgreementFile> query = agreementFileMapper.queryByAgreement(agreement.getId());
-        List<AgreementFileResponse> files = agreementFileMapper.selectList(query).stream()
+        List<AgreementFileResponse> files = agreementFileMapper.queryByAgreement(agreement.getId()).list().stream()
                 .filter(file -> file.getPage() != null && file.getPage() > 0)
                 .map(AgreementFileResponse::create)
                 .toList();
@@ -517,8 +506,15 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
                 User::getId, User::getUsername, User::getAvatar);
         User volunteer = userService.selectById(task.getVolunteerId(),
                 User::getId, User::getUsername, User::getAvatar);
-        FollowRecord record = followRecordMapper.selectOne(followRecordMapper.queryByTask(task.getId())
-                .select(FollowRecord::getId, FollowRecord::getSummary, FollowRecord::getVisitTime));
+        FollowRecord record = followRecordMapper.queryByTask(task.getId()).one(
+                FollowRecord::getId, FollowRecord::getSummary, FollowRecord::getVisitTime);
         return FollowTaskResponse.create(task, worker, volunteer, record);
+    }
+
+    @Autowired
+    public void setServices(PetService petService, UserService userService, FileService fileService) {
+        this.petService = petService;
+        this.userService = userService;
+        this.fileService = fileService;
     }
 }

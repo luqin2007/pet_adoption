@@ -16,7 +16,7 @@ import static com.example.backend.entity.property.ParentType.REHAB_PLAN;
 import static com.example.backend.entity.property.RehabPlanStatusProp.ACTIVE;
 
 @Data
-public class RehabPlanAddRequest implements IRequest, IRequestValidate {
+public class RehabPlanAddRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.pet.age")
     private Integer age;

@@ -1,10 +1,10 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.backend.dto.BreadingQueryParams;
 import com.example.backend.entity.Breading;
 import com.example.backend.entity.property.AdoptBreadingStatus;
+import com.example.backend.util.MPLambdaQuery;
+import com.example.backend.util.MPLambdaUpdate;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Date;
@@ -17,17 +17,16 @@ import java.util.Date;
 @Mapper
 public interface BreadingMapper extends IBaseMapper<Breading> {
 
-    default LambdaQueryWrapper<Breading> queryByRequest(BreadingQueryParams params) {
-        LambdaQueryWrapper<Breading> query = lambdaQuery();
-        params.querySet(query, Breading::getApplicantId, params.getApplicant())
-                .querySet(query, Breading::getReviewerId, params.getReviewer())
-                .querySet(query, Breading::getPetType, params.getPetType())
-                .querySet(query, Breading::getStatus, AdoptBreadingStatus::get, params.getStatus())
-                .queryTime(query, Breading::getCreateTime, params.getTime0(), params.getTime1());
-        return query;
+    default MPLambdaQuery<Breading> queryByRequest(BreadingQueryParams params) {
+        return lambdaQuery()
+                .in(Breading::getApplicantId, params.getApplicant())
+                .in(Breading::getReviewerId, params.getReviewer())
+                .in(Breading::getPetType, params.getPetType())
+                .in(Breading::getStatus, AdoptBreadingStatus::get, params.getStatus())
+                .in(Breading::getCreateTime, params.getTime0(), params.getTime1());
     }
 
-    default LambdaUpdateWrapper<Breading> updateStatus(Long id, AdoptBreadingStatus status) {
+    default MPLambdaUpdate<Breading> updateStatus(Long id, AdoptBreadingStatus status) {
         Date now = new Date();
         return lambdaUpdate()
                 .eq(Breading::getId, id)
@@ -38,5 +37,10 @@ public interface BreadingMapper extends IBaseMapper<Breading> {
     @Override
     default String getMissingMessage() {
         return "寄养申请不存在";
+    }
+
+    @Override
+    default Class<Breading> getEntityClass() {
+        return Breading.class;
     }
 }

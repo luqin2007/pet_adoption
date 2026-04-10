@@ -2,32 +2,34 @@ package com.example.backend.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.example.backend.entity.IId;
-import com.example.backend.util.IValidates;
-import com.example.backend.util.ServiceException;
+import com.example.backend.util.*;
+import com.github.yulichang.base.MPJBaseMapper;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
+public interface IBaseMapper<T extends IId> extends MPJBaseMapper<T>, IValidates {
 
-    default LambdaQueryWrapper<T> lambdaQuery() {
-        return Wrappers.lambdaQuery();
+    default MPLambdaQuery<T> lambdaQuery() {
+        return new MPLambdaQuery<>(this);
     }
 
-    default LambdaUpdateWrapper<T> lambdaUpdate() {
-        return Wrappers.lambdaUpdate();
+    default MPLambdaUpdate<T> lambdaUpdate() {
+        return new MPLambdaUpdate<>(this);
+    }
+
+    default <DTO> MPJLambdaQuery<T, T, DTO> joinQuery() {
+        return new MPJLambdaQuery<>(this);
     }
 
     @SuppressWarnings("unchecked")
     default T selectById(Long id, SFunction<T, ?>... columns) {
-        return selectOne(lambdaQuery().eq(T::getId, id).select(columns));
+        return selectOne(Wrappers.lambdaQuery(getEntityClass()).eq(T::getId, id).select(columns));
     }
 
     default T requireById(Long id) {
@@ -36,11 +38,11 @@ public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
 
     @SuppressWarnings("unchecked")
     default T requireById(Long id, SFunction<T, ?>... columns) {
-        return requireOne(lambdaQuery().eq(T::getId, id).select(columns));
+        return requireOne(Wrappers.lambdaQuery(getEntityClass()).eq(T::getId, id).select(columns));
     }
 
     default void requireExist(Long id) {
-        if (!exists(lambdaQuery().eq(T::getId, id)))
+        if (!exists(Wrappers.lambdaQuery(getEntityClass()).eq(T::getId, id)))
             throw ServiceException.notFound(getMissingMessage());
     }
 
@@ -54,12 +56,12 @@ public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
     }
 
     default List<T> selectList(Set<Long> ids) {
-        return selectList(lambdaQuery().in(T::getId, ids));
+        return selectList(Wrappers.lambdaQuery(getEntityClass()).in(T::getId, ids));
     }
 
     @SuppressWarnings("unchecked")
     default List<T> selectList(Set<Long> ids, SFunction<T, ?>... columns) {
-        return selectList(lambdaQuery().in(T::getId, ids).select(columns));
+        return selectList(Wrappers.lambdaQuery(getEntityClass()).in(T::getId, ids).select(columns));
     }
 
     @SuppressWarnings("unchecked")
@@ -125,4 +127,6 @@ public interface IBaseMapper<T extends IId> extends BaseMapper<T>, IValidates {
     default String getMissingMessage() {
         return "信息不存在";
     }
+
+    Class<T> getEntityClass();
 }

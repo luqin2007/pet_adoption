@@ -9,7 +9,7 @@ import org.springframework.validation.Errors;
 import java.util.Date;
 
 @Data
-public class FollowTaskUpdateRequest implements IRequest, IRequestValidate {
+public class FollowTaskUpdateRequest implements IRequest, IValidatedRequest {
 
     @NotNull(message = "request.adopt_breading.follow_task.volunteer")
     private Long volunteerId;

@@ -1,6 +1,5 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.Subscribe;
 import com.example.backend.entity.property.SubscribeAction;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
@@ -10,7 +9,7 @@ import java.util.Date;
 import java.util.Set;
 
 @Data
-public class SubscribeQueryParams implements IParam<Subscribe>, IRequestValidate {
+public class SubscribeQueryParams implements IParam, IValidatedRequest {
 
     private Set<Long> user;
     private Set<String> action;

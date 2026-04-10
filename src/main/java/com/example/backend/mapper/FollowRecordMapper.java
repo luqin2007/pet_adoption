@@ -1,8 +1,8 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.backend.dto.FollowRecordQueryParams;
 import com.example.backend.entity.FollowRecord;
+import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Set;
@@ -15,29 +15,33 @@ import java.util.Set;
 @Mapper
 public interface FollowRecordMapper extends IBaseMapper<FollowRecord> {
 
-    default LambdaQueryWrapper<FollowRecord> queryByTask(Long taskId) {
+    default MPLambdaQuery<FollowRecord> queryByTask(Long taskId) {
         return lambdaQuery()
                 .eq(FollowRecord::getTaskId, taskId)
-                .orderByDesc(FollowRecord::getVisitTime);
+                .desc(FollowRecord::getVisitTime);
     }
 
-    default LambdaQueryWrapper<FollowRecord> queryByTasks(Set<Long> taskIds) {
+    default MPLambdaQuery<FollowRecord> queryByTasks(Set<Long> taskIds) {
         return lambdaQuery()
                 .eq(taskIds.size() == 1, FollowRecord::getTaskId, taskIds.iterator().next())
                 .in(taskIds.size() != 1, FollowRecord::getTaskId, taskIds)
-                .orderByDesc(FollowRecord::getVisitTime);
+                .desc(FollowRecord::getVisitTime);
     }
 
-    default LambdaQueryWrapper<FollowRecord> queryByRequest(FollowRecordQueryParams params) {
-        LambdaQueryWrapper<FollowRecord> query = lambdaQuery();
-        params.query(query, FollowRecord::getTaskId, params.getTask())
-                .query(query, FollowRecord::getVolunteerId, params.getVolunteer())
-                .queryTime(query, FollowRecord::getVisitTime, params.getTime0(), params.getTime1());
-        return query;
+    default MPLambdaQuery<FollowRecord> queryByRequest(FollowRecordQueryParams params) {
+        return lambdaQuery()
+                .eq(FollowRecord::getTaskId, params.getTask())
+                .eq(FollowRecord::getVolunteerId, params.getVolunteer())
+                .in(FollowRecord::getVisitTime, params.getTime0(), params.getTime1());
     }
 
     @Override
     default String getMissingMessage() {
         return "跟踪记录不存在";
+    }
+
+    @Override
+    default Class<FollowRecord> getEntityClass() {
+        return FollowRecord.class;
     }
 }

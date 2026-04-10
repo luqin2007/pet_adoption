@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-public class MedicalRecordAddRequest implements IRequest, IRequestValidate {
+public class MedicalRecordAddRequest implements IRequest, IValidatedRequest {
 
     @NotNull(message = "request.pet.age")
     @Min(value = 0, message = "request.pet.age")

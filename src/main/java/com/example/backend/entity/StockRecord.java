@@ -1,6 +1,6 @@
 package com.example.backend.entity;
 
-import com.example.backend.entity.property.StockRecordAction;
+import com.example.backend.entity.property.StockAction;
 import com.example.backend.entity.property.SourceType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,7 +38,7 @@ public class StockRecord implements IId {
      * 动作
      * *非空 varchar(20)*
      */
-    private StockRecordAction action;
+    private StockAction action;
 
     /**
      * 来源类型
@@ -56,7 +56,7 @@ public class StockRecord implements IId {
      * 剩余数量
      * *非空 decimal*
      */
-    private BigDecimal remainCount;
+    private BigDecimal remain;
 
     /**
      * 单价

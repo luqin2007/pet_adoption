@@ -1,7 +1,7 @@
 package com.example.backend.component;
 
 
-import com.example.backend.dto.IRequestValidate;
+import com.example.backend.dto.IValidatedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -15,12 +15,12 @@ public class RequestValidator implements Validator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return IRequestValidate.class.isAssignableFrom(clazz);
+        return IValidatedRequest.class.isAssignableFrom(clazz);
     }
 
     @Override
     public void validate(Object target, Errors errors) {
-        IRequestValidate request = (IRequestValidate) target;
+        IValidatedRequest request = (IValidatedRequest) target;
         request.validate(errors);
     }
 }

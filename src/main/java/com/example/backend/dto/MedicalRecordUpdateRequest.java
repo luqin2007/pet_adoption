@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
-public class MedicalRecordUpdateRequest implements IRequest, IRequestValidate {
+public class MedicalRecordUpdateRequest implements IRequest, IValidatedRequest {
 
     private Long ownerId;
 

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 @Data
-public class DonationUpdateRequest implements IRequest, IRequestValidate {
+public class DonationUpdateRequest implements IRequest, IValidatedRequest {
 
     @NotEmpty(message = "request.item_donation.donation.items")
     private List<DonationAddItemRequest> items;

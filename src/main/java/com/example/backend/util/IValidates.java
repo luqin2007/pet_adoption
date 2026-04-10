@@ -15,7 +15,7 @@ public interface IValidates {
     /**
      * 获取当前登录用户
      */
-    default User getLoginUser() {
+    default User requireLoginUser() {
         return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
                 .map(auth -> (CustomUserDetails) auth.getPrincipal())
                 .map(CustomUserDetails::getUser)

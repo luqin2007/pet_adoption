@@ -4,18 +4,14 @@ import com.example.backend.entity.RehabPlanStatus;
 import com.example.backend.entity.property.RehabPlanStatusProp;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.validation.Errors;
 
 import java.util.Date;
 
 @Data
-public class RehabPlanStatusUpdateRequest implements IRequest, IRequestValidate {
-
-    @NotBlank(message = "request.medical.rehab.task.status")
-    private String status;
-
-    @NotBlank(message = "request.medical.rehab.task.reason")
-    private String reason;
+@EqualsAndHashCode(callSuper = true)
+public class RehabPlanStatusUpdateRequest extends StatusUpdateRequest {
 
     public RehabPlanStatus create(Long planId, Long userId) {
         return new RehabPlanStatus(null,

@@ -13,7 +13,7 @@ import org.springframework.validation.Errors;
 import java.util.Date;
 
 @Data
-public class AgreementAddRequest implements IRequest, IRequestValidate {
+public class AgreementAddRequest implements IRequest, IValidatedRequest {
 
     @NotNull(message = "request.adopt_breading.agreement.parent")
     private Long parentId;

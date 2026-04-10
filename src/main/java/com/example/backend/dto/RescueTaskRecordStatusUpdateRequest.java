@@ -1,14 +1,33 @@
 package com.example.backend.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.example.backend.entity.RescueTask;
+import com.example.backend.entity.RescueTaskRecord;
+import com.example.backend.entity.property.RescueTaskAction;
+import com.example.backend.entity.property.RescueTaskStatus;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.validation.Errors;
+
+import java.util.Date;
 
 @Data
-public class RescueTaskRecordStatusUpdateRequest implements IRequest {
+@EqualsAndHashCode(callSuper = true)
+public class RescueTaskRecordStatusUpdateRequest extends StatusUpdateRequest {
 
-    @NotBlank(message = "request.rescue_task.status")
-    private String status;
+    public RescueTaskRecord createRescueTaskRecord(RescueTask task, Long userId, RescueTaskAction action, RescueTaskStatus statusFrom) {
+        return new RescueTaskRecord(null,
+                task.getId(),
+                userId,
+                null,
+                action,
+                statusFrom,
+                RescueTaskStatus.get(status),
+                reason,
+                new Date(System.currentTimeMillis()));
+    }
 
-    @NotBlank(message = "request.rescue_task.reason")
-    private String reason;
+    @Override
+    public void validate(Errors errors) {
+        validateEnum(errors, RescueTaskRecordStatusUpdateRequest::getStatus, RescueTaskStatus.class, "request.status");
+    }
 }
