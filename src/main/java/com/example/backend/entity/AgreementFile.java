@@ -1,8 +1,8 @@
 package com.example.backend.entity;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.util.Pair;
 
 import java.util.Date;
 
@@ -11,7 +11,6 @@ import java.util.Date;
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class AgreementFile implements IId, IFile {
 
     /**
@@ -42,4 +41,20 @@ public class AgreementFile implements IId, IFile {
      * *非空 datetime*
      */
     private Date createTime;
+
+    public AgreementFile(Long agreementId, Pair<String, Date> fileAndUpdateTime, Integer page) {
+        this.id = null;
+        this.agreementId = agreementId;
+        this.filename = fileAndUpdateTime.getFirst();
+        this.page = page;
+        this.createTime = fileAndUpdateTime.getSecond();
+    }
+
+    public AgreementFile(Long agreementId, String filename, Integer page) {
+        this.id = null;
+        this.agreementId = agreementId;
+        this.filename = filename;
+        this.page = page;
+        this.createTime = new Date();
+    }
 }

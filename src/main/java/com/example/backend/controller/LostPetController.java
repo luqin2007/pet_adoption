@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.service.LostPetService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +48,7 @@ public class LostPetController {
      * 报备走失宠物
      */
     @PostMapping("/pets")
-    public Result<LostPetResponse> addLostPet(@RequestBody LostPetAddRequest request) {
+    public Result<LostPetResponse> addLostPet(@Valid @RequestBody LostPetAddRequest request) {
         LostPetResponse response = lostPetService.addLostPet(request);
         return Result.success(response);
     }
@@ -56,7 +57,8 @@ public class LostPetController {
      * 上传宠物图片
      */
     @PostMapping("/pets/{_id}/media")
-    public Result<String> uploadLostPetMedia(@PathVariable("_id") String uuid, LostPetMediaUploadTable request) {
+    public Result<String> uploadLostPetMedia(@PathVariable("_id") String uuid,
+                                             @ModelAttribute LostPetMediaUploadTable request) {
         String response = lostPetService.uploadLostPetMedia(uuid, request);
         return Result.success(response);
     }
@@ -64,7 +66,7 @@ public class LostPetController {
     /**
      * 删除宠物图片
      */
-    @PostMapping("/pets/{_id}/media/{name}")
+    @DeleteMapping("/pets/{_id}/media/{name}")
     public Result<Void> deleteLostPetMedia(@PathVariable("_id") String uuid, @PathVariable("name") String filename) {
         lostPetService.deleteLostPetMedia(uuid, filename);
         return Result.success();
@@ -75,7 +77,7 @@ public class LostPetController {
      */
     @PostMapping("/pets/{id}")
     public Result<LostPetResponse> updateLostPet(@PathVariable("id") Long lostPetId,
-                                                 @RequestBody LostPetUpdateRequest request) {
+                                                 @Valid @RequestBody LostPetUpdateRequest request) {
         LostPetResponse response = lostPetService.updateLostPet(lostPetId, request);
         return Result.success(response);
     }
@@ -93,7 +95,7 @@ public class LostPetController {
      * 查询走失宠物
      */
     @GetMapping("/pets")
-    public Result<Page<LostPetResponse>> getLostPets(LostPetQueryParams params, PageParams pageParams) {
+    public Result<Page<LostPetResponse>> getLostPets(@Valid LostPetQueryParams params, PageParams pageParams) {
         Page<LostPetResponse> response = lostPetService.getLostPets(params, pageParams);
         return Result.success(response);
     }
@@ -102,7 +104,7 @@ public class LostPetController {
      * 发起认领申请
      */
     @PostMapping("/claim")
-    public Result<LostPetClaimResponse> addClaim(@RequestBody LostPetClaimAddRequest request) {
+    public Result<LostPetClaimResponse> addClaim(@Valid @RequestBody LostPetClaimAddRequest request) {
         LostPetClaimResponse response = lostPetService.addClaim(request);
         return Result.success(response);
     }
@@ -120,7 +122,7 @@ public class LostPetController {
      * 查询认领申请
      */
     @GetMapping("/claim")
-    public Result<Page<LostPetClaimResponse>> getClaims(ClaimQueryParams params, PageParams pageParams) {
+    public Result<Page<LostPetClaimResponse>> getClaims(@Valid ClaimQueryParams params, PageParams pageParams) {
         Page<LostPetClaimResponse> response = lostPetService.getClaims(params, pageParams);
         return Result.success(response);
     }
@@ -138,7 +140,8 @@ public class LostPetController {
      * 认领申请审核
      */
     @PostMapping("/claim/{id}/approve")
-    public Result<LostPetClaimResponse> approveClaim(@PathVariable("id") Long claimId, @RequestBody ClaimApproveRequest request) {
+    public Result<LostPetClaimResponse> approveClaim(@PathVariable("id") Long claimId,
+                                                     @Valid @RequestBody ClaimApproveRequest request) {
         LostPetClaimResponse response = lostPetService.approveClaim(claimId, request);
         return Result.success(response);
     }

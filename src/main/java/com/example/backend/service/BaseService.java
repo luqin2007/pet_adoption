@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
@@ -31,6 +32,7 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
     protected ApplicationEventPublisher eventPublisher;
     protected ObjectMapper objectMapper;
     protected MessageSource messageSource;
+    protected TransactionTemplate transactionTemplate;
 
     @Value("${application.key_timeout}")
     protected long keyTimeout;
@@ -150,10 +152,12 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
     public void setObjects(RedisHelper redisHelper, // redis
                            ApplicationEventPublisher eventPublisher, // 事件
                            ObjectMapper objectMapper, // json
-                           MessageSource messageSource) { // i18n
+                           MessageSource messageSource, // i18n
+                           TransactionTemplate transactionTemplate) { // transaction
         this.redisHelper = redisHelper;
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
         this.messageSource = messageSource;
+        this.transactionTemplate = transactionTemplate;
     }
 }

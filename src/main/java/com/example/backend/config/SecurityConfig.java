@@ -39,12 +39,12 @@ public class SecurityConfig {
                 // 页面权限
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/user/login", "/user/register",  // 登录、注册
-                                "/user/check/**",                   // 注册校验
-                                "/user/forget", "/user/reset",    // 忘记密码
-                                "/auth/refresh",                    // 刷新 token
-                                "/", "/css/**", "/js/**"        // 其他静态资源
-                                ).permitAll()
+                                "/login", "/register",     // 登录、注册
+                                "/check/**",                 // 注册校验
+                                "/forget", "/reset",       // 忘记密码
+                                "/auth/refresh",             // 刷新 token
+                                "/", "/css/**", "/js/**" // 其他静态资源
+                        ).permitAll()
                         .anyRequest().authenticated())
                 // 异常处理
                 .exceptionHandling(ex -> ex

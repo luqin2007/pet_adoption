@@ -26,15 +26,15 @@ public class SubscribeQueryParams implements IParam, IValidatedRequest {
             if (action == null || action.stream()
                     .map(SubscribeAction::get)
                     .filter(SubscribeAction::requireId).count() != 1)
-                errors.rejectValue("action", "request.item_donation.subscribe.query");
+                errors.rejectValue("action", "request.query");
         }
         // 限定 min/max 时，action 需要 count 的有且只有一个
-        validateRange(errors, SubscribeQueryParams::getMin, SubscribeQueryParams::getMax, "request.item_donation.subscribe.query");
+        validateRange(errors, SubscribeQueryParams::getMin, SubscribeQueryParams::getMax, "request.query");
         if (min != null || max != null) {
             if (action == null || action.stream()
                     .map(SubscribeAction::get)
                     .filter(SubscribeAction::requireCount).count() != 1)
-                errors.rejectValue("action", "request.item_donation.subscribe.query");
+                errors.rejectValue("action", "request.query");
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.backend.util;
 
-import com.example.backend.entity.IFile;
 import com.example.backend.entity.property.ParentType;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
@@ -15,11 +14,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import static com.example.backend.entity.property.MediaType.IMAGE;
 import static com.example.backend.entity.property.MediaType.VIDEO;
@@ -31,9 +28,6 @@ public class FileUtils {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtils.class);
-
-    public static String UPLOAD_PATH = "./uploads";
-    public static String TEMP_UPLOAD_PATH = "./uploads/__temp";
 
     /**
      * 上传文件
@@ -58,85 +52,6 @@ public class FileUtils {
         } catch (IOException e) {
             LOGGER.warn("upload: 上传文件失败: {}", filename, e);
             throw ServiceException.request("文件上传失败", e);
-        }
-    }
-
-    /**
-     * 将临时文件转移到目标位置
-     *
-     * @param fileInfo   临时文件信息
-     * @param uuid       临时实体 id
-     * @param parentId   关联实体 id
-     * @param parentType 关联实体类型
-     */
-    public static boolean transferTempFile(IFile fileInfo, String uuid, Long parentId, ParentType parentType) {
-        Path filePath = generateFilePath(parentType, parentId, fileInfo.getFilename());
-        Path tempPath = generateTempPath(parentType, uuid, fileInfo.getFilename());
-        if (Files.isRegularFile(tempPath) && !Files.exists(filePath)) {
-            try {
-                // 复制文件
-                Files.copy(tempPath, filePath);
-            } catch (IOException e) {
-                LOGGER.warn("saveTempFile: 复制文件失败: {}", filePath, e);
-                return false;
-            }
-            try {
-                // 删除临时文件
-                Files.deleteIfExists(tempPath);
-            } catch (IOException e) {
-                LOGGER.warn("saveTempFile: 删除文件失败: {}", filePath, e);
-                return true;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * 删除文件
-     */
-    public static void tryDeleteFile(Path file) {
-        if (!Files.exists(file)) {
-            LOGGER.warn("deleteFile: 文件不存在: {}", file);
-            return;
-        }
-
-        if (!Files.isRegularFile(file)) {
-            LOGGER.warn("deleteFile: 删除目标非文件: {}", file);
-            return;
-        }
-
-        try {
-            Files.delete(file);
-            LOGGER.info("deleteDirectory: 文件已删除: {}", file);
-        } catch (IOException e) {
-            LOGGER.warn("deleteDirectory: 删除文件失败: {}", file, e);
-        }
-    }
-
-    /**
-     * 删除目录
-     */
-    public static void tryDeleteDirectory(Path path, boolean onlyEmpty) {
-        if (!Files.exists(path)) {
-            LOGGER.warn("deleteDirectory: 目录不存在: {}", path);
-            return;
-        }
-
-        try (Stream<Path> files = Files.list(path)) {
-            boolean isNotEmpty = files.findFirst().isPresent();
-            if (onlyEmpty && isNotEmpty) {
-                LOGGER.warn("deleteDirectory: 目录非空: {}", path);
-                return;
-            }
-
-            if (isNotEmpty) {
-                LOGGER.warn("deleteDirectory: 删除非空目录: {}", path);
-            }
-
-            FileSystemUtils.deleteRecursively(path);
-            LOGGER.info("deleteDirectory: 目录已删除: {}", path);
-        } catch (IOException e) {
-            LOGGER.warn("deleteDirectory: 删除目录失败: {}", path, e);
         }
     }
 
@@ -211,50 +126,30 @@ public class FileUtils {
         }
     }
 
-    /**
-     * 生成文件路径
-     *
-     * @param parentType 关联实体类型
-     * @param parentId   关联实体 id
-     * @param filename   文件名
-     */
-    public static Path generateFilePath(ParentType parentType, Long parentId, String filename) {
-        return generateFilePath(parentType, parentId).resolve(filename);
+    public static Path generatePath(String base, ParentType parentType, Long parentId, String filename) {
+        return Paths.get(base)
+                .resolve(parentType.getFolder())
+                .resolve(String.valueOf(parentId))
+                .resolve(filename);
     }
 
-    /**
-     * 生成目录路径
-     *
-     * @param parentType 关联实体类型
-     * @param parentId   关联实体 id
-     */
-    public static Path generateFilePath(ParentType parentType, Long parentId) {
-        return Paths.get(UPLOAD_PATH)
+    public static Path generatePath(String base, ParentType parentType, Long parentId) {
+        return Paths.get(base)
                 .resolve(parentType.getFolder())
                 .resolve(String.valueOf(parentId));
     }
 
-    /**
-     * 生成临时文件目录路径
-     *
-     * @param parentType 关联实体类型
-     * @param uuid       关联实体临时 id
-     */
-    public static Path generateTempPath(ParentType parentType, String uuid) {
-        return Paths.get(TEMP_UPLOAD_PATH)
+    public static Path generatePath(String base, ParentType parentType, String uuid, String filename) {
+        return Paths.get(base)
                 .resolve(parentType.getFolder())
-                .resolve(uuid);
+                .resolve(uuid)
+                .resolve(filename);
     }
 
-    /**
-     * 生成临时文件保存路径
-     *
-     * @param parentType 关联实体类型
-     * @param uuid       关联实体临时 id
-     * @param filename   文件名
-     */
-    public static Path generateTempPath(ParentType parentType, String uuid, String filename) {
-        return generateTempPath(parentType, uuid).resolve(filename);
+    public static Path generatePath(String base, ParentType parentType, String uuid) {
+        return Paths.get(base)
+                .resolve(parentType.getFolder())
+                .resolve(uuid);
     }
 
     /**
@@ -278,15 +173,39 @@ public class FileUtils {
     }
 
     /**
-     * 移动目录内容
+     * 复制文件内容
      */
-    public static void moveDirectory(Path source, Path target) {
+    public static void copyFile(Path source, Path target) {
+        if (!Files.isRegularFile(source))
+            throw ServiceException.request("非文件: " + source);
+        try {
+            Files.copy(source, target);
+        } catch (IOException e) {
+            throw ServiceException.request("无法复制文件: " + source, e);
+        }
+    }
+
+    /**
+     * 复制目录内容
+     */
+    public static void copyDirectory(Path source, Path target) {
         if (!Files.isDirectory(source)) return;
         try {
-            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+            FileSystemUtils.copyRecursively(source, target);
+        } catch (IOException e) {
+            throw ServiceException.request("无法复制目录: " + source, e);
+        }
+    }
+
+    /**
+     * 删除目录内容
+     */
+    public static void deleteDirectory(Path source) {
+        if (!Files.isDirectory(source)) return;
+        try {
             FileSystemUtils.deleteRecursively(source);
         } catch (IOException e) {
-            throw ServiceException.request("无法移动目录: " + source, e);
+            throw ServiceException.request("无法删除目录: " + source, e);
         }
     }
 }

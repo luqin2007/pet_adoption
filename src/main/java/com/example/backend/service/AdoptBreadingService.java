@@ -10,6 +10,7 @@ import com.example.backend.util.FileUtils;
 import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +41,9 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     private PetService petService;
     private UserService userService;
     private FileService fileService;
+
+    @Value("${file.upload}")
+    private String upload;
 
     /**
      * 申请领养
@@ -116,6 +120,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         adopt.setUpdateTime(now);
         if (target == AdoptBreadingStatus.PASS || target == AdoptBreadingStatus.REJECT)
             adopt.setReviewTime(now);
+        updateById(adopt);
         eventPublisher.publishEvent(new AdoptStatusEvent(adopt, oldStatus));
         return buildAdoptResponse(adopt);
     }
@@ -177,7 +182,6 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     /**
      * 起草协议
      */
-    @Transactional
     public AgreementResponse addAgreement(AgreementAddRequest request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
@@ -185,100 +189,119 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         // 保存协议
         Agreement agreement = request.create();
         agreementMapper.insert(agreement);
-        AgreementUpdateRecord updateRecord = request.createUpdateRecord(agreement);
+        AgreementUpdateRecord updateRecord = new AgreementUpdateRecord(agreement, AgreementUpdateType.CREATE);
         agreementUpdateRecordMapper.insert(updateRecord);
 
-        // 更新记录状态
-        ParentType parentType = agreement.getParentType();
-        switch (parentType) {
-            case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
-            case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
-            default -> throw ServiceException.invalidate("无效协议 " + parentType);
+        // 上传文件
+        List<AgreementFile> files;
+        if (agreement.getType() == AgreementType.PAPER) {
+            AgreementUpdateRecord uploadRecord = new AgreementUpdateRecord(agreement, AgreementUpdateType.UPLOAD);
+            agreementUpdateRecordMapper.insert(uploadRecord);
+            files = uploadAgreementFiles(agreement.getId(), request.getFiles());
+        } else {
+            files = List.of();
         }
-        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, updateRecord, login));
+
+        // 更新记录状态
+        transactionTemplate.executeWithoutResult(status -> {
+            ParentType parentType = agreement.getParentType();
+            switch (parentType) {
+                case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
+                case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
+                default -> throw ServiceException.invalidate("无效协议 " + parentType);
+            }
+            agreementUpdateRecordMapper.updateStatus(updateRecord.getId(), AgreementUpdateStatus.SUCCESS);
+        });
+
+        eventPublisher.publishEvent(new AgreementAddEvent(agreement, files, login));
         return buildAgreementResponse(agreement);
     }
 
     /**
-     * 修改协议
+     * 修改协议（电子协议）
      */
-    @Transactional
     public AgreementResponse updateAgreement(Long agreementId, AgreementUpdateRequest request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requireEqual(AgreementType.ELECTRONIC, agreement.getType(), "仅适用于电子协议");
 
+        // 记录旧协议内容
+        AgreementUpdateRecord record = recordAgreementUpdate(agreement);
+        request.applyTo(agreement);
         agreementMapper.updateById(agreement);
-        AgreementUpdateRecord updateRecord = request.applyTo(agreement);
-        agreementUpdateRecordMapper.insert(updateRecord);
-        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, updateRecord, login));
+        agreementUpdateRecordMapper.updateStatus(record.getId(), AgreementUpdateStatus.SUCCESS);
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
         return buildAgreementResponse(agreement);
     }
 
     /**
-     * 上传纸质扫描件
+     * 修改协议（上传纸质扫描件）
      */
-    @Transactional
     public List<AgreementFileResponse> uploadAgreement(Long agreementId, AgreementFilesUploadTable request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
-        Agreement agreement = agreementMapper.requireById(agreementId,
-                Agreement::getType);
-        requireEqual(AgreementType.PAPER, agreement.getType(), "仅适用于纸质协议");
 
-        // 检查是否是图片
-        List<Pair<String, MediaType>> extAndTypes = request.getFiles().stream()
-                .map(FileUtils::getFileExtensionAndType)
-                .toList();
-        boolean onlyImage = extAndTypes.stream()
-                .allMatch(extAndType -> extAndType.getSecond() == MediaType.IMAGE);
-        require(onlyImage, "不支持的图片格式");
-
-        // 已上传 - 创建更改记录
-        List<AgreementFile> agreementFiles = agreementFileMapper.queryByAgreement(agreementId).list();
-        Path path = FileUtils.generateFilePath(AGREEMENT, agreementId);
-        AgreementUpdateRecord updateRecord = request.createUpdateRecord(agreementId, agreementFiles, objectMapper);
-        agreementUpdateRecordMapper.insert(updateRecord);
-        // 文件已存在 - 移动
-        Path newPath = FileUtils.generateFilePath(AGREEMENT_UPDATE, updateRecord.getId());
-        FileUtils.moveDirectory(path, newPath);
-        // 删除文件记录
-        agreementFileMapper.deleteByIds(agreementFiles);
-        if (Files.isDirectory(path))
-            throw ServiceException.system("文件转移异常，请联系管理员手动处理");
+        Agreement agreement = agreementMapper.requireById(agreementId);
+        AgreementUpdateRecord record = recordAgreementUpdate(agreement);
 
         // 上传文件
-        List<AgreementFile> files = new ArrayList<>(request.getFiles().size());
-        for (int i = 0; i < request.getFiles().size(); ++i) {
-            Date now = new Date();
-            Pair<String, MediaType> extAndType = extAndTypes.get(i);
-            MultipartFile file = request.getFiles().get(i);
-            String name = FileUtils.getNameWithoutExtension(file.getOriginalFilename());
-            String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
-            FileUtils.upload(file, filename, path);
-            AgreementFile agreementFile = new AgreementFile(null,
-                    agreementId,
-                    filename,
-                    i + 1,
-                    now);
-            files.add(agreementFile);
+        List<Pair<String, Date>> files = fileService.uploadImages(request.getFiles(), agreementId, AGREEMENT);
+        List<AgreementFile> agreementFiles = new ArrayList<>(files.size());
+        for (int i = 0; i < files.size(); ++i) {
+            agreementFiles.add(new AgreementFile(agreementId, files.get(i), i + 1));
         }
-        agreementFileMapper.insert(files);
+        agreementFileMapper.insert(agreementFiles);
+        agreementUpdateRecordMapper.updateStatus(record.getId(), AgreementUpdateStatus.SUCCESS);
 
         // 更新协议
         agreement.setUpdateTime(new Date());
         agreementMapper.setUpdateTime(agreementId).update();
-        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, updateRecord, login));
-        return files.stream()
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
+        return agreementFiles.stream()
                 .map(AgreementFileResponse::create)
                 .toList();
+    }
+
+    /*
+    上传协议图片
+     */
+    private List<AgreementFile> uploadAgreementFiles(Long agreementId, List<MultipartFile> files) {
+        List<Pair<String, Date>> result = fileService.uploadImages(files, agreementId, AGREEMENT);
+        List<AgreementFile> agreementFiles = new ArrayList<>(files.size());
+        for (int i = 0; i < result.size(); i++) {
+            agreementFiles.add(new AgreementFile(agreementId, result.get(i), i + 1));
+        }
+        agreementFileMapper.insert(agreementFiles);
+        return agreementFiles;
+    }
+
+    /*
+    记录旧协议内容
+     */
+    private AgreementUpdateRecord recordAgreementUpdate(Agreement agreement) {
+        AgreementUpdateRecord record = new AgreementUpdateRecord(agreement, AgreementUpdateType.UPDATE);
+        if (agreement.getType() == AgreementType.PAPER) {
+            // 纸质协议
+            // 1. 记录协议文件集
+            List<AgreementFile> agreementFiles = agreementFileMapper.queryByAgreement(agreement.getId()).list();
+            record.setContent(objectMapper.writeValueAsString(agreementFiles));
+            agreementUpdateRecordMapper.insert(record);
+            // 2. 备份协议文件
+            Path path = FileUtils.generatePath(upload, AGREEMENT, agreement.getId());
+            Path newPath = FileUtils.generatePath(upload, AGREEMENT_RECORD, record.getId());
+            FileUtils.copyDirectory(path, newPath);
+            FileUtils.deleteDirectory(path);
+            if (Files.isDirectory(path))
+                throw ServiceException.system("文件转移异常，请联系管理员手动处理");
+        } else {
+            agreementUpdateRecordMapper.insert(record);
+        }
+        return record;
     }
 
     /**
      * 签署协议
      */
-    @Transactional
     public AgreementResponse signAgreement(Long agreementId, MultipartFile sign) {
         User login = requireLoginUser();
         Agreement agreement = agreementMapper.requireById(agreementId);
@@ -293,38 +316,25 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         else
             throw ServiceException.invalidate("服务类型异常");
 
-        // 上传文件
-        Date now = new Date();
-        String original = sign.getOriginalFilename();
-        String name = FileUtils.getNameWithoutExtension(original);
-        Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(sign);
-        requireEqual(MediaType.IMAGE, extAndType.getSecond(), "不支持的图片格式");
-        String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
-        Path path = FileUtils.generateFilePath(AGREEMENT, agreementId);
-        FileUtils.upload(sign, filename, path);
+        AgreementUpdateRecord record = new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN);
+        agreementUpdateRecordMapper.insert(record);
 
-        // 保存数据
-        String content = switch (agreement.getType()) {
-            case ELECTRONIC -> agreement.getContent();
-            case PAPER -> {
-                List<AgreementFile> files = agreementFileMapper.queryByAgreement(agreementId).list();
-                yield objectMapper.writeValueAsString(files);
-            }
-        };
-        AgreementUpdateRecord updateRecord = new AgreementUpdateRecord(null, agreementId, content, AgreementUpdateType.SIGN, now);
-        agreementUpdateRecordMapper.insert(updateRecord);
-        agreement.setSign(filename);
-        agreement.setSignTime(now);
-        agreement.setUpdateTime(now);
-        agreementMapper.updateById(agreement);
-        AgreementFile file = new AgreementFile(null, agreementId, filename, 0, now);
+        // 上传文件
+        String filename = fileService.uploadImage(sign, agreementId, AGREEMENT);
+        AgreementFile file = new AgreementFile(agreementId, filename, 0);
         agreementFileMapper.insert(file);
-        switch (agreement.getParentType()) {
-            case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
-            case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
-            default -> throw ServiceException.invalidate("无效类型 " + agreement.getParentType());
-        }
-        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, updateRecord, login));
+
+        // 更新数据
+        transactionTemplate.executeWithoutResult(status -> {
+            agreementMapper.sign(agreementId, filename, new Date()).update();
+            switch (agreement.getParentType()) {
+                case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
+                case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
+                default -> throw ServiceException.invalidate("无效类型 " + agreement.getParentType());
+            }
+            agreementUpdateRecordMapper.updateStatus(record.getId(), AgreementUpdateStatus.SUCCESS);
+        });
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
         return buildAgreementResponse(agreement);
     }
 

@@ -5,6 +5,7 @@ import com.example.backend.dto.*;
 import com.example.backend.dto.HealthAssessmentResponse;
 import com.example.backend.mapper.MedicalDetailQueryParams;
 import com.example.backend.service.MedicalService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -66,13 +67,13 @@ public class MedicalCareController {
     private final MedicalService medicalService;
 
     @PostMapping("/first")
-    public Result<FirstRegistrationResponse> addFirstVisitRegistration(@RequestBody FirstRegistrationAddRequest request) {
+    public Result<FirstRegistrationResponse> addFirstVisitRegistration(@Valid @RequestBody FirstRegistrationAddRequest request) {
         FirstRegistrationResponse response = medicalService.addFirstVisitRegistration(request);
         return Result.success(response);
     }
 
     @GetMapping("/first")
-    public Result<Page<FirstRegistrationItemResponse>> getFirstVisitRegistrations(FirstRegistrationQueryParams query,
+    public Result<Page<FirstRegistrationItemResponse>> getFirstVisitRegistrations(@Valid FirstRegistrationQueryParams query,
                                                                                   PageParams page) {
         Page<FirstRegistrationItemResponse> response = medicalService.getFirstVisitRegistrations(query, page);
         return Result.success(response);
@@ -86,14 +87,14 @@ public class MedicalCareController {
 
     @PostMapping("/record/pet/{id}")
     public Result<MedicalRecordResponse> addMedicalRecord(@PathVariable("id") Long petId,
-                                                          @RequestBody MedicalRecordAddRequest request) {
+                                                          @Valid @RequestBody MedicalRecordAddRequest request) {
         MedicalRecordResponse response = medicalService.addMedicalRecord(petId, request);
         return Result.success(response);
     }
 
     @PostMapping("/record/{id}")
     public Result<MedicalRecordResponse> updateMedicalRecord(@PathVariable("id") Long recordId,
-                                                             @RequestBody MedicalRecordUpdateRequest request) {
+                                                             @Valid @RequestBody MedicalRecordUpdateRequest request) {
         MedicalRecordResponse response = medicalService.updateMedicalRecord(recordId, request);
         return Result.success(response);
     }
@@ -105,13 +106,13 @@ public class MedicalCareController {
     }
 
     @GetMapping("/record")
-    public Result<Page<MedicalRecordResponse>> getMedicalRecords(MedicalRecordQueryParams query, PageParams page) {
+    public Result<Page<MedicalRecordResponse>> getMedicalRecords(@Valid MedicalRecordQueryParams query, PageParams page) {
         Page<MedicalRecordResponse> response = medicalService.getMedicalRecords(query, page);
         return Result.success(response);
     }
 
     @PostMapping("/detail")
-    public Result<MedicalDetailResponse> addMedicalDetail(@RequestBody MedicalDetailAddRequest request) {
+    public Result<MedicalDetailResponse> addMedicalDetail(@Valid @RequestBody MedicalDetailAddRequest request) {
         MedicalDetailResponse response = medicalService.addMedicalDetail(request);
         return Result.success(response);
     }
@@ -123,14 +124,14 @@ public class MedicalCareController {
     }
 
     @GetMapping("/detail")
-    public Result<Page<MedicalDetailResponse>> getMedicalDetails(MedicalDetailQueryParams query, PageParams page) {
+    public Result<Page<MedicalDetailResponse>> getMedicalDetails(@Valid MedicalDetailQueryParams query, PageParams page) {
         Page<MedicalDetailResponse> response = medicalService.getMedicalDetails(query, page);
         return Result.success(response);
     }
 
     @PostMapping("/detail/{id}")
     public Result<MedicalDetailResponse> updateMedicalDetail(@PathVariable("id") Long detailId,
-                                                             @RequestBody MedicalDetailUpdateRequest request) {
+                                                             @Valid @RequestBody MedicalDetailUpdateRequest request) {
         MedicalDetailResponse response = medicalService.updateMedicalDetail(detailId, request);
         return Result.success(response);
     }
@@ -143,7 +144,7 @@ public class MedicalCareController {
 
     @PostMapping("/detail/{id}/diagnosis")
     public Result<DiagnosisResponse> addDiagnosis(@PathVariable("id") Long detailId,
-                                                  @RequestBody DiagnosisAddRequest request) {
+                                                  @Valid @RequestBody DiagnosisAddRequest request) {
         DiagnosisResponse response = medicalService.addDiagnosis(detailId, request);
         return Result.success(response);
     }
@@ -156,13 +157,13 @@ public class MedicalCareController {
 
     @PostMapping("/detail/{id}/plan")
     public Result<TreatmentPlanResponse> addTreatmentPlan(@PathVariable("id") Long detailId,
-                                                          @RequestBody TreatmentPlanAddRequest request) {
+                                                          @Valid @RequestBody TreatmentPlanAddRequest request) {
         TreatmentPlanResponse response = medicalService.addTreatmentPlan(detailId, request);
         return Result.success(response);
     }
 
     @DeleteMapping("/plan")
-    public Result<Void> discardTreatmentPlan(@RequestBody IdsRequest ids) {
+    public Result<Void> discardTreatmentPlan(@Valid @RequestBody IdsRequest ids) {
         medicalService.discardTreatmentPlan(ids);
         return Result.success();
     }
@@ -174,7 +175,8 @@ public class MedicalCareController {
     }
 
     @PostMapping("/exam/{_id}/doc")
-    public Result<String> uploadExamination(@PathVariable("_id") String uuid, ExaminationFileUploadTable request) {
+    public Result<String> uploadExamination(@PathVariable("_id") String uuid,
+                                            @ModelAttribute ExaminationFileUploadTable request) {
         String filename = medicalService.uploadExamination(uuid, request);
         return Result.success(filename);
     }
@@ -186,7 +188,8 @@ public class MedicalCareController {
     }
 
     @PostMapping("/exam/{_id}")
-    public Result<ExaminationResponse> addExamination(@PathVariable("_id") String uuid, @RequestBody ExaminationAddRequest request) {
+    public Result<ExaminationResponse> addExamination(@PathVariable("_id") String uuid,
+                                                      @Valid @RequestBody ExaminationAddRequest request) {
         ExaminationResponse response = medicalService.addExamination(uuid, request);
         return Result.success(response);
     }
@@ -198,7 +201,8 @@ public class MedicalCareController {
     }
 
     @PostMapping("/vaccine/pet/{id}")
-    public Result<VaccineResponse> addVaccine(@PathVariable("id") Long petId, @RequestBody VaccineAddRequest request) {
+    public Result<VaccineResponse> addVaccine(@PathVariable("id") Long petId,
+                                              @Valid @RequestBody VaccineAddRequest request) {
         VaccineResponse response = medicalService.addVaccine(petId, request);
         return Result.success(response);
     }
@@ -216,7 +220,8 @@ public class MedicalCareController {
     }
 
     @PostMapping("/deworm/pet/{id}")
-    public Result<DewormResponse> addDeworm(@PathVariable("id") Long petId, @RequestBody DewormAddRequest request) {
+    public Result<DewormResponse> addDeworm(@PathVariable("id") Long petId,
+                                            @Valid @RequestBody DewormAddRequest request) {
         DewormResponse response = medicalService.addDeworm(petId, request);
         return Result.success(response);
     }
@@ -228,7 +233,8 @@ public class MedicalCareController {
     }
 
     @PostMapping("/rehab/pet/{id}")
-    public Result<RehabPlanResponse> addRehabPlan(@PathVariable("id") Long petId, @RequestBody RehabPlanAddRequest request) {
+    public Result<RehabPlanResponse> addRehabPlan(@PathVariable("id") Long petId,
+                                                  @Valid @RequestBody RehabPlanAddRequest request) {
         RehabPlanResponse response = medicalService.addRehabPlan(petId, request);
         return Result.success(response);
     }
@@ -240,20 +246,21 @@ public class MedicalCareController {
     }
 
     @GetMapping("/rehab")
-    public Result<Page<RehabPlanResponse>> getRehabPlans(RehabPlanQueryParams query, PageParams page) {
+    public Result<Page<RehabPlanResponse>> getRehabPlans(@Valid RehabPlanQueryParams query, PageParams page) {
         Page<RehabPlanResponse> response = medicalService.getRehabPlans(query, page);
         return Result.success(response);
     }
 
     @PostMapping("/rehab/{id}/status")
     public Result<RehabPlanResponse> updateRehabPlanStatus(@PathVariable("id") Long planId,
-                                                           @RequestBody RehabPlanStatusUpdateRequest request) {
+                                                           @Valid @RequestBody RehabPlanStatusUpdateRequest request) {
         RehabPlanResponse response = medicalService.updateRehabPlanStatus(planId, request);
         return Result.success(response);
     }
 
     @PostMapping("/rehab/{id}/record")
-    public Result<RehabRecordResponse> addRehabRecord(@PathVariable("id") Long planId, RehabRecordAddTable request) {
+    public Result<RehabRecordResponse> addRehabRecord(@PathVariable("id") Long planId,
+                                                      @Valid @ModelAttribute RehabRecordAddTable request) {
         RehabRecordResponse response = medicalService.addRehabRecord(planId, request);
         return Result.success(response);
     }
@@ -266,7 +273,7 @@ public class MedicalCareController {
 
     @PostMapping("/health/pet/{id}")
     public Result<HealthAssessmentResponse> addHealthAssessment(@PathVariable("id") Long petId,
-                                                                @RequestBody HealthAssessmentAddRequest request) {
+                                                                @Valid @RequestBody HealthAssessmentAddRequest request) {
         HealthAssessmentResponse response = medicalService.addHealthAssessment(petId, request);
         return Result.success(response);
     }

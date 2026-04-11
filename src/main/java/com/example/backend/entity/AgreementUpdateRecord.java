@@ -1,7 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.AgreementUpdateStatus;
 import com.example.backend.entity.property.AgreementUpdateType;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,7 +12,6 @@ import java.util.Date;
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class AgreementUpdateRecord implements IId {
 
     /**
@@ -39,8 +38,23 @@ public class AgreementUpdateRecord implements IId {
     private AgreementUpdateType type;
 
     /**
+     * 更新状态
+     * *非空 varchar(20)*
+     */
+    private AgreementUpdateStatus status;
+
+    /**
      * 创建时间
      * *非空 datetime*
      */
     private Date createTime;
+
+    public AgreementUpdateRecord(Agreement agreement, AgreementUpdateType type) {
+        this.id = null;
+        this.agreementId = agreement.getId();
+        this.content = agreement.getContent();
+        this.type = type;
+        this.status = AgreementUpdateStatus.START;
+        this.createTime = new Date();
+    }
 }

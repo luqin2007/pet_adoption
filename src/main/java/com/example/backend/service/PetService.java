@@ -34,9 +34,9 @@ public class PetService extends BaseService<PetMapper, Pet> {
 
     private final PetStatusRecordMapper petStatusRecordMapper;
     private final PetLocationMapper petLocationMapper;
-    private final FileService fileService;
     private final PetTagMapper petTagMapper;
 
+    private FileService fileService;
     private UserService userService;
     private MedicalService medicalService;
 
@@ -290,8 +290,10 @@ public class PetService extends BaseService<PetMapper, Pet> {
     }
 
     @Autowired
-    public void setServices(UserService userService,
+    public void setServices(FileService fileService,
+                            UserService userService,
                             MedicalService medicalService) {
+        this.fileService = fileService;
         this.userService = userService;
         this.medicalService = medicalService;
     }

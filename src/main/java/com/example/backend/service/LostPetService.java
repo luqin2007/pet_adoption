@@ -36,9 +36,9 @@ import static com.example.backend.entity.property.ParentType.PET;
 public class LostPetService extends BaseService<LostPetMapper, LostPet> {
 
     private final LostPetLocationMapper lostPetLocationMapper;
-    private final FileService fileService;
     private final LostPetClaimMapper lostPetClaimMapper;
 
+    private FileService fileService;
     private UserService userService;
     private PetService petService;
 
@@ -91,7 +91,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         requireLoginUser();
         requireRedisUuid(lostPetKey, uuid);
         return fileService
-                .uploadMediaToTemp(request.getFile(), request.getName(), uuid, lostPetFileKey, LOST_PET)
+                .uploadTempMedia(request.getFile(), request.getName(), uuid, lostPetFileKey, LOST_PET)
                 .getFilename();
     }
 
@@ -180,7 +180,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         Map<Long, Pet> pets = petService.groupById(
                 result.getRecords().stream().map(LostPet::getPetId),
                 Pet::getId, Pet::getName);
-        Map<Long, String> petCovers = fileService.getCoverUrls(LOST_PET,
+        Map<Long, String> petCovers = fileService.getCoverUrls(PET,
                 pets.values().stream().map(Pet::getId).collect(Collectors.toSet()));
         return convertDto(result, lostPet ->
                 LostPetResponse.createBatch(lostPet, locations, owners, pets, petCovers));
@@ -259,7 +259,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         lostPetClaimMapper.approve(claimId, status, request.getReason()).update();
         // 更新走失宠物状态为已认领
         if (status == ClaimStatus.PASS) {
-            baseMapper.updateStatus(claimId, claim.getLostPetId(), LostPetStatus.CLAIMED);
+            baseMapper.updateStatus(claim.getLostPetId(), request.getPetId(), LostPetStatus.CLAIMED);
             if (request.getPetId() != null) { // 更新宠物状态
                 PetStatusUpdateRequest sr = new PetStatusUpdateRequest();
                 sr.setPetId(request.getPetId());
@@ -287,8 +287,10 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
     }
 
     @Autowired
-    public void setServices(UserService userService,
+    public void setServices(FileService fileService,
+                            UserService userService,
                             PetService petService) {
+        this.fileService = fileService;
         this.userService = userService;
         this.petService = petService;
     }

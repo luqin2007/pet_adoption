@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.service.PetService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,7 @@ public class PetController {
      * 添加流浪宠物信息
      */
     @PostMapping("/")
-    public Result<PetAddResponse> addPet(@RequestBody PetInfoAddRequest petInformation) {
+    public Result<PetAddResponse> addPet(@Valid @RequestBody PetInfoAddRequest petInformation) {
         PetAddResponse response = petService.addPet(petInformation);
         return Result.success(response);
     }
@@ -54,7 +55,8 @@ public class PetController {
      * 添加宠物位置信息
      */
     @PostMapping("/{id}/location")
-    public Result<PetResponse> addLocation(@PathVariable("id") Long petId, @RequestBody LocationRequest request) {
+    public Result<PetResponse> addLocation(@PathVariable("id") Long petId,
+                                           @Valid @RequestBody LocationRequest request) {
         PetResponse response = petService.addLocation(petId, request);
         return Result.success(response);
     }
@@ -63,7 +65,7 @@ public class PetController {
      * 获取流浪宠物列表
      */
     @GetMapping("/")
-    public Result<Page<PetResponse>> getPets(PetQueryParams query, PageParams page) {
+    public Result<Page<PetResponse>> getPets(@Valid PetQueryParams query, PageParams page) {
         Page<PetResponse> response = petService.getPets(query, page);
         return Result.success(response);
     }
@@ -81,7 +83,8 @@ public class PetController {
      * 修改流浪宠物信息
      */
     @PostMapping("/{id}")
-    public Result<PetResponse> updatePet(@PathVariable("id") Long petId, @RequestBody PetUpdateRequest request) {
+    public Result<PetResponse> updatePet(@PathVariable("id") Long petId,
+                                         @Valid @RequestBody PetUpdateRequest request) {
         PetResponse response = petService.updatePet(petId, request);
         return Result.success(response);
     }
@@ -99,7 +102,8 @@ public class PetController {
      * 上传流浪宠物图片/视频，使用 multipart/form-data
      */
     @PutMapping("/{id}/media")
-    public Result<PetMediaResponse> uploadMedia(@PathVariable("id") Long petId, PetMediaUploadTable file) {
+    public Result<PetMediaResponse> uploadMedia(@PathVariable("id") Long petId,
+                                                @ModelAttribute PetMediaUploadTable file) {
         PetMediaResponse response = petService.uploadMedia(petId, file);
         return Result.success(response);
     }
@@ -110,7 +114,7 @@ public class PetController {
     @PostMapping("/{id}/media/{mid}")
     public Result<PetMediaResponse> updateMedia(@PathVariable("id") Long petId,
                                                 @PathVariable("mid") Long mediaId,
-                                                @RequestBody PetMediaUpdateRequest request) {
+                                                @Valid @RequestBody PetMediaUpdateRequest request) {
         PetMediaResponse response = petService.updateMedia(petId, mediaId, request);
         return Result.success(response);
     }
@@ -128,7 +132,8 @@ public class PetController {
      * 添加流浪宠物特征
      */
     @PutMapping("/{id}/tags")
-    public Result<List<PetTagResponse>> addTags(@PathVariable("id") Long petId, @RequestBody PetTagAddRequest request) {
+    public Result<List<PetTagResponse>> addTags(@PathVariable("id") Long petId,
+                                                @Valid @RequestBody PetTagAddRequest request) {
         List<PetTagResponse> response = petService.addTags(petId, request);
         return Result.success(response);
     }
@@ -137,7 +142,8 @@ public class PetController {
      * 删除流浪宠物特征
      */
     @DeleteMapping("/{id}/tags")
-    public Result<List<PetTagResponse>> deleteTags(@PathVariable("id") Long petId, @RequestBody IdsRequest request) {
+    public Result<List<PetTagResponse>> deleteTags(@PathVariable("id") Long petId,
+                                                   @Valid @RequestBody IdsRequest request) {
         List<PetTagResponse> response = petService.deleteTags(petId, request);
         return Result.success(response);
     }

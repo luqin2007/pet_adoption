@@ -9,17 +9,15 @@ import com.example.backend.event.DonationStatusEvent;
 import com.example.backend.event.DonationUpdateEvent;
 import com.example.backend.event.StockEvent;
 import com.example.backend.mapper.*;
-import com.example.backend.util.FileUtils;
 import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,7 +40,8 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
     private final StockRecordMapper stockRecordMapper;
     private final SubscribeMapper subscribeMapper;
 
-    private final UserService userService;
+    private UserService userService;
+    private FileService fileService;
 
     @Value("${key.donation.uuid}")
     private String donationTemplate;
@@ -68,20 +67,9 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         requireEqual(user.getId(), userId, "用户错误");
 
         // 上传材料
-        Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
-        String name = FileUtils.getNameWithoutExtension(file.getOriginalFilename());
-        Date now = new Date();
-        String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
-        Path path = FileUtils.generateTempPath(DONATION, uuid);
-        FileUtils.upload(file, filename, path);
-
-        // 保存文件信息
-        TempFileInfo fileInfo = new TempFileInfo(filename, filename, userId, extAndType.getSecond(), now);
-        String fileKey = String.format(donationFileTemplate, uuid);
-        redisHelper.putObjectToHash(fileKey, filename, fileInfo);
-        redisHelper.expireObject(fileKey, 30);
-        redisHelper.expireString(redisKey, 30);
-        return filename;
+        return fileService
+                .uploadTempMedia(file, null, uuid, donationFileTemplate, DONATION)
+                .getFilename();
     }
 
     /**
@@ -95,10 +83,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         requireEqual(user.getId(), userId, "用户错误");
 
         // 删除文件
-        List<TempFileInfo> files = redisHelper.getAndDeleteObjectsFromHash(redisKey, filename);
-        require(!files.isEmpty(), "文件不存在");
-        Path file = FileUtils.generateTempPath(DONATION, uuid, files.get(0).getFilename());
-        FileUtils.tryDeleteFile(file);
+        fileService.deleteTempFile(donationFileTemplate, uuid, filename, DONATION);
     }
 
     /**
@@ -115,21 +100,14 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         donationMapper.insert(donation);
         List<DonationItem> items = request.createItems(donation);
         donationItemMapper.insert(items);
-        // 更新用户身份
-        login.setRole(login.getRole() | UserRole.DONOR.getSetMask());
-        userService.updateById(login);
-
-        // 转移临时文件
-        String fileKey = String.format(donationFileTemplate, uuid);
-        List<DonationFile> files = redisHelper.getObjectsFromHash(fileKey, TempFileInfo.class)
-                .filter(file -> FileUtils.transferTempFile(file, uuid, donation.getId(), DONATION))
+        List<DonationFile> files = fileService.saveTempFiles(donationFileTemplate, uuid, donation, DONATION)
                 .map(file -> file.createDonationFile(donation.getId()))
                 .toList();
         donationFileMapper.insert(files);
 
-        // 清理
-        Path tempPath = FileUtils.generateTempPath(DONATION, uuid);
-        FileUtils.tryDeleteDirectory(tempPath, false);
+        // 更新用户身份
+        login.setRole(login.getRole() | UserRole.DONOR.getSetMask());
+        userService.updateById(login);
         eventPublisher.publishEvent(new DonationAddEvent(donation, items));
         return buildDonationResponse(donation, items, files, login);
     }
@@ -414,7 +392,10 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         }
         // 更新库存记录
         stock.setCount(count);
-        stockMapper.updateCount(stock.getId(), stock.getCount()).update();
+        if (firstRecord)
+            stockMapper.insert(stock);
+        else
+            stockMapper.updateCount(stock.getId(), stock.getCount()).update();
         StockRecord record = request.createRecord(stock, login.getId());
         stockRecordMapper.insert(record);
         // 通知
@@ -602,5 +583,11 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
             subscribeMapper.deleteByIds(subscribeIds);
         else
             subscribeMapper.delete(subscribeMapper.deleteUserSubscribes(subscribeIds, login.getId()));
+    }
+
+    @Autowired
+    public void setServices(UserService userService, FileService fileService) {
+        this.userService = userService;
+        this.fileService = fileService;
     }
 }

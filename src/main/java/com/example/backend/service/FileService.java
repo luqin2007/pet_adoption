@@ -1,13 +1,13 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.TempFileInfo;
-import com.example.backend.entity.ExaminationFile;
+import com.example.backend.entity.DeleteJob;
 import com.example.backend.entity.IId;
 import com.example.backend.entity.MediaFile;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.MediaType;
 import com.example.backend.entity.property.ParentType;
-import com.example.backend.mapper.ExaminationFileMapper;
+import com.example.backend.mapper.DeleteJobMapper;
 import com.example.backend.mapper.MediaFileMapper;
 import com.example.backend.util.FileUtils;
 import com.example.backend.util.StringUtils;
@@ -29,15 +29,19 @@ import static com.example.backend.entity.property.MediaType.IMAGE;
 @RequiredArgsConstructor
 public class FileService extends BaseService<MediaFileMapper, MediaFile> {
 
-    private final ExaminationFileMapper examinationFileMapper;
+    private final DeleteJobMapper deleteJobMapper;
 
     @Value("${application.key_timeout}")
     private long keyTimeout;
+    @Value("${file.upload}")
+    private String upload;
+    @Value("${file.temp}")
+    private String temp;
 
     /**
      * 向临时目录中上传图片/视频
      */
-    public TempFileInfo uploadMediaToTemp(MultipartFile file, String name, String uuid, String fileTemplate, ParentType parentType) {
+    public TempFileInfo uploadTempMedia(MultipartFile file, String name, String uuid, String fileTemplate, ParentType parentType) {
         User user = requireLoginUser();
         // 上传文件
         Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
@@ -45,7 +49,7 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         String nameWithoutExt = FileUtils.getNameWithoutExtension(file.getOriginalFilename());
         name = StringUtils.hasText(name) ? name : nameWithoutExt;
         String filename = FileUtils.generateFilename(nameWithoutExt, now, extAndType.getFirst());
-        Path targetPath = FileUtils.generateTempPath(parentType, uuid);
+        Path targetPath = FileUtils.generatePath(temp, parentType, uuid);
         FileUtils.upload(file, filename, targetPath);
 
         // 存储媒体数据
@@ -64,13 +68,13 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
     /**
      * 向临时目录中上传任意文件
      */
-    public TempFileInfo uploadFileToTemp(MultipartFile file, String name, String uuid, String fileTemplate, ParentType parentType) {
+    public TempFileInfo uploadTempFile(MultipartFile file, String name, String uuid, String fileTemplate, ParentType parentType) {
         User user = requireLoginUser();
         // 上传文件
         Date now = new Date();
         Pair<String, String> nameAndExt = FileUtils.getNameAndExtension(file.getOriginalFilename());
         String filename = FileUtils.generateFilename(nameAndExt.getFirst(), now, nameAndExt.getSecond());
-        Path targetPath = FileUtils.generateTempPath(parentType, uuid);
+        Path targetPath = FileUtils.generatePath(temp, parentType, uuid);
         FileUtils.upload(file, filename, targetPath);
 
         // 存储媒体数据
@@ -89,40 +93,49 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
     /**
      * 从临时目录中删除文件
      */
+    @Transactional
     public void deleteTempFile(String fileKeyTemplate, String uuid, String filename, ParentType parentType) {
         // 查找文件
         String fileKey = String.format(fileKeyTemplate, uuid);
         List<TempFileInfo> files = redisHelper.getAndDeleteObjectsFromHash(fileKey, filename);
-        if (files.isEmpty()) return;
 
         // 删除文件
         TempFileInfo fileInfo = files.get(0);
-        Path file = FileUtils.generateTempPath(parentType, uuid, fileInfo.getFilename());
-        FileUtils.tryDeleteFile(file);
-        FileUtils.tryDeleteDirectory(file.getParent(), true);
+        Path path = FileUtils.generatePath(temp, parentType, uuid, fileInfo.getFilename());
+        deleteJobMapper.insert(DeleteJob.create(path));
 
         // 刷新超时
         redisHelper.expireObject(fileKey, keyTimeout);
     }
 
+    @Transactional
+    public void deleteFile(String filename, Long parentId, ParentType parentType) {
+        if (StringUtils.hasText(filename)) {
+            Path path = FileUtils.generatePath(upload, parentType, parentId, filename);
+            deleteJobMapper.insert(DeleteJob.create(path));
+        }
+    }
+
     /**
      * 将临时目录中的文件转移到目标目录
      */
+    @Transactional
     public Stream<TempFileInfo> saveTempFiles(String fileKeyTemplate, String uuid, IId parent, ParentType parentType) {
         // 转移文件
         String fileKey = String.format(fileKeyTemplate, uuid);
-        Stream<TempFileInfo> files = redisHelper.getObjectsFromHash(fileKey, TempFileInfo.class)
-                // 转移临时文件
-                .filter(file -> FileUtils.transferTempFile(file, uuid, parent.getId(), parentType))
-                // 更新媒体信息
-                .sorted();
+        List<TempFileInfo> files = redisHelper.getObjectsFromHash(fileKey, TempFileInfo.class).toList();
+        for (TempFileInfo file : files) {
+            Path source = FileUtils.generatePath(temp, parentType, uuid, file.getFilename());
+            Path target = FileUtils.generatePath(upload, parentType, parent.getId(), file.getFilename());
+            FileUtils.copyFile(source, target);
+        }
 
         // 清理文件 / Redis
-        Path path = FileUtils.generateTempPath(parentType, uuid);
-        FileUtils.tryDeleteDirectory(path, false);
+        Path path = FileUtils.generatePath(temp, parentType, uuid);
+        deleteJobMapper.insert(DeleteJob.create(path));
         redisHelper.deleteObject(fileKey);
 
-        return files;
+        return files.stream().sorted();
     }
 
     /**
@@ -153,16 +166,52 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
     }
 
     /**
-     * 将临时目录中的文件图片/视频到目标目录
+     * 上传图片，不经临时目录，不加入数据库
+     *
+     * @return 文件名
      */
-    @Transactional
-    public List<ExaminationFile> saveTempExaminations(String fileKeyTemplate, String uuid, IId parent) {
-        // 转移文件
-        List<ExaminationFile> files = saveTempFiles(fileKeyTemplate, uuid, parent, ParentType.EXAMINATION)
-                .map(info -> info.createExamFile(parent.getId()))
-                .toList();
-        examinationFileMapper.insert(files);
-        return files;
+    public String uploadImage(MultipartFile file, Long parentId, ParentType parentType) {
+        requireLoginUser();
+
+        // 保存图片/视频
+        Path resources = FileUtils.generatePath(upload, parentType, parentId);
+        Date now = new Date();
+        Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
+        requireEqual(MediaType.IMAGE, extAndType.getSecond(), "不支持的图片格式");
+        String name = FileUtils.getNameWithoutExtension(file.getOriginalFilename());
+        String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
+        FileUtils.upload(file, filename, resources);
+        return filename;
+    }
+
+    /**
+     * 上传图片，不经临时目录，不加入数据库
+     *
+     * @return 文件名和上传完成时间
+     */
+    public List<Pair<String, Date>> uploadImages(List<MultipartFile> files, Long parentId, ParentType parentType) {
+        requireLoginUser();
+
+        // 检查文件类型
+        List<Pair<String, MediaType>> extAndTypes = new ArrayList<>(files.size());
+        for (MultipartFile file : files) {
+            Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
+            requireEqual(MediaType.IMAGE, extAndType.getSecond(), "不支持的图片格式");
+            extAndTypes.add(extAndType);
+        }
+
+        // 上传文件
+        Path resources = FileUtils.generatePath(upload, parentType, parentId);
+        List<Pair<String, Date>> nameAndUpdateTimes = new ArrayList<>(files.size());
+        for (int i = 0; i < files.size(); i++) {
+            Date now = new Date();
+            Pair<String, MediaType> extAndType = extAndTypes.get(i);
+            String name = FileUtils.getNameWithoutExtension(files.get(i).getOriginalFilename());
+            String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
+            FileUtils.upload(files.get(i), filename, resources);
+            nameAndUpdateTimes.add(Pair.of(filename, new Date()));
+        }
+        return nameAndUpdateTimes;
     }
 
     /**
@@ -173,7 +222,7 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         requireLoginUser();
 
         // 保存图片/视频
-        Path resources = FileUtils.generateFilePath(parentType, parentId);
+        Path resources = FileUtils.generatePath(upload, parentType, parentId);
         FileUtils.upload(file, media.getFilename(), resources);
 
         // 检查封面
@@ -196,7 +245,7 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         User user = requireLoginUser();
 
         // 保存图片/视频
-        Path resources = FileUtils.generateFilePath(parentType, parentId);
+        Path resources = FileUtils.generatePath(upload, parentType, parentId);
         List<MediaFile> mediaFiles = new ArrayList<>(files.size());
         for (MultipartFile file : files) {
             Date now = new Date();
@@ -265,9 +314,8 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
 
         // 删除媒体文件
         removeById(mediaId);
-        Path file = FileUtils.generateFilePath(parentType, media.getParentId(), media.getFilename());
-        FileUtils.tryDeleteFile(file);
-        FileUtils.tryDeleteDirectory(file.getParent(), true);
+        Path file = FileUtils.generatePath(upload, parentType, media.getParentId(), media.getFilename());
+        deleteJobMapper.insert(DeleteJob.create(file));
 
         // 重置封面
         if (IMAGE == media.getType() && Boolean.TRUE.equals(media.getIsCover())) {
@@ -287,11 +335,8 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         removeByIds(mediaFiles);
 
         // 删除文件
-        mediaFiles.stream()
-                .map(info -> FileUtils.generateFilePath(parentType, parentId, info.getFilename()))
-                .forEach(FileUtils::tryDeleteFile);
-        Path taskPath = FileUtils.generateFilePath(parentType, parentId);
-        FileUtils.tryDeleteDirectory(taskPath, false);
+        Path taskPath = FileUtils.generatePath(upload, parentType, parentId);
+        deleteJobMapper.insert(DeleteJob.create(taskPath));
     }
 
     /**

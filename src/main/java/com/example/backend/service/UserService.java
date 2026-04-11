@@ -3,14 +3,13 @@ package com.example.backend.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.User;
-import com.example.backend.entity.property.MediaType;
 import com.example.backend.event.MailSendEvent;
 import com.example.backend.mapper.UserMapper;
 import com.example.backend.util.*;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.util.Pair;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,11 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.sql.Date;
 import java.util.Objects;
 
-import static com.example.backend.entity.property.MediaType.IMAGE;
 import static com.example.backend.entity.property.ParentType.USER;
 
 /**
@@ -43,6 +39,8 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     private final PasswordEncoder passwordEncoder;
     private final JwtHelper jwtHelper;
     private final AuthenticationManager authenticationManager;
+
+    private FileService fileService;
 
     @Value("${host.address}")
     private String hostAddress;
@@ -75,12 +73,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         // 上传头像
         MultipartFile avatar = request.getAvatar();
         if (avatar != null && !avatar.isEmpty()) {
-            Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(avatar);
-            requireEqual(extAndType.getSecond(), IMAGE, "头像格式错误");
-            String name = FileUtils.getNameWithoutExtension(avatar.getOriginalFilename());
-            String filename = FileUtils.generateFilename(name, user.getCreateTime(), extAndType.getFirst());
-            Path path = FileUtils.generateFilePath(USER, user.getId());
-            FileUtils.upload(avatar, filename, path);
+            String filename = fileService.uploadImage(avatar, user.getId(), USER);
             getBaseMapper().updateAvatar(user.getId(), filename).update();
         }
 
@@ -142,13 +135,9 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         requireExist(principal, "用户不存在");
         assert principal != null;
 
-        // 附着 JWT 信息
         User user = principal.getUser();
         UserResponse response = UserResponse.create(user);
-        String accessToken = jwtHelper.generateAccessToken(user);
-        String refreshToken = jwtHelper.generateRefreshToken(user);
-        response.setAccessToken(accessToken);
-        response.setRefreshToken(refreshToken);
+        bindToken(user, response);
         return response;
     }
 
@@ -163,9 +152,21 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     /**
      * 获取用户信息
      */
-    public UserResponse getUser(String username) {
+    public UserResponse getUserWithToken(String username) {
         User user = baseMapper.queryByUser(username).require();
-        return UserResponse.create(user);
+        UserResponse response = UserResponse.create(user);
+        bindToken(user, response);
+        return response;
+    }
+
+    /*
+    附着 JWT 信息
+     */
+    private void bindToken(User user, UserResponse response) {
+        String accessToken = jwtHelper.generateAccessToken(user);
+        String refreshToken = jwtHelper.generateRefreshToken(user);
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken);
     }
 
     /**
@@ -239,12 +240,8 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     @Transactional
     public UserResponse update(Long userId, UserUpdateRequest request) {
         // 校验用户权限
-        User login = requireLoginUser();
         User user = requireById(userId);
-        // 管理员权限仅超级管理员可更改
-        requirePermission(!user.isAdmin() || login.isAdmin());
-        // 非管理员变更需要本人或救助站工作人员更改
-        requirePermission(login.isWorker() || Objects.equals(login.getId(), userId));
+        requestUserPermission(user, userId);
 
         // 更新用户信息
         request.applyTo(user, passwordEncoder);
@@ -258,31 +255,19 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     @Transactional
     public String uploadAvatar(Long userId, MultipartFile file) {
         // 校验用户权限
-        User login = requireLoginUser();
         User user = requireById(userId,
-                User::getId, User::getAvatar);
-        requirePermission(Objects.equals(login.getId(), userId) || login.isWorker());
-
-        // 检查图片
-        Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
-        requireEqual(IMAGE, extAndType.getSecond(), "不支持的图片格式");
+                User::getId, User::getRole, User::getAvatar);
+        requestUserPermission(user, userId);
 
         // 上传图片
-        Date now = new Date(System.currentTimeMillis());
-        String filename = FileUtils.generateFilename(file.getOriginalFilename(), now, extAndType.getFirst());
-        Path target = FileUtils.generateFilePath(USER, userId);
-        FileUtils.upload(file, filename, target);
+        String filename = fileService.uploadImage(file, userId, USER);
 
         // 更新信息
         String oldAvatar = user.getAvatar();
         baseMapper.updateAvatar(userId, filename).update();
 
         // 删除旧图片
-        if (oldAvatar != null) {
-            Path oldFile = FileUtils.generateFilePath(USER, userId, oldAvatar);
-            FileUtils.tryDeleteFile(oldFile);
-        }
-
+        fileService.deleteFile(oldAvatar, userId, USER);
         return FileUtils.generateAssetUrl(USER, userId, filename);
     }
 
@@ -291,16 +276,26 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      */
     @Transactional
     public void deleteAvatar(Long userId) {
-        User user = requireLoginUser();
-        if (StringUtils.hasText(user.getAvatar())) {
-            // 删除文件
-            Path path = FileUtils.generateFilePath(USER, userId, user.getAvatar());
-            FileUtils.tryDeleteFile(path);
+        User user = requireById(userId,
+                User::getId, User::getRole, User::getAvatar);
+        requestUserPermission(user, userId);
 
-            // 更新
-            user.setAvatar(null);
-            baseMapper.updateAvatar(userId, null).update();
-        }
+        String avatar = user.getAvatar();
+        baseMapper.updateAvatar(userId, null).update();
+        fileService.deleteFile(avatar, userId, USER);
+    }
+
+    private void requestUserPermission(User user, Long userId) {
+        User login = requireLoginUser();
+        // 管理员权限仅超级管理员可更改
+        requirePermission(!user.isAdmin() || login.isAdmin());
+        // 非管理员变更需要本人或救助站工作人员更改
+        requirePermission(login.is(userId) || login.isWorker());
+    }
+
+    @Autowired
+    public void setServices(FileService fileService) {
+        this.fileService = fileService;
     }
 
     @Override

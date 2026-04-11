@@ -10,8 +10,8 @@ import java.util.Locale;
 public enum AgreementUpdateType {
 
     CREATE, // 创建
-    DELETE, // 删除
-    UPLOAD, // 初次上传扫描件
+    DISCARD, // 删除
+    UPLOAD, // 上传图片
     UPDATE, // 更新内容
     SIGN; // 签订
 

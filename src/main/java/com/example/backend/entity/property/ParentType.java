@@ -18,7 +18,7 @@ public enum ParentType {
     ADOPT("adopt"), // 领养
     BREADING("breading"), // 寄养
     AGREEMENT("agreement"), // 领养/寄养协议
-    AGREEMENT_UPDATE("agreement_update"), // 协议备份
+    AGREEMENT_RECORD("agreement_record"), // 协议备份
     FOLLOW("follow"), // 领养跟踪
     DONATION("donation"), // 领养跟踪
     LOST_PET("lost_pet"); // 丢失宠物

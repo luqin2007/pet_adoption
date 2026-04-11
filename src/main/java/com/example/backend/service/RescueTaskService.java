@@ -47,8 +47,6 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
     @Value("${key.rescue_task.file}")
     private String fileTemplate;
 
-    private static final long KEY_TIMEOUT_MINUTES = 30;
-
     /**
      * 创建一个临时救助任务 id，有效期 30min
      */
@@ -101,7 +99,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         requireLoginUser();
         requireRedisUuid(redisTemplate, uuid);
         // 上传文件
-        TempFileInfo info = fileService.uploadMediaToTemp(file, null, uuid, fileTemplate, RESCUE_TASK);
+        TempFileInfo info = fileService.uploadTempMedia(file, null, uuid, fileTemplate, RESCUE_TASK);
         return info.getFilename();
     }
 

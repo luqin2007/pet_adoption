@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.Category;
 import com.example.backend.service.ItemDonationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -69,7 +70,8 @@ public class ItemDonationController {
      * 上传捐赠影像
      */
     @PostMapping("/donations/upload/{_id}")
-    public Result<String> uploadDonation(@PathVariable("_id") String uuid, MultipartFile request) {
+    public Result<String> uploadDonation(@PathVariable("_id") String uuid,
+                                         @RequestParam("file") MultipartFile request) {
         return Result.success(itemDonationService.uploadDonationFile(uuid, request));
     }
 
@@ -86,7 +88,7 @@ public class ItemDonationController {
      * 确认物资捐赠
      */
     @PostMapping("/donations")
-    public Result<DonationResponse> addDonation(@RequestBody DonationAddRequest request) {
+    public Result<DonationResponse> addDonation(@Valid @RequestBody DonationAddRequest request) {
         return Result.success(itemDonationService.addDonation(request));
     }
 
@@ -95,7 +97,7 @@ public class ItemDonationController {
      */
     @PostMapping("/donations/{id}")
     public Result<DonationResponse> updateDonation(@PathVariable("id") Long donationId,
-                                                   @RequestBody DonationUpdateRequest request) {
+                                                   @Valid @RequestBody DonationUpdateRequest request) {
         return Result.success(itemDonationService.updateDonation(donationId, request));
     }
 
@@ -104,7 +106,7 @@ public class ItemDonationController {
      */
     @PostMapping("/donations/{id}/status")
     public Result<DonationResponse> updateDonationStatus(@PathVariable("id") Long donationId,
-                                                         @RequestBody DonationStatusUpdateRequest status) {
+                                                         @Valid @RequestBody DonationStatusUpdateRequest status) {
         return Result.success(itemDonationService.updateDonationStatus(donationId, status));
     }
 
@@ -120,7 +122,7 @@ public class ItemDonationController {
      * 查询捐赠信息
      */
     @GetMapping("/donations")
-    public Result<Page<DonationResponse>> getDonations(DonationQueryParams params, PageParams page) {
+    public Result<Page<DonationResponse>> getDonations(@Valid DonationQueryParams params, PageParams page) {
         return Result.success(itemDonationService.getDonations(params, page));
     }
 
@@ -128,7 +130,7 @@ public class ItemDonationController {
      * 创建物资信息
      */
     @PostMapping("/items")
-    public Result<ItemResponse> addItem(@RequestBody ItemAddRequest request) {
+    public Result<ItemResponse> addItem(@Valid @RequestBody ItemAddRequest request) {
         return Result.success(itemDonationService.addItem(request));
     }
 
@@ -136,7 +138,7 @@ public class ItemDonationController {
      * 修改物资信息
      */
     @PostMapping("/items/{id}")
-    public Result<ItemResponse> updateItem(@PathVariable("id") Long itemId, @RequestBody ItemUpdateRequest request) {
+    public Result<ItemResponse> updateItem(@PathVariable("id") Long itemId, @Valid @RequestBody ItemUpdateRequest request) {
         return Result.success(itemDonationService.updateItem(itemId, request));
     }
 
@@ -152,7 +154,7 @@ public class ItemDonationController {
      * 查询物资信息
      */
     @GetMapping("/items")
-    public Result<Page<ItemResponse>> getItems(ItemQueryParams params, PageParams page) {
+    public Result<Page<ItemResponse>> getItems(@Valid ItemQueryParams params, PageParams page) {
         return Result.success(itemDonationService.getItems(params, page));
     }
 
@@ -169,7 +171,7 @@ public class ItemDonationController {
      * 创建物资分类
      */
     @PostMapping("/categories")
-    public Result<Category> addCategory(@RequestBody CategoryAddRequest request) {
+    public Result<Category> addCategory(@Valid @RequestBody CategoryAddRequest request) {
         return Result.success(itemDonationService.addCategory(request));
     }
 
@@ -178,7 +180,7 @@ public class ItemDonationController {
      */
     @PostMapping("/categories/{id}")
     public Result<Category> updateCategory(@PathVariable("id") Long categoryId,
-                                           @RequestBody CategoryUpdateRequest request) {
+                                           @Valid @RequestBody CategoryUpdateRequest request) {
         return Result.success(itemDonationService.updateCategory(categoryId, request));
     }
 
@@ -212,7 +214,7 @@ public class ItemDonationController {
      * 入库出库登记
      */
     @PostMapping("/stocks")
-    public Result<StockResponse> addStockRecord(@RequestBody StockRequest request) {
+    public Result<StockResponse> addStockRecord(@Valid @RequestBody StockRequest request) {
         return Result.success(itemDonationService.addStockRecord(request));
     }
 
@@ -228,15 +230,15 @@ public class ItemDonationController {
      * 查询库存物品
      */
     @GetMapping("/stocks")
-    public Result<Page<StockResponse>> getStocks(StockQueryParams params, PageParams page) {
+    public Result<Page<StockResponse>> getStocks(@Valid StockQueryParams params, PageParams page) {
         return Result.success(itemDonationService.getStocks(params, page));
     }
 
     /**
      * 查询库存记录
      */
-    @GetMapping("/stocks")
-    public Result<Page<StockRecordResponse>> getStockRecords(StockRecordQueryParams params, PageParams page) {
+    @GetMapping("/records")
+    public Result<Page<StockRecordResponse>> getStockRecords(@Valid StockRecordQueryParams params, PageParams page) {
         return Result.success(itemDonationService.getStockRecords(params, page));
     }
 
@@ -244,7 +246,7 @@ public class ItemDonationController {
      * 添加预警
      */
     @PostMapping("/subscribe")
-    public Result<SubscribeResponse> addSubscribe(@RequestBody SubscribeAddRequest request) {
+    public Result<SubscribeResponse> addSubscribe(@Valid @RequestBody SubscribeAddRequest request) {
         return Result.success(itemDonationService.addSubscribe(request));
     }
 
@@ -259,8 +261,8 @@ public class ItemDonationController {
     /**
      * 查询预警
      */
-    @GetMapping("/subscribe/{id}")
-    public Result<Page<SubscribeResponse>> getSubscribes(SubscribeQueryParams params, PageParams page) {
+    @GetMapping("/subscribe")
+    public Result<Page<SubscribeResponse>> getSubscribes(@Valid SubscribeQueryParams params, PageParams page) {
         return Result.success(itemDonationService.getSubscribes(params, page));
     }
 

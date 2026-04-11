@@ -1,16 +1,17 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Agreement;
-import com.example.backend.entity.AgreementUpdateRecord;
 import com.example.backend.entity.property.AgreementType;
-import com.example.backend.entity.property.AgreementUpdateType;
 import com.example.backend.entity.property.ParentType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.Errors;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class AgreementAddRequest implements IRequest, IValidatedRequest {
@@ -24,8 +25,9 @@ public class AgreementAddRequest implements IRequest, IValidatedRequest {
     @NotBlank(message = "request.adopt_breading.agreement.type")
     private String type;
 
-    @NotBlank(message = "request.adopt_breading.agreement.content")
     private String content;
+
+    private List<MultipartFile> files;
 
     public Agreement create() {
         Date now = new Date();
@@ -40,16 +42,10 @@ public class AgreementAddRequest implements IRequest, IValidatedRequest {
                 now);
     }
 
-    public AgreementUpdateRecord createUpdateRecord(Agreement agreement) {
-        return new AgreementUpdateRecord(null,
-                agreement.getId(),
-                "",
-                AgreementUpdateType.CREATE,
-                new Date());
-    }
-
     @Override
     public void validate(Errors errors) {
         validateEnum(errors, AgreementAddRequest::getType, AgreementType.class, "request.adopt_breading.agreement.type");
+        if (ObjectUtils.isEmpty(content) || ObjectUtils.isEmpty(files))
+            errors.rejectValue("content", "request.adopt_breading.agreement.content");
     }
 }

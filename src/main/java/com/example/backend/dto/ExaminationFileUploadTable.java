@@ -1,6 +1,5 @@
 package com.example.backend.dto;
 
-import com.example.backend.util.StringUtils;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,8 +11,4 @@ public class ExaminationFileUploadTable implements ITable {
 
     @NotNull
     private MultipartFile file;
-
-    public String getName(String defaultName) {
-        return StringUtils.hasText(name) ? name : defaultName;
-    }
 }

@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.service.AdoptBreadingService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +51,7 @@ public class AdoptBreadingController {
      * 申请领养
      */
     @PostMapping("/adopt")
-    public Result<AdoptResponse> addAdopt(@RequestBody AdoptAddRequest request) {
+    public Result<AdoptResponse> addAdopt(@Valid @RequestBody AdoptAddRequest request) {
         AdoptResponse response = adoptBreadingService.addAdopt(request);
         return Result.success(response);
     }
@@ -68,7 +69,7 @@ public class AdoptBreadingController {
      * 获取领养申请
      */
     @GetMapping("/adopt")
-    public Result<Page<AdoptResponse>> getAdopts(AdoptQueryParams params, PageParams page) {
+    public Result<Page<AdoptResponse>> getAdopts(@Valid AdoptQueryParams params, PageParams page) {
         Page<AdoptResponse> response = adoptBreadingService.getAdopts(params, page);
         return Result.success(response);
     }
@@ -87,7 +88,7 @@ public class AdoptBreadingController {
      * 申请寄养
      */
     @PostMapping("/breading")
-    public Result<BreadingResponse> addBreading(@RequestBody BreadingAddRequest request) {
+    public Result<BreadingResponse> addBreading(@Valid @RequestBody BreadingAddRequest request) {
         BreadingResponse response = adoptBreadingService.addBreading(request);
         return Result.success(response);
     }
@@ -105,7 +106,7 @@ public class AdoptBreadingController {
      * 获取寄养申请
      */
     @GetMapping("/breading")
-    public Result<Page<BreadingResponse>> getBreadingPets(BreadingQueryParams params, PageParams page) {
+    public Result<Page<BreadingResponse>> getBreadingPets(@Valid BreadingQueryParams params, PageParams page) {
         Page<BreadingResponse> response = adoptBreadingService.getBreadingPets(params, page);
         return Result.success(response);
     }
@@ -124,7 +125,7 @@ public class AdoptBreadingController {
      * 起草协议
      */
     @PostMapping("/agreement")
-    public Result<AgreementResponse> addAgreement(@RequestBody AgreementAddRequest request) {
+    public Result<AgreementResponse> addAgreement(@Valid @RequestBody AgreementAddRequest request) {
         AgreementResponse response = adoptBreadingService.addAgreement(request);
         return Result.success(response);
     }
@@ -134,7 +135,7 @@ public class AdoptBreadingController {
      */
     @PostMapping("/agreement/{id}")
     public Result<AgreementResponse> updateAgreement(@PathVariable("id") Long agreementId,
-                                                     @RequestBody AgreementUpdateRequest request) {
+                                                     @Valid @RequestBody AgreementUpdateRequest request) {
         AgreementResponse response = adoptBreadingService.updateAgreement(agreementId, request);
         return Result.success(response);
     }
@@ -144,7 +145,7 @@ public class AdoptBreadingController {
      */
     @PostMapping("/agreement/{id}/files")
     public Result<List<AgreementFileResponse>> uploadAgreement(@PathVariable("id") Long agreementId,
-                                                               AgreementFilesUploadTable files) {
+                                                               @Valid @ModelAttribute AgreementFilesUploadTable files) {
         List<AgreementFileResponse> response = adoptBreadingService.uploadAgreement(agreementId, files);
         return Result.success(response);
     }
@@ -172,7 +173,7 @@ public class AdoptBreadingController {
      * 查找协议
      */
     @GetMapping("/agreement")
-    public Result<Page<AgreementResponse>> getAgreements(AgreementQueryParams query, PageParams page) {
+    public Result<Page<AgreementResponse>> getAgreements(@Valid AgreementQueryParams query, PageParams page) {
         Page<AgreementResponse> response = adoptBreadingService.getAgreements(query, page);
         return Result.success(response);
     }
@@ -182,7 +183,7 @@ public class AdoptBreadingController {
      */
     @PostMapping("/follow/adopt/{id}")
     public Result<FollowTaskResponse> addFollowTask(@PathVariable("id") Long applicationId,
-                                                    @RequestBody FollowTaskAddRequest request) {
+                                                    @Valid @RequestBody FollowTaskAddRequest request) {
         FollowTaskResponse response = adoptBreadingService.addFollowTask(applicationId, request);
         return Result.success(response);
     }
@@ -192,7 +193,7 @@ public class AdoptBreadingController {
      */
     @PostMapping("/follow/{id}")
     public Result<FollowTaskResponse> updateFollowTask(@PathVariable("id") Long taskId,
-                                                       @RequestBody FollowTaskUpdateRequest request) {
+                                                       @Valid @RequestBody FollowTaskUpdateRequest request) {
         FollowTaskResponse response = adoptBreadingService.updateFollowTask(taskId, request);
         return Result.success(response);
     }
@@ -210,7 +211,7 @@ public class AdoptBreadingController {
      * 查询跟踪任务
      */
     @GetMapping("/follow")
-    public Result<Page<FollowTaskResponse>> getFollowTasks(FollowTaskQueryParams query, PageParams page) {
+    public Result<Page<FollowTaskResponse>> getFollowTasks(@Valid FollowTaskQueryParams query, PageParams page) {
         Page<FollowTaskResponse> response = adoptBreadingService.getFollowTasks(query, page);
         return Result.success(response);
     }
@@ -219,7 +220,8 @@ public class AdoptBreadingController {
      * 提交跟踪记录
      */
     @PostMapping("/follow/{id}/record")
-    public Result<FollowRecordResponse> addFollowRecord(@PathVariable("id") Long taskId, @RequestBody FollowRecordAddRequest request) {
+    public Result<FollowRecordResponse> addFollowRecord(@PathVariable("id") Long taskId,
+                                                        @Valid @RequestBody FollowRecordAddRequest request) {
         FollowRecordResponse response = adoptBreadingService.addFollowRecord(taskId, request);
         return Result.success(response);
     }
@@ -237,7 +239,7 @@ public class AdoptBreadingController {
      * 查询跟踪记录
      */
     @GetMapping("/follow/record")
-    public Result<Page<FollowRecordResponse>> getFollowRecords(FollowRecordQueryParams query, PageParams page) {
+    public Result<Page<FollowRecordResponse>> getFollowRecords(@Valid FollowRecordQueryParams query, PageParams page) {
         Page<FollowRecordResponse> response = adoptBreadingService.getFollowRecords(query, page);
         return Result.success(response);
     }

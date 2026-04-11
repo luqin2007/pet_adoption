@@ -22,6 +22,10 @@ public record Result<T>(int code, T data, String message) {
     }
 
     public static <T> ResponseEntity<Result<T>> wrap(Result<T> result) {
+        if (result.code() != 200) { // error
+            return ResponseEntity.status(result.code()).body(result);
+        }
+
         return ResponseEntity.ok(result);
     }
 }

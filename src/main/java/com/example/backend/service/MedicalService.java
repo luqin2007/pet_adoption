@@ -52,8 +52,6 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
     private UserService userService;
     private FileService fileService;
 
-    private final long KEY_TIMEOUT_MINUTES = 10;
-
     @Value("${key.examination.uuid}")
     private String uuidKeyTemplate;
     @Value("${key.examination.file}")
@@ -468,7 +466,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
 
         // 上传文件
         return fileService
-                .uploadFileToTemp(request.getFile(), request.getName(), uuid, fileKeyTemplate, EXAMINATION)
+                .uploadTempFile(request.getFile(), request.getName(), uuid, fileKeyTemplate, EXAMINATION)
                 .getFilename();
     }
 
@@ -503,7 +501,10 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         examinationMapper.insert(examination);
 
         // 创建检查结果文件
-        List<ExaminationFile> files = fileService.saveTempExaminations(fileKeyTemplate, uuid, examination);
+        List<ExaminationFile> files = fileService.saveTempFiles(fileKeyTemplate, uuid, examination, EXAMINATION)
+                .map(info -> info.createExamFile(examination.getId()))
+                .toList();
+        examinationFileMapper.insert(files);
         return ExaminationResponse.create(examination, files.stream()
                 .map(ExaminationFileResponse::create)
                 .toList());
