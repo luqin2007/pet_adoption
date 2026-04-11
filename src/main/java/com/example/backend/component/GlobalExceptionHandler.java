@@ -8,18 +8,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.text.DateFormat;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyMMdd");
-
-    private static int err_index = 0;
+    private static final AtomicInteger ERR_INDEX = new AtomicInteger(0);
 
     @ExceptionHandler(ServiceException.class)
     public ResponseEntity<Result<Void>> handleServiceException(ServiceException e) {
@@ -29,7 +27,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleOtherException(Exception e) {
-        String errorCode = FORMAT.format(Instant.now()) + String.format("%03d", ++err_index);
+        String errorCode = FORMAT.format(Instant.now()) + String.format("%03d", ERR_INDEX.getAndIncrement());
         LOGGER.error("Other Exception {}", errorCode, e);
         return Result.wrap(Result.error(500, "发生错误 " + errorCode));
     }

@@ -44,6 +44,8 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
     @Value("${host.address}")
     private String hostAddress;
+    @Value("${application.code_timeout}")
+    private Long codeTimeout;
     @Value("${key.mail_code}")
     private String mailKeyTemplate;
     @Value("${key.password_reset}")
@@ -106,7 +108,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         // 生成随机验证码
         String redisKey = String.format(mailKeyTemplate, email);
         String code = StringUtils.generateRandomString(6);
-        redisHelper.putString(redisKey, code, 10);
+        redisHelper.putString(redisKey, code, codeTimeout);
 
         // 发送邮件
         String content = getMessage("mail.send_mail_code", code);

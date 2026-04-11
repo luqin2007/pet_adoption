@@ -57,7 +57,8 @@ public class JwtHelper {
         if (keyBytes.length < 32) {
             int diff = 32 - keyBytes.length;
             secret = secret + StringUtils.generateRandomString(diff);
-            logger.warn("jwt.secret 自动补全 {} 字节: {}", diff, secret);
+            keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+            logger.warn("jwt.secret 长度不足，运行时已自动补全 {} 字节", diff);
         }
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }

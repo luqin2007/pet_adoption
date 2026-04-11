@@ -5,6 +5,7 @@ import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.entity.property.*;
 import com.example.backend.event.*;
+import com.example.backend.facade.AdoptBreadingFacade;
 import com.example.backend.mapper.*;
 import com.example.backend.util.FileUtils;
 import com.example.backend.util.ServiceException;
@@ -18,13 +19,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 import static com.example.backend.entity.property.AdoptBreadingStatus.AGREEMENT_DRAFT;
 import static com.example.backend.entity.property.AdoptBreadingStatus.AGREEMENT_SIGNED;
-import static com.example.backend.entity.property.ParentType.*;
+import static com.example.backend.entity.property.ParentType.AGREEMENT;
+import static com.example.backend.entity.property.ParentType.AGREEMENT_RECORD;
 
 @SuppressWarnings("unchecked")
 @Service
@@ -37,6 +40,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     private final AgreementUpdateRecordMapper agreementUpdateRecordMapper;
     private final FollowTaskMapper followTaskMapper;
     private final FollowRecordMapper followRecordMapper;
+    private final AdoptBreadingFacade adoptBreadingFacade;
 
     private PetService petService;
     private UserService userService;
@@ -58,7 +62,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Adopt adopt = request.create(login.getId());
         save(adopt);
         eventPublisher.publishEvent(new AdoptAddEvent(adopt));
-        return buildAdoptResponse(adopt);
+        return adoptBreadingFacade.buildAdoptResponse(adopt);
     }
 
     /**
@@ -66,7 +70,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public AdoptResponse getAdopt(Long adoptId) {
         Adopt adopt = requireById(adoptId);
-        return buildAdoptResponse(adopt);
+        return adoptBreadingFacade.buildAdoptResponse(adopt);
     }
 
     /**
@@ -74,29 +78,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public Page<AdoptResponse> getAdopts(AdoptQueryParams paramRequest, PageParams pageRequest) {
         Page<Adopt> result = getBaseMapper().queryByRequest(paramRequest).page(pageRequest);
-        Set<Long> adoptIds = result.getRecords().stream()
-                .map(Adopt::getId)
-                .collect(Collectors.toSet());
-        List<FollowTask> tasks = followTaskMapper.queryByAdopts(adoptIds).list();
-        Set<Long> petIds = result.getRecords().stream()
-                .map(Adopt::getPetId)
-                .collect(Collectors.toSet());
-        Map<Long, Pet> pets = petService.groupById(petIds,
-                Pet::getId, Pet::getName);
-        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
-        Map<Long, User> users = userService.groupById(
-                result.getRecords().stream().flatMap(adopt -> Stream.of(adopt.getApplicantId(), adopt.getReviewerId())),
-                tasks.stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
-                User::getId, User::getUsername, User::getAvatar);
-        Set<Long> taskIds = tasks.stream()
-                .map(FollowTask::getId)
-                .collect(Collectors.toSet());
-        Map<Long, FollowRecord> records = followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
-                FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
-        Map<Long, List<FollowTaskResponse>> followTasks = tasks.stream()
-                .map(task -> FollowTaskResponse.createBatch(task, users, records))
-                .collect(Collectors.groupingBy(FollowTaskResponse::getAdoptId));
-        return convertDto(result, adopt -> AdoptResponse.createBatch(adopt, pets, covers, users, followTasks));
+        return adoptBreadingFacade.buildAdoptPage(result);
     }
 
     /**
@@ -122,7 +104,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
             adopt.setReviewTime(now);
         updateById(adopt);
         eventPublisher.publishEvent(new AdoptStatusEvent(adopt, oldStatus));
-        return buildAdoptResponse(adopt);
+        return adoptBreadingFacade.buildAdoptResponse(adopt);
     }
 
     /**
@@ -134,7 +116,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Breading breading = request.create(login.getId());
         breadingMapper.insert(breading);
         eventPublisher.publishEvent(new BreadingAddEvent(breading));
-        return buildBreadingResponse(breading);
+        return adoptBreadingFacade.buildBreadingResponse(breading, login);
     }
 
     /**
@@ -142,7 +124,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public BreadingResponse getBreading(Long breadingId) {
         Breading breading = breadingMapper.requireById(breadingId);
-        return buildBreadingResponse(breading);
+        return adoptBreadingFacade.buildBreadingResponse(breading, requireLoginUser());
     }
 
     /**
@@ -150,10 +132,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public Page<BreadingResponse> getBreadingPets(BreadingQueryParams queryRequest, PageParams pageRequest) {
         Page<Breading> result = breadingMapper.queryByRequest(queryRequest).page(pageRequest);
-        Map<Long, User> users = userService.groupById(
-                result.getRecords().stream().flatMap(info -> Stream.of(info.getApplicantId(), info.getReviewerId())),
-                User::getId, User::getUsername, User::getAvatar);
-        return convertDto(result, breading -> BreadingResponse.createBatch(breading, users));
+        return adoptBreadingFacade.buildBreadingPage(result);
     }
 
     /**
@@ -176,7 +155,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
             breading.setReviewTime(now);
         breadingMapper.updateById(breading);
         eventPublisher.publishEvent(new BreadingStatusEvent(breading, oldStatus));
-        return buildBreadingResponse(breading);
+        return adoptBreadingFacade.buildBreadingResponse(breading, login);
     }
 
     /**
@@ -214,7 +193,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         });
 
         eventPublisher.publishEvent(new AgreementAddEvent(agreement, files, login));
-        return buildAgreementResponse(agreement);
+        return adoptBreadingFacade.buildAgreementResponse(agreement);
     }
 
     /**
@@ -231,7 +210,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         agreementMapper.updateById(agreement);
         agreementUpdateRecordMapper.updateStatus(record.getId(), AgreementUpdateStatus.SUCCESS);
         eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
-        return buildAgreementResponse(agreement);
+        return adoptBreadingFacade.buildAgreementResponse(agreement);
     }
 
     /**
@@ -335,7 +314,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
             agreementUpdateRecordMapper.updateStatus(record.getId(), AgreementUpdateStatus.SUCCESS);
         });
         eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
-        return buildAgreementResponse(agreement);
+        return adoptBreadingFacade.buildAgreementResponse(agreement);
     }
 
     /**
@@ -343,7 +322,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public AgreementResponse getAgreement(Long agreementId) {
         Agreement agreement = agreementMapper.requireById(agreementId);
-        return buildAgreementResponse(agreement);
+        return adoptBreadingFacade.buildAgreementResponse(agreement);
     }
 
     /**
@@ -351,13 +330,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public Page<AgreementResponse> getAgreements(AgreementQueryParams queryRequest, PageParams pageRequest) {
         Page<Agreement> result = agreementMapper.queryByRequest(queryRequest).page(pageRequest);
-        Set<Long> agreementIds = result.getRecords().stream()
-                .map(Agreement::getId)
-                .collect(Collectors.toSet());
-        Map<Long, List<AgreementFileResponse>> files = agreementFileMapper
-                .queryByAgreements(agreementIds)
-                .groupList(AgreementFile::getAgreementId, AgreementFileResponse::create);
-        return convertDto(result, agreement -> AgreementResponse.createBatch(agreement, files));
+        return adoptBreadingFacade.buildAgreementPage(result);
     }
 
     /**
@@ -379,7 +352,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         FollowTask task = request.create(adoptId, login.getId());
         followTaskMapper.insert(task);
         eventPublisher.publishEvent(new FollowTaskAddEvent(task, login));
-        return buildFollowTaskResponse(task);
+        return adoptBreadingFacade.buildFollowTaskResponse(task);
     }
 
     /**
@@ -401,7 +374,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         request.applyTo(task);
         followTaskMapper.updateById(task);
         eventPublisher.publishEvent(new FollowTaskUpdateEvent(task, login));
-        return buildFollowTaskResponse(task);
+        return adoptBreadingFacade.buildFollowTaskResponse(task);
     }
 
     /**
@@ -409,7 +382,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public FollowTaskResponse getFollowTask(Long taskId) {
         FollowTask task = followTaskMapper.requireById(taskId);
-        return buildFollowTaskResponse(task);
+        return adoptBreadingFacade.buildFollowTaskResponse(task);
     }
 
     /**
@@ -417,15 +390,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public Page<FollowTaskResponse> getFollowTasks(FollowTaskQueryParams query, PageParams page) {
         Page<FollowTask> result = followTaskMapper.queryByRequest(query).page(page);
-        Map<Long, User> users = userService.groupById(
-                result.getRecords().stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
-                User::getId, User::getUsername);
-        Set<Long> followIds = result.getRecords().stream()
-                .map(FollowTask::getId)
-                .collect(Collectors.toSet());
-        Map<Long, FollowRecord> records = followRecordMapper.queryByTasks(followIds).groupById(
-                FollowRecord::getId, FollowRecord::getSummary, FollowRecord::getVisitTime);
-        return convertDto(result, task -> FollowTaskResponse.createBatch(task, users, records));
+        return adoptBreadingFacade.buildFollowTaskPage(result);
     }
 
     /**
@@ -455,11 +420,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public Page<FollowRecordResponse> getFollowRecords(Long taskId, PageParams request) {
         Page<FollowRecord> records = followRecordMapper.queryByTask(taskId).page(request);
-        Map<Long, User> users = userService.groupById(
-                records.getRecords().stream().map(FollowRecord::getVolunteerId),
-                User::getId, User::getUsername, User::getAvatar);
-        return convertDto(records,
-                record -> FollowRecordResponse.createBatch(record, users));
+        return adoptBreadingFacade.buildFollowRecordPage(records);
     }
 
     /**
@@ -467,58 +428,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public Page<FollowRecordResponse> getFollowRecords(FollowRecordQueryParams queryRequest, PageParams pageRequest) {
         Page<FollowRecord> result = followRecordMapper.queryByRequest(queryRequest).page(pageRequest);
-        Map<Long, User> users = userService.groupById(
-                result.getRecords().stream().map(FollowRecord::getVolunteerId),
-                User::getId, User::getUsername, User::getAvatar);
-        return convertDto(result, record -> FollowRecordResponse.createBatch(record, users));
-    }
-
-    private AdoptResponse buildAdoptResponse(Adopt adopt) {
-        Pet pet = petService.selectById(adopt.getPetId(),
-                Pet::getId, Pet::getName);
-        String cover = fileService.getCoverUrl(adopt.getPetId(), PET);
-        List<FollowTask> tasks = followTaskMapper.queryByAdopt(adopt.getId()).list();
-        Map<Long, User> users = userService.groupById(
-                Stream.of(adopt.getApplicantId(), adopt.getReviewerId()),
-                tasks.stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
-                User::getId, User::getUsername, User::getAvatar);
-        Set<Long> taskIds = tasks.stream()
-                .map(FollowTask::getId)
-                .collect(Collectors.toSet());
-        Map<Long, FollowRecord> records = followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
-                FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
-        return AdoptResponse.create(adopt,
-                pet, cover,
-                users.get(adopt.getApplicantId()),
-                adopt.getReviewerId() == null ? null : users.get(adopt.getReviewerId()),
-                tasks.stream().map(task -> FollowTaskResponse.createBatch(task, users, records)).toList());
-    }
-
-    private BreadingResponse buildBreadingResponse(Breading breading) {
-        User login = requireLoginUser();
-        User applicant = login.is(breading.getApplicantId()) ? login : userService.requireById(breading.getApplicantId(),
-                User::getId, User::getUsername, User::getAvatar);
-        User reviewer = login.is(breading.getReviewerId()) ? login : userService.selectById(breading.getReviewerId(),
-                User::getId, User::getUsername, User::getAvatar);
-        return BreadingResponse.create(breading, applicant, reviewer);
-    }
-
-    private AgreementResponse buildAgreementResponse(Agreement agreement) {
-        List<AgreementFileResponse> files = agreementFileMapper.queryByAgreement(agreement.getId()).list().stream()
-                .filter(file -> file.getPage() != null && file.getPage() > 0)
-                .map(AgreementFileResponse::create)
-                .toList();
-        return AgreementResponse.create(agreement, files);
-    }
-
-    private FollowTaskResponse buildFollowTaskResponse(FollowTask task) {
-        User worker = userService.selectById(task.getWorkerId(),
-                User::getId, User::getUsername, User::getAvatar);
-        User volunteer = userService.selectById(task.getVolunteerId(),
-                User::getId, User::getUsername, User::getAvatar);
-        FollowRecord record = followRecordMapper.queryByTask(task.getId()).one(
-                FollowRecord::getId, FollowRecord::getSummary, FollowRecord::getVisitTime);
-        return FollowTaskResponse.create(task, worker, volunteer, record);
+        return adoptBreadingFacade.buildFollowRecordPage(result);
     }
 
     @Autowired

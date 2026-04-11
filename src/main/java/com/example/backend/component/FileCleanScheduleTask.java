@@ -68,8 +68,11 @@ public class FileCleanScheduleTask {
     private void beginJob(AtomicBoolean sign, Runnable job) {
         if (!sign.get()) {
             sign.set(true);
-            job.run();
-            sign.set(false);
+            try {
+                job.run();
+            } finally {
+                sign.set(false);
+            }
         }
     }
 
@@ -81,7 +84,7 @@ public class FileCleanScheduleTask {
         try (Stream<Path> files = Files.list(path)) {
             files.forEach(file -> {
                 try {
-                    if (!Files.isDirectory(file)) {
+                    if (Files.isDirectory(file)) {
                         String uuid = file.getFileName().toString();
                         if (!redisHelper.hasString(redisKeyTemplate, uuid)) {
                             FileSystemUtils.deleteRecursively(file);
@@ -113,10 +116,13 @@ public class FileCleanScheduleTask {
                     Files.delete(path);
                 else
                     FileSystemUtils.deleteRecursively(path);
-                deleteJobMapper.success(file).update();
             } catch (IOException e) {
                 LOGGER.error("删除文件失败 {}", path, e);
-                deleteJobMapper.fail(file).update();
+            } finally {
+                if (Files.exists(path))
+                    deleteJobMapper.fail(file).update();
+                else
+                    deleteJobMapper.success(file).update();
             }
         }
     }

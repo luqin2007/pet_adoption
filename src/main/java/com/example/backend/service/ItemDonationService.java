@@ -3,13 +3,16 @@ package com.example.backend.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
-import com.example.backend.entity.property.*;
+import com.example.backend.entity.property.DonationStatus;
+import com.example.backend.entity.property.SourceType;
+import com.example.backend.entity.property.StockAction;
+import com.example.backend.entity.property.UserRole;
 import com.example.backend.event.DonationAddEvent;
 import com.example.backend.event.DonationStatusEvent;
 import com.example.backend.event.DonationUpdateEvent;
 import com.example.backend.event.StockEvent;
+import com.example.backend.facade.ItemDonationFacade;
 import com.example.backend.mapper.*;
-import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import static com.example.backend.entity.property.ParentType.DONATION;
 
@@ -39,6 +42,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
     private final StockMapper stockMapper;
     private final StockRecordMapper stockRecordMapper;
     private final SubscribeMapper subscribeMapper;
+    private final ItemDonationFacade itemDonationFacade;
 
     private UserService userService;
     private FileService fileService;
@@ -109,7 +113,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         login.setRole(login.getRole() | UserRole.DONOR.getSetMask());
         userService.updateById(login);
         eventPublisher.publishEvent(new DonationAddEvent(donation, items));
-        return buildDonationResponse(donation, items, files, login);
+        return itemDonationFacade.buildDonationResponse(donation, items, files, login);
     }
 
     /**
@@ -133,7 +137,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         donationItemMapper.insert(items);
 
         eventPublisher.publishEvent(new DonationUpdateEvent(donation, items));
-        return buildDonationResponse(donation, items, null, null);
+        return itemDonationFacade.buildDonationResponse(donation, items, null, null);
     }
 
     /**
@@ -156,7 +160,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         donationStatusUpdateMapper.insert(updateRecord);
         donationMapper.updateStatus(donationId, status).update();
         eventPublisher.publishEvent(new DonationStatusEvent(donation, updateRecord));
-        return buildDonationResponse(donation, null, null, null);
+        return itemDonationFacade.buildDonationResponse(donation, null, null, null);
     }
 
     /**
@@ -164,7 +168,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     public DonationResponse getDonation(Long donationId) {
         Donation donation = donationMapper.requireById(donationId);
-        return buildDonationResponse(donation, null, null, null);
+        return itemDonationFacade.buildDonationResponse(donation, null, null, null);
     }
 
     /**
@@ -172,67 +176,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     public Page<DonationResponse> getDonations(DonationQueryParams paramRequest, PageParams pageRequest) {
         Page<Donation> result = donationMapper.queryByRequest(paramRequest).page(pageRequest);
-        Set<Long> donationIds = result.getRecords().stream()
-                .map(Donation::getId)
-                .collect(Collectors.toSet());
-        Map<Long, List<DonationFileResponse>> files = donationFileMapper
-                .queryByDonations(donationIds)
-                .groupList(DonationFile::getDonationId, DonationFileResponse::create);
-        List<DonationItem> itemList = donationItemMapper.queryByDonations(donationIds).list();
-        Map<Long, Item> items = groupById(
-                itemList.stream().map(DonationItem::getItemId).filter(Objects::nonNull),
-                Item::getId, Item::getName, Item::getCategoryId, Item::getUnit);
-        Map<Long, Category> categories = categoryMapper.groupById(
-                itemList.stream().map(DonationItem::getCategoryId),
-                items.values().stream().map(Item::getCategoryId),
-                Category::getId, Category::getName);
-        Map<Long, List<DonationItemResponse>> donationItems = itemList.stream()
-                .map(item -> DonationItemResponse.createBatch(item, items, categories))
-                .collect(Collectors.groupingBy(DonationItemResponse::getDonationId));
-        List<DonationStatusUpdateRecord> updateRecordList = donationStatusUpdateMapper.queryByDonations(donationIds).list();
-        Map<Long, User> users = userService.groupById(
-                result.getRecords().stream().map(Donation::getUserId),
-                updateRecordList.stream().map(DonationStatusUpdateRecord::getUserId),
-                User::getId, User::getUsername, User::getAvatar);
-        Map<Long, List<DonationStatusUpdateResponse>> updateRecords = updateRecordList.stream()
-                .map(record -> DonationStatusUpdateResponse.createBatch(record, users))
-                .collect(Collectors.groupingBy(DonationStatusUpdateResponse::getDonationId));
-        return convertDto(result,
-                donation -> DonationResponse.createBatch(donation, users, files, donationItems, updateRecords));
-    }
-
-    private DonationResponse buildDonationResponse(Donation donation,
-                                                   List<DonationItem> items,
-                                                   List<DonationFile> files,
-                                                   User user) {
-        if (items == null)
-            items = donationItemMapper.queryByDonation(donation.getId()).list();
-        if (files == null)
-            files = donationFileMapper.queryByDonation(donation.getId()).list();
-        if (user == null || !user.is(donation.getUserId()))
-            user = userService.requireById(donation.getUserId(), User::getId, User::getUsername, User::getAvatar);
-
-        Map<Long, Item> itemMap = groupById(
-                items.stream().map(DonationItem::getItemId).filter(Objects::nonNull),
-                Item::getId, Item::getCategoryId, Item::getName, Item::getUnit);
-        Map<Long, Category> categoryMap = categoryMapper.groupById(
-                itemMap.values().stream().map(Item::getCategoryId),
-                items.stream().map(DonationItem::getCategoryId),
-                Category::getId, Category::getName);
-        List<DonationStatusUpdateRecord> updateRecords = donationStatusUpdateMapper.queryByDonation(donation.getId()).list();
-        Map<Long, User> users = userService.groupById(
-                updateRecords.stream().map(DonationStatusUpdateRecord::getUserId),
-                User::getId, User::getUsername, User::getAvatar);
-        return DonationResponse.create(donation, user,
-                files.stream()
-                        .map(DonationFileResponse::create)
-                        .toList(),
-                items.stream()
-                        .map(item -> DonationItemResponse.createBatch(item, itemMap, categoryMap))
-                        .toList(),
-                updateRecords.stream()
-                        .map(record -> DonationStatusUpdateResponse.createBatch(record, users))
-                        .toList());
+        return itemDonationFacade.buildDonationPage(result);
     }
 
     /**
@@ -246,7 +190,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
 
         Item item = request.create();
         save(item);
-        return buildItemResponse(item);
+        return itemDonationFacade.buildItemResponse(item);
     }
 
     /**
@@ -261,7 +205,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         Item item = requireById(itemId);
         request.applyTo(item);
         updateById(item);
-        return buildItemResponse(item);
+        return itemDonationFacade.buildItemResponse(item);
     }
 
     /**
@@ -269,7 +213,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     public ItemResponse getItem(Long itemId) {
         Item item = requireById(itemId);
-        return buildItemResponse(item);
+        return itemDonationFacade.buildItemResponse(item);
     }
 
     /**
@@ -277,12 +221,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     public Page<ItemResponse> getItems(ItemQueryParams queryRequest, PageParams pageRequest) {
         Page<Item> result = getBaseMapper().queryByRequest(queryRequest).page(pageRequest);
-        Set<Long> categoryIds = result.getRecords().stream()
-                .map(Item::getCategoryId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
-        Map<Long, Category> categories = categoryMapper.groupById(categoryIds);
-        return convertDto(result, item -> ItemResponse.createBatch(item, categories));
+        return itemDonationFacade.buildItemPage(result);
     }
 
     /**
@@ -293,11 +232,6 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         baseMapper.discardItem(itemId).update();
-    }
-
-    private ItemResponse buildItemResponse(Item item) {
-        Category category = categoryMapper.selectById(item.getCategoryId());
-        return ItemResponse.create(item, category);
     }
 
     /**
@@ -405,7 +339,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         List<StockRecordItemResponse> records = firstRecord
                 ? List.of(StockRecordItemResponse.create(record, login))
                 : null;
-        return buildStockResponse(stock, user, records);
+        return itemDonationFacade.buildStockResponse(stock, user, records);
     }
 
     /**
@@ -415,7 +349,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         User login = requireLoginUser();
         Stock stock = stockMapper.requireById(stockId);
         User user = login.is(stock.getUserId()) ? login : null;
-        return buildStockResponse(stock, user, null);
+        return itemDonationFacade.buildStockResponse(stock, user, null);
     }
 
     /**
@@ -429,27 +363,8 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
 
         // 查询 Stock
         Page<Stock> result = stockMapper.queryByRequest(paramRequest).page(pageRequest);
-        Map<Long, Item> items = groupById(
-                result.getRecords().stream().map(Stock::getItemId),
-                Item::getId, Item::getCategoryId, Item::getName, Item::getCategoryId);
-        Map<Long, Category> categories = categoryMapper.groupById(
-                items.values().stream().map(Item::getCategoryId),
-                Category::getId, Category::getName);
-        Set<Long> stockIds = result.getRecords().stream()
-                .map(Stock::getId)
-                .collect(Collectors.toSet());
         Integer count = paramRequest.getCount(5);
-        List<StockRecord> recordList = stockRecordMapper.queryByStocks(stockIds, count);
-        Map<Long, User> users = userService.groupById(
-                Stream.concat(
-                        result.getRecords().stream().map(Stock::getUserId),
-                        recordList.stream().map(StockRecord::getUserId)),
-                User::getId, User::getUsername, User::getAvatar);
-        Map<Long, List<StockRecordItemResponse>> records = recordList.stream()
-                .map(record -> StockRecordItemResponse.createBatch(record, users))
-                .collect(Collectors.groupingBy(StockRecordItemResponse::getStockId));
-        return convertDto(result, stock ->
-                StockResponse.createBatch(stock, items, categories, users, records));
+        return itemDonationFacade.buildStockPage(result, count);
     }
 
     /**
@@ -462,40 +377,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         }
 
         Page<StockRecord> result = stockRecordMapper.queryByRequest(paramRequest).page(pageRequest);
-        Map<Long, Stock> stocks = stockMapper.groupById(
-                result.getRecords().stream().map(StockRecord::getStockId),
-                Stock::getId, Stock::getItemId, Stock::getSourceType, Stock::getExpireTime, Stock::getCreateTime);
-        Map<Long, Item> items = groupById(
-                stocks.values().stream().map(Stock::getItemId),
-                Item::getId, Item::getCategoryId, Item::getName);
-        Map<Long, Category> categories = categoryMapper.groupById(
-                items.values().stream().map(Item::getCategoryId),
-                Category::getId, Category::getName);
-        Map<Long, User> users = userService.groupById(
-                result.getRecords().stream().map(StockRecord::getUserId),
-                User::getId, User::getUsername, User::getAvatar);
-        return convertDto(result,
-                record -> StockRecordResponse.createBatch(record, stocks, items, categories, users));
-    }
-
-    private StockResponse buildStockResponse(Stock stock, User user, List<StockRecordItemResponse> records) {
-        Item item = requireById(stock.getItemId(),
-                Item::getId, Item::getCategoryId, Item::getName, Item::getCategoryId);
-        Category category = categoryMapper.requireById(item.getCategoryId(),
-                Category::getId, Category::getName);
-        if (user == null || !user.is(stock.getUserId()))
-            user = userService.requireById(stock.getUserId(),
-                    User::getId, User::getUsername, User::getAvatar);
-        if (records == null) {
-            List<StockRecord> recordList = stockRecordMapper.queryByStock(stock.getId(), 5).list();
-            Map<Long, User> users = userService.groupById(
-                    recordList.stream().map(StockRecord::getUserId),
-                    User::getId, User::getUsername, User::getAvatar);
-            records = recordList.stream()
-                    .map(record -> StockRecordItemResponse.createBatch(record, users))
-                    .toList();
-        }
-        return StockResponse.create(stock, item, category, user, records);
+        return itemDonationFacade.buildStockRecordPage(result);
     }
 
     /**
@@ -505,48 +387,14 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         User login = requireLoginUser();
         Subscribe subscribe = request.create(login.getId());
         subscribeMapper.insert(subscribe);
-        return buildSubscribeResponse(subscribe, login);
+        return itemDonationFacade.buildSubscribeResponse(subscribe, login);
     }
 
     /**
      * 获取预警
      */
     public SubscribeResponse getSubscribe(Long subscribeId) {
-        return buildSubscribeResponse(subscribeMapper.requireById(subscribeId), null);
-    }
-
-    private SubscribeResponse buildSubscribeResponse(Subscribe subscribe, User user) {
-        SubscribeAction action = subscribe.getAction();
-        if (action.bindItem()) { // ITEM_CHANGE, ITEM_COUNT
-            Item item = requireById(subscribe.getElementId(),
-                    Item::getId, Item::getCategoryId, Item::getName);
-            Category category = categoryMapper.requireById(item.getCategoryId(),
-                    Category::getId, Category::getName);
-            return SubscribeResponse.createItem(subscribe, item, category);
-        }
-        if (action.bindCategory()) { // CATEGORY_COUNT
-            Category category = categoryMapper.requireById(subscribe.getElementId(),
-                    Category::getId, Category::getName);
-            return SubscribeResponse.createCategory(subscribe, category);
-        }
-        if (action.bindStock()) { // IN_STOCK, OUT_STOCK
-            Stock stock = stockMapper.requireById(subscribe.getElementId(),
-                    Stock::getId, Stock::getItemId, Stock::getUserId, Stock::getCreateTime);
-            Item item = requireById(stock.getItemId(),
-                    Item::getId, Item::getCategoryId, Item::getName);
-            Category category = categoryMapper.requireById(item.getCategoryId(),
-                    Category::getId, Category::getName);
-            user = user != null && user.is(stock.getUserId()) ? user : userService.requireById(stock.getUserId(),
-                    User::getId, User::getUsername, User::getAvatar);
-            return SubscribeResponse.createStock(subscribe, stock, item, category, user);
-        }
-        if (action.bindUser()) { // DONATE
-            user = user != null && user.is(subscribe.getElementId()) ? user : userService.requireById(subscribe.getElementId(),
-                    User::getId, User::getUsername, User::getAvatar);
-            return SubscribeResponse.createUser(subscribe, user);
-        }
-        // Never here
-        throw ServiceException.system("Never here");
+        return itemDonationFacade.buildSubscribeResponse(subscribeMapper.requireById(subscribeId), null);
     }
 
     /**
@@ -554,24 +402,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     public Page<SubscribeResponse> getSubscribes(SubscribeQueryParams paramRequest, PageParams pageRequest) {
         Page<Subscribe> result = subscribeMapper.queryByRequest(paramRequest).page(pageRequest);
-
-        Map<Long, Stock> stocks = stockMapper.groupById(
-                result.getRecords().stream().filter(s -> s.getAction().bindStock()).map(Subscribe::getElementId),
-                Stock::getId, Stock::getItemId, Stock::getUserId, Stock::getCreateTime);
-        Map<Long, Item> items = groupById(
-                result.getRecords().stream().filter(s -> s.getAction().bindItem()).map(Subscribe::getElementId),
-                stocks.values().stream().map(Stock::getItemId),
-                Item::getId, Item::getCategoryId, Item::getName);
-        Map<Long, Category> categories = categoryMapper.groupById(
-                result.getRecords().stream().filter(s -> s.getAction().bindCategory()).map(Subscribe::getElementId),
-                items.values().stream().map(Item::getCategoryId),
-                Category::getId, Category::getName);
-        Map<Long, User> users = userService.groupById(
-                result.getRecords().stream().filter(s -> s.getAction().bindUser()).map(Subscribe::getElementId),
-                stocks.values().stream().map(Stock::getUserId),
-                User::getId, User::getUsername, User::getAvatar);
-        return convertDto(result,
-                subscribe -> SubscribeResponse.createBatch(subscribe, stocks, items, categories, users));
+        return itemDonationFacade.buildSubscribePage(result);
     }
 
     /**

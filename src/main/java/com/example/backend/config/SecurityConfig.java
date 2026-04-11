@@ -39,10 +39,7 @@ public class SecurityConfig {
                 // 页面权限
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/login", "/register",     // 登录、注册
-                                "/check/**",                 // 注册校验
-                                "/forget", "/reset",       // 忘记密码
-                                "/auth/refresh",             // 刷新 token
+                                "/auth/**",
                                 "/", "/css/**", "/js/**" // 其他静态资源
                         ).permitAll()
                         .anyRequest().authenticated())
