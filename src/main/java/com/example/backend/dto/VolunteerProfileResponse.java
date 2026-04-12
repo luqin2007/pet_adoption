@@ -45,11 +45,7 @@ public class VolunteerProfileResponse implements IResponse {
     /**
      * 性别
      */
-    private String gender;
-    /**
-     * 出生日期
-     */
-    private Date birthday;
+    private String sex;
     /**
      * 联系电话
      */
@@ -71,14 +67,6 @@ public class VolunteerProfileResponse implements IResponse {
      */
     private String address;
     /**
-     * 紧急联系人
-     */
-    private String emergencyContact;
-    /**
-     * 紧急联系电话
-     */
-    private String emergencyPhone;
-    /**
      * 技能说明
      */
     private String skills;
@@ -90,14 +78,6 @@ public class VolunteerProfileResponse implements IResponse {
      * 可服务时间说明
      */
     private String availableTimeDesc;
-    /**
-     * 加入时间
-     */
-    private Date joinTime;
-    /**
-     * 离开时间
-     */
-    private Date leaveTime;
     /**
      * 备注
      */
@@ -122,20 +102,15 @@ public class VolunteerProfileResponse implements IResponse {
                 user == null ? null : FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()),
                 profile.getStatus(),
                 profile.getRealName(),
-                profile.getGender(),
-                profile.getBirthday(),
+                profile.getSex(),
                 profile.getPhone(),
                 profile.getProvince(),
                 profile.getCity(),
                 profile.getDistrict(),
                 profile.getAddress(),
-                profile.getEmergencyContact(),
-                profile.getEmergencyPhone(),
                 profile.getSkills(),
                 profile.getServiceIntention(),
                 profile.getAvailableTimeDesc(),
-                profile.getJoinTime(),
-                profile.getLeaveTime(),
                 profile.getRemark(),
                 profile.getCreateTime(),
                 profile.getUpdateTime());

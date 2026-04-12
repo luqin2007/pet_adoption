@@ -29,6 +29,7 @@ public class VolunteerApplicationAddRequest implements IRequest {
      */
     @NotBlank(message = "联系电话不能为空")
     private String phone;
+    private String sex;
     private Integer age;
     private String profession;
     private String province;
@@ -36,7 +37,7 @@ public class VolunteerApplicationAddRequest implements IRequest {
     private String district;
     private String address;
     private String experience;
-    private String skillTags;
+    private String skills;
     private String availableTimeDesc;
     private String motivation;
 
@@ -45,20 +46,19 @@ public class VolunteerApplicationAddRequest implements IRequest {
      */
     public VolunteerApplication create(Long userId) {
         Date now = new Date();
-        return new VolunteerApplication(
-                null,
+        return new VolunteerApplication(null,
                 recruitmentId,
                 userId,
                 realName,
+                sex,
                 phone,
                 age,
-                profession,
                 province,
                 city,
                 district,
                 address,
                 experience,
-                skillTags,
+                skills,
                 availableTimeDesc,
                 motivation,
                 VolunteerApplicationStatus.SUBMITTED,

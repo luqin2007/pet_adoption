@@ -56,10 +56,6 @@ public class VolunteerApplicationResponse implements IResponse {
      */
     private Integer age;
     /**
-     * 职业
-     */
-    private String profession;
-    /**
      * 省份
      */
     private String province;
@@ -82,7 +78,7 @@ public class VolunteerApplicationResponse implements IResponse {
     /**
      * 技能标签
      */
-    private String skillTags;
+    private String skills;
     /**
      * 可服务时间说明
      */
@@ -141,13 +137,12 @@ public class VolunteerApplicationResponse implements IResponse {
                 application.getRealName(),
                 application.getPhone(),
                 application.getAge(),
-                application.getProfession(),
                 application.getProvince(),
                 application.getCity(),
                 application.getDistrict(),
                 application.getAddress(),
                 application.getExperience(),
-                application.getSkillTags(),
+                application.getSkills(),
                 application.getAvailableTimeDesc(),
                 application.getMotivation(),
                 application.getStatus(),

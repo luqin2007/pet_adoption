@@ -12,15 +12,12 @@ import java.util.Date;
 public class VolunteerProfileUpdateRequest implements IRequest {
 
     private String realName;
-    private String gender;
-    private Date birthday;
+    private String sex;
     private String phone;
     private String province;
     private String city;
     private String district;
     private String address;
-    private String emergencyContact;
-    private String emergencyPhone;
     private String skills;
     private String serviceIntention;
     private String availableTimeDesc;
@@ -31,15 +28,12 @@ public class VolunteerProfileUpdateRequest implements IRequest {
      */
     public void applyTo(VolunteerProfile profile) {
         if (realName != null) profile.setRealName(realName);
-        if (gender != null) profile.setGender(gender);
-        if (birthday != null) profile.setBirthday(birthday);
+        if (sex != null) profile.setSex(sex);
         if (phone != null) profile.setPhone(phone);
         if (province != null) profile.setProvince(province);
         if (city != null) profile.setCity(city);
         if (district != null) profile.setDistrict(district);
         if (address != null) profile.setAddress(address);
-        if (emergencyContact != null) profile.setEmergencyContact(emergencyContact);
-        if (emergencyPhone != null) profile.setEmergencyPhone(emergencyPhone);
         if (skills != null) profile.setSkills(skills);
         if (serviceIntention != null) profile.setServiceIntention(serviceIntention);
         if (availableTimeDesc != null) profile.setAvailableTimeDesc(availableTimeDesc);
