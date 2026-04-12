@@ -56,7 +56,7 @@ public class LostPetController {
     /**
      * 上传宠物图片
      */
-    @PostMapping("/pets/{_id}/media")
+    @PutMapping("/pets/{_id}/media")
     public Result<String> uploadLostPetMedia(@PathVariable("_id") String uuid,
                                              @ModelAttribute LostPetMediaUploadTable request) {
         String response = lostPetService.uploadLostPetMedia(uuid, request);
@@ -75,7 +75,7 @@ public class LostPetController {
     /**
      * 修改走失宠物
      */
-    @PostMapping("/pets/{id}")
+    @PutMapping("/pets/{id}")
     public Result<LostPetResponse> updateLostPet(@PathVariable("id") Long lostPetId,
                                                  @Valid @RequestBody LostPetUpdateRequest request) {
         LostPetResponse response = lostPetService.updateLostPet(lostPetId, request);
@@ -139,7 +139,7 @@ public class LostPetController {
     /**
      * 认领申请审核
      */
-    @PostMapping("/claim/{id}/approve")
+    @PatchMapping("/claim/{id}/approve")
     public Result<LostPetClaimResponse> approveClaim(@PathVariable("id") Long claimId,
                                                      @Valid @RequestBody ClaimApproveRequest request) {
         LostPetClaimResponse response = lostPetService.approveClaim(claimId, request);

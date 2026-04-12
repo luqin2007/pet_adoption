@@ -17,7 +17,7 @@ public class LocationRequest implements IRequest {
     protected String city;
 
     @NotBlank(message = "request.location")
-    protected String county;
+    protected String district;
 
     @NotBlank(message = "request.location")
     protected String detailAddress;
@@ -28,7 +28,7 @@ public class LocationRequest implements IRequest {
                 userId,
                 province,
                 city,
-                county,
+                district,
                 detailAddress,
                 new Date(System.currentTimeMillis()));
     }
@@ -36,7 +36,7 @@ public class LocationRequest implements IRequest {
     public void applyTo(Location location) {
         location.setProvince(getProvince());
         location.setCity(getCity());
-        location.setCounty(getCounty());
+        location.setDistrict(getDistrict());
         location.setDetailAddress(getDetailAddress());
         location.setCreateTime(new Date(System.currentTimeMillis()));
     }

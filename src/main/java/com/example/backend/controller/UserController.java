@@ -42,7 +42,7 @@ public class UserController {
     /**
      * 更新用户信息
      */
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     public Result<UserResponse> updateUser(@PathVariable("id") Long userId,
                                            @Valid @RequestBody UserUpdateRequest user) {
         UserResponse response = userService.update(userId, user);
@@ -52,7 +52,7 @@ public class UserController {
     /**
      * 上传头像
      */
-    @PostMapping("/{id}/avatar")
+    @PatchMapping("/{id}/avatar")
     public Result<String> uploadAvatar(@PathVariable("id") Long userId,
                                        @RequestParam("avatar") MultipartFile file) {
         String response = userService.uploadAvatar(userId, file);

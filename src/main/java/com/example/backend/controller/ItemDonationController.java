@@ -95,7 +95,7 @@ public class ItemDonationController {
     /**
      * 修改捐赠信息
      */
-    @PostMapping("/donations/{id}")
+    @PutMapping("/donations/{id}")
     public Result<DonationResponse> updateDonation(@PathVariable("id") Long donationId,
                                                    @Valid @RequestBody DonationUpdateRequest request) {
         return Result.success(itemDonationService.updateDonation(donationId, request));
@@ -104,7 +104,7 @@ public class ItemDonationController {
     /**
      * 修改捐赠状态
      */
-    @PostMapping("/donations/{id}/status")
+    @PatchMapping("/donations/{id}/status")
     public Result<DonationResponse> updateDonationStatus(@PathVariable("id") Long donationId,
                                                          @Valid @RequestBody DonationStatusUpdateRequest status) {
         return Result.success(itemDonationService.updateDonationStatus(donationId, status));
@@ -137,7 +137,7 @@ public class ItemDonationController {
     /**
      * 修改物资信息
      */
-    @PostMapping("/items/{id}")
+    @PutMapping("/items/{id}")
     public Result<ItemResponse> updateItem(@PathVariable("id") Long itemId, @Valid @RequestBody ItemUpdateRequest request) {
         return Result.success(itemDonationService.updateItem(itemId, request));
     }
@@ -178,7 +178,7 @@ public class ItemDonationController {
     /**
      * 修改物资分类
      */
-    @PostMapping("/categories/{id}")
+    @PutMapping("/categories/{id}")
     public Result<Category> updateCategory(@PathVariable("id") Long categoryId,
                                            @Valid @RequestBody CategoryUpdateRequest request) {
         return Result.success(itemDonationService.updateCategory(categoryId, request));

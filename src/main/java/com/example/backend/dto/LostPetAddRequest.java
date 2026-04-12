@@ -76,7 +76,7 @@ public class LostPetAddRequest extends LocationRequest implements IRequest {
                 null,
                 province,
                 city,
-                county,
+                district,
                 detailAddress,
                 lostTime
         );

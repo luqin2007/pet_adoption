@@ -27,7 +27,7 @@ public interface PetMapper extends IBaseMapper<Pet> {
                 .joinCollection(PetLocations.class, Location.class, Location::getParentId, Pet::getId, PetLocations::getLocations)
                 .eq(Location::getProvince, params.getProvince())
                 .eq(Location::getCity, params.getCity())
-                .eq(Location::getCounty, params.getCounty())
+                .eq(Location::getDistrict, params.getDistrict())
                 .like(Location::getDetailAddress, params.getAddress())
                 .in(Location::getCreateTime, params.getTime(), null);
     }

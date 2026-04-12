@@ -77,7 +77,7 @@ public class AdoptBreadingController {
     /**
      * 申请领养审核
      */
-    @PostMapping("/adopt/{id}/{st}")
+    @PatchMapping("/adopt/{id}/{st}")
     public Result<AdoptResponse> updateAdoptStatus(@PathVariable("id") Long adoptId,
                                                    @PathVariable("st") String status) {
         AdoptResponse response = adoptBreadingService.updateAdoptStatus(adoptId, status);
@@ -114,7 +114,7 @@ public class AdoptBreadingController {
     /**
      * 更新寄养审核状态
      */
-    @PostMapping("/breading/{id}/{st}")
+    @PatchMapping("/breading/{id}/{st}")
     public Result<BreadingResponse> updateBreadingStatus(@PathVariable("id") Long breadingId,
                                                          @PathVariable("st") String status) {
         BreadingResponse response = adoptBreadingService.updateBreadingStatus(breadingId, status);
@@ -133,7 +133,7 @@ public class AdoptBreadingController {
     /**
      * 修改协议
      */
-    @PostMapping("/agreement/{id}")
+    @PutMapping("/agreement/{id}")
     public Result<AgreementResponse> updateAgreement(@PathVariable("id") Long agreementId,
                                                      @Valid @RequestBody AgreementUpdateRequest request) {
         AgreementResponse response = adoptBreadingService.updateAgreement(agreementId, request);
@@ -153,7 +153,7 @@ public class AdoptBreadingController {
     /**
      * 签署协议
      */
-    @PostMapping("/agreement/{id}/sign")
+    @PatchMapping("/agreement/{id}/sign")
     public Result<AgreementResponse> signAgreement(@PathVariable("id") Long agreementId,
                                                    @RequestParam("sign") MultipartFile sign) {
         AgreementResponse response = adoptBreadingService.signAgreement(agreementId, sign);
@@ -191,7 +191,7 @@ public class AdoptBreadingController {
     /**
      * 更新跟踪任务
      */
-    @PostMapping("/follow/{id}")
+    @PutMapping("/follow/{id}")
     public Result<FollowTaskResponse> updateFollowTask(@PathVariable("id") Long taskId,
                                                        @Valid @RequestBody FollowTaskUpdateRequest request) {
         FollowTaskResponse response = adoptBreadingService.updateFollowTask(taskId, request);

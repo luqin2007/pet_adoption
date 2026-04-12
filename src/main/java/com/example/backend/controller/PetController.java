@@ -82,7 +82,7 @@ public class PetController {
     /**
      * 修改流浪宠物信息
      */
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     public Result<PetResponse> updatePet(@PathVariable("id") Long petId,
                                          @Valid @RequestBody PetUpdateRequest request) {
         PetResponse response = petService.updatePet(petId, request);
@@ -101,7 +101,7 @@ public class PetController {
     /**
      * 上传流浪宠物图片/视频，使用 multipart/form-data
      */
-    @PutMapping("/{id}/media")
+    @PostMapping("/{id}/media")
     public Result<PetMediaResponse> uploadMedia(@PathVariable("id") Long petId,
                                                 @ModelAttribute PetMediaUploadTable file) {
         PetMediaResponse response = petService.uploadMedia(petId, file);
@@ -111,7 +111,7 @@ public class PetController {
     /**
      * 修改流浪宠物图片/视频信息
      */
-    @PostMapping("/{id}/media/{mid}")
+    @PutMapping("/{id}/media/{mid}")
     public Result<PetMediaResponse> updateMedia(@PathVariable("id") Long petId,
                                                 @PathVariable("mid") Long mediaId,
                                                 @Valid @RequestBody PetMediaUpdateRequest request) {
@@ -131,7 +131,7 @@ public class PetController {
     /**
      * 添加流浪宠物特征
      */
-    @PutMapping("/{id}/tags")
+    @PostMapping("/{id}/tags")
     public Result<List<PetTagResponse>> addTags(@PathVariable("id") Long petId,
                                                 @Valid @RequestBody PetTagAddRequest request) {
         List<PetTagResponse> response = petService.addTags(petId, request);
@@ -148,7 +148,7 @@ public class PetController {
         return Result.success(response);
     }
 
-    @PostMapping("/{id}/status")
+    @PutMapping("/{id}/status")
     public Result<PetStatusRecordResponse> updateStatus(@PathVariable("id") Long petId,
                                                         @RequestBody PetStatusUpdateRequest request) {
         PetStatusRecordResponse response = petService.updateStatus(petId, request);

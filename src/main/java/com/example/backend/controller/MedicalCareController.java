@@ -92,7 +92,7 @@ public class MedicalCareController {
         return Result.success(response);
     }
 
-    @PostMapping("/record/{id}")
+    @PutMapping("/record/{id}")
     public Result<MedicalRecordResponse> updateMedicalRecord(@PathVariable("id") Long recordId,
                                                              @Valid @RequestBody MedicalRecordUpdateRequest request) {
         MedicalRecordResponse response = medicalService.updateMedicalRecord(recordId, request);
@@ -129,14 +129,14 @@ public class MedicalCareController {
         return Result.success(response);
     }
 
-    @PostMapping("/detail/{id}")
+    @PutMapping("/detail/{id}")
     public Result<MedicalDetailResponse> updateMedicalDetail(@PathVariable("id") Long detailId,
                                                              @Valid @RequestBody MedicalDetailUpdateRequest request) {
         MedicalDetailResponse response = medicalService.updateMedicalDetail(detailId, request);
         return Result.success(response);
     }
 
-    @PutMapping("/detail/{id}")
+    @PatchMapping("/detail/{id}")
     public Result<MedicalDetailResponse> completeMedicalDetail(@PathVariable("id") Long detailId) {
         MedicalDetailResponse response = medicalService.completeMedicalDetail(detailId);
         return Result.success(response);
@@ -174,7 +174,7 @@ public class MedicalCareController {
         return Result.success(uuid);
     }
 
-    @PostMapping("/exam/{_id}/doc")
+    @PutMapping("/exam/{_id}/doc")
     public Result<String> uploadExamination(@PathVariable("_id") String uuid,
                                             @ModelAttribute ExaminationFileUploadTable request) {
         String filename = medicalService.uploadExamination(uuid, request);
@@ -251,7 +251,7 @@ public class MedicalCareController {
         return Result.success(response);
     }
 
-    @PostMapping("/rehab/{id}/status")
+    @PutMapping("/rehab/{id}/status")
     public Result<RehabPlanResponse> updateRehabPlanStatus(@PathVariable("id") Long planId,
                                                            @Valid @RequestBody RehabPlanStatusUpdateRequest request) {
         RehabPlanResponse response = medicalService.updateRehabPlanStatus(planId, request);

@@ -9,7 +9,7 @@ import java.util.Date;
 /**
  * 索引：<br>
  * - (parentId)
- * - (province, city, county, createTime)
+ * - (province, city, district, createTime)
  */
 @Mapper
 public interface PetLocationMapper extends IBaseMapper<Location> {
@@ -25,7 +25,7 @@ public interface PetLocationMapper extends IBaseMapper<Location> {
         return lambdaQuery()
                 .eq(Location::getProvince, location.getProvince())
                 .eq(location.getCity() != null, Location::getCity, location.getCity())
-                .eq(location.getCounty() != null, Location::getCounty, location.getCounty())
+                .eq(location.getDistrict() != null, Location::getDistrict, location.getDistrict())
                 .in(Location::getCreateTime, minTime, null)
                 .select(Location::getParentId);
     }

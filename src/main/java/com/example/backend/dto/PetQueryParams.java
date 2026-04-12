@@ -26,7 +26,7 @@ public class PetQueryParams implements IParam, IValidatedRequest {
     // Location
     private String province;
     private String city;
-    private String county;
+    private String district;
     private String address; // like detailAddress
     private Date time; // ge createTime
 

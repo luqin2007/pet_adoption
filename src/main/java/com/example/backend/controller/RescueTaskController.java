@@ -99,7 +99,7 @@ public class RescueTaskController {
     /**
      * 更新救助任务信息
      */
-    @PostMapping("/{id}")
+    @PutMapping("/{id}")
     public Result<RescueTaskResponse> updateRescueTask(@PathVariable("id") Long taskId,
                                                        @Valid @RequestBody RescueTaskUpdateRequest request) {
         RescueTaskResponse response = rescueTaskService.updateRescueTask(taskId, request);
@@ -127,7 +127,7 @@ public class RescueTaskController {
     /**
      * 修改任务状态
      */
-    @PostMapping("/{id}/status")
+    @PatchMapping("/{id}/status")
     public Result<Void> updateStatus(@PathVariable("id") Long taskId,
                                      @Valid @RequestBody RescueTaskRecordStatusUpdateRequest request) {
         rescueTaskService.updateRescueTaskStatus(taskId, request);

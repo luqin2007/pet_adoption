@@ -47,7 +47,7 @@ public class Location implements IId {
      * 县/县级市
      * *非空 varchar(20)*
      */
-    private String county;
+    private String district;
 
     /**
      * 详细地址
