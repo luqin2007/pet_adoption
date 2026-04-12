@@ -20,24 +20,24 @@ public class VolunteerRewardAddRequest implements IRequest, IValidatedRequest {
     /**
      * 志愿者 id
      */
-    @NotNull(message = "志愿者不能为空")
+    @NotNull(message = "request.volunteer.reward.volunteer")
     private Long volunteerId;
     /**
      * 统计开始时间
      */
-    @NotNull(message = "统计开始时间不能为空")
+    @NotNull(message = "request.volunteer.reward.time")
     private Date periodStart;
     /**
      * 统计结束时间
      */
-    @NotNull(message = "统计结束时间不能为空")
+    @NotNull(message = "request.volunteer.reward.time")
     private Date periodEnd;
     private Integer serviceCount;
     private BigDecimal totalHours;
-    @NotBlank(message = "激励类型不能为空")
+    @NotBlank(message = "request.volunteer.reward.type")
     private String rewardType;
     private String rewardValue;
-    @NotBlank(message = "激励原因不能为空")
+    @NotBlank(message = "request.volunteer.reward.reason")
     private String rewardReason;
     private String remark;
 

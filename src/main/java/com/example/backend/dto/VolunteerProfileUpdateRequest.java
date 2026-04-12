@@ -1,6 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.VolunteerProfile;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;
@@ -11,12 +12,19 @@ import java.util.Date;
 @Data
 public class VolunteerProfileUpdateRequest implements IRequest {
 
+    @NotBlank(message = "request.volunteer.profile.real_name")
     private String realName;
+    @NotBlank(message = "request.volunteer.profile.sex")
     private String sex;
+    @NotBlank(message = "request.volunteer.profile.phone")
     private String phone;
+    @NotBlank(message = "request.location")
     private String province;
+    @NotBlank(message = "request.location")
     private String city;
+    @NotBlank(message = "request.location")
     private String district;
+    @NotBlank(message = "request.volunteer.profile.address")
     private String address;
     private String skills;
     private String serviceIntention;
@@ -27,17 +35,17 @@ public class VolunteerProfileUpdateRequest implements IRequest {
      * 将请求内容应用到志愿者档案
      */
     public void applyTo(VolunteerProfile profile) {
-        if (realName != null) profile.setRealName(realName);
-        if (sex != null) profile.setSex(sex);
-        if (phone != null) profile.setPhone(phone);
-        if (province != null) profile.setProvince(province);
-        if (city != null) profile.setCity(city);
-        if (district != null) profile.setDistrict(district);
-        if (address != null) profile.setAddress(address);
-        if (skills != null) profile.setSkills(skills);
-        if (serviceIntention != null) profile.setServiceIntention(serviceIntention);
-        if (availableTimeDesc != null) profile.setAvailableTimeDesc(availableTimeDesc);
-        if (remark != null) profile.setRemark(remark);
+        profile.setRealName(realName);
+        profile.setSex(sex);
+        profile.setPhone(phone);
+        profile.setProvince(province);
+        profile.setCity(city);
+        profile.setDistrict(district);
+        profile.setAddress(address);
+        profile.setSkills(skills);
+        profile.setServiceIntention(serviceIntention);
+        profile.setAvailableTimeDesc(availableTimeDesc);
+        profile.setRemark(remark);
         profile.setUpdateTime(new Date());
     }
 }

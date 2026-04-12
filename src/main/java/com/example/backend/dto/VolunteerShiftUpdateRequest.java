@@ -2,6 +2,8 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.VolunteerShift;
 import com.example.backend.entity.property.VolunteerTaskType;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.validation.Errors;
 
@@ -14,16 +16,21 @@ import java.util.Date;
 @Data
 public class VolunteerShiftUpdateRequest implements IRequest, IValidatedRequest {
 
+    @NotNull(message = "request.volunteer.shift.volunteer")
     private Long volunteerId;
+    @NotBlank(message = "request.volunteer.shift.type")
     private String taskType;
     private Long taskSourceId;
+    @NotBlank(message = "request.volunteer.shift.title")
     private String title;
     private String content;
     private String serviceAddress;
     private String province;
     private String city;
     private String district;
+    @NotNull(message = "request.volunteer.shift.time")
     private Date startTime;
+    @NotNull(message = "request.volunteer.shift.time")
     private Date endTime;
     private BigDecimal estimatedHours;
     private String remark;
@@ -32,19 +39,19 @@ public class VolunteerShiftUpdateRequest implements IRequest, IValidatedRequest 
      * 将请求内容应用到排班实体
      */
     public void applyTo(VolunteerShift shift) {
-        if (volunteerId != null) shift.setVolunteerId(volunteerId);
-        if (taskType != null) shift.setTaskType(VolunteerTaskType.get(taskType));
-        if (taskSourceId != null) shift.setTaskSourceId(taskSourceId);
-        if (title != null) shift.setTitle(title);
-        if (content != null) shift.setContent(content);
-        if (serviceAddress != null) shift.setServiceAddress(serviceAddress);
-        if (province != null) shift.setProvince(province);
-        if (city != null) shift.setCity(city);
-        if (district != null) shift.setDistrict(district);
-        if (startTime != null) shift.setStartTime(startTime);
-        if (endTime != null) shift.setEndTime(endTime);
-        if (estimatedHours != null) shift.setEstimatedHours(estimatedHours);
-        if (remark != null) shift.setRemark(remark);
+        shift.setVolunteerId(volunteerId);
+        shift.setTaskType(VolunteerTaskType.get(taskType));
+        shift.setTaskSourceId(taskSourceId);
+        shift.setTitle(title);
+        shift.setContent(content);
+        shift.setServiceAddress(serviceAddress);
+        shift.setProvince(province);
+        shift.setCity(city);
+        shift.setDistrict(district);
+        shift.setStartTime(startTime);
+        shift.setEndTime(endTime);
+        shift.setEstimatedHours(estimatedHours);
+        shift.setRemark(remark);
         shift.setUpdateTime(new Date());
     }
 

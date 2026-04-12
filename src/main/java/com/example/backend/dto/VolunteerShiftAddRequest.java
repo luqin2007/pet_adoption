@@ -20,12 +20,12 @@ public class VolunteerShiftAddRequest implements IRequest, IValidatedRequest {
     /**
      * 志愿者 id
      */
-    @NotNull(message = "志愿者不能为空")
+    @NotNull(message = "request.volunteer.shift.volunteer")
     private Long volunteerId;
     /**
      * 任务类型
      */
-    @NotBlank(message = "任务类型不能为空")
+    @NotBlank(message = "request.volunteer.shift.type")
     private String taskType;
     /**
      * 任务来源 id
@@ -34,16 +34,16 @@ public class VolunteerShiftAddRequest implements IRequest, IValidatedRequest {
     /**
      * 任务标题
      */
-    @NotBlank(message = "任务标题不能为空")
+    @NotBlank(message = "request.volunteer.shift.title")
     private String title;
     private String content;
     private String serviceAddress;
     private String province;
     private String city;
     private String district;
-    @NotNull(message = "开始时间不能为空")
+    @NotNull(message = "request.volunteer.shift.time")
     private Date startTime;
-    @NotNull(message = "结束时间不能为空")
+    @NotNull(message = "request.volunteer.shift.time")
     private Date endTime;
     private BigDecimal estimatedHours;
     private String remark;

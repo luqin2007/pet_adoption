@@ -83,7 +83,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     public VolunteerRecruitmentResponse updateRecruitmentStatus(Long recruitmentId, String statusName) {
         requireWorker();
         VolunteerRecruitment recruitment = requireById(recruitmentId);
-        VolunteerRecruitmentStatus status = VolunteerRecruitmentStatus.valueOf(statusName);
+        VolunteerRecruitmentStatus status = VolunteerRecruitmentStatus.get(statusName);
         if (status == VolunteerRecruitmentStatus.PUBLISHED) {
             requireEqual(VolunteerRecruitmentStatus.DRAFT, recruitment.getStatus(), "仅草稿状态可发布");
         }
@@ -266,10 +266,9 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     public VolunteerShiftResponse updateShift(Long shiftId, VolunteerShiftUpdateRequest request) {
         User login = requireWorker();
         VolunteerShift shift = volunteerShiftMapper.requireById(shiftId);
+        request.applyTo(shift);
         checkVolunteerActive(shift.getVolunteerId());
         checkTimeConflict(shift, shiftId);
-
-        request.applyTo(shift);
         volunteerShiftMapper.updateById(shift);
         eventPublisher.publishEvent(new VolunteerShiftAddEvent(shift, login));
         return volunteerFacade.buildShiftResponse(shift);

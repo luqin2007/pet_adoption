@@ -119,9 +119,9 @@ public class VolunteerController {
     }
 
     /**
-     * 审核通过申请
+     * 更新申请状态
      */
-    @PostMapping("/applications/{id}/approve")
+    @PatchMapping("/applications/{id}")
     public Result<VolunteerApplicationResponse> setApplicationStatus(@PathVariable("id") Long applicationId,
                                                                      @Valid @RequestBody VolunteerApplicationStatusUpdateRequest request) {
         return Result.success(volunteerService.setApplicationStatus(applicationId, defaultApplicationReview(request)));
@@ -223,7 +223,7 @@ public class VolunteerController {
     /**
      * 审核服务记录
      */
-    @GetMapping("/records/{id}")
+    @PatchMapping("/records/{id}")
     public Result<VolunteerServiceRecordResponse> updateServiceRecordStatus(@PathVariable("id") Long recordId,
                                                                             @Valid @RequestBody VolunteerRecordReviewRequest request) {
         return Result.success(volunteerService.updateServiceRecordStatus(recordId, request));

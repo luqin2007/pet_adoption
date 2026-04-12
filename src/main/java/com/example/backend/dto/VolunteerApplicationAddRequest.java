@@ -5,6 +5,8 @@ import com.example.backend.entity.property.VolunteerApplicationStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.springframework.validation.Errors;
 
 import java.util.Date;
 
@@ -12,33 +14,58 @@ import java.util.Date;
  * 志愿者申请创建请求
  */
 @Data
-public class VolunteerApplicationAddRequest implements IRequest {
+@EqualsAndHashCode(callSuper = true)
+public class VolunteerApplicationAddRequest extends LocationRequest implements IRequest, IValidatedRequest {
 
     /**
      * 招募计划 id
      */
-    @NotNull(message = "招募计划不能为空")
+    @NotNull(message = "request.volunteer.application.recruitment")
     private Long recruitmentId;
+
     /**
      * 真实姓名
      */
-    @NotBlank(message = "姓名不能为空")
+    @NotBlank(message = "request.volunteer.application.real_name")
     private String realName;
+
     /**
      * 联系电话
      */
-    @NotBlank(message = "联系电话不能为空")
+    @NotBlank(message = "request.volunteer.application.phone")
     private String phone;
+
+    /**
+     * 性别
+     */
+    @NotBlank(message = "request.volunteer.application.sex")
     private String sex;
+
     private Integer age;
     private String profession;
-    private String province;
-    private String city;
-    private String district;
-    private String address;
+
+    /**
+     * 过往经历
+     */
+    @NotBlank(message = "request.volunteer.application.experience")
     private String experience;
+
+    /**
+     * 技能
+     */
+    @NotBlank(message = "request.volunteer.application.skills")
     private String skills;
+
+    /**
+     * 可服务时间说明
+     */
+    @NotBlank(message = "request.volunteer.application.available_time")
     private String availableTimeDesc;
+
+    /**
+     * 申请动机
+     */
+    @NotBlank(message = "request.volunteer.application.motivation")
     private String motivation;
 
     /**
@@ -56,7 +83,7 @@ public class VolunteerApplicationAddRequest implements IRequest {
                 province,
                 city,
                 district,
-                address,
+                detailAddress,
                 experience,
                 skills,
                 availableTimeDesc,
@@ -67,5 +94,12 @@ public class VolunteerApplicationAddRequest implements IRequest {
                 null,
                 now,
                 now);
+    }
+
+    /**
+     * 复用基础校验
+     */
+    @Override
+    public void validate(Errors errors) {
     }
 }

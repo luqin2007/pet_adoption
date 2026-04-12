@@ -3,6 +3,7 @@ package com.example.backend.dto;
 import com.example.backend.entity.VolunteerServiceRecord;
 import com.example.backend.entity.property.VolunteerRecordStatus;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.validation.Errors;
 
@@ -18,16 +19,18 @@ public class VolunteerServiceRecordAddRequest implements IRequest, IValidatedReq
     /**
      * 服务开始时间
      */
+    @NotNull(message = "request.volunteer.record.time")
     private Date startTime;
     /**
      * 服务结束时间
      */
+    @NotNull(message = "request.volunteer.record.time")
     private Date endTime;
     private BigDecimal actualHours;
     /**
      * 服务摘要
      */
-    @NotBlank(message = "服务摘要不能为空")
+    @NotBlank(message = "request.volunteer.record.summary")
     private String summary;
     private String content;
     private String problem;
