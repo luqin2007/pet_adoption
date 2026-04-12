@@ -3,7 +3,7 @@ package com.example.backend.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.dto.HealthAssessmentResponse;
-import com.example.backend.mapper.MedicalDetailQueryParams;
+import com.example.backend.dto.MedicalDetailQueryParams;
 import com.example.backend.service.MedicalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

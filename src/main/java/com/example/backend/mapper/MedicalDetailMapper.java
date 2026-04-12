@@ -1,5 +1,6 @@
 package com.example.backend.mapper;
 
+import com.example.backend.dto.MedicalDetailQueryParams;
 import com.example.backend.entity.MedicalDetail;
 import com.example.backend.util.MPLambdaQuery;
 
