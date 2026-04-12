@@ -31,7 +31,7 @@ public interface MedicalRecordMapper extends IBaseMapper<MedicalRecord> {
 
     @Override
     default String getMissingMessage() {
-        return "就诊记录不存在";
+        return "exception.not_found.medical_record";
     }
 
     @Override
@@ -39,3 +39,4 @@ public interface MedicalRecordMapper extends IBaseMapper<MedicalRecord> {
         return MedicalRecord.class;
     }
 }
+

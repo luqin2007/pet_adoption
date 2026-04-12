@@ -19,6 +19,7 @@ public interface AgreementFileMapper extends IBaseMapper<AgreementFile> {
 
     @Override
     default String getMissingMessage() {
-        return "协议文件不存在";
+        return "exception.not_found.agreement_file";
     }
 }
+

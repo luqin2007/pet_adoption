@@ -46,7 +46,7 @@ public interface VolunteerServiceRecordMapper extends IBaseMapper<VolunteerServi
 
     @Override
     default String getMissingMessage() {
-        return "志愿者服务记录不存在";
+        return "exception.not_found.volunteer_service_record";
     }
 
     @Override
@@ -54,3 +54,4 @@ public interface VolunteerServiceRecordMapper extends IBaseMapper<VolunteerServi
         return VolunteerServiceRecord.class;
     }
 }
+

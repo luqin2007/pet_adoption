@@ -13,6 +13,7 @@ import com.example.backend.event.DonationUpdateEvent;
 import com.example.backend.event.StockEvent;
 import com.example.backend.facade.ItemDonationFacade;
 import com.example.backend.mapper.*;
+import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -68,7 +69,8 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         User user = requireLoginUser();
         String redisKey = requireRedisUuid(donationTemplate, uuid);
         Long userId = Long.valueOf(redisHelper.getString(redisKey));
-        requireEqual(user.getId(), userId, "用户错误");
+        if (!user.is(userId))
+            throw ServiceException.auth("exception.auth.user.mismatch");
 
         // 上传材料
         return fileService
@@ -84,7 +86,8 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         User user = requireLoginUser();
         String redisKey = requireRedisUuid(donationTemplate, uuid);
         Long userId = Long.valueOf(redisHelper.getString(redisKey));
-        requireEqual(user.getId(), userId, "用户错误");
+        if (!user.is(userId))
+            throw ServiceException.auth("exception.auth.user.mismatch");
 
         // 删除文件
         fileService.deleteTempFile(donationFileTemplate, uuid, filename, DONATION);
@@ -271,7 +274,8 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         categoryMapper.requireExist(categoryId);
 
         boolean used = baseMapper.queryByCategory(categoryId).exists();
-        require(!used, "分类非空");
+        if (used)
+            throw ServiceException.conflict("exception.conflict.category.not_empty");
         categoryMapper.update(categoryMapper.discard(categoryId));
     }
 
@@ -312,13 +316,13 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         BigDecimal count = new BigDecimal(request.getCount());
         switch (action) {
             case IN: // 入库
-                require(stock.getExpireTime().after(new Date()), "库存已过期");
+                require(stock.getExpireTime().after(new Date()), "exception.invalidate.stock.expired");
                 count = stock.getCount().add(count);
                 break;
             case OUT: // 出库
-                require(stock.getExpireTime().after(new Date()), "库存已过期");
+                require(stock.getExpireTime().after(new Date()), "exception.invalidate.stock.expired");
                 count = stock.getCount().subtract(count);
-                require(count.compareTo(BigDecimal.ZERO) >= 0, "库存不足");
+                require(count.compareTo(BigDecimal.ZERO) >= 0, "exception.invalidate.stock.insufficient");
                 break;
             case DESTROY: // 销毁
                 count = stock.getCount().subtract(count).min(BigDecimal.ZERO);

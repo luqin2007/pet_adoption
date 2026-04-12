@@ -8,6 +8,7 @@ public interface VaccineMapper extends IBaseMapper<Vaccine> {
 
     @Override
     default String getMissingMessage() {
-        return "找不到疫苗";
+        return "exception.not_found.vaccine";
     }
 }
+

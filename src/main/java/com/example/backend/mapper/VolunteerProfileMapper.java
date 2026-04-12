@@ -34,7 +34,7 @@ public interface VolunteerProfileMapper extends IBaseMapper<VolunteerProfile> {
 
     @Override
     default String getMissingMessage() {
-        return "志愿者档案不存在";
+        return "exception.not_found.volunteer_profile";
     }
 
     @Override
@@ -42,3 +42,4 @@ public interface VolunteerProfileMapper extends IBaseMapper<VolunteerProfile> {
         return VolunteerProfile.class;
     }
 }
+

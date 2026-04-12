@@ -34,7 +34,7 @@ public interface SubscribeMapper extends IBaseMapper<Subscribe> {
 
     @Override
     default String getMissingMessage() {
-        return "订阅不存在";
+        return "exception.not_found.subscribe";
     }
 
     @Override
@@ -42,3 +42,4 @@ public interface SubscribeMapper extends IBaseMapper<Subscribe> {
         return Subscribe.class;
     }
 }
+

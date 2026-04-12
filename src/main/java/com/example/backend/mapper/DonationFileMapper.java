@@ -23,7 +23,7 @@ public interface DonationFileMapper extends IBaseMapper<DonationFile> {
 
     @Override
     default String getMissingMessage() {
-        return "捐赠文件不存在";
+        return "exception.not_found.donation_file";
     }
 
     @Override
@@ -31,3 +31,4 @@ public interface DonationFileMapper extends IBaseMapper<DonationFile> {
         return DonationFile.class;
     }
 }
+

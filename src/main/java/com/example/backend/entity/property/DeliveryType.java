@@ -14,7 +14,7 @@ public enum DeliveryType {
         try {
             return DeliveryType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效交付方式 " + name);
+            throw ServiceException.invalidate("exception.invalidate.delivery_type");
         }
     }
 }

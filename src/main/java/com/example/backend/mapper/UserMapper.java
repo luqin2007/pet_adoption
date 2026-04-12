@@ -47,7 +47,7 @@ public interface UserMapper extends IBaseMapper<User> {
 
     @Override
     default String getMissingMessage() {
-        return "用户不存在";
+        return "exception.not_found.user";
     }
 
     @Override
@@ -55,3 +55,4 @@ public interface UserMapper extends IBaseMapper<User> {
         return User.class;
     }
 }
+

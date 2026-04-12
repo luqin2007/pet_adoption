@@ -50,7 +50,7 @@ public interface PetMapper extends IBaseMapper<Pet> {
 
     @Override
     default String getMissingMessage() {
-        return "宠物不存在";
+        return "exception.not_found.pet";
     }
 
     @Override
@@ -58,3 +58,4 @@ public interface PetMapper extends IBaseMapper<Pet> {
         return Pet.class;
     }
 }
+

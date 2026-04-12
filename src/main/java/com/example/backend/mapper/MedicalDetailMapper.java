@@ -25,7 +25,7 @@ public interface MedicalDetailMapper extends IBaseMapper<MedicalDetail> {
 
     @Override
     default String getMissingMessage() {
-        return "病历不存在";
+        return "exception.not_found.medical_detail";
     }
 
     @Override
@@ -33,3 +33,4 @@ public interface MedicalDetailMapper extends IBaseMapper<MedicalDetail> {
         return MedicalDetail.class;
     }
 }
+

@@ -35,6 +35,7 @@ public interface DewormRecordMapper extends IBaseMapper<DewormRecord> {
 
     @Override
     default String getMissingMessage() {
-        return "驱虫记录不存在";
+        return "exception.not_found.deworm_record";
     }
 }
+

@@ -17,7 +17,7 @@ public enum MedicalRecordType {
         try {
             return MedicalRecordType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效诊疗类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.medical_record_type");
         }
     }
 }

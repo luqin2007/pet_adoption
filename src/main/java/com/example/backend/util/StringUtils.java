@@ -50,7 +50,7 @@ public class StringUtils {
         do {
             randomId = UUID.randomUUID().toString();
             if (retryTimes++ > maxTimes)
-                throw ServiceException.unavailable("请稍后重试");
+                throw ServiceException.unavailable("exception.unavailable.retry");
         } while (redisHelper.hasString(keyTemplate, randomId));
         return randomId;
     }

@@ -135,7 +135,7 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
 
     @Override
     default String getMissingMessage() {
-        return "图片/视频不存在";
+        return "exception.not_found.media_file";
     }
 
     @Override
@@ -143,3 +143,4 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
         return MediaFile.class;
     }
 }
+

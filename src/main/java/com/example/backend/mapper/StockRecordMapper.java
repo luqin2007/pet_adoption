@@ -67,7 +67,7 @@ public interface StockRecordMapper extends IBaseMapper<StockRecord> {
 
     @Override
     default String getMissingMessage() {
-        return "物资使用记录不存在";
+        return "exception.not_found.stock_record";
     }
 
     @Override
@@ -75,3 +75,4 @@ public interface StockRecordMapper extends IBaseMapper<StockRecord> {
         return StockRecord.class;
     }
 }
+

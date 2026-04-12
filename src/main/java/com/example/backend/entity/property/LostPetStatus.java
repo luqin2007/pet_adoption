@@ -17,7 +17,7 @@ public enum LostPetStatus {
         try {
             return LostPetStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.lost_pet_status");
         }
     }
 }

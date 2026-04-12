@@ -192,7 +192,7 @@ public class ItemDonationFacade {
                     User::getId, User::getUsername, User::getAvatar);
             return SubscribeResponse.createUser(subscribe, user);
         }
-        throw ServiceException.system("Never here");
+        throw ServiceException.system("exception.system.unreachable");
     }
 
     public Page<SubscribeResponse> buildSubscribePage(Page<Subscribe> result) {

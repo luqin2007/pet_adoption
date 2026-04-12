@@ -25,6 +25,7 @@ public interface CategoryMapper extends IBaseMapper<Category> {
 
     @Override
     default String getMissingMessage() {
-        return "物资分类不存在";
+        return "exception.not_found.category";
     }
 }
+

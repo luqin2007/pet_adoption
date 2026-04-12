@@ -18,7 +18,7 @@ public enum VolunteerProfileStatus {
         try {
             return VolunteerProfileStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (Exception e) {
-            throw ServiceException.invalidate("无效志愿者档案状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.volunteer_profile_status");
         }
     }
 }

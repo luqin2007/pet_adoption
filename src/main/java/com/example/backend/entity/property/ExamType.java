@@ -23,7 +23,7 @@ public enum ExamType {
         try {
             return ExamType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效检查类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.exam_type");
         }
     }
 }

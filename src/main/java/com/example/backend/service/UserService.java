@@ -58,15 +58,15 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     public UserResponse register(UserRegisterTable request) {
         // 校验必要的参数
         if (isUsernameExist(request.getUsername())) {
-            throw ServiceException.conflict("用户名已存在");
+            throw ServiceException.conflict("exception.conflict.username_exists");
         }
         if (isEmailExist(request.getEmail())) {
-            throw ServiceException.conflict("邮箱已存在");
+            throw ServiceException.conflict("exception.conflict.email_exists");
         }
 
         // 邮箱验证码
         String code = redisHelper.getAndDeleteString(mailKeyTemplate, request.getEmail());
-        requireEqual(code, request.getCode(), "邮箱验证码错误");
+        requireEqual(code, request.getCode(), "exception.invalidate.user.email_code");
 
         // 注册
         User user = request.createUser(passwordEncoder);
@@ -127,14 +127,14 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
             Authentication authentication = authenticationManager.authenticate(token);
             principal = (CustomUserDetails) authentication.getPrincipal();
         } catch (BadCredentialsException e) {
-            throw ServiceException.invalidate("用户名或密码错误", e);
+            throw ServiceException.invalidate("exception.invalidate.user.bad_credentials", e);
         } catch (AccountStatusException e) {
-            throw ServiceException.auth("账号状态异常，请联系工作人员", e);
+            throw ServiceException.auth("exception.auth.user.status_abnormal", e);
         } catch (Exception e) {
-            throw ServiceException.request("登录失败: " + e.getMessage(), e);
+            throw ServiceException.system("exception.system.user.login_failed", e);
         }
 
-        requireExist(principal, "用户不存在");
+        requireExist(principal, "exception.not_found.user");
         assert principal != null;
 
         User user = principal.getUser();
@@ -228,7 +228,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     public void resetPassword(PasswordResetRequest request) {
         // 验证链接校验
         String email = redisHelper.getAndDeleteString(pwdKeyTemplate, request.getId());
-        requireExist(email, "链接已过期");
+        requireExist(email, "exception.invalidate.user.reset_link_expired");
 
         // 更新密码
         User user = baseMapper.queryByEmail(email).require();

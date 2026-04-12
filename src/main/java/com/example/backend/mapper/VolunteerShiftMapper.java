@@ -41,7 +41,7 @@ public interface VolunteerShiftMapper extends IBaseMapper<VolunteerShift> {
 
     @Override
     default String getMissingMessage() {
-        return "志愿者排班不存在";
+        return "exception.not_found.volunteer_shift";
     }
 
     @Override
@@ -49,3 +49,4 @@ public interface VolunteerShiftMapper extends IBaseMapper<VolunteerShift> {
         return VolunteerShift.class;
     }
 }
+

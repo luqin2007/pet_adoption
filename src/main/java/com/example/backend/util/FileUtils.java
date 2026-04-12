@@ -39,19 +39,19 @@ public class FileUtils {
     public static void upload(MultipartFile file, String filename, Path directory) {
         try {
             if (file.isEmpty()) {
-                throw ServiceException.request("上传文件不能为空");
+                throw ServiceException.invalidate("exception.invalidate.file.empty");
             }
 
             Files.createDirectories(directory);
             Path filePath = directory.resolve(filename);
             if (Files.exists(filePath)) {
-                throw ServiceException.invalidate("文件已存在");
+                throw ServiceException.conflict("exception.conflict.file.exists");
             }
 
             file.transferTo(filePath);
         } catch (IOException e) {
             LOGGER.warn("upload: 上传文件失败: {}", filename, e);
-            throw ServiceException.request("文件上传失败", e);
+            throw ServiceException.system("exception.system.file.upload_failed", e);
         }
     }
 
@@ -117,12 +117,12 @@ public class FileUtils {
                 // 未知类型
                 default -> {
                     LOGGER.warn("getFileExtensionAndType: 不支持的媒体格式: {} {}", mime, file.getOriginalFilename());
-                    throw ServiceException.invalidate("不支持的媒体格式: " + file.getOriginalFilename() + "[" + mime + "]");
+                    throw ServiceException.invalidate("exception.invalidate.file.unsupported_media");
                 }
             };
         } catch (IOException e) {
             LOGGER.warn("getFileExtensionAndType: 无效的上传文件流: {}", file.getOriginalFilename());
-            throw ServiceException.request("无效的上传文件流: " + file.getOriginalFilename(), e);
+            throw ServiceException.request("exception.request.file.invalid_stream", e);
         }
     }
 
@@ -177,11 +177,11 @@ public class FileUtils {
      */
     public static void copyFile(Path source, Path target) {
         if (!Files.isRegularFile(source))
-            throw ServiceException.request("非文件: " + source);
+            throw ServiceException.system("exception.system.file.not_regular_file");
         try {
             Files.copy(source, target);
         } catch (IOException e) {
-            throw ServiceException.request("无法复制文件: " + source, e);
+            throw ServiceException.system("exception.system.file.copy_failed", e);
         }
     }
 
@@ -193,7 +193,7 @@ public class FileUtils {
         try {
             FileSystemUtils.copyRecursively(source, target);
         } catch (IOException e) {
-            throw ServiceException.request("无法复制目录: " + source, e);
+            throw ServiceException.system("exception.system.directory.copy_failed", e);
         }
     }
 
@@ -205,7 +205,7 @@ public class FileUtils {
         try {
             FileSystemUtils.deleteRecursively(source);
         } catch (IOException e) {
-            throw ServiceException.request("无法删除目录: " + source, e);
+            throw ServiceException.system("exception.system.directory.delete_failed", e);
         }
     }
 }

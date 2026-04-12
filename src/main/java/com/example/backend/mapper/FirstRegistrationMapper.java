@@ -36,7 +36,7 @@ public interface FirstRegistrationMapper extends IBaseMapper<FirstRegistration> 
 
     @Override
     default String getMissingMessage() {
-        return "初诊信息不存在";
+        return "exception.not_found.first_registration";
     }
 
     @Override
@@ -44,3 +44,4 @@ public interface FirstRegistrationMapper extends IBaseMapper<FirstRegistration> 
         return FirstRegistration.class;
     }
 }
+

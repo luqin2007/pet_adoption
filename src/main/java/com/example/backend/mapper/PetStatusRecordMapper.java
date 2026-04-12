@@ -28,7 +28,7 @@ public interface PetStatusRecordMapper extends IBaseMapper<PetStatusRecord> {
 
     @Override
     default String getMissingMessage() {
-        return "状态记录不存在";
+        return "exception.not_found.pet_status_record";
     }
 
     @Override
@@ -36,3 +36,4 @@ public interface PetStatusRecordMapper extends IBaseMapper<PetStatusRecord> {
         return PetStatusRecord.class;
     }
 }
+

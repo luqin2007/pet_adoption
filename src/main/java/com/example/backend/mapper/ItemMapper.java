@@ -33,7 +33,7 @@ public interface ItemMapper extends IBaseMapper<Item> {
 
     @Override
     default String getMissingMessage() {
-        return "物品不存在";
+        return "exception.not_found.item";
     }
 
     @Override
@@ -41,3 +41,4 @@ public interface ItemMapper extends IBaseMapper<Item> {
         return Item.class;
     }
 }
+

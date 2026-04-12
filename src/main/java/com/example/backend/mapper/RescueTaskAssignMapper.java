@@ -24,7 +24,7 @@ public interface RescueTaskAssignMapper extends IBaseMapper<RescueTaskAssign> {
 
     @Override
     default String getMissingMessage() {
-        return "任务分配记录不存在";
+        return "exception.not_found.rescue_task_assign";
     }
 
     @Override
@@ -32,3 +32,4 @@ public interface RescueTaskAssignMapper extends IBaseMapper<RescueTaskAssign> {
         return RescueTaskAssign.class;
     }
 }
+

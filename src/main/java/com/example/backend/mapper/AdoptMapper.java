@@ -36,7 +36,7 @@ public interface AdoptMapper extends IBaseMapper<Adopt> {
 
     @Override
     default String getMissingMessage() {
-        return "领养申请不存在";
+        return "exception.not_found.adopt";
     }
 
     @Override
@@ -44,3 +44,4 @@ public interface AdoptMapper extends IBaseMapper<Adopt> {
         return Adopt.class;
     }
 }
+

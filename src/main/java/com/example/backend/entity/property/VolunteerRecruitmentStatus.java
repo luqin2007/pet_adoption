@@ -19,7 +19,7 @@ public enum VolunteerRecruitmentStatus {
         try {
             return VolunteerRecruitmentStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (Exception e) {
-            throw ServiceException.invalidate("无效招募状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.volunteer_recruitment_status");
         }
     }
 }

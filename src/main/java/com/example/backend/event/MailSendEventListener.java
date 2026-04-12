@@ -40,7 +40,7 @@ public class MailSendEventListener {
         try {
             mailSender.send(mail);
         } catch (Exception e) {
-            throw ServiceException.system("邮件发送失败: " + e.getMessage(), e);
+            throw ServiceException.system("exception.system.mail_send_failed", e);
         }
     }
 }

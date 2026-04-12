@@ -16,7 +16,7 @@ public enum RescueTaskType {
         try {
             return RescueTaskType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效任务类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.rescue_task_type");
         }
     }
 }

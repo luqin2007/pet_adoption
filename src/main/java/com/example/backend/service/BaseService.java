@@ -49,7 +49,7 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
     public String requireRedisUuid(String keyTemplate, String uuid) {
         String redisKey = String.format(keyTemplate, uuid);
         if (!redisHelper.hasString(keyTemplate, uuid))
-            throw ServiceException.invalidate("添加超时，请刷新重试");
+            throw ServiceException.invalidate("exception.invalidate.request_timeout");
         redisHelper.expireString(redisKey, keyTimeout);
         return redisKey;
     }

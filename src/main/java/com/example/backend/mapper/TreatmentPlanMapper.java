@@ -34,7 +34,7 @@ public interface TreatmentPlanMapper extends IBaseMapper<TreatmentPlan> {
 
     @Override
     default String getMissingMessage() {
-        return "治疗计划不存在";
+        return "exception.not_found.treatment_plan";
     }
 
     @Override
@@ -42,3 +42,4 @@ public interface TreatmentPlanMapper extends IBaseMapper<TreatmentPlan> {
         return TreatmentPlan.class;
     }
 }
+

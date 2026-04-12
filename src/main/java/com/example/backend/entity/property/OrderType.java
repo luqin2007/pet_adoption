@@ -17,7 +17,7 @@ public enum OrderType {
         try {
             return OrderType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效处方类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.order_type");
         }
     }
 }

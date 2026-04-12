@@ -8,6 +8,7 @@ public interface DewormerMapper extends IBaseMapper<Dewormer> {
 
     @Override
     default String getMissingMessage() {
-        return "驱虫药信息不存在";
+        return "exception.not_found.dewormer";
     }
 }
+

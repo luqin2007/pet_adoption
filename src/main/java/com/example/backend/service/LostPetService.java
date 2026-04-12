@@ -193,7 +193,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
     public LostPetClaimResponse addClaim(LostPetClaimAddRequest request) {
         User login = requireLoginUser();
         LostPet lostPet = requireById(request.getLostPetId());
-        require(lostPet.getStatus() == LostPetStatus.SEARCHING, "当前状态无法申请");
+        require(lostPet.getStatus() == LostPetStatus.SEARCHING, "exception.invalidate.lost_pet.claim_unavailable");
 
         // 保存申请
         LostPetClaim claim = request.create(login.getId());
@@ -238,7 +238,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         LostPetClaim claim = lostPetClaimMapper.requireById(claimId,
                 LostPetClaim::getId, LostPetClaim::getStatus, LostPetClaim::getApplicantId);
         requirePermission(login.is(claim.getApplicantId()) || login.isWorker());
-        require(claim.getStatus() == ClaimStatus.PENDING, "仅待审核的申请可取消");
+        require(claim.getStatus() == ClaimStatus.PENDING, "exception.invalidate.claim.cancel_pending_only");
         lostPetClaimMapper.deleteById(claimId);
     }
 
@@ -250,7 +250,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         LostPetClaim claim = lostPetClaimMapper.requireById(claimId);
-        require(claim.getStatus() == ClaimStatus.PENDING, "仅待审核的申请可审核");
+        require(claim.getStatus() == ClaimStatus.PENDING, "exception.invalidate.claim.review_pending_only");
         if (request.getPetId() != null)
             petService.requireExist(request.getPetId());
 

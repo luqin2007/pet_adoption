@@ -18,7 +18,7 @@ public enum RescueTaskStatus {
         try {
             return RescueTaskStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效任务状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.rescue_task_status");
         }
     }
 }

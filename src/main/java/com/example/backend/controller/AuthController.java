@@ -73,7 +73,7 @@ public class AuthController {
      * 发送邮箱验证码
      */
     @GetMapping("/check/code")
-    public Result<Void> sendMailCode(@Email(message = "邮箱格式错误")
+    public Result<Void> sendMailCode(@Email(message = "request.user.email")
                                      @RequestParam("email") String email) {
         userService.sendMailCode(email);
         return Result.success();
@@ -92,7 +92,7 @@ public class AuthController {
      * 忘记密码 - 发送密码重置链接
      */
     @GetMapping("/forget")
-    public Result<Void> forgetPassword(@Email(message = "邮箱格式错误")
+    public Result<Void> forgetPassword(@Email(message = "request.user.email")
                                        @RequestParam("email") String email) {
         userService.forgetPassword(email);
         return Result.success();
@@ -113,7 +113,7 @@ public class AuthController {
     @PostMapping("/refresh")
     public Result<UserResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         if (!jwtHelper.validateRefreshToken(request.getRefreshToken()))
-            throw ServiceException.token("Token 无效或已过期");
+            throw ServiceException.token("exception.token.expired");
 
         String username = jwtHelper.getUsernameFromToken(request.getRefreshToken());
         UserResponse response = userService.getUserWithToken(username);

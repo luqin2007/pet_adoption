@@ -21,7 +21,7 @@ public interface HealthAssessmentMapper extends IBaseMapper<HealthAssessment> {
 
     @Override
     default String getMissingMessage() {
-        return "健康评估不存在";
+        return "exception.not_found.health_assessment";
     }
 
     @Override
@@ -29,3 +29,4 @@ public interface HealthAssessmentMapper extends IBaseMapper<HealthAssessment> {
         return HealthAssessment.class;
     }
 }
+

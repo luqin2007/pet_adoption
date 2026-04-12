@@ -16,7 +16,7 @@ public enum DewormerType {
         try {
             return DewormerType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效驱虫药类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.dewormer_type");
         }
     }
 }

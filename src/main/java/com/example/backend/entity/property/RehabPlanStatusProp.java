@@ -16,7 +16,7 @@ public enum RehabPlanStatusProp {
         try {
             return RehabPlanStatusProp.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效康复状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.rehab_plan_status");
         }
     }
 }

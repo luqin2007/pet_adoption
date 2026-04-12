@@ -30,7 +30,7 @@ public interface VolunteerRewardMapper extends IBaseMapper<VolunteerReward> {
 
     @Override
     default String getMissingMessage() {
-        return "志愿者激励记录不存在";
+        return "exception.not_found.volunteer_reward";
     }
 
     @Override
@@ -38,3 +38,4 @@ public interface VolunteerRewardMapper extends IBaseMapper<VolunteerReward> {
         return VolunteerReward.class;
     }
 }
+

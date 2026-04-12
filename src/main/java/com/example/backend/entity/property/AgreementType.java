@@ -13,7 +13,7 @@ public enum AgreementType {
         try {
             return AgreementType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效协议类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.agreement_type");
         }
     }
 }

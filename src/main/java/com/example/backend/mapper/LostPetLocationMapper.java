@@ -27,7 +27,7 @@ public interface LostPetLocationMapper extends IBaseMapper<Location> {
 
     @Override
     default String getMissingMessage() {
-        return "找不到位置信息";
+        return "exception.not_found.lost_pet_location";
     }
 
     @Override
@@ -35,3 +35,4 @@ public interface LostPetLocationMapper extends IBaseMapper<Location> {
         return Location.class;
     }
 }
+

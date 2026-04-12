@@ -10,6 +10,7 @@ import com.example.backend.event.VolunteerShiftAddEvent;
 import com.example.backend.event.VolunteerShiftStatusEvent;
 import com.example.backend.facade.VolunteerFacade;
 import com.example.backend.mapper.*;
+import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,7 +71,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     public VolunteerRecruitmentResponse updateRecruitment(Long recruitmentId, VolunteerRecruitmentUpdateRequest request) {
         requireWorker();
         VolunteerRecruitment recruitment = requireById(recruitmentId);
-        require(VolunteerRecruitmentStatus.PUBLISHED != recruitment.getStatus(), "已发布不可修改");
+        require(VolunteerRecruitmentStatus.PUBLISHED != recruitment.getStatus(), "exception.invalidate.volunteer.recruitment.published_locked");
         request.applyTo(recruitment);
         updateById(recruitment);
         return volunteerFacade.buildRecruitmentResponse(recruitment);
@@ -85,7 +86,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         VolunteerRecruitment recruitment = requireById(recruitmentId);
         VolunteerRecruitmentStatus status = VolunteerRecruitmentStatus.get(statusName);
         if (status == VolunteerRecruitmentStatus.PUBLISHED) {
-            requireEqual(VolunteerRecruitmentStatus.DRAFT, recruitment.getStatus(), "仅草稿状态可发布");
+            requireEqual(VolunteerRecruitmentStatus.DRAFT, recruitment.getStatus(), "exception.invalidate.volunteer.recruitment.publish_draft_only");
         }
 
         recruitment.setStatus(status);
@@ -100,11 +101,13 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     @Transactional
     public VolunteerApplicationResponse addApplication(VolunteerApplicationAddRequest request) {
         User login = requireLoginUser();
-        require(!login.isVolunteer(), "您已是志愿者");
+        if (login.isVolunteer())
+            throw ServiceException.conflict("exception.conflict.volunteer.already_volunteer");
 
         VolunteerRecruitment recruitment = requireById(request.getRecruitmentId());
         assertRecruitmentOpen(recruitment);
-        require(!volunteerApplicationMapper.queryByRecruitmentAndUser(recruitment.getId(), login.getId()).exists(), "请勿重复提交申请");
+        if (volunteerApplicationMapper.queryByRecruitmentAndUser(recruitment.getId(), login.getId()).exists())
+            throw ServiceException.conflict("exception.conflict.volunteer.application_duplicate");
 
         VolunteerApplication application = request.create(login.getId());
         volunteerApplicationMapper.insert(application);
@@ -150,7 +153,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
             requireWorker();
 
         VolunteerApplication application = volunteerApplicationMapper.requireById(applicationId);
-        require(status.canSwitchFrom(application.getStatus()), "当前申请状态不可用");
+        require(status.canSwitchFrom(application.getStatus()), "exception.invalidate.volunteer.application.status_invalid");
 
         // 申请状态
         Date now = new Date();
@@ -286,7 +289,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
             requireWorker();
         if (status.requireSelf())
             requirePermission(login.is(shift.getVolunteerId()));
-        require(status.canSwitchFrom(shift.getStatus()), "状态错误");
+        require(status.canSwitchFrom(shift.getStatus()), "exception.invalidate.volunteer.shift.status_invalid");
 
         VolunteerShiftStatusRecord record = request.create(shift);
         request.applyTo(shift);
@@ -304,8 +307,9 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         VolunteerShift shift = volunteerShiftMapper.requireById(shiftId);
         User login = requireLoginUser();
         requirePermission(login.isWorker() || login.is(shift.getVolunteerId()));
-        requireEqual(VolunteerShiftStatus.COMPLETED, shift.getStatus(), "服务任务未完成记录");
-        require(!volunteerServiceRecordMapper.queryByShift(shiftId).exists(), "该排班已存在服务记录");
+        requireEqual(VolunteerShiftStatus.COMPLETED, shift.getStatus(), "exception.invalidate.volunteer.record.shift_not_completed");
+        if (volunteerServiceRecordMapper.queryByShift(shiftId).exists())
+            throw ServiceException.conflict("exception.conflict.volunteer.record.exists");
 
         VolunteerServiceRecord record = request.create(shiftId, shift.getVolunteerId());
         volunteerServiceRecordMapper.insert(record);
@@ -345,7 +349,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         VolunteerServiceRecord record = volunteerServiceRecordMapper.requireById(recordId);
         VolunteerRecordStatus status = VolunteerRecordStatus.get(request.getStatus());
         VolunteerRecordStatus oldStatus = record.getStatus();
-        require(status.canChangeFrom(oldStatus), "当前服务记录不可审核通过");
+        require(status.canChangeFrom(oldStatus), "exception.invalidate.volunteer.record.review_status_invalid");
         if (status.isReview()) {
             requirePermission(login.isWorker());
         } else {
@@ -399,7 +403,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     public VolunteerRewardResponse issueReward(Long rewardId) {
         User login = requireWorker();
         VolunteerReward reward = volunteerRewardMapper.requireById(rewardId);
-        requireEqual(VolunteerRewardStatus.PENDING, reward.getStatus(), "当前激励不可发放");
+        requireEqual(VolunteerRewardStatus.PENDING, reward.getStatus(), "exception.invalidate.volunteer.reward.issue_status_invalid");
         reward.setStatus(VolunteerRewardStatus.ISSUED);
         reward.setIssuerId(login.getId());
         reward.setIssueTime(new Date());
@@ -421,13 +425,13 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
      * 校验招募计划当前可报名
      */
     private void assertRecruitmentOpen(VolunteerRecruitment recruitment) {
-        requireEqual(VolunteerRecruitmentStatus.PUBLISHED, recruitment.getStatus(), "当前招募计划未开放");
+        requireEqual(VolunteerRecruitmentStatus.PUBLISHED, recruitment.getStatus(), "exception.invalidate.volunteer.recruitment.not_open");
         Date now = new Date();
         if (recruitment.getStartTime() != null) {
-            require(!now.before(recruitment.getStartTime()), "招募计划尚未开始");
+            require(!now.before(recruitment.getStartTime()), "exception.invalidate.volunteer.recruitment.not_started");
         }
         if (recruitment.getEndTime() != null) {
-            require(!now.after(recruitment.getEndTime()), "招募计划已结束");
+            require(!now.after(recruitment.getEndTime()), "exception.invalidate.volunteer.recruitment.ended");
         }
     }
 
@@ -438,7 +442,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         requireVolunteer(volunteerId);
         VolunteerProfile profile = volunteerProfileMapper.queryByUserId(volunteerId).one(
                 VolunteerProfile::getId, VolunteerProfile::getStatus);
-        require(profile != null && profile.getStatus() == VolunteerProfileStatus.ACTIVE, "志愿者档案不可用");
+        require(profile != null && profile.getStatus() == VolunteerProfileStatus.ACTIVE, "exception.invalidate.volunteer.profile.unavailable");
     }
 
     /**
@@ -458,7 +462,8 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
                 .filter(item -> excludeShiftId == null || !Objects.equals(item.getId(), excludeShiftId))
                 .filter(item -> item.getStatus().isTimeEffective())
                 .anyMatch(item -> isTimeConflict(item, shift));
-        require(!conflict, "该志愿者在当前时段已有排班");
+        if (conflict)
+            throw ServiceException.conflict("exception.conflict.volunteer.shift.time_conflict");
     }
 
     /**

@@ -16,6 +16,7 @@ public interface AgreementUpdateRecordMapper extends IBaseMapper<AgreementUpdate
 
     @Override
     default String getMissingMessage() {
-        return "协议更新记录不存在";
+        return "exception.not_found.agreement_update_record";
     }
 }
+

@@ -27,7 +27,7 @@ public interface DonationStatusUpdateMapper extends IBaseMapper<DonationStatusUp
 
     @Override
     default String getMissingMessage() {
-        return "捐赠状态记录不存在";
+        return "exception.not_found.donation_status_update";
     }
 
     @Override
@@ -35,3 +35,4 @@ public interface DonationStatusUpdateMapper extends IBaseMapper<DonationStatusUp
         return DonationStatusUpdateRecord.class;
     }
 }
+

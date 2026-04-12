@@ -21,7 +21,7 @@ public interface RescueTaskRecordMapper extends IBaseMapper<RescueTaskRecord> {
 
     @Override
     default String getMissingMessage() {
-        return "任务状态记录不存在";
+        return "exception.not_found.rescue_task_record";
     }
 
     @Override
@@ -29,3 +29,4 @@ public interface RescueTaskRecordMapper extends IBaseMapper<RescueTaskRecord> {
         return RescueTaskRecord.class;
     }
 }
+

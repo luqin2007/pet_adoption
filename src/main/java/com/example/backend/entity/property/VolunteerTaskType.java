@@ -23,7 +23,7 @@ public enum VolunteerTaskType {
         try {
             return VolunteerTaskType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (Exception e) {
-            throw ServiceException.invalidate("无效志愿任务类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.volunteer_task_type");
         }
     }
 }

@@ -19,14 +19,14 @@ public interface IValidates {
         return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
                 .map(auth -> (CustomUserDetails) auth.getPrincipal())
                 .map(CustomUserDetails::getUser)
-                .orElseThrow(() -> ServiceException.auth("请先登录"));
+                .orElseThrow(() -> ServiceException.auth("exception.auth.required"));
     }
 
     /**
      * 权限校验
      */
     default void requirePermission(boolean permission) {
-        if (!permission) throw ServiceException.auth("权限不足");
+        if (!permission) throw ServiceException.auth("exception.auth.denied");
     }
 
     /**

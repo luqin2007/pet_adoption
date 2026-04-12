@@ -11,19 +11,19 @@ public class FollowRecordAddRequest implements IRequest {
 
     private Date visitTime;
 
-    @NotBlank(message = "请输入摘要")
+    @NotBlank(message = "request.adopt_breading.follow_record.summary")
     private String summary;
 
-    @NotBlank(message = "请输入生活状态")
+    @NotBlank(message = "request.adopt_breading.follow_record.life_status")
     private String lifeStatus;
 
-    @NotBlank(message = "请输入健康状态")
+    @NotBlank(message = "request.adopt_breading.follow_record.health_status")
     private String healthStatus;
 
-    @NotBlank(message = "请输入风险")
+    @NotBlank(message = "request.adopt_breading.follow_record.risk")
     private String risk;
 
-    @NotBlank(message = "请输入建议")
+    @NotBlank(message = "request.adopt_breading.follow_record.suggestion")
     private String suggestion;
 
     public FollowRecord create(Long taskId, Long volunteerId) {

@@ -125,8 +125,9 @@ public interface IBaseMapper<T extends IId> extends MPJBaseMapper<T>, IValidates
     }
 
     default String getMissingMessage() {
-        return "信息不存在";
+        return "exception.not_found.data";
     }
 
     Class<T> getEntityClass();
 }
+

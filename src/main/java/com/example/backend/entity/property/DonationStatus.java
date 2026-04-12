@@ -19,7 +19,7 @@ public enum DonationStatus {
         try {
             return DonationStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效驱虫药类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.donation_status");
         }
     }
 }

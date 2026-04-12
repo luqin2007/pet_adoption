@@ -429,13 +429,13 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         boolean hasDiscardPlan = plans.stream()
                 .anyMatch(plan -> !Boolean.TRUE.equals(plan.getIsDiscard()));
         if (hasDiscardPlan)
-            throw ServiceException.invalidate("治疗计划已废弃");
+            throw ServiceException.invalidate("exception.invalidate.treatment_plan.discarded");
         Set<Long> detailIds = plans.stream().map(TreatmentPlan::getDetailId).collect(Collectors.toSet());
         boolean hasReadonlyDetail = listById(detailIds, MedicalDetail::getIsCompleted, MedicalDetail::getIsDiscard)
                 .stream()
                 .anyMatch(detail -> Boolean.TRUE.equals(detail.getIsCompleted()) || Boolean.TRUE.equals(detail.getIsDiscard()));
         if (hasReadonlyDetail)
-            throw ServiceException.invalidate("病历已完成或已废弃");
+            throw ServiceException.invalidate("exception.invalidate.medical_record.closed_or_discarded");
 
         treatmentPlanMapper.discardByIds(planIds).update();
     }
@@ -527,8 +527,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     private MedicalDetail requireDetailOpen(Long detailId, SFunction<MedicalDetail, ?>... columns) {
         MedicalDetail detail = columns.length == 0 ? requireById(detailId) : requireById(detailId, columns);
-        requireEqual(Boolean.FALSE, detail.getIsCompleted(), "病历已完成");
-        requireEqual(Boolean.FALSE, detail.getIsDiscard(), "病历已删除");
+        requireEqual(Boolean.FALSE, detail.getIsCompleted(), "exception.invalidate.medical_detail.completed");
+        requireEqual(Boolean.FALSE, detail.getIsDiscard(), "exception.invalidate.medical_detail.discarded");
         return detail;
     }
 

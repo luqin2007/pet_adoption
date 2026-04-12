@@ -34,7 +34,7 @@ public enum VolunteerRecordStatus {
         try {
             return VolunteerRecordStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (Exception e) {
-            throw ServiceException.invalidate("无效服务记录状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.volunteer_record_status");
         }
     }
 }

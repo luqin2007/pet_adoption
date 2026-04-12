@@ -21,7 +21,7 @@ public enum AdoptBreadingStatus {
         try {
             return AdoptBreadingStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效申请状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.adopt_breading_status");
         }
     }
 

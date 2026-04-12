@@ -37,7 +37,7 @@ public interface FollowRecordMapper extends IBaseMapper<FollowRecord> {
 
     @Override
     default String getMissingMessage() {
-        return "跟踪记录不存在";
+        return "exception.not_found.follow_record";
     }
 
     @Override
@@ -45,3 +45,4 @@ public interface FollowRecordMapper extends IBaseMapper<FollowRecord> {
         return FollowRecord.class;
     }
 }
+

@@ -30,7 +30,7 @@ public interface VolunteerRecruitmentMapper extends IBaseMapper<VolunteerRecruit
 
     @Override
     default String getMissingMessage() {
-        return "志愿者招募计划不存在";
+        return "exception.not_found.volunteer_recruitment";
     }
 
     @Override
@@ -38,3 +38,4 @@ public interface VolunteerRecruitmentMapper extends IBaseMapper<VolunteerRecruit
         return VolunteerRecruitment.class;
     }
 }
+

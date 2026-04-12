@@ -21,7 +21,7 @@ public interface AllergyHistoryMapper extends IBaseMapper<AllergyHistory> {
 
     @Override
     default String getMissingMessage() {
-        return "过敏史不存在";
+        return "exception.not_found.allergy_history";
     }
 
     @Override
@@ -29,3 +29,4 @@ public interface AllergyHistoryMapper extends IBaseMapper<AllergyHistory> {
         return AllergyHistory.class;
     }
 }
+

@@ -21,7 +21,7 @@ public interface RescueTaskLocationMapper extends IBaseMapper<Location> {
 
     @Override
     default String getMissingMessage() {
-        return "救助位置不存在";
+        return "exception.not_found.rescue_task_location";
     }
 
     @Override
@@ -29,3 +29,4 @@ public interface RescueTaskLocationMapper extends IBaseMapper<Location> {
         return Location.class;
     }
 }
+

@@ -36,7 +36,7 @@ public interface StockMapper extends IBaseMapper<Stock> {
 
     @Override
     default String getMissingMessage() {
-        return "库存记录不存在";
+        return "exception.not_found.stock";
     }
 
     @Override
@@ -44,3 +44,4 @@ public interface StockMapper extends IBaseMapper<Stock> {
         return Stock.class;
     }
 }
+

@@ -22,7 +22,7 @@ public enum VolunteerRewardType {
         try {
             return VolunteerRewardType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (Exception e) {
-            throw ServiceException.invalidate("无效激励类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.volunteer_reward_type");
         }
     }
 }

@@ -23,7 +23,7 @@ public interface ExaminationDiagnosisMapper extends IBaseMapper<ExaminationDiagn
 
     @Override
     default String getMissingMessage() {
-        return "诊断关系不存在";
+        return "exception.not_found.examination_diagnosis";
     }
 
     @Override
@@ -31,3 +31,4 @@ public interface ExaminationDiagnosisMapper extends IBaseMapper<ExaminationDiagn
         return ExaminationDiagnosis.class;
     }
 }
+

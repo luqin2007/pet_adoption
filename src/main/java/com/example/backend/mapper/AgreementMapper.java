@@ -39,7 +39,7 @@ public interface AgreementMapper extends IBaseMapper<Agreement> {
 
     @Override
     default String getMissingMessage() {
-        return "协议不存在";
+        return "exception.not_found.agreement";
     }
 
     @Override
@@ -47,3 +47,4 @@ public interface AgreementMapper extends IBaseMapper<Agreement> {
         return Agreement.class;
     }
 }
+

@@ -92,9 +92,9 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Adopt adopt = requireById(adoptId);
         AdoptBreadingStatus target = AdoptBreadingStatus.get(status);
         AdoptBreadingStatus oldStatus = adopt.getStatus();
-        require(oldStatus.isChangeable(), "领养状态异常");
+        require(oldStatus.isChangeable(), "exception.invalidate.adopt.status_abnormal");
         // 签订状态仅能通过 signAgreement 方法实现
-        require(target != AdoptBreadingStatus.AGREEMENT_SIGNED, "领养状态异常");
+        require(target != AdoptBreadingStatus.AGREEMENT_SIGNED, "exception.invalidate.adopt.status_abnormal");
 
         // 更新记录
         Date now = new Date();
@@ -145,8 +145,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Breading breading = breadingMapper.requireById(breadingId);
         AdoptBreadingStatus target = AdoptBreadingStatus.get(status);
         AdoptBreadingStatus oldStatus = breading.getStatus();
-        require(oldStatus.isChangeable(), "寄养状态异常");
-        require(target != AdoptBreadingStatus.AGREEMENT_SIGNED, "寄养状态异常");
+        require(oldStatus.isChangeable(), "exception.invalidate.breading.status_abnormal");
+        require(target != AdoptBreadingStatus.AGREEMENT_SIGNED, "exception.invalidate.breading.status_abnormal");
 
         Date now = new Date();
         breading.setStatus(target);
@@ -187,7 +187,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
             switch (parentType) {
                 case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
                 case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
-                default -> throw ServiceException.invalidate("无效协议 " + parentType);
+                default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
             }
             agreementUpdateRecordMapper.updateStatus(updateRecord.getId(), AgreementUpdateStatus.SUCCESS);
         });
@@ -271,7 +271,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
             FileUtils.copyDirectory(path, newPath);
             FileUtils.deleteDirectory(path);
             if (Files.isDirectory(path))
-                throw ServiceException.system("文件转移异常，请联系管理员手动处理");
+                throw ServiceException.system("exception.system.agreement.file_transfer_failed");
         } else {
             agreementUpdateRecordMapper.insert(record);
         }
@@ -285,15 +285,16 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         User login = requireLoginUser();
         Agreement agreement = agreementMapper.requireById(agreementId);
         requirePermission(login.isWorker());
-        require(null == agreement.getSign(), "协议已签署");
+        if (agreement.getSign() != null)
+            throw ServiceException.conflict("exception.conflict.agreement.signed");
         // 状态检查
         Long parentId = agreement.getParentId();
         if (agreement.getParentType() == ParentType.ADOPT)
-            requireEqual(AGREEMENT_DRAFT, selectById(parentId, Adopt::getStatus).getStatus(), "领养状态异常");
+            requireEqual(AGREEMENT_DRAFT, selectById(parentId, Adopt::getStatus).getStatus(), "exception.invalidate.adopt.status_abnormal");
         else if (agreement.getParentType() == ParentType.BREADING)
-            requireEqual(AGREEMENT_DRAFT, breadingMapper.selectById(parentId, Breading::getStatus).getStatus(), "寄养状态异常");
+            requireEqual(AGREEMENT_DRAFT, breadingMapper.selectById(parentId, Breading::getStatus).getStatus(), "exception.invalidate.breading.status_abnormal");
         else
-            throw ServiceException.invalidate("服务类型异常");
+            throw ServiceException.system("exception.system.agreement.parent_type_invalid");
 
         AgreementUpdateRecord record = new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN);
         agreementUpdateRecordMapper.insert(record);
@@ -309,7 +310,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
             switch (agreement.getParentType()) {
                 case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
                 case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
-                default -> throw ServiceException.invalidate("无效类型 " + agreement.getParentType());
+                default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
             }
             agreementUpdateRecordMapper.updateStatus(record.getId(), AgreementUpdateStatus.SUCCESS);
         });
@@ -346,7 +347,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         requirePermission(volunteer.isVolunteer());
         Adopt adopt = requireById(adoptId,
                 Adopt::getStatus);
-        requireEqual(AdoptBreadingStatus.TRACKING, adopt.getStatus(), "领养状态错误");
+        requireEqual(AdoptBreadingStatus.TRACKING, adopt.getStatus(), "exception.invalidate.adopt.status_invalid");
 
         // 记录
         FollowTask task = request.create(adoptId, login.getId());
@@ -402,10 +403,11 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         User login = requireLoginUser();
         FollowTask task = followTaskMapper.requireById(taskId,
                 FollowTask::getStatus);
-        requireEqual(FollowTaskStatus.IN_PROGRESS, task.getStatus(), "跟踪任务状态错误");
+        requireEqual(FollowTaskStatus.IN_PROGRESS, task.getStatus(), "exception.invalidate.follow_task.status_invalid");
         boolean allowed = login.isWorker() || Objects.equals(task.getVolunteerId(), login.getId());
         requirePermission(allowed);
-        require(!followRecordMapper.queryByTask(taskId).exists(), "跟踪记录已存在");
+        if (followRecordMapper.queryByTask(taskId).exists())
+            throw ServiceException.conflict("exception.conflict.follow_record.exists");
 
         FollowRecord record = request.create(taskId, login.getId());
         followRecordMapper.insert(record);

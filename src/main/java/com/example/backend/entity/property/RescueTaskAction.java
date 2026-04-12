@@ -17,7 +17,7 @@ public enum RescueTaskAction {
         try {
             return RescueTaskAction.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效变更类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.rescue_task_action");
         }
     }
 }

@@ -12,7 +12,7 @@ public enum SourceType {
         try {
             return SourceType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效物资来源 " + name);
+            throw ServiceException.invalidate("exception.invalidate.source_type");
         }
     }
 }

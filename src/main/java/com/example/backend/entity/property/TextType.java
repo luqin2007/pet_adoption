@@ -17,7 +17,7 @@ public enum TextType {
         try {
             return TextType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效文本类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.text_type");
         }
     }
 }

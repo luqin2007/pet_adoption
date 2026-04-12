@@ -55,7 +55,7 @@ public interface LostPetMapper extends IBaseMapper<LostPet> {
 
     @Override
     default String getMissingMessage() {
-        return "走失宠物信息不存在";
+        return "exception.not_found.lost_pet";
     }
 
     @Override
@@ -63,3 +63,4 @@ public interface LostPetMapper extends IBaseMapper<LostPet> {
         return LostPet.class;
     }
 }
+

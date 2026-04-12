@@ -50,7 +50,7 @@ public enum VolunteerApplicationStatus {
         try {
             return VolunteerApplicationStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (Exception e) {
-            throw ServiceException.invalidate("无效申请状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.volunteer_application_status");
         }
     }
 }

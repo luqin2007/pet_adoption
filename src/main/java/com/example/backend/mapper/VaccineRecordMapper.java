@@ -33,6 +33,7 @@ public interface VaccineRecordMapper extends IBaseMapper<VaccineRecord> {
 
     @Override
     default String getMissingMessage() {
-        return "找不到疫苗记录";
+        return "exception.not_found.vaccine_record";
     }
 }
+

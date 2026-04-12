@@ -18,7 +18,7 @@ public enum MedicalRecordStatus {
         try {
             return MedicalRecordStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效就诊状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.medical_record_status");
         }
     }
 }

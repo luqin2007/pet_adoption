@@ -149,6 +149,6 @@ public class SubscribeResponse implements IResponse {
             return SubscribeResponse.createUser(subscribe, user);
         }
         // Never here
-        throw ServiceException.system("Never here");
+        throw ServiceException.system("exception.system.unreachable");
     }
 }

@@ -18,7 +18,7 @@ public enum FollowTaskStatus {
         try {
             return FollowTaskStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效跟踪任务状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.follow_task_status");
         }
     }
 }

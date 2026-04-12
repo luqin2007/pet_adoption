@@ -36,7 +36,7 @@ public interface BreadingMapper extends IBaseMapper<Breading> {
 
     @Override
     default String getMissingMessage() {
-        return "寄养申请不存在";
+        return "exception.not_found.breading";
     }
 
     @Override
@@ -44,3 +44,4 @@ public interface BreadingMapper extends IBaseMapper<Breading> {
         return Breading.class;
     }
 }
+

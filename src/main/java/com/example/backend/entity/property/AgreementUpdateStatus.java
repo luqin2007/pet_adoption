@@ -12,7 +12,7 @@ public enum AgreementUpdateStatus {
         try {
             return AgreementUpdateStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.agreement_update_status");
         }
     }
 }

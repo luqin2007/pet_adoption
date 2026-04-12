@@ -19,7 +19,7 @@ public interface ImmunityHistoryMapper extends IBaseMapper<ImmunityHistory> {
 
     @Override
     default String getMissingMessage() {
-        return "免疫史不存在";
+        return "exception.not_found.immunity_history";
     }
 
     @Override
@@ -27,3 +27,4 @@ public interface ImmunityHistoryMapper extends IBaseMapper<ImmunityHistory> {
         return ImmunityHistory.class;
     }
 }
+

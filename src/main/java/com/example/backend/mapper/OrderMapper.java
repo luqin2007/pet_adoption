@@ -26,7 +26,7 @@ public interface OrderMapper extends IBaseMapper<Order> {
 
     @Override
     default String getMissingMessage() {
-        return "处方不存在";
+        return "exception.not_found.order";
     }
 
     @Override
@@ -34,3 +34,4 @@ public interface OrderMapper extends IBaseMapper<Order> {
         return Order.class;
     }
 }
+

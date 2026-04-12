@@ -31,7 +31,7 @@ public interface ExaminationMapper extends IBaseMapper<Examination> {
 
     @Override
     default String getMissingMessage() {
-        return "检查不存在";
+        return "exception.not_found.examination";
     }
 
     @Override
@@ -39,3 +39,4 @@ public interface ExaminationMapper extends IBaseMapper<Examination> {
         return Examination.class;
     }
 }
+

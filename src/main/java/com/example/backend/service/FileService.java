@@ -177,7 +177,7 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         Path resources = FileUtils.generatePath(upload, parentType, parentId);
         Date now = new Date();
         Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
-        requireEqual(MediaType.IMAGE, extAndType.getSecond(), "不支持的图片格式");
+        requireEqual(MediaType.IMAGE, extAndType.getSecond(), "exception.invalidate.file.image_only");
         String name = FileUtils.getNameWithoutExtension(file.getOriginalFilename());
         String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
         FileUtils.upload(file, filename, resources);
@@ -196,7 +196,7 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         List<Pair<String, MediaType>> extAndTypes = new ArrayList<>(files.size());
         for (MultipartFile file : files) {
             Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
-            requireEqual(MediaType.IMAGE, extAndType.getSecond(), "不支持的图片格式");
+            requireEqual(MediaType.IMAGE, extAndType.getSecond(), "exception.invalidate.file.image_only");
             extAndTypes.add(extAndType);
         }
 
@@ -278,8 +278,8 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         // 检查图片
         requireLoginUser();
         MediaFile media = requireById(mediaId);
-        requireEqual(parentType, media.getParentType(), "图片/视频不匹配");
-        requireEqual(parentId, media.getParentId(), "图片/视频不匹配");
+        requireEqual(parentType, media.getParentType(), "exception.invalidate.media.parent_mismatch");
+        requireEqual(parentId, media.getParentId(), "exception.invalidate.media.parent_mismatch");
 
         // 更新图片信息
         Boolean oldIsCover = media.getIsCover();
@@ -309,8 +309,8 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         // 检查文件存在
         requireLoginUser();
         MediaFile media = requireById(mediaId);
-        requireEqual(parentType, media.getParentType(), "图片/视频不匹配");
-        requireEqual(parentId, media.getParentId(), "图片/视频不匹配");
+        requireEqual(parentType, media.getParentType(), "exception.invalidate.media.parent_mismatch");
+        requireEqual(parentId, media.getParentId(), "exception.invalidate.media.parent_mismatch");
 
         // 删除媒体文件
         removeById(mediaId);

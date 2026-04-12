@@ -19,7 +19,7 @@ public enum MediaType {
         try {
             return MediaType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效媒体类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.media_type");
         }
     }
 }

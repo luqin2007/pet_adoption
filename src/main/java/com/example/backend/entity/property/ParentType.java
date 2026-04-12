@@ -29,7 +29,7 @@ public enum ParentType {
         try {
             return ParentType.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.parent_type");
         }
     }
 }

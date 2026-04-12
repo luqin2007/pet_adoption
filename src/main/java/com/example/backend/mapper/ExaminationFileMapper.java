@@ -31,7 +31,7 @@ public interface ExaminationFileMapper extends IBaseMapper<ExaminationFile> {
 
     @Override
     default String getMissingMessage() {
-        return "附件不存在";
+        return "exception.not_found.examination_file";
     }
 
     @Override
@@ -39,3 +39,4 @@ public interface ExaminationFileMapper extends IBaseMapper<ExaminationFile> {
         return ExaminationFile.class;
     }
 }
+

@@ -39,7 +39,7 @@ public interface DiagnosisMapper extends IBaseMapper<Diagnosis> {
 
     @Override
     default String getMissingMessage() {
-        return "诊断记录不存在";
+        return "exception.not_found.diagnosis";
     }
 
     @Override
@@ -47,3 +47,4 @@ public interface DiagnosisMapper extends IBaseMapper<Diagnosis> {
         return Diagnosis.class;
     }
 }
+

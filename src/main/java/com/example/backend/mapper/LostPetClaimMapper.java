@@ -45,7 +45,7 @@ public interface LostPetClaimMapper extends IBaseMapper<LostPetClaim> {
 
     @Override
     default String getMissingMessage() {
-        return "认领申请不存在";
+        return "exception.not_found.lost_pet_claim";
     }
 
     @Override
@@ -53,3 +53,4 @@ public interface LostPetClaimMapper extends IBaseMapper<LostPetClaim> {
         return LostPetClaim.class;
     }
 }
+

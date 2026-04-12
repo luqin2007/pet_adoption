@@ -111,7 +111,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         // 校验
         RescueTask task = requireById(taskId);
         User login = requireLoginUser();
-        require(!Objects.equals(task.getStatus(), CREATED), "无法修改已通过的任务");
+        require(!Objects.equals(task.getStatus(), CREATED), "exception.invalidate.rescue_task.update_after_approve");
         requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
 
         // 更新任务信息
@@ -153,7 +153,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         // 检查用户和任务状态
         User login = requireLoginUser();
         RescueTask task = requireById(taskId);
-        requireEqual(CREATED, task.getStatus(), "无法修改已通过的任务");
+        requireEqual(CREATED, task.getStatus(), "exception.invalidate.rescue_task.update_after_approve");
         requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
 
         // 删除媒体文件
@@ -168,7 +168,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         // 检查用户和任务状态
         User login = requireLoginUser();
         RescueTask task = requireById(taskId);
-        requireEqual(CREATED, task.getStatus(), "无法删除已通过的任务");
+        requireEqual(CREATED, task.getStatus(), "exception.invalidate.rescue_task.delete_after_approve");
         requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
 
         // 删除媒体数据
@@ -225,7 +225,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         RescueTask task = requireById(taskId);
-        requireNotEqual(CREATED, task.getStatus(), "任务未通过审核");
+        requireNotEqual(CREATED, task.getStatus(), "exception.invalidate.rescue_task.not_approved");
 
         // 任务分配
         Set<Long> addUsers = rescueTaskAssignMapper.queryUserByTask(taskId).list().stream()

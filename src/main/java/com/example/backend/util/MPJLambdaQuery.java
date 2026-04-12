@@ -136,7 +136,7 @@ public class MPJLambdaQuery<BASE extends IId, QUERY, DTO> {
     public <P extends IPage<DTO>> Page<DTO> page(PageParams pageRequest) {
         Page<DTO> page = pageRequest.createPage();
         if (dtoClass == null)
-            throw ServiceException.system("请指定 DTO 类");
+            throw ServiceException.system("exception.system.dto_required");
         for (Class<?> entityClass : queryLists) {
             query.selectFilter(entityClass, filter);
         }

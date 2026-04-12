@@ -43,7 +43,7 @@ public enum SubscribeAction {
         try {
             return SubscribeAction.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效订阅类型 " + name);
+            throw ServiceException.invalidate("exception.invalidate.subscribe_action");
         }
     }
 }

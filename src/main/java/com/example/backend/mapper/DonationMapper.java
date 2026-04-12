@@ -32,7 +32,7 @@ public interface DonationMapper extends IBaseMapper<Donation> {
 
     @Override
     default String getMissingMessage() {
-        return "捐赠记录不存在";
+        return "exception.not_found.donation";
     }
 
     @Override
@@ -40,3 +40,4 @@ public interface DonationMapper extends IBaseMapper<Donation> {
         return Donation.class;
     }
 }
+

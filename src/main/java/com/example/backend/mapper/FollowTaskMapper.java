@@ -39,7 +39,7 @@ public interface FollowTaskMapper extends IBaseMapper<FollowTask> {
 
     @Override
     default String getMissingMessage() {
-        return "跟踪任务不存在";
+        return "exception.not_found.follow_task";
     }
 
     @Override
@@ -47,3 +47,4 @@ public interface FollowTaskMapper extends IBaseMapper<FollowTask> {
         return FollowTask.class;
     }
 }
+

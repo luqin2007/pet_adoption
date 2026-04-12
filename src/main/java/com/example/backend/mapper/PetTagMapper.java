@@ -41,7 +41,7 @@ public interface PetTagMapper extends IBaseMapper<PetTag> {
 
     @Override
     default String getMissingMessage() {
-        return "标签信息不存在";
+        return "exception.not_found.pet_tag";
     }
 
     @Override
@@ -49,3 +49,4 @@ public interface PetTagMapper extends IBaseMapper<PetTag> {
         return PetTag.class;
     }
 }
+

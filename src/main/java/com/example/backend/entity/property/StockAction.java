@@ -17,7 +17,7 @@ public enum StockAction {
         try {
             return StockAction.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("无效物资记录动作 " + name);
+            throw ServiceException.invalidate("exception.invalidate.stock_action");
         }
     }
 }

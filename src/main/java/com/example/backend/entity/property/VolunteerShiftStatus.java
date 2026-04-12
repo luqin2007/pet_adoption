@@ -61,7 +61,7 @@ public enum VolunteerShiftStatus {
         try {
             return VolunteerShiftStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (Exception e) {
-            throw ServiceException.invalidate("无效排班状态 " + name);
+            throw ServiceException.invalidate("exception.invalidate.volunteer_shift_status");
         }
     }
 }
