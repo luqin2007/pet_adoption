@@ -21,7 +21,7 @@ public class AccessDeniedExceptionHandler implements AccessDeniedHandler {
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json");
-        Result<Void> error = Result.error(500, accessDeniedException.getMessage());
+        Result<Void> error = Result.error(403, accessDeniedException.getMessage());
         objectMapper.writeValue(response.getWriter(), error);
     }
 }

@@ -47,7 +47,7 @@ public class JwtHelper {
 
     private SecretKey secretKey;
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtHelper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtHelper.class);
 
     private final StringRedisTemplate redisTemplate;
 
@@ -58,7 +58,7 @@ public class JwtHelper {
             int diff = 32 - keyBytes.length;
             secret = secret + StringUtils.generateRandomString(diff);
             keyBytes = secret.getBytes(StandardCharsets.UTF_8);
-            logger.warn("jwt.secret 长度不足，运行时已自动补全 {} 字节", diff);
+            LOGGER.warn("jwt.secret 长度不足，运行时已自动补全 {} 字节", diff);
         }
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }

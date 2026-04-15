@@ -21,7 +21,7 @@ public class AuthenticationExceptionPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
-        Result<Void> error = Result.error(500, authException.getMessage());
+        Result<Void> error = Result.error(401, authException.getMessage());
         objectMapper.writeValue(response.getWriter(), error);
     }
 }

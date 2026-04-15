@@ -11,7 +11,6 @@ import com.example.backend.util.RedisHelper;
 import com.example.backend.util.ServiceException;
 import com.example.backend.util.StringUtils;
 import com.github.yulichang.base.MPJBaseServiceImpl;
-import org.hibernate.validator.internal.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;

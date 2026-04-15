@@ -2,20 +2,23 @@ package com.example.backend.component;
 
 import com.example.backend.dto.Result;
 import com.example.backend.util.ServiceException;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.context.MessageSource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.lang.reflect.Method;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler implements AsyncUncaughtExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyMMdd");
@@ -37,6 +40,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Result<Void>> handleOtherException(Exception e) {
         String errorCode = FORMAT.format(Instant.now()) + String.format("%03d", ERR_INDEX.getAndIncrement());
         LOGGER.error("Other Exception {}", errorCode, e);
+        if (ERR_INDEX.get() > 990)
+            ERR_INDEX.set(0); // 重置
         return Result.wrap(Result.error(500, "发生错误 " + errorCode));
+    }
+
+    @Override
+    public void handleUncaughtException(Throwable ex, Method method, @Nullable Object... params) {
+        if (ex instanceof ServiceException e) {
+            handleServiceException(e);
+        } else {
+            handleOtherException((Exception) ex);
+        }
     }
 }

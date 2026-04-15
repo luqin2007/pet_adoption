@@ -18,7 +18,7 @@ public class DatabaseConfig {
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor(DbType.MYSQL);
-        paginationInnerInterceptor.setMaxLimit(500L);
+        paginationInnerInterceptor.setMaxLimit(100L);
         interceptor.addInnerInterceptor(paginationInnerInterceptor);
         return interceptor;
     }

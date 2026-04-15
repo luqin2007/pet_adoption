@@ -150,7 +150,7 @@ public class PetController {
 
     @PutMapping("/{id}/status")
     public Result<PetStatusRecordResponse> updateStatus(@PathVariable("id") Long petId,
-                                                        @RequestBody PetStatusUpdateRequest request) {
+                                                        @Valid @RequestBody PetStatusUpdateRequest request) {
         PetStatusRecordResponse response = petService.updateStatus(petId, request);
         return Result.success(response);
     }

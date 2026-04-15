@@ -53,7 +53,7 @@ public class AuthController {
     @GetMapping("/check/username/{username}")
     public Result<Void> isUsernameExist(@PathVariable String username) {
         if (userService.isUsernameExist(username)) {
-            return Result.error(500, "用户名已存在");
+            return Result.error(409, "用户名已存在");
         }
         return Result.success();
     }
@@ -72,7 +72,7 @@ public class AuthController {
     /**
      * 发送邮箱验证码
      */
-    @GetMapping("/check/code")
+    @PostMapping("/check/code")
     public Result<Void> sendMailCode(@Email(message = "request.user.email")
                                      @RequestParam("email") String email) {
         userService.sendMailCode(email);
@@ -91,7 +91,7 @@ public class AuthController {
     /**
      * 忘记密码 - 发送密码重置链接
      */
-    @GetMapping("/forget")
+    @PostMapping("/forget")
     public Result<Void> forgetPassword(@Email(message = "request.user.email")
                                        @RequestParam("email") String email) {
         userService.forgetPassword(email);

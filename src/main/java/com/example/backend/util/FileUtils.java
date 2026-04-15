@@ -28,6 +28,7 @@ public class FileUtils {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtils.class);
+    private static final Tika TIKA = new Tika();
 
     /**
      * 上传文件
@@ -97,7 +98,7 @@ public class FileUtils {
      */
     public static Pair<String, com.example.backend.entity.property.MediaType> getFileExtensionAndType(MultipartFile file) {
         try {
-            String mime = new Tika().detect(file.getInputStream());
+            String mime = TIKA.detect(file.getInputStream());
             return switch (mime) {
                 // 图片
                 case MediaType.IMAGE_PNG_VALUE -> Pair.of("png", IMAGE);
@@ -127,10 +128,7 @@ public class FileUtils {
     }
 
     public static Path generatePath(String base, ParentType parentType, Long parentId, String filename) {
-        return Paths.get(base)
-                .resolve(parentType.getFolder())
-                .resolve(String.valueOf(parentId))
-                .resolve(filename);
+        return generatePath(base, parentType, parentId).resolve(filename);
     }
 
     public static Path generatePath(String base, ParentType parentType, Long parentId) {
@@ -140,10 +138,7 @@ public class FileUtils {
     }
 
     public static Path generatePath(String base, ParentType parentType, String uuid, String filename) {
-        return Paths.get(base)
-                .resolve(parentType.getFolder())
-                .resolve(uuid)
-                .resolve(filename);
+        return generatePath(base, parentType, uuid).resolve(filename);
     }
 
     public static Path generatePath(String base, ParentType parentType, String uuid) {
