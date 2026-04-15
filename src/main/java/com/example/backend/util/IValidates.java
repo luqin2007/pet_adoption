@@ -23,6 +23,15 @@ public interface IValidates {
     }
 
     /**
+     * 获取当前登录用户
+     */
+    default Optional<User> getLoginUser() {
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .map(auth -> (CustomUserDetails) auth.getPrincipal())
+                .map(CustomUserDetails::getUser);
+    }
+
+    /**
      * 权限校验
      */
     default void requirePermission(boolean permission) {

@@ -16,7 +16,7 @@ public enum ClaimStatus {
         try {
             return ClaimStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("exception.invalidate.claim_status");
+            throw ServiceException.invalidate("exception.invalidate.status");
         }
     }
 }

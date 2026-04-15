@@ -3,11 +3,9 @@ package com.example.backend.dto;
 import com.example.backend.entity.Order;
 import com.example.backend.entity.RehabPlan;
 import com.example.backend.entity.RehabPlanStatus;
-import com.example.backend.entity.property.TextType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.springframework.validation.Errors;
 
 import java.util.Date;
 import java.util.List;
@@ -16,7 +14,7 @@ import static com.example.backend.entity.property.ParentType.REHAB_PLAN;
 import static com.example.backend.entity.property.RehabPlanStatusProp.ACTIVE;
 
 @Data
-public class RehabPlanAddRequest implements IRequest, IValidatedRequest {
+public class RehabPlanAddRequest implements IRequest {
 
     @NotBlank(message = "request.pet.age")
     private Integer age;
@@ -48,7 +46,6 @@ public class RehabPlanAddRequest implements IRequest, IValidatedRequest {
                 age,
                 title,
                 content,
-                TextType.get(type),
                 frequency,
                 ACTIVE,
                 startTime,
@@ -69,10 +66,5 @@ public class RehabPlanAddRequest implements IRequest, IValidatedRequest {
                 plan.getStatus(),
                 "~~~create~~~",
                 plan.getCreateTime());
-    }
-
-    @Override
-    public void validate(Errors errors) {
-        validateEnum(errors, RehabPlanAddRequest::getType, TextType.class, "request.medical.exam.text_type");
     }
 }

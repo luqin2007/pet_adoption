@@ -21,7 +21,8 @@ public enum ParentType {
     AGREEMENT_RECORD("agreement_record"), // 协议备份
     FOLLOW("follow"), // 领养跟踪
     DONATION("donation"), // 领养跟踪
-    LOST_PET("lost_pet"); // 丢失宠物
+    LOST_PET("lost_pet"),
+    ARTICLE("article"),; // 丢失宠物
 
     private final String folder;
 

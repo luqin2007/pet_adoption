@@ -14,7 +14,7 @@ public enum ActionStatus {
         try {
             return ActionStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("exception.invalidate.action_status");
+            throw ServiceException.invalidate("exception.invalidate.status");
         }
     }
 }

@@ -22,7 +22,7 @@ public enum PetStatus {
         try {
             return PetStatus.valueOf(name.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw ServiceException.invalidate("exception.invalidate.pet_status");
+            throw ServiceException.invalidate("exception.invalidate.status");
         }
     }
 }
