@@ -1370,6 +1370,77 @@ main {
   min-height: 0;
 }
 
+.lost-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
+  gap: 20px;
+}
+
+.lost-sidecard {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--line);
+  background:
+    radial-gradient(circle at top right, rgba(231, 122, 59, 0.18), transparent 32%),
+    rgba(255, 253, 249, 0.96);
+  padding: 24px;
+  display: grid;
+  gap: 10px;
+  align-content: center;
+  box-shadow: 0 12px 30px rgba(151, 96, 56, 0.08);
+}
+
+.lost-sidecard strong {
+  font-size: 42px;
+  color: var(--primary-strong);
+  line-height: 1;
+}
+
+.lost-sidecard span {
+  font-weight: 700;
+  color: #6c4834;
+}
+
+.lost-sidecard small {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.lost-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.lost-card {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: rgba(255, 253, 249, 0.95);
+}
+
+.lost-cover {
+  position: relative;
+  height: 220px;
+}
+
+.lost-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lost-body {
+  padding: 18px;
+}
+
+.lost-actions {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;
@@ -1403,6 +1474,10 @@ main {
   }
 
   .volunteer-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .lost-hero {
     grid-template-columns: 1fr;
   }
 
@@ -1492,6 +1567,10 @@ main {
   }
 
   .volunteer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lost-grid {
     grid-template-columns: 1fr;
   }
 

@@ -3,6 +3,7 @@ import { useUserStore } from '../stores/user'
 import ArticleHubView from '../views/ArticleHubView.vue'
 import AuthView from '../views/AuthView.vue'
 import HomeView from '../views/HomeView.vue'
+import LostPetCenterView from '../views/LostPetCenterView.vue'
 import PetDirectoryView from '../views/PetDirectoryView.vue'
 import ProfileCenterView from '../views/ProfileCenterView.vue'
 import VolunteerCenterView from '../views/VolunteerCenterView.vue'
@@ -34,6 +35,11 @@ const router = createRouter({
       path: '/volunteers',
       name: 'volunteers',
       component: VolunteerCenterView,
+    },
+    {
+      path: '/lost',
+      name: 'lost',
+      component: LostPetCenterView,
     },
     {
       path: '/console',
