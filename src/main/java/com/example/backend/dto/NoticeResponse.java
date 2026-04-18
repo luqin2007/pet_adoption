@@ -15,7 +15,6 @@ public class NoticeResponse implements IResponse {
     private String source;
     private String title;
     private String content;
-    private Boolean important;
     private Boolean read;
     private Date readTime;
     private Date createTime;
@@ -27,7 +26,6 @@ public class NoticeResponse implements IResponse {
                 notice.getSource().name(),
                 notice.getTitle(),
                 notice.getContent(),
-                notice.getImportant(),
                 notice.getRead(),
                 notice.getReadTime(),
                 notice.getCreateTime());

@@ -20,7 +20,6 @@ public interface NoticeMapper extends IBaseMapper<Notice> {
     default MPLambdaQuery<Notice> queryByUser(Long userId, NoticeQueryParams params) {
         return lambdaQuery()
                 .eq(Notice::getReceiverId, userId)
-                .eq(Notice::getImportant, params.getImportant())
                 .eq(Notice::getRead, params.getRead())
                 .in(Notice::getSource, NoticeSource::get, params.getSource())
                 .in(Notice::getCreateTime, params.getTime0(), params.getTime1())

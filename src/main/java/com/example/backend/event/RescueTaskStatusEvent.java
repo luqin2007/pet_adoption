@@ -4,8 +4,8 @@ import com.example.backend.entity.RescueTask;
 import com.example.backend.entity.RescueTaskRecord;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.NoticeSource;
+import com.example.backend.entity.property.RescueTaskStatus;
 import com.example.backend.util.LangHelper;
-import com.example.backend.util.NoticeTextUtils;
 import com.example.backend.util.StringUtils;
 
 /**
@@ -31,7 +31,7 @@ public record RescueTaskStatusEvent(RescueTask data, RescueTaskRecord record, Us
         String key = StringUtils.hasText(record.getReason())
                 ? "notification.rescue_task_status.content0"
                 : "notification.rescue_task_status.content1";
-        return langHelper.get(key, data.getSummary(), NoticeTextUtils.rescueTaskStatus(record.getStatusTo()), record.getReason());
+        return langHelper.get(key, data.getSummary(), rescueTaskStatus(record.getStatusTo()), record.getReason());
     }
 
     @Override
@@ -44,6 +44,17 @@ public record RescueTaskStatusEvent(RescueTask data, RescueTaskRecord record, Us
         String key = StringUtils.hasText(record.getReason())
                 ? "mail.rescue_task_status_with_reason.content"
                 : "mail.rescue_task_status.content";
-        return langHelper.get(key, data.getSummary(), NoticeTextUtils.rescueTaskStatus(record.getStatusTo()), record.getReason());
+        return langHelper.get(key, data.getSummary(), rescueTaskStatus(record.getStatusTo()), record.getReason());
     }
+
+    private String rescueTaskStatus(RescueTaskStatus status) {
+        return switch (status) {
+            case CREATED -> "已创建";
+            case APPROVED -> "审核通过";
+            case PROCESSING -> "处理中";
+            case COMPLETED -> "已完成";
+            case DISCARDED -> "已废弃";
+        };
+    }
+
 }

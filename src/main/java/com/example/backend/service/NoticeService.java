@@ -47,9 +47,9 @@ public class NoticeService extends BaseService<NoticeMapper, Notice> {
     }
 
     @Transactional
-    public List<NoticeResponse> addNotices(Collection<User> receivers, NoticeSource source, String title, String content, boolean important) {
+    public List<NoticeResponse> addNotices(Collection<User> receivers, NoticeSource source, String title, String content) {
         List<Notice> notices = receivers.stream()
-                .map(receiver -> Notice.create(receiver.getId(), source, title, content, important, false))
+                .map(receiver -> Notice.create(receiver.getId(), source, title, content, false))
                 .toList();
         saveBatch(notices);
         return notices.stream()

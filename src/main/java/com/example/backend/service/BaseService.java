@@ -1,6 +1,5 @@
 package com.example.backend.service;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
@@ -93,13 +92,6 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
      */
     public void requireExist(Long id) {
         baseMapper.requireExist(id);
-    }
-
-    /**
-     * 根据条件获取唯一对象，对象必须存在
-     */
-    public T requireOne(Wrapper<T> queryWrapper) {
-        return baseMapper.requireOne(queryWrapper);
     }
 
     /**

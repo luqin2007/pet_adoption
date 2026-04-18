@@ -32,4 +32,14 @@ public record RescueTaskAssignEvent(RescueTask task, List<RescueTaskAssign> data
     public String buildNotifyContent(LangHelper langHelper, Object... args) {
         return langHelper.get("notification.rescue_task_assign.content", task.getSummary());
     }
+
+    @Override
+    public String buildMailTitle(LangHelper langHelper) {
+        return langHelper.get("mail.rescue_task_assign.title");
+    }
+
+    @Override
+    public String buildMailContent(LangHelper langHelper, Object... args) {
+        return langHelper.get("mail.rescue_task_assign.content", task.getSummary());
+    }
 }

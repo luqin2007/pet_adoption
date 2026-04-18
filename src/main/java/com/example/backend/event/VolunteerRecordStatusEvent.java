@@ -5,7 +5,6 @@ import com.example.backend.entity.VolunteerServiceRecord;
 import com.example.backend.entity.property.NoticeSource;
 import com.example.backend.entity.property.VolunteerRecordStatus;
 import com.example.backend.util.LangHelper;
-import com.example.backend.util.NoticeTextUtils;
 import com.example.backend.util.StringUtils;
 
 /**
@@ -37,7 +36,7 @@ public record VolunteerRecordStatusEvent(VolunteerServiceRecord data, User user,
         if (data.getStatus() == VolunteerRecordStatus.SUBMITTED) {
             return langHelper.get("notification.volunteer_record_submit.content", args[0]);
         }
-        String statusText = NoticeTextUtils.volunteerRecordStatus(data.getStatus());
+        String statusText = volunteerRecordStatus(data.getStatus());
         String key = StringUtils.hasText(data.getReviewComment())
                 ? "notification.volunteer_record_review.content1"
                 : "notification.volunteer_record_review.content0";
@@ -51,7 +50,7 @@ public record VolunteerRecordStatusEvent(VolunteerServiceRecord data, User user,
 
     @Override
     public String buildMailContent(LangHelper langHelper, Object... args) {
-        String statusText = NoticeTextUtils.volunteerRecordStatus(data.getStatus());
+        String statusText = volunteerRecordStatus(data.getStatus());
         String key = StringUtils.hasText(data.getReviewComment())
                 ? "mail.volunteer_record_review.content1"
                 : "mail.volunteer_record_review.content0";
@@ -66,5 +65,14 @@ public record VolunteerRecordStatusEvent(VolunteerServiceRecord data, User user,
     @Override
     public Long reviewerId() {
         return data.getReviewerId();
+    }
+
+    private String volunteerRecordStatus(VolunteerRecordStatus status) {
+        return switch (status) {
+            case DRAFT -> "草稿";
+            case SUBMITTED -> "已提交";
+            case APPROVED -> "审核通过";
+            case REJECTED -> "审核拒绝";
+        };
     }
 }

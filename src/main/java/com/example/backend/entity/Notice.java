@@ -45,12 +45,6 @@ public class Notice implements IId {
     private String content;
 
     /**
-     * 是否为重要消息
-     * *非空 boolean*
-     */
-    private Boolean important;
-
-    /**
      * 是否已读
      * *非空 boolean*
      */
@@ -74,14 +68,13 @@ public class Notice implements IId {
      */
     private Date updateTime;
 
-    public static Notice create(Long userId, NoticeSource type, String title, String content, Boolean important, Boolean read) {
+    public static Notice create(Long userId, NoticeSource type, String title, String content, Boolean read) {
         Date now = new Date();
         return new Notice(null,
                 userId,
                 type,
                 title,
                 content,
-                important,
                 read,
                 null,
                 now,

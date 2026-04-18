@@ -3,8 +3,8 @@ package com.example.backend.event;
 import com.example.backend.entity.PetStatusRecord;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.NoticeSource;
+import com.example.backend.entity.property.PetStatus;
 import com.example.backend.util.LangHelper;
-import com.example.backend.util.NoticeTextUtils;
 
 /**
  * 宠物状态变化
@@ -28,7 +28,7 @@ public record PetStatusChangeEvent(PetStatusRecord data, User user) implements I
      */
     @Override
     public String buildNotifyContent(LangHelper langHelper, Object... args) {
-        return langHelper.get("notification.pet_status.content", args[0], NoticeTextUtils.petStatus(data.getTo()));
+        return langHelper.get("notification.pet_status.content", args[0], petStatus(data.getTo()));
     }
 
     @Override
@@ -41,6 +41,20 @@ public record PetStatusChangeEvent(PetStatusRecord data, User user) implements I
      */
     @Override
     public String buildMailContent(LangHelper langHelper, Object... args) {
-        return langHelper.get("mail.pet_status.content", args[0], NoticeTextUtils.petStatus(data.getTo()));
+        return langHelper.get("mail.pet_status.content", args[0], petStatus(data.getTo()));
+    }
+
+    private String petStatus(PetStatus status) {
+        return switch (status) {
+            case WAITING -> "待审核";
+            case AGAINST -> "审核未通过";
+            case FINDING -> "查找中";
+            case DIED -> "无法救助或已死亡";
+            case TIMEOUT -> "超时放弃";
+            case SHELTERED -> "已收容";
+            case HEALTH -> "可领养";
+            case ADOPTED -> "已领养";
+            case HOME -> "已回家";
+        };
     }
 }

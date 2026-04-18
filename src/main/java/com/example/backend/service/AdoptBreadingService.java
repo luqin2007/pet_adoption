@@ -41,8 +41,6 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     private UserService userService;
     private FileService fileService;
 
-    @Value("${file.upload}")
-    private String upload;
     @Value("${key.agreement.uuid}")
     private String agreementTemplate;
     @Value("${key.agreement.file}")

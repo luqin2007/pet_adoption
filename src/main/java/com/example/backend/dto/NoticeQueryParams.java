@@ -16,11 +16,6 @@ public class NoticeQueryParams implements IParam, IValidatedRequest {
     private Boolean read;
 
     /**
-     * 仅查询重要消息
-     */
-    private Boolean important;
-
-    /**
      * 查询分区
      */
     private List<String> source;

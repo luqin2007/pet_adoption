@@ -1,6 +1,5 @@
 package com.example.backend.entity;
 
-import com.example.backend.entity.property.AgreementUpdateStatus;
 import com.example.backend.entity.property.AgreementUpdateType;
 import lombok.Data;
 import lombok.NoArgsConstructor;

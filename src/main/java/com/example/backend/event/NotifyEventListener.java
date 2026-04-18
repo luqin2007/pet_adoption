@@ -32,7 +32,7 @@ public class NotifyEventListener {
                 .collect(Collectors.toSet());
         @SuppressWarnings("unchecked")
         List<User> users = userMapper.selectList(ids, User::getId, User::getEmail);
-        List<NoticeResponse> responses = noticeService.addNotices(users, event.source(), event.title(), event.content(), event.important());
+        List<NoticeResponse> responses = noticeService.addNotices(users, event.source(), event.title(), event.content());
         for (NoticeResponse notice : responses) {
             noticeSseHub.push(notice);
         }

@@ -1,12 +1,11 @@
 package com.example.backend.event;
 
+import com.example.backend.entity.User;
 import com.example.backend.entity.VolunteerShift;
 import com.example.backend.entity.VolunteerShiftStatusRecord;
-import com.example.backend.entity.User;
 import com.example.backend.entity.property.NoticeSource;
 import com.example.backend.entity.property.VolunteerShiftStatus;
 import com.example.backend.util.LangHelper;
-import com.example.backend.util.NoticeTextUtils;
 import com.example.backend.util.StringUtils;
 
 /**
@@ -36,7 +35,7 @@ public record VolunteerShiftStatusEvent(VolunteerShift data, VolunteerShiftStatu
         if (record.getStatusTo() == VolunteerShiftStatus.CONFIRMED) {
             return langHelper.get("notification.volunteer_shift_confirmed.content", data.getTitle());
         }
-        String statusText = NoticeTextUtils.volunteerShiftStatus(record.getStatusTo());
+        String statusText = volunteerShiftStatus(record.getStatusTo());
         String key = StringUtils.hasText(record.getComment())
                 ? "notification.volunteer_shift_status_with_reason.content"
                 : "notification.volunteer_shift_status.content";
@@ -50,7 +49,7 @@ public record VolunteerShiftStatusEvent(VolunteerShift data, VolunteerShiftStatu
 
     @Override
     public String buildMailContent(LangHelper langHelper, Object... args) {
-        String statusText = NoticeTextUtils.volunteerShiftStatus(record.getStatusTo());
+        String statusText = volunteerShiftStatus(record.getStatusTo());
         String key = StringUtils.hasText(record.getComment())
                 ? "mail.volunteer_shift_status_with_reason.content"
                 : "mail.volunteer_shift_status.content";
@@ -65,5 +64,16 @@ public record VolunteerShiftStatusEvent(VolunteerShift data, VolunteerShiftStatu
     @Override
     public Long reviewerId() {
         return data.getAssignerId();
+    }
+
+    private String volunteerShiftStatus(VolunteerShiftStatus status) {
+        return switch (status) {
+            case ASSIGNED -> "已分配";
+            case CONFIRMED -> "已确认";
+            case IN_PROGRESS -> "执行中";
+            case COMPLETED -> "已完成";
+            case CANCELLED -> "已取消";
+            case ABSENT -> "缺勤";
+        };
     }
 }
