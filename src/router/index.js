@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
+import ArticleHubView from '../views/ArticleHubView.vue'
 import AuthView from '../views/AuthView.vue'
 import HomeView from '../views/HomeView.vue'
 import PetDirectoryView from '../views/PetDirectoryView.vue'
@@ -22,6 +23,11 @@ const router = createRouter({
       path: '/pets',
       name: 'pets',
       component: PetDirectoryView,
+    },
+    {
+      path: '/articles',
+      name: 'articles',
+      component: ArticleHubView,
     },
     {
       path: '/console',

@@ -1,6 +1,7 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 import { ArrowRight } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   articles: {
@@ -8,6 +9,12 @@ const props = defineProps({
     required: true,
   },
 })
+
+const router = useRouter()
+
+function goToArticles() {
+  router.push('/articles')
+}
 </script>
 
 <template>
@@ -33,7 +40,7 @@ const props = defineProps({
                 <Icon :icon="article.icon" />
                 {{ article.reading }}
               </span>
-              <el-button text type="warning" class="card-link">
+              <el-button text type="warning" class="card-link" @click="goToArticles">
                 阅读全文
                 <el-icon><ArrowRight /></el-icon>
               </el-button>
@@ -45,6 +52,9 @@ const props = defineProps({
           </div>
         </el-card>
       </article>
+    </div>
+    <div class="section-action">
+      <el-button class="soft-btn" size="large" @click="goToArticles">查看公益文章中心</el-button>
     </div>
   </section>
 </template>

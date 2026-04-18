@@ -1,6 +1,7 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 import { ArrowRight } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   activities: {
@@ -8,6 +9,12 @@ const props = defineProps({
     required: true,
   },
 })
+
+const router = useRouter()
+
+function goToArticles() {
+  router.push('/articles')
+}
 </script>
 
 <template>
@@ -35,13 +42,16 @@ const props = defineProps({
                 {{ item.location }}
               </span>
             </div>
-            <el-button text type="warning" class="card-link">
+            <el-button text type="warning" class="card-link" @click="goToArticles">
               查看活动详情
               <el-icon><ArrowRight /></el-icon>
             </el-button>
           </div>
         </el-card>
       </article>
+    </div>
+    <div class="section-action">
+      <el-button class="soft-btn" size="large" @click="goToArticles">查看全部活动与故事</el-button>
     </div>
   </section>
 </template>
