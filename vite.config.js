@@ -9,10 +9,16 @@ export default defineConfig(({ mode }) => {
     plugins: [vue()],
     server: {
       proxy: {
-        '/user': {
-          target: env.VITE_PROXY_TARGET || 'http://localhost:8080',
-          changeOrigin: true,
-        },
+        '/auth': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/users': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/pets': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/publicity': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/volunteers': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/lost': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/medical': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/items': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/tasks': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
+        '/notices': { target: env.VITE_PROXY_TARGET || 'http://localhost:8080', changeOrigin: true },
       },
     },
   }

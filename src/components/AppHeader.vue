@@ -1,7 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowDown, House } from '@element-plus/icons-vue'
+import { useUserStore } from '../stores/user'
 
 const props = defineProps({
   navItems: {
@@ -13,22 +14,42 @@ const props = defineProps({
 const emit = defineEmits(['navigate'])
 const menuOpen = ref(false)
 const router = useRouter()
+const userStore = useUserStore()
+const actionButtonText = computed(() => (userStore.isLoggedIn ? '个人空间' : '立即加入'))
 
 function handleNavigate(id) {
+  const target = props.navItems.find((item) => item.id === id)
+  if (target?.to) {
+    router.push(target.to)
+    menuOpen.value = false
+    return
+  }
   emit('navigate', id)
   menuOpen.value = false
 }
 
-function goLogin() {
+function goHome() {
+  router.push('/')
+}
+
+function handleActionClick() {
   menuOpen.value = false
-  router.push('/login')
+  if (userStore.isLoggedIn) {
+    router.push('/console')
+    return
+  }
+  const redirect = router.currentRoute.value.fullPath || '/'
+  router.push({
+    path: '/login',
+    query: { redirect },
+  })
 }
 </script>
 
 <template>
   <header class="site-header">
     <div class="nav-card">
-      <div class="brand">
+      <button class="brand brand-button" type="button" @click="goHome">
         <span class="brand-mark" aria-hidden="true">
           <el-icon><House /></el-icon>
         </span>
@@ -36,7 +57,7 @@ function goLogin() {
           <strong>暖窝救助</strong>
           <small><span class="top-strip-right">24h 救助热线：400-820-1314</span></small>
         </div>
-      </div>
+      </button>
 
       <nav class="desktop-nav" aria-label="主导航">
         <button
@@ -51,8 +72,8 @@ function goLogin() {
       </nav>
 
       <div class="nav-action">
-        <el-button class="nav-btn" type="warning" @click="goLogin">
-          立即加入
+        <el-button class="nav-btn" type="warning" @click="handleActionClick">
+          {{ actionButtonText }}
         </el-button>
         <button
           class="mobile-toggle"

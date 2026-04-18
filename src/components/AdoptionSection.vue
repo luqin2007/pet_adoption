@@ -1,5 +1,6 @@
 <script setup>
 import { ArrowRight, Calendar, LocationInformation } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   pets: {
@@ -7,6 +8,12 @@ const props = defineProps({
     required: true,
   },
 })
+
+const router = useRouter()
+
+function goToPets() {
+  router.push('/pets')
+}
 </script>
 
 <template>
@@ -27,13 +34,16 @@ const props = defineProps({
               <span><el-icon><Calendar /></el-icon>{{ pet.age }}</span>
               <span><el-icon><LocationInformation /></el-icon>{{ pet.city }}</span>
             </div>
-            <el-button text type="warning" class="card-link">
-              预约见面
+            <el-button text type="warning" class="card-link" @click="goToPets">
+              查看详情
               <el-icon><ArrowRight /></el-icon>
             </el-button>
           </div>
         </el-card>
       </article>
+    </div>
+    <div class="section-action">
+      <el-button class="soft-btn" size="large" @click="goToPets">查看全部待领养宠物</el-button>
     </div>
   </section>
 </template>
