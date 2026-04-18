@@ -22,6 +22,7 @@ public class PetQueryParams implements IParam, IValidatedRequest {
     private Set<String> breed;
     private Set<String> status;
     private String name; // like name, description
+    private Boolean isDiscard;
 
     // Location
     private String province;

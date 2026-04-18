@@ -3,7 +3,6 @@ package com.example.backend.mapper;
 import com.example.backend.dto.LostPetQueryParams;
 import com.example.backend.entity.Location;
 import com.example.backend.entity.LostPet;
-import com.example.backend.entity.Pet;
 import com.example.backend.entity.property.LostPetStatus;
 import com.example.backend.entity.query.LostPetLocation;
 import com.example.backend.util.MPJLambdaQuery;

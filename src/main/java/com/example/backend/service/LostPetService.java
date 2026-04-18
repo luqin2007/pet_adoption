@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
 
     private final LostPetLocationMapper lostPetLocationMapper;
     private final LostPetClaimMapper lostPetClaimMapper;
+    private final LostPetMismatchMapper lostPetMismatchMapper;
     private final PetMapper petMapper;
     private final PetLocationMapper petLocationMapper;
 
@@ -79,12 +81,8 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         // 转移临时文件
         fileService.saveTempMedias(lostPetFileKey, uuid, lostPet, LOST_PET);
         eventPublisher.publishEvent(new LostPetAddEvent(lostPet, login, location));
-
-        // 查找可能的宠物
-        PetQueryParams params = request.createQuery();
-        PageParams page = new PageParams();
-        Page<PetResponse> pets = petService.getPets(params, page);
-        return buildLostPetResponse(lostPet, login, location, pets.getRecords());
+        List<PetResponse> similarPets = buildSimilarPetResponses(lostPet, location);
+        return buildLostPetResponse(lostPet, login, location, similarPets);
     }
 
     /**
@@ -123,11 +121,41 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         lostPetLocationMapper.updateById(location);
         eventPublisher.publishEvent(new LostPetUpdateEvent(lostPet, login, location));
 
-        // 查找可能的宠物
-        PetQueryParams params = request.createQuery();
-        PageParams page = new PageParams();
-        Page<PetResponse> pets = petService.getPets(params, page);
-        return buildLostPetResponse(lostPet, login, location, pets.getRecords());
+        List<PetResponse> similarPets = buildSimilarPetResponses(lostPet, location);
+        return buildLostPetResponse(lostPet, login, location, similarPets);
+    }
+
+    /**
+     * 查看相似流浪宠物
+     */
+    public List<PetResponse> getSimilarPets(Long lostPetId) {
+        User login = requireLoginUser();
+        LostPet lostPet = requireById(lostPetId);
+        requirePermission(login.is(lostPet.getOwnerId()) || login.isWorker());
+        Location location = lostPetLocationMapper.selectById(lostPet.getId());
+        return buildSimilarPetResponses(lostPet, location);
+    }
+
+    /**
+     * 标记某只流浪宠物不是自己丢失的宠物
+     */
+    @Transactional
+    public List<PetResponse> markPetMismatch(Long lostPetId, Long petId) {
+        User login = requireLoginUser();
+        LostPet lostPet = requireById(lostPetId);
+        requirePermission(login.is(lostPet.getOwnerId()) || login.isWorker());
+
+        if (!lostPetMismatchMapper.queryByLostPetAndPet(lostPetId, petId).exists()) {
+            LostPetMismatch mismatchEntity = new LostPetMismatch(null,
+                    lostPetId,
+                    petId,
+                    login.getId(),
+                    new Date());
+            lostPetMismatchMapper.insert(mismatchEntity);
+        }
+
+        Location location = lostPetLocationMapper.selectById(lostPet.getId());
+        return buildSimilarPetResponses(lostPet, location);
     }
 
     /**
@@ -288,6 +316,66 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
                 User::getId, User::getUsername, User::getAvatar)
                 : null;
         return LostPetClaimResponse.create(claim, lostPet, applicant, reviewer);
+    }
+
+    public List<Pet> listMatchedPets(LostPet lostPet, Location location) {
+        if (lostPet == null || location == null
+                || lostPet.getStatus() != LostPetStatus.SEARCHING) { // 丢失宠物已找到或关闭
+            return List.of();
+        }
+
+        // 排除宠物
+        Set<Long> ignoredPetIds = lostPetMismatchMapper.queryByLostPet(lostPet.getId())
+                .list(LostPetMismatch::getPetId)
+                .collect(Collectors.toSet());
+
+        // 可能宠物
+        Set<Long> petIds = petLocationMapper.queryLostPets(location, lostPet.getLostTime(), ignoredPetIds)
+                .list(Location::getParentId)
+                .collect(Collectors.toSet());
+
+        if (petIds.isEmpty()) {
+            return List.of();
+        }
+
+        return petMapper.selectList(petIds).stream()
+                .filter(lostPet::matchPet)
+                .toList();
+    }
+
+    public List<LostPet> listMatchedLostPets(Pet pet, Location location) {
+        if (location == null || pet == null
+                || Boolean.TRUE.equals(pet.getIsDiscard()) // 宠物记录已废弃
+                || !pet.getStatus().isAdoptable()) { // 宠物可被收养
+            return List.of();
+        }
+
+        // 排除宠物
+        Set<Long> ignoredIds = lostPetMismatchMapper.queryByPet(pet.getId())
+                .list(LostPetMismatch::getLostPetId)
+                .collect(Collectors.toSet());
+
+        // 可能宠物
+        Set<Long> lostPetIds = lostPetLocationMapper.queryLostPets(location, ignoredIds)
+                .list(Location::getParentId)
+                .collect(Collectors.toSet());
+
+        if (lostPetIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 可能宠物
+        return baseMapper.filterLostPet(lostPetIds, location.getCreateTime())
+                .list().stream()
+                .filter(pet::matchPet)
+                .toList();
+    }
+
+    private List<PetResponse> buildSimilarPetResponses(LostPet lostPet, Location location) {
+        return listMatchedPets(lostPet, location).stream()
+                .map(Pet::getId)
+                .map(petService::getPet)
+                .toList();
     }
 
     @Autowired

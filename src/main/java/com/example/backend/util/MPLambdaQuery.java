@@ -31,10 +31,10 @@ public class MPLambdaQuery<T extends IId> {
         // 去重
         Set<?> set = values instanceof Set
                 ? (Set<?>) values
-                : Set.of(values);
+                : new HashSet<>(values);
         query
                 .eq(set.size() == 1, column, set.iterator().next())
-                .in(set.size() != 1, column, set);
+                .in(set.size() > 1, column, set);
         return this;
     }
 
@@ -51,7 +51,7 @@ public class MPLambdaQuery<T extends IId> {
                 .collect(Collectors.toSet());
         query
                 .eq(set.size() == 1, column, set.iterator().next())
-                .in(set.size() != 1, column, set);
+                .in(set.size() > 1, column, set);
         return this;
     }
 
@@ -74,6 +74,19 @@ public class MPLambdaQuery<T extends IId> {
         query
                 .ge(value0 != null, column, value0)
                 .le(value1 != null, column, value1);
+        return this;
+    }
+
+    public <V> MPLambdaQuery<T> notIn(SFunction<T, ?> column, Collection<V> values) {
+        if (values == null) return this;
+
+        // 去重
+        Set<?> set = values instanceof Set
+                ? (Set<?>) values
+                : new HashSet<>(values);
+        query
+                .ne(set.size() == 1, column, set.iterator().next())
+                .notIn(set.size() > 1, column, set);
         return this;
     }
 
@@ -139,6 +152,8 @@ public class MPLambdaQuery<T extends IId> {
         query.select(columns);
         return this;
     }
+
+    // --------------------------
 
     public Page<T> page(PageParams pageRequest) {
         Page<T> page = pageRequest.createPage();

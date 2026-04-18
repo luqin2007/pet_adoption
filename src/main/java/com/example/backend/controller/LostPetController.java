@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 走失宠物报备模块<br>
  * - 走失报备 ( √ × )<br>
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
  * ---- 获取走失宠物：getLostPet ( √ × )<br>
  * ---- 查询走失宠物：getLostPets ( √ × )<br>
  * ---- 修改走失宠物：updateLostPet ( √ × )<br>
+ * ---- 查看相似流浪宠物：getSimilarPets ( √ × )<br>
+ * ---- 标记宠物不是自己丢失的宠物：markPetMismatch ( √ × )<br>
  * - 认领申请 ( √ × )<br>
  * ---- 发起认领申请：addClaim ( √ × )<br>
  * ---- 获取认领申请：getClaim ( √ × )<br>
@@ -79,6 +83,25 @@ public class LostPetController {
     public Result<LostPetResponse> updateLostPet(@PathVariable("id") Long lostPetId,
                                                  @Valid @RequestBody LostPetUpdateRequest request) {
         LostPetResponse response = lostPetService.updateLostPet(lostPetId, request);
+        return Result.success(response);
+    }
+
+    /**
+     * 查看相似流浪宠物
+     */
+    @GetMapping("/pets/{id}/similar")
+    public Result<List<PetResponse>> getSimilarPets(@PathVariable("id") Long lostPetId) {
+        List<PetResponse> response = lostPetService.getSimilarPets(lostPetId);
+        return Result.success(response);
+    }
+
+    /**
+     * 标记某不是丢失的宠物
+     */
+    @PostMapping("/pets/{id}/mismatch/{pid}")
+    public Result<List<PetResponse>> markPetMismatch(@PathVariable("id") Long lostPetId,
+                                                     @PathVariable("pid") Long petId) {
+        List<PetResponse> response = lostPetService.markPetMismatch(lostPetId, petId);
         return Result.success(response);
     }
 

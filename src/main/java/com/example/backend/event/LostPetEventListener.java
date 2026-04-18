@@ -4,20 +4,15 @@ import com.example.backend.entity.Location;
 import com.example.backend.entity.LostPet;
 import com.example.backend.entity.LostPetClaim;
 import com.example.backend.entity.Pet;
-import com.example.backend.entity.property.LostPetStatus;
 import com.example.backend.entity.property.NoticeSource;
-import com.example.backend.mapper.LostPetLocationMapper;
 import com.example.backend.mapper.LostPetMapper;
-import com.example.backend.mapper.PetLocationMapper;
-import com.example.backend.mapper.PetMapper;
+import com.example.backend.service.LostPetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("unchecked")
 @Component
@@ -25,9 +20,7 @@ import java.util.stream.Collectors;
 public class LostPetEventListener extends BaseEventListener {
 
     private final LostPetMapper lostPetMapper;
-    private final PetMapper petMapper;
-    private final PetLocationMapper petLocationMapper;
-    private final LostPetLocationMapper lostPetLocationMapper;
+    private final LostPetService lostPetService;
 
     @TransactionalEventListener
     public void onClaimAdd(LostPetClaimAddEvent event) {
@@ -58,19 +51,11 @@ public class LostPetEventListener extends BaseEventListener {
     }
 
     private void compareLostPet(LostPet lostPet, Location location) {
-        if (lostPet.getStatus() == LostPetStatus.SEARCHING) {
-            Set<Long> petIds = petLocationMapper.queryByLocation(location, lostPet.getLostTime())
-                    .list(Location::getParentId)
-                    .collect(Collectors.toSet());
-            List<Pet> pets = petMapper.selectList(petIds).stream()
-                    .filter(pet -> !Boolean.TRUE.equals(pet.getIsDiscard()) && pet.getStatus().isAdoptable())
-                    .filter(pet -> pet.matchPet(lostPet))
-                    .toList();
-            if (!pets.isEmpty()) {
-                String title = langHelper.get("notification.lost_pet_match.title");
-                String content = langHelper.get("notification.lost_pet_match.content", pets.size(), lostPet.getName());
-                notify(null, List.of(lostPet.getOwnerId()), NoticeSource.PET_RECORD, title, content);
-            }
+        List<Pet> pets = lostPetService.listMatchedPets(lostPet, location);
+        if (!pets.isEmpty()) {
+            String title = langHelper.get("notification.lost_pet_match.title");
+            String content = langHelper.get("notification.lost_pet_match.content", pets.size(), lostPet.getName());
+            notify(null, List.of(lostPet.getOwnerId()), NoticeSource.PET_RECORD, title, content);
         }
     }
 }

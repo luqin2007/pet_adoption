@@ -5,10 +5,9 @@ import com.example.backend.entity.LostPet;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
 import com.example.backend.entity.property.NoticeSource;
-import com.example.backend.mapper.LostPetLocationMapper;
-import com.example.backend.mapper.LostPetMapper;
 import com.example.backend.mapper.PetLocationMapper;
 import com.example.backend.mapper.PetMapper;
+import com.example.backend.service.LostPetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -24,8 +23,7 @@ public class PetEventListener extends BaseEventListener {
 
     private final PetMapper petMapper;
     private final PetLocationMapper petLocationMapper;
-    private final LostPetLocationMapper lostPetLocationMapper;
-    private final LostPetMapper lostPetMapper;
+    private final LostPetService lostPetService;
 
     @TransactionalEventListener
     public void onPetAdd(PetAddEvent event) {
@@ -55,21 +53,14 @@ public class PetEventListener extends BaseEventListener {
     }
 
     private void comparePet(Pet pet, Location location) {
-        if (!Boolean.TRUE.equals(pet.getIsDiscard()) && pet.getStatus().isAdoptable()) {
-            Set<Long> lostPetIds = lostPetLocationMapper.queryByLocation(location)
-                    .list(Location::getParentId)
+        List<LostPet> pets = lostPetService.listMatchedLostPets(pet, location);
+        if (!pets.isEmpty()) {
+            Set<Long> ownerIds = pets.stream()
+                    .map(LostPet::getOwnerId)
                     .collect(Collectors.toSet());
-            List<LostPet> pets = lostPetMapper.filterLostPet(lostPetIds, location.getCreateTime()).list().stream()
-                    .filter(pet::matchPet)
-                    .toList();
-            if (!pets.isEmpty()) {
-                Set<Long> ownerIds = pets.stream()
-                        .map(LostPet::getOwnerId)
-                        .collect(Collectors.toSet());
-                String title = langHelper.get("notification.lost_pet_match.title");
-                String content = langHelper.get("notification.lost_pet_match.content", pets.size());
-                notify(null, ownerIds, NoticeSource.PET_RECORD, title, content);
-            }
+            String title = langHelper.get("notification.lost_pet_match.title");
+            String content = langHelper.get("notification.lost_pet_match.content", pets.size());
+            notify(null, ownerIds, NoticeSource.PET_RECORD, title, content);
         }
     }
 }

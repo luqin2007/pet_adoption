@@ -18,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.backend.entity.property.ParentType.PET;
@@ -75,6 +72,10 @@ public class PetService extends BaseService<PetMapper, Pet> {
      * 获取流浪宠物列表
      */
     public Page<PetResponse> getPets(PetQueryParams paramRequest, PageParams pageRequest) {
+        Optional<User> login = getLoginUser();
+        if (login.isEmpty() || !login.get().isWorker())
+            paramRequest.setIsDiscard(Boolean.FALSE);
+
         Page<PetLocations> result = baseMapper.queryByParams(paramRequest).page(pageRequest);
         Set<Long> petIds = result.getRecords().stream().map(Pet::getId).collect(Collectors.toSet());
         Map<Long, User> users = userService.groupById(

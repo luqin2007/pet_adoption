@@ -5,6 +5,7 @@ import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Date;
+import java.util.Set;
 
 /**
  * 索引：<br>
@@ -18,16 +19,13 @@ public interface PetLocationMapper extends IBaseMapper<Location> {
         return lambdaQuery().eq(Location::getParentId, petId);
     }
 
-    /**
-     * 返回：[(parentId)]
-     */
-    default MPLambdaQuery<Location> queryByLocation(Location location, Date minTime) {
+    default MPLambdaQuery<Location> queryLostPets(Location location, Date minTime, Set<Long> ignoredIds) {
         return lambdaQuery()
                 .eq(Location::getProvince, location.getProvince())
                 .eq(location.getCity() != null, Location::getCity, location.getCity())
                 .eq(location.getDistrict() != null, Location::getDistrict, location.getDistrict())
                 .in(Location::getCreateTime, minTime, null)
-                .select(Location::getParentId);
+                .notIn(Location::getId, ignoredIds);
     }
 
     @Override
