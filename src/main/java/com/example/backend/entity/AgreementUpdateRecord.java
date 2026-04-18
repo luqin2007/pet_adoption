@@ -38,12 +38,6 @@ public class AgreementUpdateRecord implements IId {
     private AgreementUpdateType type;
 
     /**
-     * 更新状态
-     * *非空 varchar(20)*
-     */
-    private AgreementUpdateStatus status;
-
-    /**
      * 创建时间
      * *非空 datetime*
      */
@@ -54,7 +48,6 @@ public class AgreementUpdateRecord implements IId {
         this.agreementId = agreement.getId();
         this.content = agreement.getContent();
         this.type = type;
-        this.status = AgreementUpdateStatus.START;
         this.createTime = new Date();
     }
 }

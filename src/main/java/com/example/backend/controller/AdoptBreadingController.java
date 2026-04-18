@@ -24,19 +24,24 @@ import java.util.List;
  * ---- 查找寄养申请 getBreadingApplications ( √ × )<br>
  * ---- 更新寄养状态 updateBreadingApplicationStatus ( √ × )<br>
  * - 协议签订 ( √ × )<br>
+ * ---- 准备起草协议 beginAgreement ( √ × )<br>
+ * ---- 上传协议图片（起草阶段） uploadAgreementWhenAdd ( √ × )<br>
+ * ---- 删除协议图片（起草阶段） deleteAgreementWhenAdd ( √ × )<br>
  * ---- 起草协议 addAgreement ( √ × )<br>
  * ---- 修改协议 updateAgreement ( √ × )<br>
- * ---- 上传协议扫描件 uploadAgreement ( √ × )<br>
+ * ---- 上传协议图片（已有协议） uploadAgreement ( √ × )<br>
+ * ---- 删除协议图片（已有协议） deleteAgreementFile ( √ × )<br>
+ * ---- 调整协议顺序（已有协议） reorderAgreementFiles ( √ × )<br>
  * ---- 协议签订 signAgreement ( √ × )<br>
  * ---- 获取协议 getAgreement ( √ × )<br>
  * ---- 查找协议 getAgreements ( √ × )<br>
  * - 后续跟踪 ( √ × )<br>
- * ---- 创建跟踪任务 addFollowTask ( √ × )<br>
- * ---- 更新跟踪任务 updateFollowTask ( √ × )<br>
- * ---- 查询跟踪任务 getFollowTasks ( √ × )<br>
- * ---- 获取跟踪任务 getFollowTask ( √ × )<br>
- * ---- 提交跟踪记录 addFollowRecord ( √ × )<br>
- * ---- 获取跟踪记录 getFollowRecords ( √ × )<br>
+ * ---- 创建回访任务 addFollowTask ( √ × )<br>
+ * ---- 更新回访任务 updateFollowTask ( √ × )<br>
+ * ---- 查询回访任务 getFollowTasks ( √ × )<br>
+ * ---- 获取回访任务 getFollowTask ( √ × )<br>
+ * ---- 提交回访记录 addFollowRecord ( √ × )<br>
+ * ---- 获取回访记录 getFollowRecords ( √ × )<br>
  * ---- 观察寄养宠物 observeBreadingPet ( TODO × )
  */
 @Validated
@@ -122,6 +127,35 @@ public class AdoptBreadingController {
     }
 
     /**
+     * 准备起草协议
+     */
+    @PutMapping("/agreement")
+    public Result<String> beginAgreement() {
+        String uuid = adoptBreadingService.beginAgreement();
+        return Result.success(uuid);
+    }
+
+    /**
+     * 起草阶段上传协议扫描件
+     */
+    @PostMapping("/agreement/upload/{_id}")
+    public Result<String> uploadAgreementWhenAdd(@PathVariable("_id") String uuid,
+                                                 @RequestParam("file") MultipartFile file) {
+        String response = adoptBreadingService.uploadAgreementFile(uuid, file);
+        return Result.success(response);
+    }
+
+    /**
+     * 起草阶段删除协议扫描件
+     */
+    @DeleteMapping("/agreement/upload/{_id}/{name}")
+    public Result<Void> deleteAgreementWhenAdd(@PathVariable("_id") String uuid,
+                                               @PathVariable("name") String filename) {
+        adoptBreadingService.deleteAgreementFile(uuid, filename);
+        return Result.success();
+    }
+
+    /**
      * 起草协议
      */
     @PostMapping("/agreement")
@@ -141,12 +175,32 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 上传协议扫描件
+     * 上传协议图片
      */
     @PostMapping("/agreement/{id}/files")
     public Result<List<AgreementFileResponse>> uploadAgreement(@PathVariable("id") Long agreementId,
                                                                @Valid @ModelAttribute AgreementFilesUploadTable files) {
         List<AgreementFileResponse> response = adoptBreadingService.uploadAgreement(agreementId, files);
+        return Result.success(response);
+    }
+
+    /**
+     * 删除协议图片
+     */
+    @DeleteMapping("/agreement/{id}/files/{fid}")
+    public Result<List<AgreementFileResponse>> deleteAgreementFile(@PathVariable("id") Long agreementId,
+                                                                   @PathVariable("fid") Long fileId) {
+        List<AgreementFileResponse> response = adoptBreadingService.deleteAgreementFile(agreementId, fileId);
+        return Result.success(response);
+    }
+
+    /**
+     * 调整协议顺序
+     */
+    @PutMapping("/agreement/{id}/files/order")
+    public Result<List<AgreementFileResponse>> reorderAgreementFiles(@PathVariable("id") Long agreementId,
+                                                                     @Valid @RequestBody AgreementFilesOrderRequest request) {
+        List<AgreementFileResponse> response = adoptBreadingService.reorderAgreementFiles(agreementId, request);
         return Result.success(response);
     }
 
@@ -179,7 +233,7 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 创建跟踪任务
+     * 创建回访任务
      */
     @PostMapping("/follow/adopt/{id}")
     public Result<FollowTaskResponse> addFollowTask(@PathVariable("id") Long applicationId,
@@ -189,7 +243,7 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 更新跟踪任务
+     * 更新回访任务
      */
     @PutMapping("/follow/{id}")
     public Result<FollowTaskResponse> updateFollowTask(@PathVariable("id") Long taskId,
@@ -199,7 +253,7 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 获取跟踪任务
+     * 获取回访任务
      */
     @GetMapping("/follow/{id}")
     public Result<FollowTaskResponse> getFollowTask(@PathVariable("id") Long taskId) {
@@ -208,7 +262,7 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 查询跟踪任务
+     * 查询回访任务
      */
     @GetMapping("/follow")
     public Result<Page<FollowTaskResponse>> getFollowTasks(@Valid FollowTaskQueryParams query, PageParams page) {
@@ -217,7 +271,7 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 提交跟踪记录
+     * 提交回访记录
      */
     @PostMapping("/follow/{id}/record")
     public Result<FollowRecordResponse> addFollowRecord(@PathVariable("id") Long taskId,
@@ -227,7 +281,7 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 获取跟踪记录
+     * 获取回访记录
      */
     @GetMapping("/follow/{id}/record")
     public Result<Page<FollowRecordResponse>> getFollowRecords(@PathVariable("id") Long taskId, PageParams page) {
@@ -236,7 +290,7 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 查询跟踪记录
+     * 查询回访记录
      */
     @GetMapping("/follow/record")
     public Result<Page<FollowRecordResponse>> getFollowRecords(@Valid FollowRecordQueryParams query, PageParams page) {

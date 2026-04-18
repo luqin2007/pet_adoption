@@ -247,7 +247,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         PetStatusRecord record = request.create(pet, login.getId());
         baseMapper.updateStatus(petId, record.getTo()).update();
         petStatusRecordMapper.insert(record);
-        eventPublisher.publishEvent(new PetStatusChangeEvent(record));
+        eventPublisher.publishEvent(new PetStatusChangeEvent(record, login));
         String cover = fileService.getCoverUrl(petId, PET);
         return PetStatusRecordResponse.create(record, pet, cover, login);
     }

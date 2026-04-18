@@ -270,7 +270,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         }
 
         // 通知申请人
-        eventPublisher.publishEvent(new LostPetClaimApproveEvent(claim));
+        eventPublisher.publishEvent(new LostPetClaimApproveEvent(claim, login));
         return buildClaimResponse(claim);
     }
 

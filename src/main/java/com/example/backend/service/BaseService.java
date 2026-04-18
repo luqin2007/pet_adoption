@@ -6,16 +6,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.example.backend.entity.IId;
 import com.example.backend.mapper.IBaseMapper;
-import com.example.backend.util.IValidates;
-import com.example.backend.util.RedisHelper;
-import com.example.backend.util.ServiceException;
-import com.example.backend.util.StringUtils;
+import com.example.backend.util.*;
 import com.github.yulichang.base.MPJBaseServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.ObjectMapper;
 
@@ -30,7 +25,7 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
     protected RedisHelper redisHelper;
     protected ApplicationEventPublisher eventPublisher;
     protected ObjectMapper objectMapper;
-    protected MessageSource messageSource;
+    protected LangHelper langHelper;
     protected TransactionTemplate transactionTemplate;
 
     @Value("${application.key_timeout}")
@@ -51,12 +46,6 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
             throw ServiceException.invalidate("exception.invalidate.request_timeout");
         redisHelper.expireString(redisKey, keyTimeout);
         return redisKey;
-    }
-
-    // message
-
-    public String getMessage(String key, Object... params) {
-        return messageSource.getMessage(key, params, LocaleContextHolder.getLocale());
     }
 
     // --- page
@@ -151,12 +140,12 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
     public void setObjects(RedisHelper redisHelper, // redis
                            ApplicationEventPublisher eventPublisher, // 事件
                            ObjectMapper objectMapper, // json
-                           MessageSource messageSource, // i18n
+                           LangHelper langs, // i18n
                            TransactionTemplate transactionTemplate) { // transaction
         this.redisHelper = redisHelper;
         this.eventPublisher = eventPublisher;
         this.objectMapper = objectMapper;
-        this.messageSource = messageSource;
+        this.langHelper = langs;
         this.transactionTemplate = transactionTemplate;
     }
 }

@@ -10,8 +10,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
-
 @Component
 @RequiredArgsConstructor
 public class MailSendEventListener {
@@ -25,8 +23,7 @@ public class MailSendEventListener {
     @EventListener(MailSendEvent.class)
     public void onMailSend(MailSendEvent event) {
         // 检查邮件
-        String[] addresses = Set.of(event.addresses())
-                .stream()
+        String[] addresses = event.emails().stream()
                 .filter(StringUtils::hasText)
                 .filter(address -> address.contains("@"))
                 .toArray(String[]::new);

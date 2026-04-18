@@ -115,7 +115,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         // 更新用户身份
         login.setRole(login.getRole() | UserRole.DONOR.getSetMask());
         userService.updateById(login);
-        eventPublisher.publishEvent(new DonationAddEvent(donation, items));
+        eventPublisher.publishEvent(new DonationAddEvent(donation, items, login));
         return itemDonationFacade.buildDonationResponse(donation, items, files, login);
     }
 
@@ -139,7 +139,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         donationItemMapper.queryByDonation(donationId).delete();
         donationItemMapper.insert(items);
 
-        eventPublisher.publishEvent(new DonationUpdateEvent(donation, items));
+        eventPublisher.publishEvent(new DonationUpdateEvent(donation, items, login));
         return itemDonationFacade.buildDonationResponse(donation, items, null, null);
     }
 
@@ -162,7 +162,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         DonationStatusUpdateRecord updateRecord = request.create(donation, login.getId());
         donationStatusUpdateMapper.insert(updateRecord);
         donationMapper.updateStatus(donationId, status).update();
-        eventPublisher.publishEvent(new DonationStatusEvent(donation, updateRecord));
+        eventPublisher.publishEvent(new DonationStatusEvent(donation, updateRecord, login));
         return itemDonationFacade.buildDonationResponse(donation, null, null, null);
     }
 

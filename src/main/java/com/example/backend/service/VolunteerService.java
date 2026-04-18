@@ -8,6 +8,7 @@ import com.example.backend.event.VolunteerRecordAddEvent;
 import com.example.backend.event.VolunteerRecordStatusEvent;
 import com.example.backend.event.VolunteerShiftAddEvent;
 import com.example.backend.event.VolunteerShiftStatusEvent;
+import com.example.backend.event.VolunteerShiftUpdateEvent;
 import com.example.backend.facade.VolunteerFacade;
 import com.example.backend.mapper.*;
 import com.example.backend.util.ServiceException;
@@ -273,7 +274,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         checkVolunteerActive(shift.getVolunteerId());
         checkTimeConflict(shift, shiftId);
         volunteerShiftMapper.updateById(shift);
-        eventPublisher.publishEvent(new VolunteerShiftAddEvent(shift, login));
+        eventPublisher.publishEvent(new VolunteerShiftUpdateEvent(shift, login));
         return volunteerFacade.buildShiftResponse(shift);
     }
 
@@ -295,7 +296,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         request.applyTo(shift);
         volunteerShiftMapper.updateById(shift);
         volunteerShiftStatusRecordMapper.insert(record);
-        eventPublisher.publishEvent(new VolunteerShiftStatusEvent(shift, record));
+        eventPublisher.publishEvent(new VolunteerShiftStatusEvent(shift, record, login));
         return volunteerFacade.buildShiftResponse(shift);
     }
 

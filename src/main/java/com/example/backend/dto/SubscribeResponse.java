@@ -55,22 +55,6 @@ public class SubscribeResponse implements IResponse {
     }
 
     /**
-     * 订阅分类变化<br>
-     * Category: id, name
-     */
-    public static SubscribeResponse createCategory(Subscribe subscribe, Category category) {
-        return new SubscribeResponse(
-                subscribe.getId(),
-                subscribe.getCreateTime(),
-                subscribe.getAction(),
-                String.valueOf(subscribe.getCount()),
-                null, null,
-                category.getId(),
-                category.getName(),
-                null, null, null, null, null);
-    }
-
-    /**
      * 库存变动变化<br>
      * Stock: id, userId, itemId, createTime<br>
      * Item: id, categoryId, name<br>
@@ -132,10 +116,6 @@ public class SubscribeResponse implements IResponse {
             Item item = items.get(subscribe.getElementId());
             Category category = categories.get(item.getCategoryId());
             return SubscribeResponse.createItem(subscribe, item, category);
-        }
-        if (act.bindCategory()) { // CATEGORY_COUNT
-            Category category = categories.get(subscribe.getElementId());
-            return SubscribeResponse.createCategory(subscribe, category);
         }
         if (act.bindStock()) { // IN_STOCK, OUT_STOCK
             Stock stock = stocks.get(subscribe.getElementId());

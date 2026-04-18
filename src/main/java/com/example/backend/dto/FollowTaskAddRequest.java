@@ -24,7 +24,7 @@ public class FollowTaskAddRequest implements IRequest {
                 adoptId,
                 workerId,
                 volunteerId,
-                FollowTaskStatus.PENDING,
+                FollowTaskStatus.CREATE,
                 remark,
                 planTime,
                 now,

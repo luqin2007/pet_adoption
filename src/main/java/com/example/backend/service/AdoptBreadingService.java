@@ -7,27 +7,22 @@ import com.example.backend.entity.property.*;
 import com.example.backend.event.*;
 import com.example.backend.facade.AdoptBreadingFacade;
 import com.example.backend.mapper.*;
-import com.example.backend.util.FileUtils;
 import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.example.backend.entity.property.AdoptBreadingStatus.AGREEMENT_DRAFT;
 import static com.example.backend.entity.property.AdoptBreadingStatus.AGREEMENT_SIGNED;
+import static com.example.backend.entity.property.AgreementType.PAPER;
 import static com.example.backend.entity.property.ParentType.AGREEMENT;
-import static com.example.backend.entity.property.ParentType.AGREEMENT_RECORD;
 
 @SuppressWarnings("unchecked")
 @Service
@@ -48,6 +43,10 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
 
     @Value("${file.upload}")
     private String upload;
+    @Value("${key.agreement.uuid}")
+    private String agreementTemplate;
+    @Value("${key.agreement.file}")
+    private String agreementFileTemplate;
 
     /**
      * 申请领养
@@ -61,7 +60,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         // 保存
         Adopt adopt = request.create(login.getId());
         save(adopt);
-        eventPublisher.publishEvent(new AdoptAddEvent(adopt));
+        eventPublisher.publishEvent(new AdoptAddEvent(adopt, login));
         return adoptBreadingFacade.buildAdoptResponse(adopt);
     }
 
@@ -103,7 +102,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         if (target == AdoptBreadingStatus.PASS || target == AdoptBreadingStatus.REJECT)
             adopt.setReviewTime(now);
         updateById(adopt);
-        eventPublisher.publishEvent(new AdoptStatusEvent(adopt, oldStatus));
+        eventPublisher.publishEvent(new AdoptStatusEvent(adopt, login));
         return adoptBreadingFacade.buildAdoptResponse(adopt);
     }
 
@@ -115,7 +114,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         User login = requireLoginUser();
         Breading breading = request.create(login.getId());
         breadingMapper.insert(breading);
-        eventPublisher.publishEvent(new BreadingAddEvent(breading));
+        eventPublisher.publishEvent(new BreadingAddEvent(breading, login));
         return adoptBreadingFacade.buildBreadingResponse(breading, login);
     }
 
@@ -154,43 +153,57 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         if (target == AdoptBreadingStatus.PASS || target == AdoptBreadingStatus.REJECT)
             breading.setReviewTime(now);
         breadingMapper.updateById(breading);
-        eventPublisher.publishEvent(new BreadingStatusEvent(breading, oldStatus));
+        eventPublisher.publishEvent(new BreadingStatusEvent(breading, login));
         return adoptBreadingFacade.buildBreadingResponse(breading, login);
+    }
+
+    /**
+     * 准备起草协议
+     */
+    public String beginAgreement() {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
+        return beginRedisUuid(agreementTemplate, "");
     }
 
     /**
      * 起草协议
      */
+    @Transactional
     public AgreementResponse addAgreement(AgreementAddRequest request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
+        String uuid = request.getId();
+        if (AgreementType.get(request.getType()) == AgreementType.PAPER) {
+            requireRedisUuid(agreementTemplate, uuid);
+        }
 
         // 保存协议
         Agreement agreement = request.create();
         agreementMapper.insert(agreement);
-        AgreementUpdateRecord updateRecord = new AgreementUpdateRecord(agreement, AgreementUpdateType.CREATE);
-        agreementUpdateRecordMapper.insert(updateRecord);
+        agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.CREATE));
 
-        // 上传文件
-        List<AgreementFile> files;
+        // 转移文件
+        List<String> fileOrders = request.getFileOrder();
+        List<AgreementFile> files = new ArrayList<>(fileOrders.size());
         if (agreement.getType() == AgreementType.PAPER) {
-            AgreementUpdateRecord uploadRecord = new AgreementUpdateRecord(agreement, AgreementUpdateType.UPLOAD);
-            agreementUpdateRecordMapper.insert(uploadRecord);
-            files = uploadAgreementFiles(agreement.getId(), request.getFiles());
-        } else {
-            files = List.of();
+            Map<String, TempFileInfo> fileMap = fileService
+                    .saveTempFiles(agreementFileTemplate, uuid, agreement, AGREEMENT)
+                    .collect(Collectors.toMap(TempFileInfo::getFilename, Function.identity()));
+            for (int i = 0; i < fileOrders.size(); i++) { // 处理页码
+                TempFileInfo file = fileMap.get(fileOrders.get(i));
+                files.add(new AgreementFile(agreement.getId(), file.getFilename(), file.getCreateTime(), i + 1));
+            }
+            agreementFileMapper.insert(files);
         }
 
         // 更新记录状态
-        transactionTemplate.executeWithoutResult(status -> {
-            ParentType parentType = agreement.getParentType();
-            switch (parentType) {
-                case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
-                case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
-                default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
-            }
-            agreementUpdateRecordMapper.updateStatus(updateRecord.getId(), AgreementUpdateStatus.SUCCESS);
-        });
+        ParentType parentType = agreement.getParentType();
+        switch (parentType) {
+            case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
+            case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
+            default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+        }
 
         eventPublisher.publishEvent(new AgreementAddEvent(agreement, files, login));
         return adoptBreadingFacade.buildAgreementResponse(agreement);
@@ -199,88 +212,164 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     /**
      * 修改协议（电子协议）
      */
+    @Transactional
     public AgreementResponse updateAgreement(Long agreementId, AgreementUpdateRequest request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
 
         // 记录旧协议内容
-        AgreementUpdateRecord record = recordAgreementUpdate(agreement);
+        recordAgreementUpdate(agreement);
         request.applyTo(agreement);
         agreementMapper.updateById(agreement);
-        agreementUpdateRecordMapper.updateStatus(record.getId(), AgreementUpdateStatus.SUCCESS);
         eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
         return adoptBreadingFacade.buildAgreementResponse(agreement);
     }
 
     /**
-     * 修改协议（上传纸质扫描件）
+     * 修改协议（为纸质协议上传一张扫描件）
      */
+    @Transactional
     public List<AgreementFileResponse> uploadAgreement(Long agreementId, AgreementFilesUploadTable request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
 
+        // 备份协议数据
         Agreement agreement = agreementMapper.requireById(agreementId);
-        AgreementUpdateRecord record = recordAgreementUpdate(agreement);
+        recordAgreementUpdate(agreement);
+        if (agreement.getType() == AgreementType.ELECTRONIC) { // 切换协议类型
+            agreement.setType(AgreementType.PAPER);
+            agreement.setContent(null);
+        }
+
+        // 更新页码
+        List<AgreementFile> files = agreementFileMapper.queryByAgreement(agreementId).list();
+        int page = request.getPage();
+        require(page >= 1 && page <= files.size() + 1, "request.adopt_breading.agreement.page");
+        files.stream()
+                .filter(file -> file.getPage() >= page)
+                .peek(file -> file.setPage(file.getPage() + 1))
+                .forEach(agreementFileMapper::updateById);
 
         // 上传文件
-        List<Pair<String, Date>> files = fileService.uploadImages(request.getFiles(), agreementId, AGREEMENT);
-        List<AgreementFile> agreementFiles = new ArrayList<>(files.size());
-        for (int i = 0; i < files.size(); ++i) {
-            agreementFiles.add(new AgreementFile(agreementId, files.get(i), i + 1));
-        }
-        agreementFileMapper.insert(agreementFiles);
-        agreementUpdateRecordMapper.updateStatus(record.getId(), AgreementUpdateStatus.SUCCESS);
+        String filename = fileService.uploadImage(request.getFile(), agreementId, AGREEMENT);
+        AgreementFile agreementFile = new AgreementFile(agreementId, filename, page);
+        agreementFileMapper.insert(agreementFile);
 
         // 更新协议
         agreement.setUpdateTime(new Date());
-        agreementMapper.setUpdateTime(agreementId).update();
+        agreementMapper.updateById(agreement);
         eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
-        return agreementFiles.stream()
-                .map(AgreementFileResponse::create)
-                .toList();
+        return listAgreementFileResponses(agreementId);
     }
 
-    /*
-    上传协议图片
+    /**
+     * 准备阶段上传协议扫描件
      */
-    private List<AgreementFile> uploadAgreementFiles(Long agreementId, List<MultipartFile> files) {
-        List<Pair<String, Date>> result = fileService.uploadImages(files, agreementId, AGREEMENT);
-        List<AgreementFile> agreementFiles = new ArrayList<>(files.size());
-        for (int i = 0; i < result.size(); i++) {
-            agreementFiles.add(new AgreementFile(agreementId, result.get(i), i + 1));
+    public String uploadAgreementFile(String uuid, MultipartFile file) {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
+        requireRedisUuid(agreementTemplate, uuid);
+
+        // 上传文件
+        TempFileInfo fileInfo = fileService.uploadTempImage(file, null, uuid, agreementFileTemplate, AGREEMENT);
+        return fileInfo.getFilename();
+    }
+
+    /**
+     * 准备阶段删除协议扫描件
+     */
+    public void deleteAgreementFile(String uuid, String filename) {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
+        requireRedisUuid(agreementTemplate, uuid);
+        fileService.deleteTempFile(agreementFileTemplate, uuid, filename, AGREEMENT);
+    }
+
+    /**
+     * 删除已有协议中的纸质扫描件
+     */
+    @Transactional
+    public List<AgreementFileResponse> deleteAgreementFile(Long agreementId, Long fileId) {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
+
+        Agreement agreement = agreementMapper.requireById(agreementId);
+        requireEqual(PAPER, agreement.getType(), "exception.invalidate.agreement_type");
+        AgreementFile target = agreementFileMapper.requireById(fileId);
+        requireEqual(agreementId, target.getAgreementId(), "exception.not_found.agreement_file");
+        require(target.getPage() != null && target.getPage() > 0, "exception.not_found.agreement_file");
+
+        recordAgreementUpdate(agreement);
+        agreementFileMapper.deleteById(fileId);
+        // 有备份 不实际删除文件
+        // fileService.deleteFile(target.getFilename(), agreementId, AGREEMENT);
+
+        List<AgreementFile> files = agreementFileMapper.queryByAgreement(agreementId).list().stream()
+                .filter(file -> !Objects.equals(file.getId(), fileId))
+                .toList();
+        for (int i = 0; i < files.size(); i++) {
+            files.get(i).setPage(i + 1);
         }
-        agreementFileMapper.insert(agreementFiles);
-        return agreementFiles;
+        agreementFileMapper.updateById(files);
+        agreement.setUpdateTime(new Date());
+        agreementMapper.updateById(agreement);
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
+        return listAgreementFileResponses(agreementId);
+    }
+
+    /**
+     * 调整已有协议中的纸质扫描件顺序
+     */
+    @Transactional
+    public List<AgreementFileResponse> reorderAgreementFiles(Long agreementId, AgreementFilesOrderRequest request) {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
+
+        Agreement agreement = agreementMapper.requireById(agreementId);
+        requireEqual(PAPER, agreement.getType(), "exception.invalidate.agreement_type");
+        List<AgreementFile> files = agreementFileMapper.queryByAgreement(agreementId).list();
+        List<Long> fileOrder = request.getFileOrder();
+        require(fileOrder.size() == files.size(), "request.adopt_breading.agreement.file_order");
+
+        Map<Long, AgreementFile> fileMap = files.stream()
+                .collect(Collectors.toMap(AgreementFile::getId, Function.identity()));
+        require(fileMap.size() == fileOrder.size(), "request.adopt_breading.agreement.file_order");
+        require(fileMap.keySet().containsAll(fileOrder), "request.adopt_breading.agreement.file_order");
+
+        // 更新
+        recordAgreementUpdate(agreement);
+        for (int i = 0; i < fileOrder.size(); i++) {
+            AgreementFile file = fileMap.get(fileOrder.get(i));
+            file.setPage(i + 1);
+        }
+        agreementFileMapper.updateById(files);
+
+        agreement.setUpdateTime(new Date());
+        agreementMapper.updateById(agreement);
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
+        return listAgreementFileResponses(agreementId);
     }
 
     /*
     记录旧协议内容
      */
-    private AgreementUpdateRecord recordAgreementUpdate(Agreement agreement) {
+    private void recordAgreementUpdate(Agreement agreement) {
         AgreementUpdateRecord record = new AgreementUpdateRecord(agreement, AgreementUpdateType.UPDATE);
         if (agreement.getType() == AgreementType.PAPER) {
-            // 纸质协议
-            // 1. 记录协议文件集
+            // 纸质协议 记录协议文件集
             List<AgreementFile> agreementFiles = agreementFileMapper.queryByAgreement(agreement.getId()).list();
             record.setContent(objectMapper.writeValueAsString(agreementFiles));
             agreementUpdateRecordMapper.insert(record);
-            // 2. 备份协议文件
-            Path path = FileUtils.generatePath(upload, AGREEMENT, agreement.getId());
-            Path newPath = FileUtils.generatePath(upload, AGREEMENT_RECORD, record.getId());
-            FileUtils.copyDirectory(path, newPath);
-            FileUtils.deleteDirectory(path);
-            if (Files.isDirectory(path))
-                throw ServiceException.system("exception.system.agreement.file_transfer_failed");
         } else {
             agreementUpdateRecordMapper.insert(record);
         }
-        return record;
     }
 
     /**
      * 签署协议
      */
+    @Transactional
     public AgreementResponse signAgreement(Long agreementId, MultipartFile sign) {
         User login = requireLoginUser();
         Agreement agreement = agreementMapper.requireById(agreementId);
@@ -296,8 +385,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         else
             throw ServiceException.system("exception.system.agreement.parent_type_invalid");
 
-        AgreementUpdateRecord record = new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN);
-        agreementUpdateRecordMapper.insert(record);
+        agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN));
 
         // 上传文件
         String filename = fileService.uploadImage(sign, agreementId, AGREEMENT);
@@ -312,10 +400,15 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
                 case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
                 default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
             }
-            agreementUpdateRecordMapper.updateStatus(record.getId(), AgreementUpdateStatus.SUCCESS);
         });
         eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
         return adoptBreadingFacade.buildAgreementResponse(agreement);
+    }
+
+    private List<AgreementFileResponse> listAgreementFileResponses(Long agreementId) {
+        return agreementFileMapper.queryByAgreement(agreementId).list().stream()
+                .map(AgreementFileResponse::create)
+                .toList();
     }
 
     /**
@@ -335,7 +428,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     /**
-     * 创建跟踪任务
+     * 创建回访任务
      */
     @Transactional
     public FollowTaskResponse addFollowTask(Long adoptId, FollowTaskAddRequest request) {
@@ -357,19 +450,34 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     /**
-     * 更新跟踪任务
+     * 更新回访任务
      */
     @Transactional
     public FollowTaskResponse updateFollowTask(Long taskId, FollowTaskUpdateRequest request) {
         User login = requireLoginUser();
         FollowTask task = followTaskMapper.requireById(taskId);
-        requirePermission(login.isWorker() || login.is(task.getVolunteerId()));
-        if (!login.isWorker()) {
-            // 以下内容必须由工作人员修改
-            requirePermission(
-                    request.getVolunteerId() == null || Objects.equals(request.getVolunteerId(), task.getVolunteerId()));
-            requirePermission(
-                    request.getPlanTime() == null || Objects.equals(request.getPlanTime(), task.getPlanTime()));
+        FollowTaskStatus status = FollowTaskStatus.get(request.getStatus());
+        requirePermission(login.is(task.getWorkerId()) // 负责工作人员
+                || login.is(task.getVolunteerId()) // 负责志愿者
+                || login.is(task.getAdoptId())); // 领养人：可修改时间
+        if (!login.is(task.getWorkerId())) {
+            /*
+            以下内容必须由工作人员修改：
+            - 志愿者
+            - 负责工作人员
+            - 状态，IN_PROGRESS 除外
+             */
+            requirePermission(Objects.equals(request.getVolunteerId(), task.getVolunteerId()));
+            requirePermission(Objects.equals(request.getWorkerId(), task.getWorkerId()));
+            requirePermission(status == task.getStatus() || status == FollowTaskStatus.IN_PROGRESS);
+        }
+        if (!login.is(task.getVolunteerId())) {
+            /*
+            以下内容必须由负责志愿者修改：
+            - 状态变更为 IN_PROGRESS
+             */
+            requirePermission(status == task.getStatus()
+                    || (task.getStatus() == FollowTaskStatus.NOTIFIED && status == FollowTaskStatus.IN_PROGRESS));
         }
 
         request.applyTo(task);
@@ -379,7 +487,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     /**
-     * 获取跟踪任务
+     * 获取回访任务
      */
     public FollowTaskResponse getFollowTask(Long taskId) {
         FollowTask task = followTaskMapper.requireById(taskId);
@@ -387,7 +495,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     /**
-     * 查询跟踪任务列表
+     * 查询回访任务列表
      */
     public Page<FollowTaskResponse> getFollowTasks(FollowTaskQueryParams query, PageParams page) {
         Page<FollowTask> result = followTaskMapper.queryByRequest(query).page(page);
@@ -395,7 +503,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     /**
-     * 创建跟踪记录
+     * 创建回访记录
      */
     @Transactional
     public FollowRecordResponse addFollowRecord(Long taskId, FollowRecordAddRequest request) {
@@ -404,21 +512,20 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         FollowTask task = followTaskMapper.requireById(taskId,
                 FollowTask::getStatus);
         requireEqual(FollowTaskStatus.IN_PROGRESS, task.getStatus(), "exception.invalidate.follow_task.status_invalid");
-        boolean allowed = login.isWorker() || Objects.equals(task.getVolunteerId(), login.getId());
-        requirePermission(allowed);
+        requirePermission(login.isWorker() || login.is(task.getVolunteerId()));
         if (followRecordMapper.queryByTask(taskId).exists())
             throw ServiceException.conflict("exception.conflict.follow_record.exists");
 
         FollowRecord record = request.create(taskId, login.getId());
         followRecordMapper.insert(record);
-        eventPublisher.publishEvent(new FollowRecordEvent(record));
+        eventPublisher.publishEvent(new FollowRecordEvent(record, login));
         User volunteer = userService.selectById(record.getVolunteerId(),
                 User::getId, User::getUsername, User::getAvatar);
         return FollowRecordResponse.create(record, volunteer);
     }
 
     /**
-     * 获取跟踪记录
+     * 获取回访记录
      */
     public Page<FollowRecordResponse> getFollowRecords(Long taskId, PageParams request) {
         Page<FollowRecord> records = followRecordMapper.queryByTask(taskId).page(request);
@@ -426,7 +533,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     /**
-     * 查询跟踪记录
+     * 查询回访记录
      */
     public Page<FollowRecordResponse> getFollowRecords(FollowRecordQueryParams queryRequest, PageParams pageRequest) {
         Page<FollowRecord> result = followRecordMapper.queryByRequest(queryRequest).page(pageRequest);

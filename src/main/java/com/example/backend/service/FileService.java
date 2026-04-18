@@ -39,12 +39,24 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
     private String temp;
 
     /**
+     * 向临时目录中上传图片
+     */
+    public TempFileInfo uploadTempImage(MultipartFile file, String name, String uuid, String fileTemplate, ParentType parentType) {
+        return uploadTempMedia(file, name, uuid, fileTemplate, parentType, IMAGE, "exception.invalidate.file.image_only");
+    }
+
+    /**
      * 向临时目录中上传图片/视频
      */
     public TempFileInfo uploadTempMedia(MultipartFile file, String name, String uuid, String fileTemplate, ParentType parentType) {
+        return uploadTempMedia(file, name, uuid, fileTemplate, parentType, null, null);
+    }
+
+    private TempFileInfo uploadTempMedia(MultipartFile file, String name, String uuid, String fileTemplate, ParentType parentType, MediaType requireType, String errorCode) {
         User user = requireLoginUser();
         // 上传文件
         Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
+        require(requireType == null || requireType == extAndType.getSecond(), errorCode);
         Date now = new Date();
         String nameWithoutExt = FileUtils.getNameWithoutExtension(file.getOriginalFilename());
         name = StringUtils.hasText(name) ? name : nameWithoutExt;
@@ -182,36 +194,6 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
         FileUtils.upload(file, filename, resources);
         return filename;
-    }
-
-    /**
-     * 上传图片，不经临时目录，不加入数据库
-     *
-     * @return 文件名和上传完成时间
-     */
-    public List<Pair<String, Date>> uploadImages(List<MultipartFile> files, Long parentId, ParentType parentType) {
-        requireLoginUser();
-
-        // 检查文件类型
-        List<Pair<String, MediaType>> extAndTypes = new ArrayList<>(files.size());
-        for (MultipartFile file : files) {
-            Pair<String, MediaType> extAndType = FileUtils.getFileExtensionAndType(file);
-            requireEqual(MediaType.IMAGE, extAndType.getSecond(), "exception.invalidate.file.image_only");
-            extAndTypes.add(extAndType);
-        }
-
-        // 上传文件
-        Path resources = FileUtils.generatePath(upload, parentType, parentId);
-        List<Pair<String, Date>> nameAndUpdateTimes = new ArrayList<>(files.size());
-        for (int i = 0; i < files.size(); i++) {
-            Date now = new Date();
-            Pair<String, MediaType> extAndType = extAndTypes.get(i);
-            String name = FileUtils.getNameWithoutExtension(files.get(i).getOriginalFilename());
-            String filename = FileUtils.generateFilename(name, now, extAndType.getFirst());
-            FileUtils.upload(files.get(i), filename, resources);
-            nameAndUpdateTimes.add(Pair.of(filename, new Date()));
-        }
-        return nameAndUpdateTimes;
     }
 
     /**

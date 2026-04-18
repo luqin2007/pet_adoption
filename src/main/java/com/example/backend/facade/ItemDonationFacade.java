@@ -171,11 +171,6 @@ public class ItemDonationFacade {
                     Category::getId, Category::getName);
             return SubscribeResponse.createItem(subscribe, item, category);
         }
-        if (subscribe.getAction().bindCategory()) {
-            Category category = categoryMapper.requireById(subscribe.getElementId(),
-                    Category::getId, Category::getName);
-            return SubscribeResponse.createCategory(subscribe, category);
-        }
         if (subscribe.getAction().bindStock()) {
             Stock stock = stockMapper.requireById(subscribe.getElementId(),
                     Stock::getId, Stock::getItemId, Stock::getUserId, Stock::getCreateTime);
@@ -204,7 +199,6 @@ public class ItemDonationFacade {
                 stocks.values().stream().map(Stock::getItemId),
                 Item::getId, Item::getCategoryId, Item::getName);
         Map<Long, Category> categories = categoryMapper.groupById(
-                result.getRecords().stream().filter(s -> s.getAction().bindCategory()).map(Subscribe::getElementId),
                 items.values().stream().map(Item::getCategoryId),
                 Category::getId, Category::getName);
         Map<Long, User> users = userService.groupById(

@@ -20,9 +20,9 @@ public enum ParentType {
     AGREEMENT("agreement"), // 领养/寄养协议
     AGREEMENT_RECORD("agreement_record"), // 协议备份
     FOLLOW("follow"), // 领养跟踪
-    DONATION("donation"), // 领养跟踪
-    LOST_PET("lost_pet"),
-    ARTICLE("article"),; // 丢失宠物
+    DONATION("donation"), // 捐赠
+    LOST_PET("lost_pet"), // 丢失宠物
+    ARTICLE("article"); // 文章
 
     private final String folder;
 

@@ -79,7 +79,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
 
         // 清理缓存
         redisHelper.deleteString(redisKey);
-        eventPublisher.publishEvent(new RescueTaskAddEvent(task, location));
+        eventPublisher.publishEvent(new RescueTaskAddEvent(task, location, login));
         return RescueTaskResponse.fromEntity(task);
     }
 
@@ -129,7 +129,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
             rescueTaskLocationMapper.updateById(location);
         }
 
-        eventPublisher.publishEvent(new RescueTaskUpdateEvent(task, location));
+        eventPublisher.publishEvent(new RescueTaskUpdateEvent(task, location, login));
         return RescueTaskResponse.fromEntity(task);
     }
 
@@ -194,7 +194,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         rescueTaskRecordMapper.insert(record);
 
         // 通知
-        eventPublisher.publishEvent(new RescueTaskStatusEvent(task, record));
+        eventPublisher.publishEvent(new RescueTaskStatusEvent(task, record, login));
     }
 
     /**
@@ -228,8 +228,8 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         requireNotEqual(CREATED, task.getStatus(), "exception.invalidate.rescue_task.not_approved");
 
         // 任务分配
-        Set<Long> addUsers = rescueTaskAssignMapper.queryUserByTask(taskId).list().stream()
-                .map(RescueTaskAssign::getUserId)
+        Set<Long> addUsers = rescueTaskAssignMapper.queryUserByTask(taskId)
+                .list(RescueTaskAssign::getUserId)
                 .collect(Collectors.toSet()); // 已分配用户
         List<RescueTaskAssign> assigns = userService.listById(request.idSet(), User::getId).stream()
                 .map(User::getId) // 过滤非法用户
@@ -239,9 +239,9 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
                 .toList();
         rescueTaskAssignMapper.insert(assigns);
 
-        eventPublisher.publishEvent(new RescueTaskAssignEvent(task, assigns));
-        Set<Long> userIds = rescueTaskAssignMapper.queryUserByTask(taskId).list().stream()
-                .map(RescueTaskAssign::getUserId)
+        eventPublisher.publishEvent(new RescueTaskAssignEvent(task, assigns, login));
+        Set<Long> userIds = rescueTaskAssignMapper.queryUserByTask(taskId)
+                .list(RescueTaskAssign::getUserId)
                 .collect(Collectors.toSet()); // 所有已分配用户
         List<User> users = userService.listById(userIds,
                 User::getId, User::getEmail);

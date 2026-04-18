@@ -1,23 +1,23 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.Agreement;
-import com.example.backend.entity.property.AgreementType;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.validation.Errors;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Date;
-import java.util.List;
-
 @Data
-public class AgreementFilesUploadTable implements ITable {
+public class AgreementFilesUploadTable implements ITable, IValidatedRequest {
 
-    @NotEmpty(message = "request.adopt_breading.agreement.file")
-    private List<MultipartFile> files;
+    @NotNull(message = "request.adopt_breading.agreement.file")
+    private MultipartFile file;
 
-    public void applyTo(Agreement agreement) {
-        agreement.setContent(null);
-        agreement.setType(AgreementType.PAPER);
-        agreement.setCreateTime(new Date());
+    @NotNull(message = "request.adopt_breading.agreement.page")
+    private Integer page;
+
+    @Override
+    public void validate(Errors errors) {
+        if (page != null && page <= 0) {
+            errors.rejectValue("page", "request.adopt_breading.agreement.page");
+        }
     }
 }

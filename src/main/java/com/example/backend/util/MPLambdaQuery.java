@@ -223,4 +223,8 @@ public class MPLambdaQuery<T extends IId> {
     public void delete() {
         mapper.delete(query);
     }
+
+    public Long count() {
+        return mapper.selectCount(query);
+    }
 }

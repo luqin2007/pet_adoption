@@ -17,6 +17,17 @@ import java.util.Set;
 @Mapper
 public interface SubscribeMapper extends IBaseMapper<Subscribe> {
 
+    default MPLambdaQuery<Subscribe> queryByAction(SubscribeAction action) {
+        return lambdaQuery()
+                .eq(Subscribe::getAction, action);
+    }
+
+    default MPLambdaQuery<Subscribe> queryByActionAndElement(SubscribeAction action, Long elementId) {
+        return lambdaQuery()
+                .eq(Subscribe::getAction, action)
+                .eq(Subscribe::getElementId, elementId);
+    }
+
     default LambdaQueryWrapper<Subscribe> deleteUserSubscribes(Set<Long> subscribeIds, Long id) {
         return new LambdaQueryWrapper<Subscribe>()
                 .in(Subscribe::getId, subscribeIds)

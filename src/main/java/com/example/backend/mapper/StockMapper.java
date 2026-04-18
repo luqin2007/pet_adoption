@@ -27,6 +27,10 @@ public interface StockMapper extends IBaseMapper<Stock> {
                 .in(Stock::getCreateTime, params.getTime0(), params.getTime1());
     }
 
+    default MPLambdaQuery<Stock> queryByItem(Long itemId) {
+        return lambdaQuery().eq(Stock::getItemId, itemId);
+    }
+
     default MPLambdaUpdate<Stock> updateCount(Long stockId, BigDecimal count) {
         return lambdaUpdate()
                 .eq(Stock::getId, stockId)

@@ -8,8 +8,8 @@ import java.util.Locale;
  * 领养跟踪任务状态
  */
 public enum FollowTaskStatus {
-    PENDING, // 待执行
-    NOTIFIED, // 已通知领养人
+    CREATE, // 刚创建
+    NOTIFIED, // 已通知志愿者和领养人
     IN_PROGRESS, // 执行中
     DELAY, // 推迟
     FINISH; // 已完成

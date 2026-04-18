@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.Set;
 
 import static com.example.backend.entity.property.ParentType.USER;
 
@@ -111,9 +112,10 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         redisHelper.putString(redisKey, code, codeTimeout);
 
         // 发送邮件
-        String content = getMessage("mail.send_mail_code", code);
-        String receiver = URLDecoder.decode(email, StandardCharsets.UTF_8);
-        eventPublisher.publishEvent(new MailSendEvent("Pet Adoption 邮箱验证码", content, receiver));
+        eventPublisher.publishEvent(new MailSendEvent(
+                Set.of(URLDecoder.decode(email, StandardCharsets.UTF_8)),
+                langHelper.get("mail.send_mail_code.title"),
+                langHelper.get("mail.send_mail_code.content", code)));
     }
 
     /**
@@ -217,8 +219,9 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         // 发送激活邮件
         // 有效期 10min
         String uuid = beginRedisUuid(pwdKeyTemplate, user.getEmail());
-        String content = getMessage("mail.reset_password", hostAddress, uuid);
-        eventPublisher.publishEvent(new MailSendEvent("Pet Adoption 密码重置", content, user.getEmail()));
+        eventPublisher.publishEvent(new MailSendEvent(Set.of(user.getEmail()),
+                langHelper.get("mail.reset_password.title"),
+                langHelper.get("mail.reset_password.content", hostAddress, uuid)));
     }
 
     /**

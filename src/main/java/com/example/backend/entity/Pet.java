@@ -1,6 +1,7 @@
 package com.example.backend.entity;
 
 import com.example.backend.entity.property.PetStatus;
+import com.example.backend.util.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -91,4 +92,8 @@ public class Pet implements IId {
      * *非空 datetime*
      */
     private Date updateTime;
+
+    public String getName(String defaultName) {
+        return StringUtils.hasText(name) ? name : defaultName;
+    }
 }

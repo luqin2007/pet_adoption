@@ -2,11 +2,31 @@ package com.example.backend.event;
 
 import com.example.backend.entity.Donation;
 import com.example.backend.entity.DonationItem;
+import com.example.backend.entity.User;
+import com.example.backend.entity.property.NoticeSource;
+import com.example.backend.util.LangHelper;
 
 import java.util.List;
 
 /**
  * 捐赠
+ * - 向工作人员发送站内信：提醒处理新的物资捐赠
+ *
+ * @see com.example.backend.service.ItemDonationService#addDonation(com.example.backend.dto.DonationAddRequest)
  */
-public record DonationAddEvent(Donation donation, List<DonationItem> items) {
+public record DonationAddEvent(Donation data, List<DonationItem> items, User user) implements INotifyEvent<Donation> {
+    @Override
+    public NoticeSource getSource() {
+        return NoticeSource.DONATION;
+    }
+
+    @Override
+    public String buildNotifyTitle(LangHelper langHelper) {
+        return langHelper.get("notification.donation_add.title");
+    }
+
+    @Override
+    public String buildNotifyContent(LangHelper langHelper, Object... args) {
+        return langHelper.get("notification.donation_add.content");
+    }
 }

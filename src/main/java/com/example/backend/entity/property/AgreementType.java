@@ -6,8 +6,14 @@ import java.util.Locale;
 
 public enum AgreementType {
 
-    ELECTRONIC, // 电子协议
-    PAPER; // 纸质协议
+    ELECTRONIC("电子协议"), // 电子协议
+    PAPER("纸质协议"); // 纸质协议
+
+    public final String name;
+
+    AgreementType(String name) {
+        this.name = name;
+    }
 
     public static AgreementType get(String name) {
         try {

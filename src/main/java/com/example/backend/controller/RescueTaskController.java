@@ -14,20 +14,20 @@ import java.util.List;
 /**
  * 救助任务管理模块<br>
  * - 上报信息功能 ( × × )<br>
- * - 开始上报: beginRescueTask ( √ × )<br>
- * - 信息上报: addRescueTask ( √ × )<br>
- * - 媒体上传: updateRescueMedia ( √ × )<br>
- * - 媒体删除: deleteRescueMediaWhenAdd ( √ × )<br>
- * - 信息修改: updateRescueTask ( √ × )<br>
- * - 已上传媒体删除: deleteRescueMediaWhenUpdate ( √ × )<br>
- * - 信息删除: deleteRescueTask ( √ × )<br>
+ * ---- 开始上报: beginRescueTask ( √ × )<br>
+ * ---- 信息上报: addRescueTask ( √ × )<br>
+ * ---- 媒体上传: uploadRescueMedia ( √ × )<br>
+ * ---- 媒体删除: deleteRescueMediaWhenAdd ( √ × )<br>
+ * ---- 信息修改: updateRescueTask ( √ × )<br>
+ * ---- 已上传媒体删除: deleteRescueMediaWhenUpdate ( √ × )<br>
+ * ---- 信息删除: deleteRescueTask ( √ × )<br>
  * - 任务分配功能 ( √ × )<br>
- * - 任务查询: getRescueTask/getRescueTasks ( √ × )<br>
- * - 任务分配: assignRescueTask ( √ × )<br>
+ * ---- 任务查询: getRescueTask/getRescueTasks ( √ × )<br>
+ * ---- 任务分配: assignRescueTask ( √ × )<br>
  * - 任务提醒 ( √ × )<br>
  * - 上报跟踪功能 ( √ × )<br>
- * - 上报任务结果: updateRescueTaskRecord ( √ × )<br>
- * - 获取任务进度: getRescueTaskRecords ( √ × )
+ * ---- 上报任务结果: updateRescueTaskRecord ( √ × )<br>
+ * ---- 获取任务进度: getRescueTaskRecords ( √ × )
  */
 @Validated
 @RestController

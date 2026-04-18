@@ -10,7 +10,9 @@ import java.util.Set;
 public interface AgreementFileMapper extends IBaseMapper<AgreementFile> {
 
     default MPLambdaQuery<AgreementFile> queryByAgreement(Long agreementId) {
-        return lambdaQuery().eq(AgreementFile::getAgreementId, agreementId);
+        return lambdaQuery()
+                .eq(AgreementFile::getAgreementId, agreementId)
+                .asc(AgreementFile::getPage);
     }
 
     default MPLambdaQuery<AgreementFile> queryByAgreements(Set<Long> agreementIds) {

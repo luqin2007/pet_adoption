@@ -38,6 +38,8 @@ public class FileCleanScheduleTask {
     private String tempPath;
     @Value("${key.examination.file}")
     private String examinationFile;
+    @Value("${key.agreement.file}")
+    private String agreementFile;
     @Value("${key.donation.file}")
     private String donationFile;
     @Value("${key.rescue_task.file}")
@@ -50,6 +52,7 @@ public class FileCleanScheduleTask {
     public void cleanFile() {
         beginJob(isDeleteJobRunning, () -> {
             deleteTempFiles(ParentType.EXAMINATION, examinationFile);
+            deleteTempFiles(ParentType.AGREEMENT, agreementFile);
             deleteTempFiles(ParentType.DONATION, donationFile);
             deleteTempFiles(ParentType.RESCUE_TASK, rescueTaskFile);
             deleteTempFiles(ParentType.LOST_PET, lostPetFile);

@@ -4,8 +4,10 @@ import com.example.backend.dto.FollowTaskQueryParams;
 import com.example.backend.entity.FollowTask;
 import com.example.backend.entity.property.FollowTaskStatus;
 import com.example.backend.util.MPLambdaQuery;
+import com.example.backend.util.MPLambdaUpdate;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -35,6 +37,13 @@ public interface FollowTaskMapper extends IBaseMapper<FollowTask> {
                 .eq(FollowTask::getVolunteerId, params.getVolunteer())
                 .in(FollowTask::getStatus, FollowTaskStatus::get, params.getStatus())
                 .in(FollowTask::getPlanTime, params.getTime0(), params.getTime1());
+    }
+
+    default MPLambdaUpdate<FollowTask> updateNotified(Long taskId) {
+        return lambdaUpdate()
+                .eq(FollowTask::getId, taskId)
+                .set(FollowTask::getStatus, FollowTaskStatus.NOTIFIED)
+                .set(FollowTask::getUpdateTime, new Date());
     }
 
     @Override

@@ -100,6 +100,7 @@ public class AdoptBreadingFacade {
     public AgreementResponse buildAgreementResponse(Agreement agreement) {
         List<AgreementFileResponse> files = agreementFileMapper.queryByAgreement(agreement.getId()).list().stream()
                 .filter(file -> file.getPage() != null && file.getPage() > 0)
+                .sorted(java.util.Comparator.comparing(AgreementFile::getPage))
                 .map(AgreementFileResponse::create)
                 .toList();
         return AgreementResponse.create(agreement, files);
@@ -111,7 +112,11 @@ public class AdoptBreadingFacade {
                 .collect(Collectors.toSet());
         Map<Long, List<AgreementFileResponse>> files = agreementFileMapper
                 .queryByAgreements(agreementIds)
-                .groupList(AgreementFile::getAgreementId, AgreementFileResponse::create);
+                .list().stream()
+                .filter(file -> file.getPage() != null && file.getPage() > 0)
+                .sorted(java.util.Comparator.comparing(AgreementFile::getAgreementId).thenComparing(AgreementFile::getPage))
+                .map(AgreementFileResponse::create)
+                .collect(Collectors.groupingBy(AgreementFileResponse::getAgreementId));
         return convert(result, agreement -> AgreementResponse.createBatch(agreement, files));
     }
 

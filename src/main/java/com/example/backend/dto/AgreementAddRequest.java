@@ -8,13 +8,18 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.Errors;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
 
 @Data
 public class AgreementAddRequest implements IRequest, IValidatedRequest {
+
+    /**
+     * 临时上传批次 id。
+     * 纸质协议时用于关联已上传的扫描件。
+     */
+    private String id;
 
     @NotNull(message = "request.adopt_breading.agreement.parent")
     private Long parentId;
@@ -27,7 +32,11 @@ public class AgreementAddRequest implements IRequest, IValidatedRequest {
 
     private String content;
 
-    private List<MultipartFile> files;
+    /**
+     * 纸质协议扫描件顺序，列表下标即页码顺序。
+     * 元素值为临时上传返回的文件名。
+     */
+    private List<String> fileOrder;
 
     public Agreement create() {
         Date now = new Date();
@@ -45,7 +54,20 @@ public class AgreementAddRequest implements IRequest, IValidatedRequest {
     @Override
     public void validate(Errors errors) {
         validateEnum(errors, AgreementAddRequest::getType, AgreementType.class, "request.adopt_breading.agreement.type");
-        if (ObjectUtils.isEmpty(content) || ObjectUtils.isEmpty(files))
+        if (errors.hasFieldErrors("type")) {
+            return;
+        }
+
+        AgreementType agreementType = AgreementType.get(type);
+        if (agreementType == AgreementType.PAPER) {
+            if (ObjectUtils.isEmpty(id)) {
+                errors.rejectValue("id", "request.timeout");
+            }
+            if (ObjectUtils.isEmpty(fileOrder)) {
+                errors.rejectValue("fileOrder", "request.adopt_breading.agreement.file");
+            }
+        } else if (ObjectUtils.isEmpty(content)) {
             errors.rejectValue("content", "request.adopt_breading.agreement.content");
+        }
     }
 }
