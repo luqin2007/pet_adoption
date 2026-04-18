@@ -7,6 +7,7 @@ import com.example.backend.entity.query.PetLocations;
 import com.example.backend.event.PetAddEvent;
 import com.example.backend.event.PetLocationEvent;
 import com.example.backend.event.PetStatusChangeEvent;
+import com.example.backend.event.PetUpdateEvent;
 import com.example.backend.mapper.PetLocationMapper;
 import com.example.backend.mapper.PetMapper;
 import com.example.backend.mapper.PetStatusRecordMapper;
@@ -66,7 +67,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         User login = requireLoginUser();
         Location location = request.createLocation(petId, login.getId());
         petLocationMapper.insert(location);
-        eventPublisher.publishEvent(new PetLocationEvent(location));
+        eventPublisher.publishEvent(new PetLocationEvent(location, login));
         return getPet(petId);
     }
 
@@ -113,6 +114,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         // 更新宠物信息
         request.applyTo(info);
         updateById(info);
+        eventPublisher.publishEvent(new PetUpdateEvent(info, login));
 
         User discover = userService.selectById(info.getDiscoverId(), User::getId, User::getUsername, User::getAvatar);
         List<PetTagResponse> tags = getTags(petId);
@@ -210,8 +212,10 @@ public class PetService extends BaseService<PetMapper, Pet> {
         List<PetTag> tags = request.create(petId, login.getId(), currentTags);
 
         // 添加标签
-        if (!tags.isEmpty())
+        if (!tags.isEmpty()) {
             petTagMapper.insert(tags);
+            eventPublisher.publishEvent(new PetUpdateEvent(info, login));
+        }
 
         return getTags(petId);
     }
@@ -227,8 +231,10 @@ public class PetService extends BaseService<PetMapper, Pet> {
         checkUserPermission(info, login);
 
         // 删除标签
-        if (!request.getIds().isEmpty())
+        if (!request.getIds().isEmpty()) {
             petTagMapper.deleteByPetAndIds(petId, request.getIds()).delete();
+            eventPublisher.publishEvent(new PetUpdateEvent(info, login));
+        }
 
         return getTags(petId);
     }
@@ -274,10 +280,10 @@ public class PetService extends BaseService<PetMapper, Pet> {
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(result, record -> PetStatusRecordResponse.createBatch(record, pets, covers, users));
     }
+
     /*
      * 权限校验
      */
-
     private void checkUserPermission(Pet info, User login) {
         boolean allowed = login.isWorker() || switch (info.getStatus()) { // 工作人员、管理员在任何情况下都可以修改
             case WAITING, AGAINST -> // 待审核、未通过审核的宠物，可由第一次发现的志愿者修改

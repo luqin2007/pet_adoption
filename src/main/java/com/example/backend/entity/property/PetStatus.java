@@ -18,6 +18,10 @@ public enum PetStatus {
     ADOPTED, // 已领养
     HOME; // 丢失宠物，已找到
 
+    public boolean isAdoptable() {
+        return this == SHELTERED || this == HEALTH;
+    }
+
     public static PetStatus get(String name) {
         try {
             return PetStatus.valueOf(name.toUpperCase(Locale.ROOT));

@@ -14,7 +14,7 @@ import java.sql.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Pet implements IId {
+public class Pet implements IPet {
 
     /**
      * *主键 bigint*

@@ -6,11 +6,11 @@ import com.example.backend.entity.*;
 import com.example.backend.entity.property.ClaimStatus;
 import com.example.backend.entity.property.LostPetStatus;
 import com.example.backend.entity.property.PetStatus;
+import com.example.backend.event.LostPetAddEvent;
 import com.example.backend.event.LostPetClaimAddEvent;
 import com.example.backend.event.LostPetClaimApproveEvent;
-import com.example.backend.mapper.LostPetClaimMapper;
-import com.example.backend.mapper.LostPetLocationMapper;
-import com.example.backend.mapper.LostPetMapper;
+import com.example.backend.event.LostPetUpdateEvent;
+import com.example.backend.mapper.*;
 import com.example.backend.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +37,8 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
 
     private final LostPetLocationMapper lostPetLocationMapper;
     private final LostPetClaimMapper lostPetClaimMapper;
+    private final PetMapper petMapper;
+    private final PetLocationMapper petLocationMapper;
 
     private FileService fileService;
     private UserService userService;
@@ -76,6 +78,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
 
         // 转移临时文件
         fileService.saveTempMedias(lostPetFileKey, uuid, lostPet, LOST_PET);
+        eventPublisher.publishEvent(new LostPetAddEvent(lostPet, login, location));
 
         // 查找可能的宠物
         PetQueryParams params = request.createQuery();
@@ -118,6 +121,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         Location location = lostPetLocationMapper.selectById(lostPet.getId());
         request.applyTo(location);
         lostPetLocationMapper.updateById(location);
+        eventPublisher.publishEvent(new LostPetUpdateEvent(lostPet, login, location));
 
         // 查找可能的宠物
         PetQueryParams params = request.createQuery();

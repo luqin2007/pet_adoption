@@ -25,6 +25,14 @@ public interface LostPetLocationMapper extends IBaseMapper<Location> {
                 .like(Location::getDetailAddress, params.getAddress());
     }
 
+    default MPLambdaQuery<Location> queryByLocation(Location location) {
+        return new MPLambdaQuery<>(this)
+                .eq(Location::getProvince, location.getProvince())
+                .eq(location.getCity() != null, Location::getCity, location.getCity())
+                .eq(location.getDistrict() != null, Location::getDistrict, location.getDistrict())
+                .select(Location::getParentId);
+    }
+
     @Override
     default String getMissingMessage() {
         return "exception.not_found.lost_pet_location";

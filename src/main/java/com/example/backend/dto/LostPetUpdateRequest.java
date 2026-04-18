@@ -2,6 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.LostPet;
 import com.example.backend.entity.property.PetStatus;
+import com.example.backend.util.StringUtils;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -61,8 +62,8 @@ public class LostPetUpdateRequest extends LocationRequest implements IRequest {
                 null,
                 sex,
                 Set.of(type),
-                Set.of(breed),
-                Set.of(PetStatus.SHELTERED.name(), PetStatus.HEALTH.name()),
+                StringUtils.hasText(breed) ? Set.of(breed) : Set.of(),
+                Set.of(PetStatus.WAITING.name(), PetStatus.FINDING.name(), PetStatus.SHELTERED.name(), PetStatus.HEALTH.name()),
                 null,
                 province,
                 city,

@@ -13,7 +13,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LostPet implements IId {
+public class LostPet implements IPet {
 
     /**
      * *主键 bigint*

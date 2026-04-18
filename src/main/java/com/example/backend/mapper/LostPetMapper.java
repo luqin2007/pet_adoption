@@ -3,6 +3,7 @@ package com.example.backend.mapper;
 import com.example.backend.dto.LostPetQueryParams;
 import com.example.backend.entity.Location;
 import com.example.backend.entity.LostPet;
+import com.example.backend.entity.Pet;
 import com.example.backend.entity.property.LostPetStatus;
 import com.example.backend.entity.query.LostPetLocation;
 import com.example.backend.util.MPJLambdaQuery;
@@ -11,6 +12,7 @@ import com.example.backend.util.MPLambdaUpdate;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Date;
+import java.util.Set;
 
 /**
  * 索引：
@@ -42,6 +44,13 @@ public interface LostPetMapper extends IBaseMapper<LostPet> {
                 .in(LostPet::getBreed, params.getBread())
                 .in(LostPet::getCreateTime, params.getTime0(), params.getTime1())
                 .like(LostPet::getName, params.getName());
+    }
+
+    default MPLambdaQuery<LostPet> filterLostPet(Set<Long> lostPetIds, Date findTime) {
+        return new MPLambdaQuery<>(this)
+                .in(LostPet::getId, lostPetIds)
+                .eq(LostPet::getStatus, LostPetStatus.SEARCHING)
+                .in(LostPet::getCreateTime, findTime, null);
     }
 
     default void updateStatus(Long id, Long petId, LostPetStatus status) {

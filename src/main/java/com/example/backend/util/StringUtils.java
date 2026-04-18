@@ -1,7 +1,5 @@
 package com.example.backend.util;
 
-import tools.jackson.databind.ObjectMapper;
-
 import java.util.Random;
 import java.util.UUID;
 
