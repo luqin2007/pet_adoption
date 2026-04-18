@@ -5,6 +5,7 @@ import AuthView from '../views/AuthView.vue'
 import HomeView from '../views/HomeView.vue'
 import PetDirectoryView from '../views/PetDirectoryView.vue'
 import ProfileCenterView from '../views/ProfileCenterView.vue'
+import VolunteerCenterView from '../views/VolunteerCenterView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -28,6 +29,11 @@ const router = createRouter({
       path: '/articles',
       name: 'articles',
       component: ArticleHubView,
+    },
+    {
+      path: '/volunteers',
+      name: 'volunteers',
+      component: VolunteerCenterView,
     },
     {
       path: '/console',
