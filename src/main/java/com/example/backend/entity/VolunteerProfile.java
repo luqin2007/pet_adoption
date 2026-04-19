@@ -51,6 +51,12 @@ public class VolunteerProfile implements IId {
     private String phone;
 
     /**
+     * 年龄
+     * *非空 integer*
+     */
+    private Integer age;
+
+    /**
      * 省份
      * *非空 varchar(50)*
      */
@@ -84,13 +90,13 @@ public class VolunteerProfile implements IId {
      * 服务意向
      * *text*
      */
-    private String serviceIntention;
+    private String serviceDesc;
 
     /**
      * 可服务时间说明
      * *varchar(255)*
      */
-    private String availableTimeDesc;
+    private String timeDesc;
 
     /**
      * 备注

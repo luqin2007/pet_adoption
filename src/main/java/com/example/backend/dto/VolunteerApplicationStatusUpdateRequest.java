@@ -33,8 +33,8 @@ public class VolunteerApplicationStatusUpdateRequest extends StatusUpdateRequest
         profile.setDistrict(application.getDistrict());
         profile.setAddress(application.getAddress());
         profile.setSkills(application.getSkills());
-        profile.setServiceIntention(application.getMotivation());
-        profile.setAvailableTimeDesc(application.getAvailableTimeDesc());
+        profile.setServiceDesc(application.getMotivation());
+        profile.setTimeDesc(application.getTimeDesc());
         profile.setRemark(application.getExperience());
         profile.setUpdateTime(new Date());
     }
@@ -47,13 +47,14 @@ public class VolunteerApplicationStatusUpdateRequest extends StatusUpdateRequest
                 application.getRealName(),
                 application.getSex(),
                 application.getPhone(),
+                application.getAge(),
                 application.getProvince(),
                 application.getCity(),
                 application.getDistrict(),
                 application.getAddress(),
                 application.getSkills(),
                 application.getMotivation(),
-                application.getAvailableTimeDesc(),
+                application.getTimeDesc(),
                 application.getExperience(),
                 now,
                 now);

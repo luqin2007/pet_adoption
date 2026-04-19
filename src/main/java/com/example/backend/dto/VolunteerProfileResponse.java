@@ -109,8 +109,8 @@ public class VolunteerProfileResponse implements IResponse {
                 profile.getDistrict(),
                 profile.getAddress(),
                 profile.getSkills(),
-                profile.getServiceIntention(),
-                profile.getAvailableTimeDesc(),
+                profile.getServiceDesc(),
+                profile.getTimeDesc(),
                 profile.getRemark(),
                 profile.getCreateTime(),
                 profile.getUpdateTime());

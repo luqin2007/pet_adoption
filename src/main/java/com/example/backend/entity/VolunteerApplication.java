@@ -96,7 +96,7 @@ public class VolunteerApplication implements IId {
      * 可服务时间说明
      * *非空 varchar(255)*
      */
-    private String availableTimeDesc;
+    private String timeDesc;
 
     /**
      * 申请动机

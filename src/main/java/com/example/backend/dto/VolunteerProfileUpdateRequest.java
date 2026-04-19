@@ -43,8 +43,8 @@ public class VolunteerProfileUpdateRequest implements IRequest {
         profile.setDistrict(district);
         profile.setAddress(address);
         profile.setSkills(skills);
-        profile.setServiceIntention(serviceIntention);
-        profile.setAvailableTimeDesc(availableTimeDesc);
+        profile.setServiceDesc(serviceIntention);
+        profile.setTimeDesc(availableTimeDesc);
         profile.setRemark(remark);
         profile.setUpdateTime(new Date());
     }

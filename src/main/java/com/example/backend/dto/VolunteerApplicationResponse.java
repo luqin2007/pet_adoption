@@ -143,7 +143,7 @@ public class VolunteerApplicationResponse implements IResponse {
                 application.getAddress(),
                 application.getExperience(),
                 application.getSkills(),
-                application.getAvailableTimeDesc(),
+                application.getTimePlan(),
                 application.getMotivation(),
                 application.getStatus(),
                 application.getReviewerId(),
