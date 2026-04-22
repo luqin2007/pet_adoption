@@ -33,5 +33,5 @@ build/
 .vscode/
 
 /src/test/
-/suggestions/
+/checks/**
 /src/main/resources/application.properties
