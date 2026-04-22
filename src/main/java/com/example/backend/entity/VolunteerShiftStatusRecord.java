@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
+/**
+ * 志愿者排班状态变更记录
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

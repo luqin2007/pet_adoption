@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 志愿者管理
@@ -34,6 +36,8 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     private final VolunteerShiftStatusRecordMapper volunteerShiftStatusRecordMapper;
     private final VolunteerServiceRecordMapper volunteerServiceRecordMapper;
     private final VolunteerRewardMapper volunteerRewardMapper;
+    private final VolunteerTaskMapper volunteerTaskMapper;
+    private final VolunteerLocationMapper volunteerLocationMapper;
 
     private final VolunteerFacade volunteerFacade;
 
@@ -235,8 +239,11 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         checkVolunteerActive(request.getVolunteerId());
 
         VolunteerShift shift = request.create(login.getId());
+        VolunteerTask task = createTask(shift);
+        shift.setTaskId(task.getId());
         checkTimeConflict(shift, null);
         volunteerShiftMapper.insert(shift);
+        saveLocation(task.getId(), login.getId(), shift);
         eventPublisher.publishEvent(new VolunteerShiftAddEvent(shift, login));
         return volunteerFacade.buildShiftResponse(shift);
     }
@@ -259,7 +266,12 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         if (!login.isWorker()) // 非管理员只能查看自己的排版
             query.setVolunteer(login.getId());
 
-        Page<VolunteerShift> result = volunteerShiftMapper.queryByRequest(query).page(page);
+        Set<Long> taskRecordIds = queryTaskRecordIds(query);
+        if (taskRecordIds != null && taskRecordIds.isEmpty()) {
+            return volunteerFacade.buildShiftPage(emptyShiftPage(page));
+        }
+
+        Page<VolunteerShift> result = volunteerShiftMapper.queryByRequest(query, taskRecordIds).page(page);
         return volunteerFacade.buildShiftPage(result);
     }
 
@@ -270,10 +282,14 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     public VolunteerShiftResponse updateShift(Long shiftId, VolunteerShiftUpdateRequest request) {
         User login = requireWorker();
         VolunteerShift shift = volunteerShiftMapper.requireById(shiftId);
+        Long taskRecordId = shift.getTaskId();
         request.applyTo(shift);
+        updateTask(taskRecordId, shift);
+        shift.setTaskId(taskRecordId);
         checkVolunteerActive(shift.getVolunteerId());
         checkTimeConflict(shift, shiftId);
         volunteerShiftMapper.updateById(shift);
+        saveLocation(taskRecordId, login.getId(), shift);
         eventPublisher.publishEvent(new VolunteerShiftUpdateEvent(shift, login));
         return volunteerFacade.buildShiftResponse(shift);
     }
@@ -293,7 +309,9 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         require(status.canSwitchFrom(shift.getStatus()), "exception.invalidate.volunteer.shift.status_invalid");
 
         VolunteerShiftStatusRecord record = request.create(shift);
+        fillShiftTask(shift);
         request.applyTo(shift);
+        updateTaskTime(shift);
         volunteerShiftMapper.updateById(shift);
         volunteerShiftStatusRecordMapper.insert(record);
         eventPublisher.publishEvent(new VolunteerShiftStatusEvent(shift, record, login));
@@ -459,12 +477,36 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
      */
     private void checkTimeConflict(VolunteerShift shift, Long excludeShiftId) {
         List<VolunteerShift> shifts = volunteerShiftMapper.queryByVolunteer(shift.getVolunteerId()).list();
+        fillShiftTasks(shifts);
         boolean conflict = shifts.stream()
                 .filter(item -> excludeShiftId == null || !Objects.equals(item.getId(), excludeShiftId))
                 .filter(item -> item.getStatus().isTimeEffective())
                 .anyMatch(item -> isTimeConflict(item, shift));
         if (conflict)
             throw ServiceException.conflict("exception.conflict.volunteer.shift.time_conflict");
+    }
+
+    private Set<Long> queryTaskRecordIds(VolunteerShiftQueryParams query) {
+        boolean hasKeyword = query.getKeyword() != null && !query.getKeyword().isBlank();
+        boolean hasTaskFilter = hasKeyword
+                || query.getTaskType() != null
+                || query.getTime0() != null
+                || query.getTime1() != null;
+        if (!hasTaskFilter) return null;
+
+        return volunteerTaskMapper.lambdaQuery()
+                .in(VolunteerTask::getTaskType, VolunteerTaskType::get, query.getTaskType())
+                .in(VolunteerTask::getStartTime, query.getTime0(), query.getTime1())
+                .like(VolunteerTask::getTitle, query.getKeyword())
+                .list(VolunteerTask::getId)
+                .collect(Collectors.toSet());
+    }
+
+    private Page<VolunteerShift> emptyShiftPage(PageParams page) {
+        Page<VolunteerShift> result = page.createPage();
+        result.setRecords(List.of());
+        result.setTotal(0);
+        return result;
     }
 
     /**
@@ -479,6 +521,81 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
             return false;
         }
         return start0.before(end1) && start1.before(end0);
+    }
+
+    private VolunteerTask createTask(VolunteerShift shift) {
+        VolunteerTask task = new VolunteerTask();
+        applyTask(task, shift);
+        volunteerTaskMapper.insert(task);
+        return task;
+    }
+
+    private void updateTask(Long taskId, VolunteerShift shift) {
+        VolunteerTask task = volunteerTaskMapper.requireById(taskId);
+        applyTask(task, shift);
+        volunteerTaskMapper.updateById(task);
+    }
+
+    private void updateTaskTime(VolunteerShift shift) {
+        VolunteerTask task = volunteerTaskMapper.selectById(shift.getTaskId());
+        if (task == null) return;
+        task.setStartTime(shift.getStartTime());
+        task.setEndTime(shift.getEndTime());
+        volunteerTaskMapper.updateById(task);
+    }
+
+    private void applyTask(VolunteerTask task, VolunteerShift shift) {
+        task.setTaskType(shift.getTaskType());
+        task.setTaskId(shift.getTaskId());
+        task.setTitle(shift.getTitle());
+        task.setContent(shift.getContent());
+        task.setStartTime(shift.getStartTime());
+        task.setEndTime(shift.getEndTime());
+        task.setEstimatedHours(shift.getEstimatedHours());
+        if (task.getCreateTime() == null) {
+            task.setCreateTime(new Date());
+        }
+    }
+
+    private void fillShiftTask(VolunteerShift shift) {
+        VolunteerTask task = volunteerTaskMapper.selectById(shift.getTaskId());
+        if (task == null) return;
+        shift.setTaskType(task.getTaskType());
+        shift.setTaskId(task.getId());
+        shift.setTitle(task.getTitle());
+        shift.setContent(task.getContent());
+        shift.setStartTime(task.getStartTime());
+        shift.setEndTime(task.getEndTime());
+        shift.setEstimatedHours(task.getEstimatedHours());
+    }
+
+    private void fillShiftTasks(List<VolunteerShift> shifts) {
+        for (VolunteerShift shift : shifts) {
+            fillShiftTask(shift);
+        }
+    }
+
+    private void saveLocation(Long parentId, Long userId, VolunteerShift shift) {
+        Location location = volunteerLocationMapper.queryByParent(parentId).one();
+        if (location == null) {
+            location = new Location(null,
+                    parentId,
+                    userId,
+                    shift.getProvince(),
+                    shift.getCity(),
+                    shift.getDistrict(),
+                    shift.getServiceAddress(),
+                    new java.sql.Date(System.currentTimeMillis()));
+            volunteerLocationMapper.insert(location);
+        } else {
+            location.setUserId(userId);
+            location.setProvince(shift.getProvince());
+            location.setCity(shift.getCity());
+            location.setDistrict(shift.getDistrict());
+            location.setDetailAddress(shift.getServiceAddress());
+            location.setCreateTime(new java.sql.Date(System.currentTimeMillis()));
+            volunteerLocationMapper.updateById(location);
+        }
     }
 
     @Autowired

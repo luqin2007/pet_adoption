@@ -3,15 +3,15 @@ package com.example.backend.mapper;
 import com.example.backend.dto.VolunteerShiftQueryParams;
 import com.example.backend.entity.VolunteerShift;
 import com.example.backend.entity.property.VolunteerShiftStatus;
-import com.example.backend.entity.property.VolunteerTaskType;
 import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Set;
+
 /**
  * 索引：
- * - (volunteerId, startTime, endTime)
- * - (status, startTime)
- * - (taskType, taskSourceId)
+ * - (volunteerId, createTime)
+ * - (status, createTime)
  */
 @Mapper
 public interface VolunteerShiftMapper extends IBaseMapper<VolunteerShift> {
@@ -20,14 +20,19 @@ public interface VolunteerShiftMapper extends IBaseMapper<VolunteerShift> {
      * 根据查询条件筛选排班
      */
     default MPLambdaQuery<VolunteerShift> queryByRequest(VolunteerShiftQueryParams params) {
+        return queryByRequest(params, null);
+    }
+
+    /**
+     * 根据查询条件和任务记录筛选排班
+     */
+    default MPLambdaQuery<VolunteerShift> queryByRequest(VolunteerShiftQueryParams params, Set<Long> taskRecordIds) {
         return lambdaQuery()
                 .eq(VolunteerShift::getVolunteerId, params.getVolunteer())
                 .eq(VolunteerShift::getAssignerId, params.getAssigner())
-                .in(VolunteerShift::getTaskType, VolunteerTaskType::get, params.getTaskType())
+                .in(VolunteerShift::getTaskId, taskRecordIds)
                 .in(VolunteerShift::getStatus, VolunteerShiftStatus::get, params.getStatus())
-                .in(VolunteerShift::getStartTime, params.getTime0(), params.getTime1())
-                .like(VolunteerShift::getTitle, params.getKeyword())
-                .desc(VolunteerShift::getStartTime);
+                .desc(VolunteerShift::getCreateTime);
     }
 
     /**
@@ -36,7 +41,7 @@ public interface VolunteerShiftMapper extends IBaseMapper<VolunteerShift> {
     default MPLambdaQuery<VolunteerShift> queryByVolunteer(Long volunteerId) {
         return lambdaQuery()
                 .eq(VolunteerShift::getVolunteerId, volunteerId)
-                .desc(VolunteerShift::getStartTime);
+                .desc(VolunteerShift::getCreateTime);
     }
 
     @Override

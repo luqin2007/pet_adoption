@@ -29,7 +29,7 @@ public class Pet implements IPet {
 
     /**
      * 宠物名称
-     * *varchar(255)*
+     * *varchar(50)*
      */
     private String name;
 

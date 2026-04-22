@@ -23,8 +23,6 @@ public interface VolunteerApplicationMapper extends IBaseMapper<VolunteerApplica
                 .eq(VolunteerApplication::getRecruitmentId, params.getRecruitment())
                 .eq(VolunteerApplication::getUserId, params.getUser())
                 .eq(VolunteerApplication::getReviewerId, params.getReviewer())
-                .eq(VolunteerApplication::getProvince, params.getProvince())
-                .eq(VolunteerApplication::getCity, params.getCity())
                 .in(VolunteerApplication::getStatus, VolunteerApplicationStatus::get, params.getStatus())
                 .desc(VolunteerApplication::getCreateTime);
     }

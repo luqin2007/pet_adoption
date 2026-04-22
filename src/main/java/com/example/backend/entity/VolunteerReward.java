@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.example.backend.entity.property.VolunteerRewardStatus;
 import com.example.backend.entity.property.VolunteerRewardType;
 import lombok.AllArgsConstructor;
@@ -87,6 +88,13 @@ public class VolunteerReward implements IId {
      * *datetime*
      */
     private Date issueTime;
+
+    /**
+     * 备注
+     * *非数据库字段，兼容接口展示*
+     */
+    @TableField(exist = false)
+    private String remark;
 
     /**
      * 创建时间

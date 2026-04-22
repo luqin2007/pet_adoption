@@ -5,8 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * 志愿者任务
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,6 +34,12 @@ public class VolunteerTask implements IId {
     private Long taskId;
 
     /**
+     * 任务标题
+     * *非空 varchar(255)*
+     */
+    private String title;
+
+    /**
      * 任务内容
      * *text*
      */
@@ -46,6 +56,12 @@ public class VolunteerTask implements IId {
      * *非空 datetime*
      */
     private Date endTime;
+
+    /**
+     * 预计服务时长
+     * *decimal(10,2)*
+     */
+    private BigDecimal estimatedHours;
 
     /**
      * 创建时间

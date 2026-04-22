@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
-import com.example.backend.mapper.VolunteerRecruitmentMapper;
-import com.example.backend.mapper.VolunteerServiceRecordMapper;
-import com.example.backend.mapper.VolunteerShiftMapper;
-import com.example.backend.mapper.VolunteerShiftStatusRecordMapper;
+import com.example.backend.mapper.*;
 import com.example.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -30,12 +27,15 @@ public class VolunteerFacade {
     private final VolunteerShiftMapper volunteerShiftMapper;
     private final VolunteerShiftStatusRecordMapper volunteerShiftStatusRecordMapper;
     private final VolunteerServiceRecordMapper volunteerServiceRecordMapper;
+    private final VolunteerTaskMapper volunteerTaskMapper;
+    private final VolunteerLocationMapper volunteerLocationMapper;
     private final UserService userService;
 
     /**
      * 组装招募计划响应
      */
     public VolunteerRecruitmentResponse buildRecruitmentResponse(VolunteerRecruitment recruitment) {
+        fillLocation(recruitment, recruitment.getId());
         User publisher = userService.selectById(recruitment.getPublisherId(),
                 User::getId, User::getUsername, User::getAvatar);
         return VolunteerRecruitmentResponse.create(recruitment, publisher);
@@ -45,6 +45,7 @@ public class VolunteerFacade {
      * 组装招募计划分页响应
      */
     public Page<VolunteerRecruitmentResponse> buildRecruitmentPage(Page<VolunteerRecruitment> result) {
+        fillRecruitmentLocations(result.getRecords());
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().map(VolunteerRecruitment::getPublisherId),
                 User::getId, User::getUsername, User::getAvatar);
@@ -55,6 +56,7 @@ public class VolunteerFacade {
      * 组装志愿者申请响应
      */
     public VolunteerApplicationResponse buildApplicationResponse(VolunteerApplication application) {
+        fillLocation(application, application.getId());
         VolunteerRecruitment recruitment = volunteerRecruitmentMapper.selectById(application.getRecruitmentId(),
                 VolunteerRecruitment::getId, VolunteerRecruitment::getTitle);
         Map<Long, User> users = userService.groupById(
@@ -70,6 +72,7 @@ public class VolunteerFacade {
      * 组装志愿者申请分页响应
      */
     public Page<VolunteerApplicationResponse> buildApplicationPage(Page<VolunteerApplication> result) {
+        fillApplicationLocations(result.getRecords());
         Set<Long> recruitmentIds = result.getRecords().stream()
                 .map(VolunteerApplication::getRecruitmentId)
                 .collect(java.util.stream.Collectors.toSet());
@@ -85,6 +88,7 @@ public class VolunteerFacade {
      * 组装志愿者档案响应
      */
     public VolunteerProfileResponse buildProfileResponse(VolunteerProfile profile) {
+        fillLocation(profile, profile.getId());
         User user = userService.selectById(profile.getUserId(),
                 User::getId, User::getUsername, User::getAvatar);
         return VolunteerProfileResponse.create(profile, user);
@@ -94,6 +98,7 @@ public class VolunteerFacade {
      * 组装志愿者档案分页响应
      */
     public Page<VolunteerProfileResponse> buildProfilePage(Page<VolunteerProfile> result) {
+        fillProfileLocations(result.getRecords());
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().map(VolunteerProfile::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
@@ -104,6 +109,7 @@ public class VolunteerFacade {
      * 组装排班响应
      */
     public VolunteerShiftResponse buildShiftResponse(VolunteerShift shift) {
+        fillShiftTaskAndLocation(shift);
         Map<Long, User> users = userService.groupById(
                 Stream.of(shift.getVolunteerId(), shift.getAssignerId()),
                 User::getId, User::getUsername, User::getAvatar);
@@ -120,6 +126,7 @@ public class VolunteerFacade {
      * 组装排班分页响应
      */
     public Page<VolunteerShiftResponse> buildShiftPage(Page<VolunteerShift> result) {
+        fillShiftTaskAndLocations(result.getRecords());
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().flatMap(item -> Stream.of(item.getVolunteerId(), item.getAssignerId())),
                 User::getId, User::getUsername, User::getAvatar);
@@ -139,7 +146,8 @@ public class VolunteerFacade {
      */
     public VolunteerServiceRecordResponse buildServiceRecordResponse(VolunteerServiceRecord record) {
         VolunteerShift shift = volunteerShiftMapper.selectById(record.getShiftId(),
-                VolunteerShift::getId, VolunteerShift::getTitle);
+                VolunteerShift::getId, VolunteerShift::getTaskId);
+        fillShiftTaskAndLocation(shift);
         Map<Long, User> users = userService.groupById(
                 Stream.of(record.getVolunteerId(), record.getReviewerId()),
                 User::getId, User::getUsername, User::getAvatar);
@@ -157,7 +165,8 @@ public class VolunteerFacade {
                 .map(VolunteerServiceRecord::getShiftId)
                 .collect(java.util.stream.Collectors.toSet());
         Map<Long, VolunteerShift> shifts = volunteerShiftMapper.groupById(shiftIds,
-                VolunteerShift::getId, VolunteerShift::getTitle);
+                VolunteerShift::getId, VolunteerShift::getTaskId);
+        fillShiftTaskAndLocations(shifts.values().stream().toList());
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().flatMap(item -> Stream.of(item.getVolunteerId(), item.getReviewerId())),
                 User::getId, User::getUsername, User::getAvatar);
@@ -191,5 +200,111 @@ public class VolunteerFacade {
         Page<R> page = PageDTO.of(source.getCurrent(), source.getSize(), source.getTotal());
         page.setRecords(source.getRecords().stream().map(mapper).toList());
         return page;
+    }
+
+    private void fillShiftTaskAndLocation(VolunteerShift shift) {
+        if (shift == null || shift.getTaskId() == null) return;
+        Long taskRecordId = shift.getTaskId();
+        VolunteerTask task = volunteerTaskMapper.selectById(taskRecordId);
+        applyTask(shift, task);
+        fillLocation(shift, taskRecordId);
+    }
+
+    private void fillShiftTaskAndLocations(List<VolunteerShift> shifts) {
+        Set<Long> taskIds = shifts.stream()
+                .map(VolunteerShift::getTaskId)
+                .filter(java.util.Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
+        if (taskIds.isEmpty()) return;
+        Map<Long, VolunteerTask> tasks = volunteerTaskMapper.groupById(taskIds);
+        Map<Long, Location> locations = volunteerLocationMapper.lambdaQuery()
+                .in(Location::getParentId, taskIds)
+                .group(Location::getParentId);
+        for (VolunteerShift shift : shifts) {
+            Long taskRecordId = shift.getTaskId();
+            applyTask(shift, tasks.get(taskRecordId));
+            applyLocation(shift, locations.get(taskRecordId));
+        }
+    }
+
+    private void applyTask(VolunteerShift shift, VolunteerTask task) {
+        if (task == null) return;
+        shift.setTaskType(task.getTaskType());
+        shift.setTaskId(task.getTaskId());
+        shift.setTitle(task.getTitle());
+        shift.setContent(task.getContent());
+        shift.setStartTime(task.getStartTime());
+        shift.setEndTime(task.getEndTime());
+        shift.setEstimatedHours(task.getEstimatedHours());
+    }
+
+    private void fillRecruitmentLocations(List<VolunteerRecruitment> recruitments) {
+        Map<Long, Location> locations = locationsByParentIds(recruitments.stream().map(VolunteerRecruitment::getId).collect(java.util.stream.Collectors.toSet()));
+        recruitments.forEach(item -> applyLocation(item, locations.get(item.getId())));
+    }
+
+    private void fillApplicationLocations(List<VolunteerApplication> applications) {
+        Map<Long, Location> locations = locationsByParentIds(applications.stream().map(VolunteerApplication::getId).collect(java.util.stream.Collectors.toSet()));
+        applications.forEach(item -> applyLocation(item, locations.get(item.getId())));
+    }
+
+    private void fillProfileLocations(List<VolunteerProfile> profiles) {
+        Map<Long, Location> locations = locationsByParentIds(profiles.stream().map(VolunteerProfile::getId).collect(java.util.stream.Collectors.toSet()));
+        profiles.forEach(item -> applyLocation(item, locations.get(item.getId())));
+    }
+
+    private Map<Long, Location> locationsByParentIds(Set<Long> parentIds) {
+        if (parentIds.isEmpty()) return Map.of();
+        return volunteerLocationMapper.lambdaQuery()
+                .in(Location::getParentId, parentIds)
+                .group(Location::getParentId);
+    }
+
+    private void fillLocation(VolunteerRecruitment recruitment, Long parentId) {
+        applyLocation(recruitment, volunteerLocationMapper.queryByParent(parentId).one());
+    }
+
+    private void fillLocation(VolunteerApplication application, Long parentId) {
+        applyLocation(application, volunteerLocationMapper.queryByParent(parentId).one());
+    }
+
+    private void fillLocation(VolunteerProfile profile, Long parentId) {
+        applyLocation(profile, volunteerLocationMapper.queryByParent(parentId).one());
+    }
+
+    private void fillLocation(VolunteerShift shift, Long parentId) {
+        applyLocation(shift, volunteerLocationMapper.queryByParent(parentId).one());
+    }
+
+    private void applyLocation(VolunteerRecruitment recruitment, Location location) {
+        if (location == null) return;
+        recruitment.setServiceAddress(location.getDetailAddress());
+        recruitment.setProvince(location.getProvince());
+        recruitment.setCity(location.getCity());
+        recruitment.setDistrict(location.getDistrict());
+    }
+
+    private void applyLocation(VolunteerApplication application, Location location) {
+        if (location == null) return;
+        application.setAddress(location.getDetailAddress());
+        application.setProvince(location.getProvince());
+        application.setCity(location.getCity());
+        application.setDistrict(location.getDistrict());
+    }
+
+    private void applyLocation(VolunteerProfile profile, Location location) {
+        if (location == null) return;
+        profile.setAddress(location.getDetailAddress());
+        profile.setProvince(location.getProvince());
+        profile.setCity(location.getCity());
+        profile.setDistrict(location.getDistrict());
+    }
+
+    private void applyLocation(VolunteerShift shift, Location location) {
+        if (location == null) return;
+        shift.setServiceAddress(location.getDetailAddress());
+        shift.setProvince(location.getProvince());
+        shift.setCity(location.getCity());
+        shift.setDistrict(location.getDistrict());
     }
 }

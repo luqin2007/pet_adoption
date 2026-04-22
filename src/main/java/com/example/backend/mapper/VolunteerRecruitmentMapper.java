@@ -20,8 +20,6 @@ public interface VolunteerRecruitmentMapper extends IBaseMapper<VolunteerRecruit
     default MPLambdaQuery<VolunteerRecruitment> queryByRequest(VolunteerRecruitmentQueryParams params) {
         return lambdaQuery()
                 .eq(VolunteerRecruitment::getPublisherId, params.getPublisher())
-                .eq(VolunteerRecruitment::getProvince, params.getProvince())
-                .eq(VolunteerRecruitment::getCity, params.getCity())
                 .in(VolunteerRecruitment::getStatus, VolunteerRecruitmentStatus::get, params.getStatus())
                 .in(VolunteerRecruitment::getStartTime, params.getTime0(), params.getTime1())
                 .like(VolunteerRecruitment::getTitle, params.getTitle())
