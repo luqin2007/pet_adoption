@@ -48,7 +48,7 @@ public class MedicalRecord implements IId {
 
     /**
      * 领养人联系方式
-     * *外键:user(phone) varchar(20)*
+     * *varchar(20)*
      */
     private String ownerPhone;
 

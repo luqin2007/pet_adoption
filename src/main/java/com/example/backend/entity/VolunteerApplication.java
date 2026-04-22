@@ -57,30 +57,6 @@ public class VolunteerApplication implements IId {
     private Integer age;
 
     /**
-     * 省份
-     * *非空 varchar(50)*
-     */
-    private String province;
-
-    /**
-     * 城市
-     * *非空 varchar(50)*
-     */
-    private String city;
-
-    /**
-     * 区县
-     * *非空 varchar(50)*
-     */
-    private String district;
-
-    /**
-     * 详细地址
-     * *非空 varchar(255)*
-     */
-    private String address;
-
-    /**
      * 过往经历
      * *非空 text*
      */
@@ -135,7 +111,7 @@ public class VolunteerApplication implements IId {
     private Date createTime;
 
     /**
-     * 更新时间
+     * 修改时间
      * *非空 datetime*
      */
     private Date updateTime;

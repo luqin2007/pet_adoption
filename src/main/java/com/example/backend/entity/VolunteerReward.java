@@ -89,19 +89,13 @@ public class VolunteerReward implements IId {
     private Date issueTime;
 
     /**
-     * 备注
-     * *text*
-     */
-    private String remark;
-
-    /**
      * 创建时间
      * *非空 datetime*
      */
     private Date createTime;
 
     /**
-     * 更新时间
+     * 修改时间
      * *非空 datetime*
      */
     private Date updateTime;

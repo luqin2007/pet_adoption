@@ -101,7 +101,7 @@ public class VolunteerServiceRecordResponse implements IResponse {
      */
     private Date createTime;
     /**
-     * 更新时间
+     * 修改时间
      */
     private Date updateTime;
 

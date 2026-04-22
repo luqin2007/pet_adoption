@@ -47,7 +47,7 @@ public class Order implements IId {
     private ParentType parentType;
 
     /**
-     * 申请类型
+     * 处方类型
      * *非空 varchar(20)*
      */
     private OrderType type;

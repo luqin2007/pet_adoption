@@ -39,30 +39,6 @@ public class VolunteerRecruitment implements IId {
     private String requirement;
 
     /**
-     * 服务地点
-     * *varchar(255)*
-     */
-    private String serviceAddress;
-
-    /**
-     * 省份
-     * *varchar(50)*
-     */
-    private String province;
-
-    /**
-     * 城市
-     * *varchar(50)*
-     */
-    private String city;
-
-    /**
-     * 区县
-     * *varchar(50)*
-     */
-    private String district;
-
-    /**
      * 招募人数
      * *非空 int*
      */
@@ -105,7 +81,7 @@ public class VolunteerRecruitment implements IId {
     private Date createTime;
 
     /**
-     * 更新时间
+     * 修改时间
      * *非空 datetime*
      */
     private Date updateTime;

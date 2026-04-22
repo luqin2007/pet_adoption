@@ -44,7 +44,7 @@ public class Category implements IId {
     private Date createTime;
 
     /**
-     * 更新时间
+     * 修改时间
      * *非空 datetime*
      */
     private Date updateTime;

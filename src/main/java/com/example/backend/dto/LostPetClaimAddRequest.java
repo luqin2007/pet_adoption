@@ -17,6 +17,9 @@ public class LostPetClaimAddRequest implements IRequest {
     @NotNull(message = "request.pet.id")
     private Long lostPetId;
 
+    @NotNull(message = "request.pet.id")
+    private Long petId;
+
     @NotBlank(message = "request.phone")
     private String applicantPhone;
 
@@ -27,6 +30,7 @@ public class LostPetClaimAddRequest implements IRequest {
         Date now = new Date();
         return new LostPetClaim(null,
                 lostPetId,
+                petId,
                 applicantId,
                 applicantPhone,
                 null,

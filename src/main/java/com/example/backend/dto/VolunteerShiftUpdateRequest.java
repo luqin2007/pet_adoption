@@ -41,7 +41,7 @@ public class VolunteerShiftUpdateRequest implements IRequest, IValidatedRequest 
     public void applyTo(VolunteerShift shift) {
         shift.setVolunteerId(volunteerId);
         shift.setTaskType(VolunteerTaskType.get(taskType));
-        shift.setTaskSourceId(taskSourceId);
+        shift.setTaskId(taskSourceId);
         shift.setTitle(title);
         shift.setContent(content);
         shift.setServiceAddress(serviceAddress);

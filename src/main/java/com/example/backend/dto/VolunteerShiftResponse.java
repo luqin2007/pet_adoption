@@ -117,7 +117,7 @@ public class VolunteerShiftResponse implements IResponse {
      */
     private Date createTime;
     /**
-     * 更新时间
+     * 修改时间
      */
     private Date updateTime;
 
@@ -139,7 +139,7 @@ public class VolunteerShiftResponse implements IResponse {
                 assigner == null ? null : assigner.getUsername(),
                 assigner == null ? null : FileUtils.generateAssetUrl(ParentType.USER, assigner.getId(), assigner.getAvatar()),
                 shift.getTaskType(),
-                shift.getTaskSourceId(),
+                shift.getTaskId(),
                 shift.getTitle(),
                 shift.getContent(),
                 shift.getServiceAddress(),

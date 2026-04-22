@@ -51,12 +51,6 @@ public class Examination implements IId {
     private ExamType examType;
 
     /**
-     * 附件文件名
-     * *varchar(255)*
-     */
-    private String filename;
-
-    /**
      * 检查时间
      * *非空 datetime*
      */

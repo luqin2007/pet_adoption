@@ -116,7 +116,7 @@ public class VolunteerApplicationResponse implements IResponse {
      */
     private Date createTime;
     /**
-     * 更新时间
+     * 修改时间
      */
     private Date updateTime;
 
@@ -143,7 +143,7 @@ public class VolunteerApplicationResponse implements IResponse {
                 application.getAddress(),
                 application.getExperience(),
                 application.getSkills(),
-                application.getTimePlan(),
+                application.getTimeDesc(),
                 application.getMotivation(),
                 application.getStatus(),
                 application.getReviewerId(),

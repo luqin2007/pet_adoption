@@ -31,8 +31,6 @@ public class BreadingAddRequest implements IRequest, IValidatedRequest {
     @NotBlank(message = "request.phone")
     private String applicantPhone;
 
-    private String requirement;
-
     @NotNull(message = "request.start_time")
     private Date time0;
 
@@ -51,7 +49,6 @@ public class BreadingAddRequest implements IRequest, IValidatedRequest {
                 applicantPhone,
                 null,
                 AdoptBreadingStatus.CREATE,
-                requirement,
                 null,
                 null,
                 time0,

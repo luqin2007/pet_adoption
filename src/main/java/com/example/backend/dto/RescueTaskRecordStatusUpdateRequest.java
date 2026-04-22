@@ -18,7 +18,6 @@ public class RescueTaskRecordStatusUpdateRequest extends StatusUpdateRequest {
         return new RescueTaskRecord(null,
                 task.getId(),
                 userId,
-                null,
                 action,
                 statusFrom,
                 RescueTaskStatus.get(status),

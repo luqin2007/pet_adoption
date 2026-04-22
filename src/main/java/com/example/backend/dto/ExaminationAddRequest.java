@@ -17,13 +17,8 @@ public class ExaminationAddRequest implements IRequest, IValidatedRequest {
 
     private String text;
 
-    @NotBlank(message = "request.medical.exam.text_type")
-    private String textType;
-
     @NotBlank(message = "request.medical.exam.exam_type")
     private String examType;
-
-    private String filename;
 
     @NotNull(message = "request.medical.exam.time")
     private Date checkTime;
@@ -35,7 +30,6 @@ public class ExaminationAddRequest implements IRequest, IValidatedRequest {
                 name,
                 text,
                 ExamType.get(examType),
-                filename,
                 checkTime,
                 new Date());
     }
@@ -43,7 +37,5 @@ public class ExaminationAddRequest implements IRequest, IValidatedRequest {
     @Override
     public void validate(Errors errors) {
         validateEnum(errors, ExaminationAddRequest::getExamType, ExamType.class, "request.medical.exam.exam_type");
-        if (text == null && filename == null) // 检查结果
-            errors.rejectValue("text", "request.medical.exam.content");
     }
 }

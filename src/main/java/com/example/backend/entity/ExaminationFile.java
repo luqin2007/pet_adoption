@@ -38,7 +38,7 @@ public class ExaminationFile implements IId, IFile {
     private String filename;
 
     /**
-     * 文件名
+     * 创建时间
      * *非空 datetime*
      */
     private Date createTime;

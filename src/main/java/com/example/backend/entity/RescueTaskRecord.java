@@ -34,12 +34,6 @@ public class RescueTaskRecord implements IId {
     private Long userId;
 
     /**
-     * 状态审核者 id
-     * *外键:user(id) 非空 bigint*
-     */
-    private Long approveId;
-
-    /**
      * 记录类型
      * *非空 varchar(20)*
      */

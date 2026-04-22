@@ -60,7 +60,6 @@ public class RescueTaskAddRequest extends LocationRequest implements IRequest, I
         return new RescueTaskRecord(null,
                 task.getId(),
                 userId,
-                null,
                 RescueTaskAction.CREATE,
                 RescueTaskStatus.CREATED,
                 task.getStatus(),

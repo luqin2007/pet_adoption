@@ -27,7 +27,7 @@ public class Breading implements IId {
     private String petName;
 
     /**
-     * 宠物 id
+     * 宠物年龄
      * *非空 int*
      */
     private Integer petAge;
@@ -75,12 +75,6 @@ public class Breading implements IId {
     private AdoptBreadingStatus status;
 
     /**
-     * 申请要求
-     * *非空 text*
-     */
-    private String requirement;
-
-    /**
      * 审核拒绝原因
      * *text*
      */
@@ -111,7 +105,7 @@ public class Breading implements IId {
     private Date createTime;
 
     /**
-     * 更新时间
+     * 修改时间
      * *非空 datetime*
      */
     private Date updateTime;

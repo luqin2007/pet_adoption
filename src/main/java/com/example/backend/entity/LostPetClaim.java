@@ -27,6 +27,12 @@ public class LostPetClaim implements IId {
     private Long lostPetId;
 
     /**
+     * 找到的流浪宠物 id
+     * *外键:pet(id) bigint*
+     */
+    private Long petId;
+
+    /**
      * 认领申请人 id
      * *外键:user(id) 非空 bigint*
      */
@@ -81,7 +87,7 @@ public class LostPetClaim implements IId {
     private Date createTime;
 
     /**
-     * 更新时间
+     * 修改时间
      * *非空 datetime*
      */
     private Date updateTime;

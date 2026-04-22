@@ -23,6 +23,15 @@ public interface MedicalDetailMapper extends IBaseMapper<MedicalDetail> {
                 .desc(MedicalDetail::getCreateTime);
     }
 
+    /**
+     * 根据病历或医生查询<br>
+     * - 索引：(recordId, createTime)<br>
+     * - 索引：(doctorId, createTime)
+     */
+    default MPLambdaQuery<MedicalDetail> queryByRecord(Long recordId) {
+        return lambdaQuery().eq(MedicalDetail::getRecordId, recordId);
+    }
+
     @Override
     default String getMissingMessage() {
         return "exception.not_found.medical_detail";

@@ -206,7 +206,8 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         // 权限校验
         User login = requireLoginUser();
         requirePermission(login.isDoctor());
-        MedicalRecord record = medicalRecordMapper.selectById(request.getRecordId(), MedicalRecord::getPetAge);
+        MedicalRecord record = medicalRecordMapper.requireById(request.getRecordId(), MedicalRecord::getPetAge);
+        require(!baseMapper.queryByRecord(record.getId()).exists(), "request.medical.detail.duplicate");
 
         // 创建病历
         MedicalDetail detail = request.createEntity(login.getId());

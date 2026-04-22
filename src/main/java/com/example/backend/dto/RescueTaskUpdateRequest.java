@@ -34,7 +34,6 @@ public class RescueTaskUpdateRequest extends LocationRequest implements IRequest
         return new RescueTaskRecord(null,
                 task.getId(),
                 userId,
-                null,
                 RescueTaskAction.UPDATE,
                 task.getStatus(),
                 task.getStatus(),

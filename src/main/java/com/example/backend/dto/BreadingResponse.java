@@ -23,7 +23,6 @@ public class BreadingResponse implements IResponse {
     private String petBreed;
     private String petDescription;
     private AdoptBreadingStatus status;
-    private String requirement;
     private String rejectReason;
     private Date reviewTime;
     private Date startTime;
@@ -52,7 +51,6 @@ public class BreadingResponse implements IResponse {
                 breading.getPetBreed(),
                 breading.getPetDescription(),
                 breading.getStatus(),
-                breading.getRequirement(),
                 breading.getRejectReason(),
                 breading.getReviewTime(),
                 breading.getStartTime(),
