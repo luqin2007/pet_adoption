@@ -25,7 +25,7 @@ public class NoticeController {
 
     private final NoticeService noticeService;
 
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public Result<Page<NoticeResponse>> getNoticeList(@Valid NoticeQueryParams query, PageParams page) {
         Page<NoticeResponse> response = noticeService.getNotices(query, page);
         return Result.success(response);

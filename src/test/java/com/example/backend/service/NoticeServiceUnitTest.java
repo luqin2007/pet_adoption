@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.example.backend.component.NoticeSseHub;
 import com.example.backend.dto.NoticeResponse;
 import com.example.backend.entity.Notice;
@@ -16,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 
@@ -71,6 +73,13 @@ class NoticeServiceUnitTest {
                 notices.size() == 2
                         && notices.stream().allMatch(notice -> notice.getRead().equals(Boolean.FALSE))
                         && notices.stream().allMatch(notice -> notice.getCreateTime() != null)));
+    }
+
+    @Test
+    void readColumnIsEscapedBecauseReadIsReservedInMysqlFamilyDatabases() throws Exception {
+        Field read = Notice.class.getDeclaredField("read");
+
+        assertEquals("`read`", read.getAnnotation(TableField.class).value());
     }
 
     static class TestNoticeService extends NoticeService {

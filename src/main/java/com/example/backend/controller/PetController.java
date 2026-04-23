@@ -45,7 +45,7 @@ public class PetController {
     /**
      * 添加流浪宠物信息
      */
-    @PostMapping("/")
+    @PostMapping({"", "/"})
     public Result<PetAddResponse> addPet(@Valid @RequestBody PetInfoAddRequest petInformation) {
         PetAddResponse response = petService.addPet(petInformation);
         return Result.success(response);
@@ -64,7 +64,7 @@ public class PetController {
     /**
      * 获取流浪宠物列表
      */
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public Result<Page<PetResponse>> getPets(@Valid PetQueryParams query, PageParams page) {
         Page<PetResponse> response = petService.getPets(query, page);
         return Result.success(response);

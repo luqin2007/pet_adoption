@@ -36,3 +36,5 @@ build/
 /checks/**
 /src/main/resources/application.properties
 /testImages/**
+/upload_files/**
+/temp_files/**

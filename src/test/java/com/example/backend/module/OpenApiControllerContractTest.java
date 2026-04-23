@@ -49,6 +49,22 @@ class OpenApiControllerContractTest {
                         + formatEndpoints(extraInOpenApi));
     }
 
+    @Test
+    void rootControllerMethodsSupportPathsWithAndWithoutTrailingSlash() {
+        List<String> slashOnlyMappings = new ArrayList<>();
+        for (Class<?> controller : CONTROLLERS) {
+            for (Method method : controller.getDeclaredMethods()) {
+                if (isSlashOnlyRootMapping(method)) {
+                    slashOnlyMappings.add(controller.getSimpleName() + "#" + method.getName());
+                }
+            }
+        }
+
+        assertTrue(slashOnlyMappings.isEmpty(),
+                () -> "根路径 Controller 方法需要同时声明 \"\" 和 \"/\":\n"
+                        + String.join("\n", slashOnlyMappings));
+    }
+
     private static List<Endpoint> scanController(Class<?> controller) {
         String classPath = firstValue(controller.getAnnotation(RequestMapping.class));
         List<Endpoint> endpoints = new ArrayList<>();
@@ -105,6 +121,28 @@ class OpenApiControllerContractTest {
 
     private static String firstValue(DeleteMapping mapping) {
         return firstNonEmpty(mapping.path(), mapping.value());
+    }
+
+    private static boolean isSlashOnlyRootMapping(Method method) {
+        return isSlashOnly(method.getAnnotation(GetMapping.class))
+                || isSlashOnly(method.getAnnotation(PostMapping.class))
+                || isSlashOnly(method.getAnnotation(PutMapping.class))
+                || isSlashOnly(method.getAnnotation(PatchMapping.class))
+                || isSlashOnly(method.getAnnotation(DeleteMapping.class));
+    }
+
+    private static boolean isSlashOnly(Object annotation) {
+        String[] values = mappingValues(annotation);
+        return values.length == 1 && "/".equals(values[0]);
+    }
+
+    private static String[] mappingValues(Object annotation) {
+        if (annotation instanceof GetMapping mapping) return mapping.value();
+        if (annotation instanceof PostMapping mapping) return mapping.value();
+        if (annotation instanceof PutMapping mapping) return mapping.value();
+        if (annotation instanceof PatchMapping mapping) return mapping.value();
+        if (annotation instanceof DeleteMapping mapping) return mapping.value();
+        return new String[0];
     }
 
     private static String firstNonEmpty(String[] first, String[] second) {

@@ -40,7 +40,7 @@ public class RescueTaskController {
     /**
      * 获取所有信息
      */
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public Result<Page<RescueTaskResponse>> getRescueTasks(PageParams pageParams) {
         Page<RescueTaskResponse> response = rescueTaskService.getRescueTasks(pageParams);
         return Result.success(response);
@@ -49,7 +49,7 @@ public class RescueTaskController {
     /**
      * 准备上报新救助任务
      */
-    @PutMapping("/")
+    @PutMapping({"", "/"})
     public Result<String> beginRescueTask() {
         String id = rescueTaskService.beginRescueTask();
         return Result.success(id);
@@ -58,7 +58,7 @@ public class RescueTaskController {
     /**
      * 提交救助任务
      */
-    @PostMapping("/")
+    @PostMapping({"", "/"})
     public Result<RescueTaskResponse> addRescueTask(@Valid @RequestBody RescueTaskAddRequest request) {
         RescueTaskResponse response = rescueTaskService.addRescueTask(request);
         return Result.success(response);

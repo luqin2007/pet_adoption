@@ -80,7 +80,7 @@ public class UserController {
     /**
      * 获取用户列表
      */
-    @GetMapping("/")
+    @GetMapping({"", "/"})
     public Result<Page<UserResponse>> getUserList(PageParams pageParams) {
         Page<UserResponse> response = userService.getAllUsers(pageParams);
         return Result.success(response);

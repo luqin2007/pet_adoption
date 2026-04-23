@@ -72,6 +72,14 @@ class DatabaseSchemaContractTest {
                 () -> "外键引用了不存在的表:\n" + String.join("\n", missingTargets));
     }
 
+    @Test
+    void deleteJobLifecycleTimestampsAreNullableUntilJobRuns() throws IOException {
+        String sql = Files.readString(INIT_SQL);
+
+        assertTrue(sql.contains("`start_time` datetime COMMENT '开始时间'"));
+        assertTrue(sql.contains("`finish_time` datetime COMMENT '结束时间'"));
+    }
+
     private static Set<String> matches(String input, Pattern pattern) {
         Matcher matcher = pattern.matcher(input);
         Set<String> values = new TreeSet<>();

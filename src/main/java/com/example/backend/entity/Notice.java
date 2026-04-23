@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.example.backend.entity.property.NoticeSource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -48,6 +49,7 @@ public class Notice implements IId {
      * 是否已读
      * *非空 boolean*
      */
+    @TableField("`read`")
     private Boolean read;
 
     /**

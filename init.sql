@@ -1029,8 +1029,8 @@ CREATE TABLE `delete_job` (
   `path` varchar(255) NOT NULL COMMENT '文件路径',
   `status` varchar(20) NOT NULL COMMENT '任务状态',
   `create_time` datetime NOT NULL COMMENT '创建时间',
-  `start_time` datetime NOT NULL COMMENT '开始时间',
-  `finish_time` datetime NOT NULL COMMENT '结束时间',
+  `start_time` datetime COMMENT '开始时间',
+  `finish_time` datetime COMMENT '结束时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='DeleteJob';
 

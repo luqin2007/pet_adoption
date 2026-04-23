@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,12 +41,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void setAuthentication(String token, HttpServletRequest request) {
         SecurityContext context = SecurityContextHolder.getContext();
         if (context.getAuthentication() == null) {
-            String username = jwtHelper.getUsernameFromToken(token);
-            UserDetails userDetails = userService.loadUserByUsername(username);
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            context.setAuthentication(authentication);
+            try {
+                String username = jwtHelper.getUsernameFromToken(token);
+                UserDetails userDetails = userService.loadUserByUsername(username);
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                context.setAuthentication(authentication);
+            } catch (AuthenticationException e) {
+                SecurityContextHolder.clearContext();
+            }
         }
     }
 }
