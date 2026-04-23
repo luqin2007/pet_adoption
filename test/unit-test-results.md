@@ -2,7 +2,7 @@
 
 ## 执行时间
 
-2026-04-23 20:08:26 Asia/Hong_Kong
+2026-04-23 20:23:16 Asia/Hong_Kong
 
 ## 执行命令
 
@@ -27,10 +27,17 @@
 | `BaseServiceUnitTest` | 4 | 0 | 0 | 0 | 通过 |
 | `FileServiceUnitTest` | 4 | 0 | 0 | 0 | 通过 |
 | `JwtAndSecurityUnitTest` | 4 | 0 | 0 | 0 | 通过 |
+| `NoticeServiceUnitTest` | 2 | 0 | 0 | 0 | 通过 |
+| `PetServiceUnitTest` | 2 | 0 | 0 | 0 | 通过 |
+| `PublicityServiceUnitTest` | 4 | 0 | 0 | 0 | 通过 |
+| `RescueTaskServiceUnitTest` | 3 | 0 | 0 | 0 | 通过 |
+| `UserServiceUnitTest` | 3 | 0 | 0 | 0 | 通过 |
+| `VolunteerServiceUnitTest` | 3 | 0 | 0 | 0 | 通过 |
+| `WorkflowBeginServiceUnitTest` | 6 | 0 | 0 | 0 | 通过 |
 
 总计：
 
-- 用例数：19
+- 用例数：42
 - 失败：0
 - 错误：0
 - 跳过：0
@@ -60,18 +67,69 @@
 - `CustomUserDetails` 会根据角色 bitmask 映射 Spring Security authority。
 - 修复后 `WORKER` 不再获得 `ROLE_ADMIN`。
 
+### UserService
+
+- 登录成功时通过 `AuthenticationManager` 返回用户响应并绑定 access/refresh token。
+- 密码错误时包装为业务无效参数异常。
+- 邮箱验证码会写 Redis，并发布邮件发送事件。
+
+### PublicityService
+
+- 工作人员可创建科普文章草稿。
+- 普通用户不能创建科普文章。
+- 分享已发布文章会递增分享数并生成详情 URL。
+- 草稿文章不能被分享。
+
+### NoticeService
+
+- SSE 连接会使用当前登录用户 id 注册。
+- 批量通知会为每个接收人创建未读通知响应。
+
+### PetService
+
+- 工作人员可以废弃宠物记录。
+- 普通用户不能废弃宠物记录。
+
+### RescueTaskService
+
+- 救助任务创建人可以查看自己的任务。
+- 无关普通用户不能查看他人救助任务。
+- 工作人员可以查看任意救助任务。
+
+### VolunteerService
+
+- 工作人员可以发放待发放激励。
+- 普通用户不能发放激励。
+- 已发放激励不能重复发放。
+
+### 剩余业务流程入口
+
+- `AdoptBreadingService.beginAgreement`：工作人员可开始协议草稿，普通用户被拒绝。
+- `ItemDonationService.beginDonation`：登录用户可开始捐赠流程，Redis 内容记录用户 id。
+- `LostPetService.beginLostPet`：登录用户可开始走失宠物报备。
+- `MedicalService.beginExamination`：医生可为未完成且未废弃的医疗明细开始检查上传流程，非医生被拒绝。
+
 ## 发现并修复的问题
 
-详见：`test/problem-report-20260423-200724.md`
+详见：
+
+- `test/problem-report-20260423-200724.md`
+- `test/problem-report-20260423-201516.md`
+- `test/problem-report-20260423-201611.md`
+- `test/problem-report-20260423-201849.md`
+- `test/problem-report-20260423-201938.md`
+- `test/problem-report-20260423-202031.md`
 
 核心生产问题：
 
 - `UserRole.ADMIN` 原 `matchMask=0x0` 会使任意角色匹配 `ROLE_ADMIN`。
 - 已修复为 `matchMask=0x1F`，只有完整权限掩码才匹配管理员角色。
+- `RescueTaskStatus` 原使用 `EnumSet` 在枚举构造期间初始化前置状态，首次访问枚举会失败。
+- 已改为普通不可变 `Set`，状态流转语义不变。
 
 ## 未覆盖风险
 
 - 当前单元测试未连接真实 MySQL/Redis，因此不验证 `init.sql` 与 mapper SQL 的运行结果。
 - 当前 OpenAPI 契约测试验证 Controller 路由是否被 `openapi.yaml` 完整记录，不验证请求/响应 schema 的字段级兼容。
-- 文件服务的图片/视频真实 MIME 样本、事务 afterCommit 行为、媒体封面切换仍建议在下一轮补充。
-- 跨服务流程如领养协议、救助任务、医疗检查、捐赠库存需要使用 MySQL Shell 初始化数据库后做集成测试。
+- 文件服务的图片/视频真实 MIME 样本、事务 afterCommit 行为、媒体封面切换仍建议在后续补充。
+- 本轮已覆盖所有服务的至少一个单元入口或核心权限/状态规则；跨 mapper 的完整业务流程仍需要使用 MySQL Shell 初始化数据库后做集成测试。

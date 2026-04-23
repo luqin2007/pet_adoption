@@ -2,8 +2,10 @@ package com.example.backend.entity.property;
 
 import com.example.backend.util.ServiceException;
 
-import java.util.EnumSet;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * 救助任务状态
@@ -15,14 +17,17 @@ public enum RescueTaskStatus {
     COMPLETED(APPROVED, PROCESSING), // 任务完成
     DISCARDED(CREATED, APPROVED, PROCESSING); // 已废弃
 
-    private final EnumSet<RescueTaskStatus> previousStatus;
+    private final Set<RescueTaskStatus> previousStatus;
 
     RescueTaskStatus(RescueTaskStatus first, RescueTaskStatus... other) {
-        this.previousStatus = EnumSet.of(first, other);
+        Set<RescueTaskStatus> statuses = new HashSet<>();
+        statuses.add(first);
+        statuses.addAll(Arrays.asList(other));
+        this.previousStatus = Set.copyOf(statuses);
     }
 
     RescueTaskStatus() {
-        this.previousStatus = EnumSet.noneOf(RescueTaskStatus.class);
+        this.previousStatus = Set.of();
     }
 
     public boolean canChangeFrom(RescueTaskStatus status) {

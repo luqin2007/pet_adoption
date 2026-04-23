@@ -48,9 +48,9 @@
 | `register(request)` | 重复用户名或邮箱 | 抛出重复业务异常 | 待 mapper 单测 |
 | `isUsernameExist(username)` | 用户名 | 返回是否存在 | 待 mapper 单测 |
 | `isEmailExist(email)` | 邮箱 | 返回是否存在 | 待 mapper 单测 |
-| `sendMailCode(email)` | 已注册邮箱 | 生成验证码；写 Redis；发布邮件事件 | 待事件单测 |
-| `login(username, password)` | 正确密码 | 返回用户信息和 access/refresh token | JWT 已部分覆盖 |
-| `login(username, password)` | 错误密码 | 抛出认证异常 | 待 mapper 单测 |
+| `sendMailCode(email)` | 已注册邮箱 | 生成验证码；写 Redis；发布邮件事件 | 已覆盖 |
+| `login(username, password)` | 正确密码 | 返回用户信息和 access/refresh token | 已覆盖 |
+| `login(username, password)` | 错误密码 | 抛出认证异常 | 已覆盖 |
 | `getUser(userId)` | 有效用户 id | 返回用户响应 | 待 mapper 单测 |
 | `getUserWithToken(username)` | 有效用户名 | 返回用户响应和 token | JWT 已部分覆盖 |
 | `removeUser(userId)` | 管理员删除用户 | 删除用户或标记删除 | 待 mapper 单测 |
@@ -71,7 +71,7 @@
 | `getPets(query, page)` | 状态/类型/位置/分页 | 返回分页宠物列表 | 待 mapper 单测 |
 | `getPet(petId)` | 有效宠物 id | 返回详情、媒体、标签、健康信息 | 待集成测试 |
 | `updatePet(petId, request)` | 更新字段 | 更新宠物并发布事件 | 待 mapper/事件单测 |
-| `deletePet(petId)` | 有权限用户 | 删除宠物及相关媒体 | 待 mapper 单测 |
+| `deletePet(petId)` | 工作人员、普通用户 | 工作人员可废弃；普通用户被拒绝 | 已覆盖 |
 | `uploadMedia(petId, request)` | 图片/视频 | 上传媒体；返回媒体响应 | FileService 已部分覆盖 |
 | `updateMedia(petId, mediaId, request)` | 媒体元数据 | 更新名称/描述/封面 | 待 mapper 单测 |
 | `deleteMedia(petId, mediaId)` | 媒体 id | 删除媒体并重置封面 | 待 mapper 单测 |
@@ -88,7 +88,7 @@
 |---|---|---|---|---|
 | 领养 | `addAdopt`, `getAdopt`, `getAdopts`, `updateAdoptStatus` | 领养申请、id、查询条件、状态 | 新增/查询/分页/状态变更；非法状态抛异常 | 待 mapper/事件单测 |
 | 寄养 | `addBreading`, `getBreading`, `getBreadingPets`, `updateBreadingStatus` | 寄养申请、id、查询条件、状态 | 新增/查询/分页/状态变更 | 待 mapper/事件单测 |
-| 协议 | `beginAgreement`, `addAgreement`, `updateAgreement`, `getAgreement`, `getAgreements` | 临时 uuid、协议请求、分页 | Redis uuid、协议新增/修改/查询 | Base Redis 已覆盖 |
+| 协议 | `beginAgreement`, `addAgreement`, `updateAgreement`, `getAgreement`, `getAgreements` | 临时 uuid、协议请求、分页 | Redis uuid、协议新增/修改/查询 | beginAgreement 已覆盖 |
 | 协议文件 | `uploadAgreement`, `uploadAgreementFile`, `deleteAgreementFile`, `reorderAgreementFiles`, `signAgreement` | 文件、uuid、文件 id、排序列表、签名图片 | 文件保存/删除/排序/签署 | FileService 已部分覆盖 |
 | 跟踪 | `addFollowTask`, `updateFollowTask`, `getFollowTask`, `getFollowTasks`, `addFollowRecord`, `getFollowRecords` | 跟踪任务/记录请求、分页 | 新增、修改、查询和分页 | 待 mapper/事件单测 |
 
@@ -96,7 +96,7 @@
 
 | 方法组 | 方法 | 测试输入 | 预计输出 | 当前覆盖 |
 |---|---|---|---|---|
-| 捐赠 | `beginDonation`, `uploadDonationFile`, `deleteDonationFile`, `addDonation`, `updateDonation`, `updateDonationStatus`, `getDonation`, `getDonations` | uuid、文件、捐赠请求、状态、分页 | 临时文件、捐赠新增/修改/状态流转/查询 | Base/File 已部分覆盖 |
+| 捐赠 | `beginDonation`, `uploadDonationFile`, `deleteDonationFile`, `addDonation`, `updateDonation`, `updateDonationStatus`, `getDonation`, `getDonations` | uuid、文件、捐赠请求、状态、分页 | 临时文件、捐赠新增/修改/状态流转/查询 | beginDonation 已覆盖 |
 | 物资 | `addItem`, `updateItem`, `getItem`, `getItems`, `discardItem` | 物资请求、id、查询条件 | 新增/修改/查询/弃用 | 待 mapper 单测 |
 | 分类 | `addCategory`, `updateCategory`, `discardCategory`, `getCategory`, `getCategories` | 分类请求、名称、分页 | 新增/修改/弃用/查询 | 待 mapper 单测 |
 | 库存 | `addStockRecord`, `getStock`, `getStocks`, `getStockRecords` | 入库/出库请求、库存查询 | 写库存流水；返回库存/流水分页 | 待 mapper 单测 |
@@ -106,7 +106,7 @@
 
 | 方法组 | 方法 | 测试输入 | 预计输出 | 当前覆盖 |
 |---|---|---|---|---|
-| 丢失宠物 | `beginLostPet`, `addLostPet`, `uploadLostPetMedia`, `deleteLostPetMedia`, `updateLostPet`, `getLostPet`, `getLostPets` | uuid、媒体、丢失宠物请求、分页 | 创建/上传/删除/修改/详情/分页 | Base/File 已部分覆盖 |
+| 丢失宠物 | `beginLostPet`, `addLostPet`, `uploadLostPetMedia`, `deleteLostPetMedia`, `updateLostPet`, `getLostPet`, `getLostPets` | uuid、媒体、丢失宠物请求、分页 | 创建/上传/删除/修改/详情/分页 | beginLostPet 已覆盖 |
 | 相似匹配 | `getSimilarPets`, `markPetMismatch`, `listMatchedPets`, `listMatchedLostPets` | 丢失宠物、宠物、位置 | 返回匹配列表；不匹配记录被排除 | 待匹配逻辑单测 |
 | 认领 | `addClaim`, `getClaim`, `getClaims`, `cancelClaim`, `approveClaim` | 认领请求、审批请求、分页 | 新增/查询/取消/审批 | 待 mapper/事件单测 |
 
@@ -118,7 +118,7 @@
 | 病历 | `addMedicalRecord`, `updateMedicalRecord`, `getMedicalRecord`, `getMedicalRecords` | 宠物 id、病历请求、分页 | 新增/修改/详情/分页 | 待 mapper 单测 |
 | 医疗明细 | `addMedicalDetail`, `getMedicalDetail`, `getMedicalDetails`, `updateMedicalDetail`, `completeMedicalDetail` | 明细请求、状态 | 新增/查询/修改/完成；已完成不可编辑 | 待 mapper 单测 |
 | 诊断和方案 | `addDiagnosis`, `discardDiagnosis`, `addTreatmentPlan`, `discardTreatmentPlan` | 诊断/治疗计划请求、id 集合 | 新增/作废 | 待 mapper 单测 |
-| 检查 | `beginExamination`, `uploadExamination`, `deleteExamination`, `addExamination`, `getExamination` | 明细 id、uuid、检查文件、请求 | 临时检查文件、新增检查、查询 | Base/File 已部分覆盖 |
+| 检查 | `beginExamination`, `uploadExamination`, `deleteExamination`, `addExamination`, `getExamination` | 明细 id、uuid、检查文件、请求 | 临时检查文件、新增检查、查询 | beginExamination 已覆盖 |
 | 疫苗驱虫 | `addVaccine`, `getVaccines`, `getLatestVaccines`, `addDeworm`, `getDeworms`, `getVaccinesByPetIds`, `getDewormsByPetIds` | 宠物 id、疫苗/驱虫请求、id 集合 | 新增和查询列表/最新记录/分组 Map | 待 mapper 单测 |
 | 康复 | `addRehabPlan`, `getRehabPlan`, `getRehabPlans`, `updateRehabPlanStatus`, `addRehabRecord`, `getRehabRecords` | 康复计划/记录请求、状态、分页 | 新增/查询/状态更新/记录列表 | 待 mapper 单测 |
 | 健康评估 | `addHealthAssessment`, `getHealthAssessment`, `getHealthAssessments` | 宠物 id、评估请求、分页 | 新增/详情/分页 | 待 mapper 单测 |
@@ -130,14 +130,14 @@
 | `getNotices(query, page)` | 通知查询和分页 | 返回通知分页 | 待 mapper 单测 |
 | `countUnread()` | 当前登录用户 | 返回未读数量 | 待 mapper 单测 |
 | `readNotice(noticeId, isRead)` | id 集合、已读标记 | 更新已读状态 | 待 mapper 单测 |
-| `connect()` | 当前登录用户 | 返回 SSE emitter 并注册连接 | 待组件单测 |
-| `addNotices(receivers, source, title, content)` | 接收用户、来源、标题、内容 | 批量保存通知并推送 SSE | 待 mapper/组件单测 |
+| `connect()` | 当前登录用户 | 返回 SSE emitter 并注册连接 | 已覆盖 |
+| `addNotices(receivers, source, title, content)` | 接收用户、来源、标题、内容 | 批量保存通知并推送 SSE | 已覆盖 |
 
 ## PublicityService
 
 | 方法 | 测试输入 | 预计输出 | 当前覆盖 |
 |---|---|---|---|
-| `addArticle(request)` | 文章请求 | 新增文章并返回详情 | 待 mapper 单测 |
+| `addArticle(request)` | 工作人员/普通用户、文章请求 | 工作人员可创建科普文章；普通用户被拒绝 | 已覆盖 |
 | `getArticles(query, page)` | 查询条件、分页 | 返回文章分页，包含点赞/收藏状态 | 待 mapper 单测 |
 | `getArticle(articleId)` | 文章 id | 返回详情并增加阅读/展示所需字段 | 待 mapper 单测 |
 | `updateArticle(articleId, request)` | 更新字段 | 返回更新后文章 | 待 mapper 单测 |
@@ -146,7 +146,7 @@
 | `likeArticle(articleId, liked)` | 点赞/取消点赞 | 返回点赞数量和状态 | 待 mapper 单测 |
 | `favoriteArticle(articleId, favorited)` | 收藏/取消收藏 | 状态更新，无异常 | 待 mapper 单测 |
 | `getFavorites(page)` | 当前用户、分页 | 返回收藏文章分页 | 待 mapper 单测 |
-| `shareArticle(articleId)` | 文章 id | 返回分享信息并更新分享计数 | 待 mapper 单测 |
+| `shareArticle(articleId)` | 已发布/草稿文章 id | 已发布文章返回分享信息并更新分享计数；草稿被拒绝 | 已覆盖 |
 
 ## RescueTaskService
 
@@ -154,7 +154,7 @@
 |---|---|---|---|
 | `beginRescueTask()` | 当前登录用户 | 返回临时 uuid，写 Redis | Base 已覆盖 |
 | `addRescueTask(request)` | 救助任务请求、临时媒体 | 新增任务、位置、媒体、记录 | 待集成测试 |
-| `getRescueTask(taskId)` | 任务 id | 返回任务详情 | 待 mapper 单测 |
+| `getRescueTask(taskId)` | 创建人/无关普通用户/工作人员 | 创建人和工作人员可查看；无关普通用户被拒绝 | 已覆盖 |
 | `uploadRescueTaskMedia(uuid, file)` | uuid、媒体文件 | 上传临时媒体 | File 已部分覆盖 |
 | `updateRescueTask(taskId, request)` | 更新字段 | 更新任务并发布事件 | 待 mapper/事件单测 |
 | `deleteRescueTaskMedia(uuid, filename)` | 临时媒体 | 删除临时媒体 | 待 FileService 单测 |
@@ -174,7 +174,7 @@
 | 档案 | `getProfile`, `getProfiles`, `updateProfile`, `updateProfileStatus` | 档案 id、更新字段、状态 | 查询/修改/状态变更 | 待 mapper 单测 |
 | 排班 | `addShift`, `getShift`, `getShifts`, `updateShift`, `updateShiftStatus` | 排班请求、时间、状态 | 新增/查询/修改/状态变更；时间冲突抛异常 | 待时间冲突单测 |
 | 服务记录 | `addServiceRecord`, `getServiceRecord`, `getServiceRecords`, `updateServiceRecordStatus` | 服务记录请求、审核请求 | 新增/查询/审核 | 待 mapper 单测 |
-| 奖励 | `addReward`, `getReward`, `getRewards`, `issueReward` | 奖励请求、分页 | 新增/查询/发放 | 待 mapper 单测 |
+| 奖励 | `addReward`, `getReward`, `getRewards`, `issueReward` | 奖励请求、分页 | 新增/查询/发放 | issueReward 已覆盖 |
 
 ## 单元测试优先级建议
 
