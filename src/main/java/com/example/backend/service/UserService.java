@@ -9,8 +9,8 @@ import com.example.backend.util.*;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,8 +40,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
     private final PasswordEncoder passwordEncoder;
     private final JwtHelper jwtHelper;
-    @Lazy
-    private final AuthenticationManager authenticationManager;
+    private final ObjectProvider<AuthenticationManager> authenticationManagerProvider;
 
     private FileService fileService;
 
@@ -128,6 +127,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         try {
             // 登录
             Authentication token = new UsernamePasswordAuthenticationToken(username, password);
+            AuthenticationManager authenticationManager = authenticationManagerProvider.getObject();
             Authentication authentication = authenticationManager.authenticate(token);
             principal = (CustomUserDetails) authentication.getPrincipal();
         } catch (BadCredentialsException e) {

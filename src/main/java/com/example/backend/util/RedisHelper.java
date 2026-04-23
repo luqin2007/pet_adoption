@@ -2,6 +2,7 @@ package com.example.backend.util;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -15,8 +16,8 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class RedisHelper {
 
-    private final RedisTemplate<String, Object> redisTemplateObject;
-    private final RedisTemplate<String, String> redisTemplateString;
+    private final RedisTemplate<Object, Object> redisTemplateObject;
+    private final StringRedisTemplate redisTemplateString;
 
     /**
      * 存储字符串
