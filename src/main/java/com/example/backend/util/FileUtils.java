@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 import org.springframework.http.MediaType;
-import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -181,30 +180,6 @@ public class FileUtils {
             Files.copy(source, target);
         } catch (IOException e) {
             throw ServiceException.system("exception.system.file.copy_failed", e);
-        }
-    }
-
-    /**
-     * 复制目录内容
-     */
-    public static void copyDirectory(Path source, Path target) {
-        if (!Files.isDirectory(source)) return;
-        try {
-            FileSystemUtils.copyRecursively(source, target);
-        } catch (IOException e) {
-            throw ServiceException.system("exception.system.directory.copy_failed", e);
-        }
-    }
-
-    /**
-     * 删除目录内容
-     */
-    public static void deleteDirectory(Path source) {
-        if (!Files.isDirectory(source)) return;
-        try {
-            FileSystemUtils.deleteRecursively(source);
-        } catch (IOException e) {
-            throw ServiceException.system("exception.system.directory.delete_failed", e);
         }
     }
 }

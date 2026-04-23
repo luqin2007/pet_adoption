@@ -21,16 +21,6 @@ public class RedisHelper {
     /**
      * 存储字符串
      *
-     * @param key   键
-     * @param value 值
-     */
-    public void putString(String key, String value) {
-        redisTemplateString.opsForValue().set(key, value);
-    }
-
-    /**
-     * 存储字符串
-     *
      * @param key            键
      * @param value          值
      * @param timeoutMinutes 超时时间，单位：分钟
@@ -124,16 +114,6 @@ public class RedisHelper {
      */
     public <T> Stream<T> getObjectsFromHash(String key, Class<T> type) {
         return redisTemplateObject.opsForHash().values(key).stream().map(type::cast);
-    }
-
-    /**
-     * 从 Hash 中删除对象
-     *
-     * @param key     Hash 键
-     * @param hashKey Hash 内对象键
-     */
-    public void deleteObjectFromHash(String key, String hashKey) {
-        redisTemplateObject.opsForHash().delete(key, hashKey);
     }
 
     /**

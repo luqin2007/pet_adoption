@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.validation.Errors;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 /**

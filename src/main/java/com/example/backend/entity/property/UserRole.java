@@ -1,12 +1,8 @@
 package com.example.backend.entity.property;
 
-import com.example.backend.util.ServiceException;
-import com.example.backend.util.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Getter
@@ -41,19 +37,6 @@ public enum UserRole {
         return getRoles(mask)
                 .mapToInt(role -> role.setMask)
                 .reduce(0, (a, b) -> a | b);
-    }
-
-    public static Optional<UserRole> getByRole(String role) {
-        if (!StringUtils.hasText(role))
-            return Optional.empty();
-        try {
-            String roleName = role.toUpperCase(Locale.ROOT);
-            if (!roleName.startsWith("ROLE_")) // 不确定会不会加 role_ 前缀，先都可以吧
-                roleName = "ROLE_" + roleName;
-            return Optional.of(UserRole.valueOf(roleName));
-        } catch (Exception e) {
-            return Optional.empty();
-        }
     }
 
     public boolean match(Integer bit) {

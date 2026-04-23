@@ -5,10 +5,8 @@ import com.example.backend.entity.Article;
 import com.example.backend.entity.property.ArticleStatus;
 import com.example.backend.entity.property.ArticleType;
 import com.example.backend.util.MPLambdaQuery;
-import com.example.backend.util.MPLambdaUpdate;
 import org.apache.ibatis.annotations.Mapper;
 
-import java.util.Map;
 import java.util.Set;
 
 /**

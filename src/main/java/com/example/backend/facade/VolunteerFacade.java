@@ -31,9 +31,6 @@ public class VolunteerFacade {
     private final VolunteerServiceRecordMapper volunteerServiceRecordMapper;
     private final VolunteerTaskMapper volunteerTaskMapper;
     private final UserService userService;
-    private final FollowTaskMapper followTaskMapper;
-    private final AdoptMapper adoptMapper;
-    private final DonationMapper donationMapper;
     private final LocationMapper locationMapper;
 
     /**
