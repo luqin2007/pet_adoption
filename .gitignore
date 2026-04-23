@@ -35,3 +35,4 @@ build/
 /src/test/
 /checks/**
 /src/main/resources/application.properties
+/testImages/**
