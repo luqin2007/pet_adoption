@@ -25,6 +25,7 @@
   - `OpenApiControllerContractTest`
   - `ResultAndUtilityContractTest`
 - 已执行 API 集成测试，结果见 `test/integration/api-test-results.md` 和 `test/integration/api-results.json`
+- 已按 9 个业务模块生成 Service 单元测试与 API 测试流程，见 `test/module-service-api-test-flows.md`
 
 ## 测试结论
 
@@ -38,4 +39,4 @@
 
 ## 说明
 
-当前环境没有 `mysql` 命令行客户端，因此未通过外部 SQL 客户端插入临时登录用户。集成测试使用已导入数据库和后端 API 完成可重复验证；如需补充“登录成功 + Token 访问业务接口”的全链路测试，可在数据库预置一个测试用户后继续执行。
+当前环境已安装 MySQL Shell，可使用 `C:\Dev\tools\mysql-shell-9.7.0-windows-x86-64bit\bin\mysqlsh.exe` 连接 `application.properties` 中的数据库，补充“登录成功 + Token 访问业务接口”的全链路测试数据。

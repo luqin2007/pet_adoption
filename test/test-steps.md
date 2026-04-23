@@ -40,7 +40,23 @@
    - `test/integration/api-results.json`
    - `test/integration/api-test-results.md`
 
-## 5. 错误记录与修复提交
+## 5. 模块级测试流程
+
+1. 按指定顺序拆分 9 个模块：
+   - 用户管理功能
+   - 流浪宠物信息管理功能
+   - 救助任务管理功能
+   - 医疗护理管理功能
+   - 领养与寄养管理功能
+   - 物资与捐赠管理功能
+   - 走失宠物认领功能
+   - 志愿者管理功能
+   - 公益宣传功能
+2. 对每个模块列出 Service 方法、对应 API、单元测试重点和 API 集成测试步骤。
+3. 详细流程见：`test/module-service-api-test-flows.md`
+4. MySQL Shell 路径：`C:\Dev\tools\mysql-shell-9.7.0-windows-x86-64bit\bin\mysqlsh.exe`
+
+## 6. 错误记录与修复提交
 
 每遇到错误均创建独立文档，包含测试数据、预期结果、实际结果、原因分析和解决方案。
 
