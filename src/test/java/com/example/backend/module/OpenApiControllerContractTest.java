@@ -36,7 +36,7 @@ class OpenApiControllerContractTest {
         Set<Endpoint> controllerEndpoints = CONTROLLERS.stream()
                 .flatMap(controller -> scanController(controller).stream())
                 .collect(Collectors.toCollection(TreeSet::new));
-        Set<Endpoint> openApiEndpoints = readOpenApiEndpoints(Path.of("openapi.yml"));
+        Set<Endpoint> openApiEndpoints = readOpenApiEndpoints(Path.of("openapi.yaml"));
 
         Set<Endpoint> missingInOpenApi = difference(controllerEndpoints, openApiEndpoints);
         Set<Endpoint> extraInOpenApi = difference(openApiEndpoints, controllerEndpoints);
