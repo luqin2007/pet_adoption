@@ -175,7 +175,7 @@ CREATE TABLE `rescue_task` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '救助任务',
   `previous_id` bigint COMMENT '上一个任务 id',
   `user_id` bigint NOT NULL COMMENT '创建者',
-  `approve_id` bigint NOT NULL COMMENT '审核者',
+  `approve_id` bigint DEFAULT NULL COMMENT '审核者',
   `summary` varchar(20) NOT NULL COMMENT '简述',
   `description` text COMMENT '详细描述',
   `status` varchar(20) NOT NULL COMMENT '状态',

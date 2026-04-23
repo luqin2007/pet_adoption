@@ -125,7 +125,12 @@ public class RedisHelper {
      */
     @SuppressWarnings("unchecked")
     public <T> List<T> getAndDeleteObjectsFromHash(String key, String hashKey) {
-        return (List<T>) redisTemplateObject.opsForHash().getAndDelete(key, List.of(hashKey));
+        Object value = redisTemplateObject.opsForHash().get(key, hashKey);
+        if (value == null) {
+            return List.of();
+        }
+        redisTemplateObject.opsForHash().delete(key, hashKey);
+        return List.of((T) value);
     }
 
     /**

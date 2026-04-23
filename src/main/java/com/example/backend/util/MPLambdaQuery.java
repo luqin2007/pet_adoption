@@ -44,11 +44,13 @@ public class MPLambdaQuery<T extends IId> {
     }
 
     public <V> MPLambdaQuery<T> in(SFunction<T, ?> column, Function<V, ?> converter, Collection<V> values) {
-        if (values == null) return this;
+        if (values == null || values.isEmpty()) return this;
 
         Set<?> set = values.stream()
+                .filter(Objects::nonNull)
                 .map(converter)
                 .collect(Collectors.toSet());
+        if (set.isEmpty()) return this;
         query
                 .eq(set.size() == 1, column, set.iterator().next())
                 .in(set.size() > 1, column, set);
@@ -118,7 +120,10 @@ public class MPLambdaQuery<T extends IId> {
     }
 
     public <V, R> MPLambdaQuery<T> eq(SFunction<T, R> column, Function<V, R> converter, V value) {
-        query.eq(!ObjectUtils.isEmpty(value), column, converter.apply(value));
+        if (ObjectUtils.isEmpty(value)) {
+            return this;
+        }
+        query.eq(true, column, converter.apply(value));
         return this;
     }
 

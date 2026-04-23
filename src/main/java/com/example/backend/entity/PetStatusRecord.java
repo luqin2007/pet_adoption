@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.example.backend.entity.property.PetStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,12 +37,14 @@ public class PetStatusRecord implements IId {
      * 旧状态
      * *非空 varchar(20)*
      */
+    @TableField("`from`")
     private PetStatus from;
 
     /**
      * 新状态
      * *非空 varchar(20)*
      */
+    @TableField("`to`")
     private PetStatus to;
 
     /**

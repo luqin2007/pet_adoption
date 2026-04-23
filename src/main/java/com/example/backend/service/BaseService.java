@@ -69,14 +69,14 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
     @SafeVarargs
     public final T selectById(Long id, SFunction<T, ?>... columns) {
         if (id == null) return null;
-        return baseMapper.selectById(id, columns);
+        return getBaseMapper().selectById(id, columns);
     }
 
     /**
      * 根据 id 查找完整对象，id 必须存在
      */
     public T requireById(Long id) {
-        return baseMapper.requireById(id);
+        return getBaseMapper().requireById(id);
     }
 
     /**
@@ -84,14 +84,14 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
      */
     @SafeVarargs
     public final T requireById(Long id, SFunction<T, ?>... columns) {
-        return baseMapper.requireById(id, columns);
+        return getBaseMapper().requireById(id, columns);
     }
 
     /**
      * 检查 id 必须存在
      */
     public void requireExist(Long id) {
-        baseMapper.requireExist(id);
+        getBaseMapper().requireExist(id);
     }
 
     /**
@@ -99,7 +99,7 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
      */
     @SafeVarargs
     public final List<T> listById(Set<Long> ids, SFunction<T, ?>... columns) {
-        return baseMapper.selectList(ids, columns);
+        return getBaseMapper().selectList(ids, columns);
     }
 
     /**
@@ -107,7 +107,7 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
      */
     @SafeVarargs
     public final Map<Long, T> groupById(Set<Long> ids, SFunction<T, ?>... columns) {
-        return baseMapper.groupById(ids, columns);
+        return getBaseMapper().groupById(ids, columns);
     }
 
     /**
@@ -115,7 +115,7 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
      */
     @SafeVarargs
     public final Map<Long, T> groupById(Stream<Long> ids, SFunction<T, ?>... columns) {
-        return baseMapper.groupById(ids, columns);
+        return getBaseMapper().groupById(ids, columns);
     }
 
     /**
@@ -123,7 +123,7 @@ public class BaseService<M extends IBaseMapper<T>, T extends IId> extends MPJBas
      */
     @SafeVarargs
     public final Map<Long, T> groupById(Stream<Long> ids1, Stream<Long> ids2, SFunction<T, ?>... columns) {
-        return baseMapper.groupById(ids1, ids2, columns);
+        return getBaseMapper().groupById(ids1, ids2, columns);
     }
 
     // ---

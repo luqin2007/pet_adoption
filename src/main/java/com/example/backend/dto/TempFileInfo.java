@@ -9,11 +9,16 @@ import com.example.backend.entity.property.ParentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @AllArgsConstructor
-public class TempFileInfo implements IFile, Comparable<TempFileInfo> {
+public class TempFileInfo implements IFile, Comparable<TempFileInfo>, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private String filename;
     private String name;

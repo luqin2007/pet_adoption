@@ -21,7 +21,7 @@ public interface IValidatedRequest extends IRequest {
 
     default <T, E extends Enum<E>> void validateEnum(Errors errors, SFunction<T, String> fieldRef, Class<E> enumClass, String errorCode) {
         FieldWrapper<String> field = getNameAndValue(fieldRef);
-        if (field.isEmpty()) return;
+        if (field.isEmpty() || field.value.isBlank()) return;
 
         try {
             Enum.valueOf(enumClass, field.value.toUpperCase(Locale.ROOT));
@@ -36,6 +36,7 @@ public interface IValidatedRequest extends IRequest {
 
         try {
             for (String value : field.value) {
+                if (value == null || value.isBlank()) continue;
                 Enum.valueOf(enumClass, value.toUpperCase(Locale.ROOT));
             }
         } catch (IllegalArgumentException e) {

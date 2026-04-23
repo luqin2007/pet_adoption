@@ -8,6 +8,7 @@ import com.example.backend.entity.property.RescueTaskType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.Errors;
 
 import java.util.Date;
@@ -28,6 +29,7 @@ public class RescueTaskAddRequest extends LocationRequest implements IRequest, I
      * 任务简介
      */
     @NotBlank(message = "request.rescue_task.summary")
+    @Length(max = 20, message = "request.rescue_task.summary")
     private String summary;
 
     /**

@@ -7,6 +7,7 @@ import com.example.backend.entity.property.RescueTaskType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.Errors;
 
 import java.util.Date;
@@ -16,6 +17,7 @@ import java.util.Date;
 public class RescueTaskUpdateRequest extends LocationRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.rescue_task.summary")
+    @Length(max = 20, message = "request.rescue_task.summary")
     private String summary;
 
     @NotBlank(message = "request.rescue_task.description")

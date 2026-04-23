@@ -45,7 +45,7 @@ public class ArticleAddRequest implements IRequest, IValidatedRequest {
 
     @Override
     public void validate(Errors errors) {
-        validateEnum(errors, ArticleAddRequest::getType, ArticleStatus.class, "request.article.type");
+        validateEnum(errors, ArticleAddRequest::getType, ArticleType.class, "request.article.type");
     }
 
     public Article create(Long authorId) {

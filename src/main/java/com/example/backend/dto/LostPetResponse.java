@@ -97,11 +97,12 @@ public class LostPetResponse implements IResponse {
                                               Map<Long, User> owners,
                                               Map<Long, Pet> pets,
                                               Map<Long, String> petCovers) {
+        Long petId = lostPet.getPetId();
         return create(lostPet,
                 lostPet instanceof LostPetLocation l ? l.getLocation() : locations.get(lostPet.getId()),
                 owners.get(lostPet.getOwnerId()),
-                pets.get(lostPet.getPetId()),
-                petCovers.get(lostPet.getPetId()),
+                petId == null ? null : pets.get(petId),
+                petId == null ? null : petCovers.get(petId),
                 List.of());
     }
 }
