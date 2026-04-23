@@ -55,7 +55,7 @@ class UserServiceUnitTest {
 
     @Test
     void loginReturnsUserResponseWithAccessAndRefreshTokens() {
-        User user = user(11L, "alice", UserRole.NORMAL.getSetMask());
+        User user = user(11L, "alice", UserRole.NORMAL.getMask());
         Authentication authenticated = new TestingAuthenticationToken(new CustomUserDetails(user), null);
         when(authenticationManager.authenticate(any(Authentication.class))).thenReturn(authenticated);
         when(jwtHelper.generateAccessToken(user)).thenReturn("access-token");

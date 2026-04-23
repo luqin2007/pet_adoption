@@ -39,7 +39,7 @@ class PetServiceUnitTest {
 
     @Test
     void workerCanDiscardPet() {
-        login(user(1L, "worker", UserRole.WORKER.getSetMask()));
+        login(user(1L, "worker", UserRole.WORKER.getMask()));
         @SuppressWarnings("unchecked")
         MPLambdaUpdate<?> update = mock(MPLambdaUpdate.class);
         when(petMapper.discardPetById(33L)).thenReturn((MPLambdaUpdate) update);
@@ -52,7 +52,7 @@ class PetServiceUnitTest {
 
     @Test
     void normalUserCannotDiscardPet() {
-        login(user(2L, "normal", UserRole.NORMAL.getSetMask()));
+        login(user(2L, "normal", UserRole.NORMAL.getMask()));
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.deletePet(33L));
 

@@ -47,7 +47,7 @@ public class BaseEventListener {
     }
 
     public Set<Long> notifyWorkers(Long excludeId, INotifyEvent<?> event, Object... contentArgs) {
-        Set<Long> userIds = userMapper.queryByRole(UserRole.WORKER.getMatchMask())
+        Set<Long> userIds = userMapper.queryByRole(UserRole.WORKER.getMask())
                 .list(User::getId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
         return notify(excludeId, userIds, event.getSource(),

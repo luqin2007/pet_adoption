@@ -2,6 +2,7 @@ package com.example.backend.entity.property;
 
 import com.example.backend.util.ServiceException;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Locale;
 
@@ -10,20 +11,22 @@ import java.util.Locale;
  */
 public enum VolunteerShiftStatus {
     ASSIGNED, // 已分配
-    CONFIRMED(ASSIGNED), // 已确认
-    IN_PROGRESS(CONFIRMED), // 执行中
-    COMPLETED(CONFIRMED, IN_PROGRESS), // 已完成
-    CANCELLED(ASSIGNED, CONFIRMED, IN_PROGRESS), // 已取消
-    ABSENT(CONFIRMED); // 缺勤
+    CONFIRMED, // 已确认
+    IN_PROGRESS, // 执行中
+    COMPLETED, // 已完成
+    CANCELLED, // 已取消
+    ABSENT; // 缺勤
 
-    private final EnumSet<VolunteerShiftStatus> previousEffect;
+    private static final EnumMap<VolunteerShiftStatus, EnumSet<VolunteerShiftStatus>> PREVIOUS_EFFECTS;
 
-    VolunteerShiftStatus(VolunteerShiftStatus first, VolunteerShiftStatus... others) {
-        this.previousEffect = EnumSet.of(first, others);
-    }
-
-    VolunteerShiftStatus() {
-        this.previousEffect = EnumSet.noneOf(VolunteerShiftStatus.class);
+    static {
+        PREVIOUS_EFFECTS = new EnumMap<>(VolunteerShiftStatus.class);
+        PREVIOUS_EFFECTS.put(ASSIGNED, EnumSet.noneOf(VolunteerShiftStatus.class));
+        PREVIOUS_EFFECTS.put(CONFIRMED, EnumSet.of(ASSIGNED));
+        PREVIOUS_EFFECTS.put(IN_PROGRESS, EnumSet.of(CONFIRMED));
+        PREVIOUS_EFFECTS.put(COMPLETED, EnumSet.of(CONFIRMED, IN_PROGRESS));
+        PREVIOUS_EFFECTS.put(CANCELLED, EnumSet.of(ASSIGNED, CONFIRMED, IN_PROGRESS));
+        PREVIOUS_EFFECTS.put(ABSENT, EnumSet.of(CONFIRMED));
     }
 
     /**
@@ -51,7 +54,7 @@ public enum VolunteerShiftStatus {
      * 是否可切换
      */
     public boolean canSwitchFrom(VolunteerShiftStatus status) {
-        return previousEffect.contains(status);
+        return PREVIOUS_EFFECTS.get(this).contains(status);
     }
 
     /**

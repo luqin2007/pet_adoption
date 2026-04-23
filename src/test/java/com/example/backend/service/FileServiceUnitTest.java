@@ -52,7 +52,7 @@ class FileServiceUnitTest {
         user.setId(7L);
         user.setUsername("tester");
         user.setPassword("{noop}pwd");
-        user.setRole(UserRole.ADMIN.getSetMask());
+        user.setRole(UserRole.ADMIN.getMask());
         SecurityContextHolder.getContext()
                 .setAuthentication(new TestingAuthenticationToken(new CustomUserDetails(user), null));
     }

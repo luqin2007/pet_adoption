@@ -167,7 +167,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
             // 更新用户角色
             User applicant = userService.requireById(application.getUserId());
             int role = applicant.getRole() == null ? 0 : applicant.getRole();
-            applicant.setRole(role | UserRole.VOLUNTEER.getSetMask());
+            applicant.setRole(role | UserRole.VOLUNTEER.getMask());
             userService.updateById(applicant);
             // 更新志愿者档案
             VolunteerProfile profile = volunteerProfileMapper.queryByUserId(application.getUserId()).one();

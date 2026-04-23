@@ -95,7 +95,7 @@ class NoticeServiceUnitTest {
         user.setUsername(username);
         user.setPassword("{noop}pwd");
         user.setEmail(username + "@example.com");
-        user.setRole(UserRole.NORMAL.getSetMask());
+        user.setRole(UserRole.NORMAL.getMask());
         return user;
     }
 }

@@ -54,12 +54,12 @@ class VolunteerServiceUnitTest {
 
     @Test
     void workerCanIssuePendingReward() {
-        User worker = user(3L, "worker", UserRole.WORKER.getSetMask());
+        User worker = user(3L, "worker", UserRole.WORKER.getMask());
         login(worker);
         VolunteerReward reward = reward(40L, VolunteerRewardStatus.PENDING);
         when(volunteerRewardMapper.requireById(40L)).thenReturn(reward);
         when(volunteerRewardMapper.updateById(any(VolunteerReward.class))).thenReturn(1);
-        VolunteerRewardResponse expected = VolunteerRewardResponse.create(reward, user(20L, "volunteer", UserRole.VOLUNTEER.getSetMask()), worker);
+        VolunteerRewardResponse expected = VolunteerRewardResponse.create(reward, user(20L, "volunteer", UserRole.VOLUNTEER.getMask()), worker);
         when(volunteerFacade.buildRewardResponse(reward)).thenReturn(expected);
 
         VolunteerRewardResponse response = service.issueReward(40L);
@@ -74,7 +74,7 @@ class VolunteerServiceUnitTest {
 
     @Test
     void normalUserCannotIssueReward() {
-        login(user(4L, "normal", UserRole.NORMAL.getSetMask()));
+        login(user(4L, "normal", UserRole.NORMAL.getMask()));
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.issueReward(40L));
 
@@ -84,7 +84,7 @@ class VolunteerServiceUnitTest {
 
     @Test
     void issuedRewardCannotBeIssuedAgain() {
-        login(user(3L, "worker", UserRole.WORKER.getSetMask()));
+        login(user(3L, "worker", UserRole.WORKER.getMask()));
         VolunteerReward reward = reward(40L, VolunteerRewardStatus.ISSUED);
         when(volunteerRewardMapper.requireById(40L)).thenReturn(reward);
 

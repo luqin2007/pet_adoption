@@ -46,7 +46,7 @@ class RescueTaskServiceUnitTest {
 
     @Test
     void taskOwnerCanReadOwnRescueTask() {
-        login(user(7L, "owner", UserRole.NORMAL.getSetMask()));
+        login(user(7L, "owner", UserRole.NORMAL.getMask()));
         RescueTask task = task(55L, 7L, null);
         when(rescueTaskMapper.requireById(55L)).thenReturn(task);
 
@@ -58,7 +58,7 @@ class RescueTaskServiceUnitTest {
 
     @Test
     void unrelatedNormalUserCannotReadRescueTask() {
-        login(user(8L, "stranger", UserRole.NORMAL.getSetMask()));
+        login(user(8L, "stranger", UserRole.NORMAL.getMask()));
         RescueTask task = task(55L, 7L, null);
         when(rescueTaskMapper.requireById(55L)).thenReturn(task);
 
@@ -70,7 +70,7 @@ class RescueTaskServiceUnitTest {
 
     @Test
     void workerCanReadAnyRescueTask() {
-        login(user(9L, "worker", UserRole.WORKER.getSetMask()));
+        login(user(9L, "worker", UserRole.WORKER.getMask()));
         RescueTask task = task(55L, 7L, null);
         when(rescueTaskMapper.requireById(55L)).thenReturn(task);
 

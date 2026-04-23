@@ -39,7 +39,7 @@ class JwtAndSecurityUnitTest {
         user.setId(42L);
         user.setUsername("alice");
         user.setPassword("{noop}password");
-        user.setRole(UserRole.WORKER.getSetMask());
+        user.setRole(UserRole.WORKER.getMask());
     }
 
     @Test

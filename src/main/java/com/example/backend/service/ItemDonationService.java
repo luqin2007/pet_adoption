@@ -113,7 +113,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         donationFileMapper.insert(files);
 
         // 更新用户身份
-        login.setRole(login.getRole() | UserRole.DONOR.getSetMask());
+        login.setRole(login.getRole() | UserRole.DONOR.getMask());
         userService.updateById(login);
         eventPublisher.publishEvent(new DonationAddEvent(donation, items, login));
         return itemDonationFacade.buildDonationResponse(donation, items, files, login);

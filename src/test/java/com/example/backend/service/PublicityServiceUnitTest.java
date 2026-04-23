@@ -53,7 +53,7 @@ class PublicityServiceUnitTest {
 
     @Test
     void workerCanAddKnowledgeArticleAndReceivesDraftDetail() {
-        login(user(5L, "worker", UserRole.WORKER.getSetMask()));
+        login(user(5L, "worker", UserRole.WORKER.getMask()));
         stubArticleReactionState(false, false);
         ArticleAddRequest request = new ArticleAddRequest();
         request.setType("KNOWLEDGE");
@@ -75,7 +75,7 @@ class PublicityServiceUnitTest {
 
     @Test
     void normalUserCannotAddKnowledgeArticle() {
-        login(user(6L, "normal", UserRole.NORMAL.getSetMask()));
+        login(user(6L, "normal", UserRole.NORMAL.getMask()));
         ArticleAddRequest request = new ArticleAddRequest();
         request.setType("KNOWLEDGE");
         request.setTitle("春季照护");
