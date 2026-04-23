@@ -30,6 +30,10 @@ public enum ParentType {
 
     private final String folder;
 
+    public String getFolder() {
+        return folder;
+    }
+
     public static ParentType get(String name) {
         try {
             return ParentType.valueOf(name.toUpperCase(Locale.ROOT));
