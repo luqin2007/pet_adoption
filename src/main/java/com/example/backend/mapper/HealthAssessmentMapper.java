@@ -2,11 +2,13 @@ package com.example.backend.mapper;
 
 import com.example.backend.entity.HealthAssessment;
 import com.example.backend.util.MPLambdaQuery;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * 索引<br>
  * - (petId, createTime)
  */
+@Mapper
 public interface HealthAssessmentMapper extends IBaseMapper<HealthAssessment> {
 
     /**

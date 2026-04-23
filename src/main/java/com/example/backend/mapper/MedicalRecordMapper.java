@@ -4,12 +4,14 @@ import com.example.backend.dto.MedicalRecordQueryParams;
 import com.example.backend.entity.MedicalRecord;
 import com.example.backend.entity.property.MedicalRecordStatus;
 import com.example.backend.util.MPLambdaQuery;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * 索引：<br>
  * - (petId, status, createTime)<br>
  * - (userId, status, createTime)
  */
+@Mapper
 public interface MedicalRecordMapper extends IBaseMapper<MedicalRecord> {
 
     default MPLambdaQuery<MedicalRecord> selectByPet(Long petId) {

@@ -3,12 +3,14 @@ package com.example.backend.mapper;
 import com.example.backend.dto.MedicalDetailQueryParams;
 import com.example.backend.entity.MedicalDetail;
 import com.example.backend.util.MPLambdaQuery;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * 索引：<br>
  * - (recordId, createTime)<br>
  * - (doctorId, createTime)
  */
+@Mapper
 public interface MedicalDetailMapper extends IBaseMapper<MedicalDetail> {
 
     /**

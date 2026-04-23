@@ -3,6 +3,7 @@ package com.example.backend.mapper;
 import com.example.backend.entity.TreatmentPlan;
 import com.example.backend.util.MPLambdaQuery;
 import com.example.backend.util.MPLambdaUpdate;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import java.util.Set;
  * 索引
  * - (detailId)
  */
+@Mapper
 public interface TreatmentPlanMapper extends IBaseMapper<TreatmentPlan> {
 
     default MPLambdaQuery<TreatmentPlan> selectByDetail(Long detailId) {
