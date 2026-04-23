@@ -2,7 +2,7 @@ package com.example.backend.entity.property;
 
 import com.example.backend.util.ServiceException;
 
-import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Locale;
 
@@ -18,20 +18,27 @@ public enum DonationStatus {
     CANCELED("已取消", CREATED, PENDING); // 已取消
 
     public final String name;
-    private final EnumSet<DonationStatus> previousStatus;
+    private static final EnumMap<DonationStatus, EnumSet<DonationStatus>> PREVIOUS_STATUSES;
+
+    static {
+        PREVIOUS_STATUSES = new EnumMap<>(DonationStatus.class);
+        PREVIOUS_STATUSES.put(CREATED, EnumSet.noneOf(DonationStatus.class));
+        PREVIOUS_STATUSES.put(PENDING, EnumSet.of(CREATED));
+        PREVIOUS_STATUSES.put(TRANSFERRING, EnumSet.of(CREATED, PENDING));
+        PREVIOUS_STATUSES.put(RECEIVED, EnumSet.of(CREATED, PENDING, TRANSFERRING));
+        PREVIOUS_STATUSES.put(STOCKED, EnumSet.of(RECEIVED));
+        PREVIOUS_STATUSES.put(REFUSED, EnumSet.of(CREATED, PENDING, TRANSFERRING, RECEIVED));
+        PREVIOUS_STATUSES.put(BACKING, EnumSet.of(REFUSED));
+        PREVIOUS_STATUSES.put(CLOSED, EnumSet.of(BACKING));
+        PREVIOUS_STATUSES.put(CANCELED, EnumSet.of(CREATED, PENDING));
+    }
 
     DonationStatus(String name, DonationStatus... previous) {
         this.name = name;
-        if (previous.length == 0)
-            this.previousStatus = EnumSet.noneOf(DonationStatus.class);
-        else if (previous.length == 1)
-            this.previousStatus = EnumSet.of(previous[0]);
-        else
-            this.previousStatus = EnumSet.of(previous[0], Arrays.copyOfRange(previous, 1, previous.length));
     }
 
     public boolean canChangeFrom(DonationStatus status) {
-        return this.previousStatus.contains(status);
+        return PREVIOUS_STATUSES.get(this).contains(status);
     }
 
     public static DonationStatus get(String name) {

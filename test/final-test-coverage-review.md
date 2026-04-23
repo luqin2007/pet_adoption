@@ -17,7 +17,7 @@
 
 结果：
 
-- 用例数：52
+- 用例数：55
 - 失败：0
 - 错误：0
 - 跳过：0
@@ -31,12 +31,13 @@
 - API 契约：Controller 路由与 `openapi.yaml` 路径一致，OpenAPI operation 具备 tag、summary 和 2xx 响应。
 - OpenAPI 组件契约：统一响应 `Result` schema、Bearer JWT 鉴权方案。
 - 数据库脚本契约：`init.sql` 的数据库名、外键开关、实体表覆盖、DROP/CREATE 一致性、外键目标表存在性。
-- 状态机契约：救助任务状态、文章状态、枚举解析。
+- 状态机契约：救助任务状态、捐赠状态、志愿者申请状态、文章状态、枚举解析、用户角色隐式权限展开。
 
 ## 本轮发现并修复
 
 - `openapi.yaml` 缺少 `components.securitySchemes.bearerAuth`。
 - `openapi.yaml` 缺少 `components.schemas.Result`。
+- `DonationStatus`、`VolunteerApplicationStatus`、`RescueTaskStatus` 已统一为 `VolunteerShiftStatus` 风格的静态状态转移表。
 
 ## 仍需真实环境验证的项目
 
@@ -58,11 +59,11 @@
 mysqlsh --version
 ```
 
-结果显示当前 shell 无法识别 `mysqlsh`。因此真实数据库初始化和 API 集成测试暂未执行，详见 `test/problem-report-20260423-mysqlsh-not-found.md`。
+重新加载 Machine/User PATH 后，当前 shell 已可识别 `mysqlsh`，详见 `test/problem-report-20260423-mysqlsh-not-found.md`。
 
 ## 建议的下一步集成测试命令
 
-在 MySQL Shell 加入 PATH 后：
+在确认目标测试数据库后：
 
 ```powershell
 mysqlsh --sql root@192.168.1.170:3306 --file init.sql

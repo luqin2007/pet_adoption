@@ -2,7 +2,7 @@
 
 ## 执行时间
 
-2026-04-23 20:38:36 Asia/Hong_Kong
+2026-04-23 21:24:23 Asia/Hong_Kong
 
 ## 执行命令
 
@@ -24,7 +24,7 @@
 | `OpenApiControllerContractTest` | 1 | 0 | 0 | 0 | 通过 |
 | `OpenApiQualityContractTest` | 2 | 0 | 0 | 0 | 通过 |
 | `DatabaseSchemaContractTest` | 4 | 0 | 0 | 0 | 通过 |
-| `EnumAndRequestContractTest` | 4 | 0 | 0 | 0 | 通过 |
+| `EnumAndRequestContractTest` | 7 | 0 | 0 | 0 | 通过 |
 | `ResultAndUtilityContractTest` | 5 | 0 | 0 | 0 | 通过 |
 | `PetAdoptionApplicationTests` | 1 | 0 | 0 | 0 | 通过 |
 | `BaseServiceUnitTest` | 4 | 0 | 0 | 0 | 通过 |
@@ -40,7 +40,7 @@
 
 总计：
 
-- 用例数：52
+- 用例数：55
 - 失败：0
 - 错误：0
 - 跳过：0
@@ -121,6 +121,7 @@
 - OpenAPI 每个 operation 具备 tag、summary 和 2xx 响应。
 - OpenAPI 声明统一响应 `Result` schema 和 `bearerAuth` 鉴权方案。
 - 枚举状态机和请求 id 集合去重逻辑已覆盖。
+- 补充捐赠状态、志愿者申请状态、用户角色隐式权限展开和 `rezip` 归一化测试。
 
 ## 发现并修复的问题
 
@@ -134,19 +135,20 @@
 - `test/problem-report-20260423-202031.md`
 - `test/problem-report-20260423-203716.md`
 - `test/problem-report-20260423-mysqlsh-not-found.md`
+- `test/problem-report-20260423-enumset-transition-status.md`
 
 核心生产问题：
 
 - `UserRole.ADMIN` 原 `matchMask=0x0` 会使任意角色匹配 `ROLE_ADMIN`。
 - 已修复为 `matchMask=0x1F`，只有完整权限掩码才匹配管理员角色。
 - `RescueTaskStatus` 原使用 `EnumSet` 在枚举构造期间初始化前置状态，首次访问枚举会失败。
-- 已改为普通不可变 `Set`，状态流转语义不变。
+- `DonationStatus`、`VolunteerApplicationStatus`、`RescueTaskStatus` 已统一改为静态状态转移表，避免构造期 `EnumSet` 风险。
 - `openapi.yaml` 缺少 Bearer JWT 鉴权方案，已补充 `components.securitySchemes.bearerAuth`。
 - `openapi.yaml` 缺少统一响应 schema，已补充 `components.schemas.Result`。
 
 ## 未覆盖风险
 
-- 当前单元测试未连接真实 MySQL/Redis；已补 `init.sql` 静态契约，但真实执行仍需 MySQL Shell 环境。
+- 当前单元测试未连接真实 MySQL/Redis；已补 `init.sql` 静态契约。MySQL Shell 已可通过重新加载 PATH 识别，真实执行仍需连接目标数据库。
 - 当前 OpenAPI 契约测试验证 Controller 路由、operation 基础质量和核心组件声明，不验证所有请求/响应 schema 的字段级兼容。
 - 文件服务的图片/视频真实 MIME 样本、事务 afterCommit 行为、媒体封面切换仍建议在后续补充。
 - 本轮已覆盖所有服务的至少一个单元入口或核心权限/状态规则；跨 mapper 的完整业务流程仍需要使用 MySQL Shell 初始化数据库后做集成测试。

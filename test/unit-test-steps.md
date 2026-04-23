@@ -120,7 +120,7 @@ git status --short --branch
 
 继续补充数据库/API/枚举契约测试后最终结果：
 
-- 用例总数：52
+- 用例总数：55
 - 失败：0
 - 错误：0
 - 跳过：0
@@ -132,7 +132,7 @@ git status --short --branch
 mysqlsh --version
 ```
 
-当前 shell 无法识别 `mysqlsh`，真实 MySQL Shell 初始化数据库测试暂未执行，详见 `test/problem-report-20260423-mysqlsh-not-found.md`。
+重新加载 Machine/User PATH 后，当前 shell 已可识别 `mysqlsh`，详见 `test/problem-report-20260423-mysqlsh-not-found.md`。
 
 ## 8. 提交步骤
 

@@ -2,6 +2,7 @@ package com.example.backend.entity.property;
 
 import com.example.backend.util.ServiceException;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Locale;
 
@@ -15,14 +16,21 @@ public enum VolunteerApplicationStatus {
     REJECTED(SUBMITTED, UNDER_REVIEW), // 已拒绝
     CANCELED(SUBMITTED, UNDER_REVIEW); // 已撤回
 
-    private final EnumSet<VolunteerApplicationStatus> previousStatus;
+    private static final EnumMap<VolunteerApplicationStatus, EnumSet<VolunteerApplicationStatus>> PREVIOUS_STATUSES;
+
+    static {
+        PREVIOUS_STATUSES = new EnumMap<>(VolunteerApplicationStatus.class);
+        PREVIOUS_STATUSES.put(SUBMITTED, EnumSet.noneOf(VolunteerApplicationStatus.class));
+        PREVIOUS_STATUSES.put(UNDER_REVIEW, EnumSet.of(SUBMITTED));
+        PREVIOUS_STATUSES.put(APPROVED, EnumSet.of(SUBMITTED, UNDER_REVIEW));
+        PREVIOUS_STATUSES.put(REJECTED, EnumSet.of(SUBMITTED, UNDER_REVIEW));
+        PREVIOUS_STATUSES.put(CANCELED, EnumSet.of(SUBMITTED, UNDER_REVIEW));
+    }
 
     VolunteerApplicationStatus(VolunteerApplicationStatus first, VolunteerApplicationStatus... other) {
-        this.previousStatus = EnumSet.of(first, other);
     }
 
     VolunteerApplicationStatus() {
-        this.previousStatus = EnumSet.noneOf(VolunteerApplicationStatus.class);
     }
 
     /**
@@ -40,7 +48,7 @@ public enum VolunteerApplicationStatus {
     }
 
     public boolean canSwitchFrom(VolunteerApplicationStatus previousStatus) {
-        return this.previousStatus.contains(previousStatus);
+        return PREVIOUS_STATUSES.get(this).contains(previousStatus);
     }
 
     /**

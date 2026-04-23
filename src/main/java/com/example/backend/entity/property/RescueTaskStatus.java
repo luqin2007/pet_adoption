@@ -2,10 +2,9 @@ package com.example.backend.entity.property;
 
 import com.example.backend.util.ServiceException;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * 救助任务状态
@@ -17,21 +16,25 @@ public enum RescueTaskStatus {
     COMPLETED(APPROVED, PROCESSING), // 任务完成
     DISCARDED(CREATED, APPROVED, PROCESSING); // 已废弃
 
-    private final Set<RescueTaskStatus> previousStatus;
+    private static final EnumMap<RescueTaskStatus, EnumSet<RescueTaskStatus>> PREVIOUS_STATUSES;
+
+    static {
+        PREVIOUS_STATUSES = new EnumMap<>(RescueTaskStatus.class);
+        PREVIOUS_STATUSES.put(CREATED, EnumSet.noneOf(RescueTaskStatus.class));
+        PREVIOUS_STATUSES.put(APPROVED, EnumSet.of(CREATED));
+        PREVIOUS_STATUSES.put(PROCESSING, EnumSet.of(APPROVED));
+        PREVIOUS_STATUSES.put(COMPLETED, EnumSet.of(APPROVED, PROCESSING));
+        PREVIOUS_STATUSES.put(DISCARDED, EnumSet.of(CREATED, APPROVED, PROCESSING));
+    }
 
     RescueTaskStatus(RescueTaskStatus first, RescueTaskStatus... other) {
-        Set<RescueTaskStatus> statuses = new HashSet<>();
-        statuses.add(first);
-        statuses.addAll(Arrays.asList(other));
-        this.previousStatus = Set.copyOf(statuses);
     }
 
     RescueTaskStatus() {
-        this.previousStatus = Set.of();
     }
 
     public boolean canChangeFrom(RescueTaskStatus status) {
-        return this.previousStatus.contains(status);
+        return PREVIOUS_STATUSES.get(this).contains(status);
     }
 
     public static RescueTaskStatus get(String name) {
