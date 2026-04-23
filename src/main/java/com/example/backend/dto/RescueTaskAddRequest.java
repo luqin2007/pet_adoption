@@ -43,7 +43,7 @@ public class RescueTaskAddRequest extends LocationRequest implements IRequest, I
     private String type;
 
     public RescueTask createTask(Long userId) {
-        Date now = new Date(System.currentTimeMillis());
+        Date now = new Date();
         return new RescueTask(null,
                 previousId,
                 userId,

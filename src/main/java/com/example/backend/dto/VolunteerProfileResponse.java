@@ -1,5 +1,6 @@
 package com.example.backend.dto;
 
+import com.example.backend.entity.Location;
 import com.example.backend.entity.User;
 import com.example.backend.entity.VolunteerProfile;
 import com.example.backend.entity.property.ParentType;
@@ -94,7 +95,7 @@ public class VolunteerProfileResponse implements IResponse {
     /**
      * 根据实体构造响应
      */
-    public static VolunteerProfileResponse create(VolunteerProfile profile, User user) {
+    public static VolunteerProfileResponse create(VolunteerProfile profile, Location location, User user) {
         return new VolunteerProfileResponse(
                 profile.getId(),
                 profile.getUserId(),
@@ -104,10 +105,10 @@ public class VolunteerProfileResponse implements IResponse {
                 profile.getRealName(),
                 profile.getSex(),
                 profile.getPhone(),
-                profile.getProvince(),
-                profile.getCity(),
-                profile.getDistrict(),
-                profile.getAddress(),
+                location.getProvince(),
+                location.getCity(),
+                location.getDistrict(),
+                location.getDetailAddress(),
                 profile.getSkills(),
                 profile.getServiceDesc(),
                 profile.getTimeDesc(),
@@ -119,7 +120,9 @@ public class VolunteerProfileResponse implements IResponse {
     /**
      * 批量构造响应
      */
-    public static VolunteerProfileResponse createBatch(VolunteerProfile profile, Map<Long, User> users) {
-        return create(profile, users.get(profile.getUserId()));
+    public static VolunteerProfileResponse createBatch(VolunteerProfile profile, Map<Long, Location> locations, Map<Long, User> users) {
+        return create(profile,
+                locations.get(profile.getId()),
+                users.get(profile.getUserId()));
     }
 }

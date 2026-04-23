@@ -7,8 +7,8 @@ import com.example.backend.event.RescueTaskAddEvent;
 import com.example.backend.event.RescueTaskAssignEvent;
 import com.example.backend.event.RescueTaskStatusEvent;
 import com.example.backend.event.RescueTaskUpdateEvent;
+import com.example.backend.mapper.LocationMapper;
 import com.example.backend.mapper.RescueTaskAssignMapper;
-import com.example.backend.mapper.RescueTaskLocationMapper;
 import com.example.backend.mapper.RescueTaskMapper;
 import com.example.backend.mapper.RescueTaskRecordMapper;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.backend.entity.property.ParentType.RESCUE_TASK;
@@ -35,7 +32,7 @@ import static com.example.backend.entity.property.RescueTaskStatus.CREATED;
 @RequiredArgsConstructor
 public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask> {
 
-    private final RescueTaskLocationMapper rescueTaskLocationMapper;
+    private final LocationMapper locationMapper;
     private final RescueTaskAssignMapper rescueTaskAssignMapper;
     private final RescueTaskRecordMapper rescueTaskRecordMapper;
 
@@ -69,8 +66,8 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         // 存储任务信息
         RescueTask task = request.createTask(login.getId());
         save(task);
-        Location location = request.createLocation(task.getId(), login.getId());
-        rescueTaskLocationMapper.insert(location);
+        Location location = request.createLocation(RESCUE_TASK, task.getId(), login.getId());
+        locationMapper.insert(location);
         RescueTaskRecord record = request.createRecord(task, login.getId());
         rescueTaskRecordMapper.insert(record);
 
@@ -88,6 +85,11 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
      */
     public RescueTaskResponse getRescueTask(Long taskId) {
         RescueTask task = requireById(taskId);
+        User login = requireLoginUser();
+        requirePermission(login.isWorker()
+                || login.is(task.getUserId())
+                || login.is(task.getApproveId()));
+
         return RescueTaskResponse.fromEntity(task);
     }
 
@@ -111,7 +113,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         // 校验
         RescueTask task = requireById(taskId);
         User login = requireLoginUser();
-        require(!Objects.equals(task.getStatus(), CREATED), "exception.invalidate.rescue_task.update_after_approve");
+        requireEqual(CREATED, task.getStatus(), "exception.invalidate.rescue_task.update_after_approve");
         requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
 
         // 更新任务信息
@@ -121,12 +123,13 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         rescueTaskRecordMapper.insert(record);
 
         // 更新位置信息
-        Location location = rescueTaskLocationMapper.queryByTask(taskId).one();
+        Location location = locationMapper.queryByParent(RESCUE_TASK, taskId).one();
         if (location == null) { // 位置信息缺失
-            rescueTaskLocationMapper.insert(request.createLocation(taskId, login.getId()));
+            location = request.createLocation(RESCUE_TASK, taskId, login.getId());
+            locationMapper.insert(location);
         } else { // 更新
             request.applyTo(location);
-            rescueTaskLocationMapper.updateById(location);
+            locationMapper.updateById(location);
         }
 
         eventPublisher.publishEvent(new RescueTaskUpdateEvent(task, location, login));
@@ -186,9 +189,10 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         RescueTask task = requireById(taskId);
         User login = requireLoginUser();
         requirePermission(login.isWorker());
+        RescueTaskRecord record = request.createRescueTaskRecord(task, login.getId(), STATUS, task.getStatus());
+        require(record.getStatusTo().canChangeFrom(task.getStatus()), "exception.invalidate.status");
 
         // 状态变更
-        RescueTaskRecord record = request.createRescueTaskRecord(task, login.getId(), STATUS, task.getStatus());
         task.setStatus(record.getStatusTo());
         updateById(task);
         rescueTaskRecordMapper.insert(record);
@@ -225,7 +229,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         RescueTask task = requireById(taskId);
-        requireNotEqual(CREATED, task.getStatus(), "exception.invalidate.rescue_task.not_approved");
+        requireEqual(CREATED, task.getStatus(), "exception.invalidate.rescue_task.not_approved");
 
         // 任务分配
         Set<Long> addUsers = rescueTaskAssignMapper.queryUserByTask(taskId)

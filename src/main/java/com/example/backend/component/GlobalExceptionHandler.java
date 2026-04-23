@@ -49,8 +49,11 @@ public class GlobalExceptionHandler implements AsyncUncaughtExceptionHandler {
     public void handleUncaughtException(Throwable ex, Method method, @Nullable Object... params) {
         if (ex instanceof ServiceException e) {
             handleServiceException(e);
+        } else if (ex instanceof Exception e) {
+            handleOtherException(e);
         } else {
-            handleOtherException((Exception) ex);
+            // Error 直接崩溃
+            LOGGER.error("Uncaught Exception", ex);
         }
     }
 }

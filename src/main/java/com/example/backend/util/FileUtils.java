@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Objects;
@@ -26,7 +27,9 @@ import static com.example.backend.entity.property.MediaType.VIDEO;
  */
 public class FileUtils {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter
+            .ofPattern("yyyyMMddHHmmss")
+            .withZone(ZoneId.systemDefault());
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtils.class);
     private static final Tika TIKA = new Tika();
 
@@ -174,6 +177,7 @@ public class FileUtils {
         if (!Files.isRegularFile(source))
             throw ServiceException.system("exception.system.file.not_regular_file");
         try {
+            Files.createDirectories(target.getParent());
             Files.copy(source, target);
         } catch (IOException e) {
             throw ServiceException.system("exception.system.file.copy_failed", e);

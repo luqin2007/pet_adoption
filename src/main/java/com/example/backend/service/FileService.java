@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
@@ -114,7 +116,7 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         // 删除文件
         TempFileInfo fileInfo = files.get(0);
         Path path = FileUtils.generatePath(temp, parentType, uuid, fileInfo.getFilename());
-        deleteJobMapper.insert(DeleteJob.create(path));
+        insertDeleteJob(path);
 
         // 刷新超时
         redisHelper.expireObject(fileKey, keyTimeout);
@@ -124,7 +126,7 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
     public void deleteFile(String filename, Long parentId, ParentType parentType) {
         if (StringUtils.hasText(filename)) {
             Path path = FileUtils.generatePath(upload, parentType, parentId, filename);
-            deleteJobMapper.insert(DeleteJob.create(path));
+            insertDeleteJob(path);
         }
     }
 
@@ -297,7 +299,7 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         // 删除媒体文件
         removeById(mediaId);
         Path file = FileUtils.generatePath(upload, parentType, media.getParentId(), media.getFilename());
-        deleteJobMapper.insert(DeleteJob.create(file));
+        insertDeleteJob(file);
 
         // 重置封面
         if (IMAGE == media.getType() && Boolean.TRUE.equals(media.getIsCover())) {
@@ -318,7 +320,20 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
 
         // 删除文件
         Path taskPath = FileUtils.generatePath(upload, parentType, parentId);
-        deleteJobMapper.insert(DeleteJob.create(taskPath));
+        insertDeleteJob(taskPath);
+    }
+
+    private void insertDeleteJob(Path path) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    deleteJobMapper.insert(DeleteJob.create(path));
+                }
+            });
+        } else {
+            deleteJobMapper.insert(DeleteJob.create(path));
+        }
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.example.backend.dto;
 
+import com.example.backend.entity.Location;
 import com.example.backend.entity.User;
 import com.example.backend.entity.VolunteerRecruitment;
 import com.example.backend.entity.property.ParentType;
@@ -94,16 +95,16 @@ public class VolunteerRecruitmentResponse implements IResponse {
     /**
      * 根据实体构造响应
      */
-    public static VolunteerRecruitmentResponse create(VolunteerRecruitment recruitment, User publisher) {
+    public static VolunteerRecruitmentResponse create(VolunteerRecruitment recruitment, Location location, User publisher) {
         return new VolunteerRecruitmentResponse(
                 recruitment.getId(),
                 recruitment.getTitle(),
                 recruitment.getDescription(),
                 recruitment.getRequirement(),
-                recruitment.getServiceAddress(),
-                recruitment.getProvince(),
-                recruitment.getCity(),
-                recruitment.getDistrict(),
+                location.getDetailAddress(),
+                location.getProvince(),
+                location.getCity(),
+                location.getDistrict(),
                 recruitment.getHeadcount(),
                 recruitment.getAppliedCount(),
                 recruitment.getStartTime(),
@@ -119,7 +120,11 @@ public class VolunteerRecruitmentResponse implements IResponse {
     /**
      * 批量构造响应
      */
-    public static VolunteerRecruitmentResponse createBatch(VolunteerRecruitment recruitment, Map<Long, User> users) {
-        return create(recruitment, users.get(recruitment.getPublisherId()));
+    public static VolunteerRecruitmentResponse createBatch(VolunteerRecruitment recruitment,
+                                                           Map<Long, Location> locations,
+                                                           Map<Long, User> users) {
+        return create(recruitment,
+                locations.get(recruitment.getId()),
+                users.get(recruitment.getPublisherId()));
     }
 }

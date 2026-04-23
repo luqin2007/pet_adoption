@@ -12,7 +12,7 @@ public enum ArticleStatus {
     PUBLISHED, // 已发布
     OFFLINE; // (仅活动、招募) 已下线
 
-    public boolean canTransferFrom(ArticleStatus status) {
+    public boolean canChangeFrom(ArticleStatus status) {
         return switch (this) {
             case PUBLISHED -> status == DRAFT;
             case OFFLINE, DRAFT -> status == PUBLISHED;

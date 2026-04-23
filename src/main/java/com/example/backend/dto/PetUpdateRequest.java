@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Data
 public class PetUpdateRequest implements IRequest {
@@ -59,6 +59,6 @@ public class PetUpdateRequest implements IRequest {
         info.setBreed(breed);
         info.setHealth(health);
         info.setDescription(description);
-        info.setUpdateTime(new Date(System.currentTimeMillis()));
+        info.setUpdateTime(new Date());
     }
 }

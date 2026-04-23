@@ -98,6 +98,16 @@ public class RedisHelper {
     }
 
     /**
+     * 检查字符串键 key 是否存在，使用 <code>String.format(keyTemplate, params)</code> 生成键
+     *
+     * @param keyTemplate 键模板
+     * @param params      参数
+     */
+    public boolean hasObject(String keyTemplate, Object... params) {
+        return redisTemplateObject.hasKey(String.format(keyTemplate, params));
+    }
+
+    /**
      * 删除对象
      *
      * @param key 键

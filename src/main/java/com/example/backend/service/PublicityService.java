@@ -63,6 +63,7 @@ public class PublicityService extends BaseService<ArticleMapper, Article> {
                 || (!login.get().isWorker() // 非工作人员
                 && !login.get().is(query.getAuthor()))) { // 非本人
             query.setStatus(Set.of(ArticleStatus.PUBLISHED.name()));
+            query.setIsDiscard(Boolean.FALSE);
         }
 
         Page<Article> result = baseMapper.queryByRequest(query).page(page);
@@ -78,6 +79,8 @@ public class PublicityService extends BaseService<ArticleMapper, Article> {
         Optional<User> login = getLoginUser();
         boolean isAuthor = login.isPresent() && login.get().is(article.getAuthorId());
         if (article.getStatus() != ArticleStatus.PUBLISHED) // 未发布文章
+            requirePermission(login.isPresent() && (isAuthor || login.get().isWorker()));
+        if (!Boolean.FALSE.equals(article.getIsDiscard())) // 已删除文章
             requirePermission(login.isPresent() && (isAuthor || login.get().isWorker()));
 
         if (article.getStatus() == ArticleStatus.PUBLISHED) {
@@ -115,7 +118,8 @@ public class PublicityService extends BaseService<ArticleMapper, Article> {
 
         articleLikeMapper.queryByArticle(articleId).delete();
         articleFavoriteMapper.queryByArticle(articleId).delete();
-        removeById(articleId);
+        article.setIsDiscard(true);
+        updateById(article);
     }
 
     /**
@@ -125,11 +129,11 @@ public class PublicityService extends BaseService<ArticleMapper, Article> {
         User login = requireLoginUser();
         Article article = requireById(articleId);
         ArticleStatus status = ArticleStatus.get(statusName);
-        require(status.canTransferFrom(article.getStatus()), "exception.invalidate.status");
+        require(status.canChangeFrom(article.getStatus()), "exception.invalidate.status");
         if (status == ArticleStatus.OFFLINE)
             requirePermission(login.isWorker());
         else
-            requirePermission(login.isWorker() || login.is(article.getId()));
+            requirePermission(login.isWorker() || login.is(article.getAuthorId()));
 
         article.setStatus(status);
         updateById(article);

@@ -50,6 +50,11 @@ public class ArticleQueryParams implements IParam, IValidatedRequest {
     private Date time1;
 
     /**
+     * 已删除
+     */
+    private Boolean isDiscard;
+
+    /**
      * 校验查询参数
      */
     @Override

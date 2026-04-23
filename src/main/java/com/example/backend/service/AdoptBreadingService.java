@@ -36,6 +36,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     private final FollowTaskMapper followTaskMapper;
     private final FollowRecordMapper followRecordMapper;
     private final AdoptBreadingFacade adoptBreadingFacade;
+    private final LocationMapper locationMapper;
 
     private PetService petService;
     private UserService userService;
@@ -53,11 +54,14 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public AdoptResponse addAdopt(AdoptAddRequest request) {
         // 校验
         User login = requireLoginUser();
-        petService.requireExist(request.getPetId());
+        PetStatus petStatus = petService.requireById(request.getPetId(), Pet::getStatus).getStatus();
+        requirePermission(petStatus.isAdoptable());
 
         // 保存
         Adopt adopt = request.create(login.getId());
         save(adopt);
+        Location location = request.createLocation(ParentType.ADOPT, adopt.getId(), login.getId());
+        locationMapper.insert(location);
         eventPublisher.publishEvent(new AdoptAddEvent(adopt, login));
         return adoptBreadingFacade.buildAdoptResponse(adopt);
     }
@@ -91,7 +95,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         AdoptBreadingStatus oldStatus = adopt.getStatus();
         require(oldStatus.isChangeable(), "exception.invalidate.adopt.status_abnormal");
         // 签订状态仅能通过 signAgreement 方法实现
-        require(target != AdoptBreadingStatus.AGREEMENT_SIGNED, "exception.invalidate.adopt.status_abnormal");
+        require(target != AGREEMENT_SIGNED, "exception.invalidate.adopt.status_abnormal");
 
         // 更新记录
         Date now = new Date();
@@ -143,7 +147,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         AdoptBreadingStatus target = AdoptBreadingStatus.get(status);
         AdoptBreadingStatus oldStatus = breading.getStatus();
         require(oldStatus.isChangeable(), "exception.invalidate.breading.status_abnormal");
-        require(target != AdoptBreadingStatus.AGREEMENT_SIGNED, "exception.invalidate.breading.status_abnormal");
+        require(target != AGREEMENT_SIGNED, "exception.invalidate.breading.status_abnormal");
 
         Date now = new Date();
         breading.setStatus(target);
@@ -171,20 +175,29 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public AgreementResponse addAgreement(AgreementAddRequest request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
-        String uuid = request.getId();
-        if (AgreementType.get(request.getType()) == AgreementType.PAPER) {
+        // 检查 uuid
+        String uuid = request.getUuid();
+        if (AgreementType.get(request.getType()) == PAPER) {
             requireRedisUuid(agreementTemplate, uuid);
         }
+        // 检查申请
+        Agreement agreement = request.create();
+        ParentType parentType = agreement.getParentType();
+        AdoptBreadingStatus status = switch (parentType) {
+            case ADOPT -> requireById(agreement.getParentId(), Adopt::getStatus).getStatus();
+            case BREADING -> breadingMapper.requireById(agreement.getParentId(), Breading::getStatus).getStatus();
+            default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+        };
+        requireEqual(AdoptBreadingStatus.PASS, status, "exception.invalidate.adopt_breading_status");
 
         // 保存协议
-        Agreement agreement = request.create();
         agreementMapper.insert(agreement);
         agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.CREATE));
 
         // 转移文件
         List<String> fileOrders = request.getFileOrder();
         List<AgreementFile> files = new ArrayList<>(fileOrders.size());
-        if (agreement.getType() == AgreementType.PAPER) {
+        if (agreement.getType() == PAPER) {
             Map<String, TempFileInfo> fileMap = fileService
                     .saveTempFiles(agreementFileTemplate, uuid, agreement, AGREEMENT)
                     .collect(Collectors.toMap(TempFileInfo::getFilename, Function.identity()));
@@ -196,7 +209,6 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         }
 
         // 更新记录状态
-        ParentType parentType = agreement.getParentType();
         switch (parentType) {
             case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
             case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_DRAFT).update();
@@ -236,7 +248,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Agreement agreement = agreementMapper.requireById(agreementId);
         recordAgreementUpdate(agreement);
         if (agreement.getType() == AgreementType.ELECTRONIC) { // 切换协议类型
-            agreement.setType(AgreementType.PAPER);
+            agreement.setType(PAPER);
             agreement.setContent(null);
         }
 
@@ -354,7 +366,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     private void recordAgreementUpdate(Agreement agreement) {
         AgreementUpdateRecord record = new AgreementUpdateRecord(agreement, AgreementUpdateType.UPDATE);
-        if (agreement.getType() == AgreementType.PAPER) {
+        if (agreement.getType() == PAPER) {
             // 纸质协议 记录协议文件集
             List<AgreementFile> agreementFiles = agreementFileMapper.queryByAgreement(agreement.getId()).list();
             record.setContent(objectMapper.writeValueAsString(agreementFiles));
@@ -455,9 +467,10 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         User login = requireLoginUser();
         FollowTask task = followTaskMapper.requireById(taskId);
         FollowTaskStatus status = FollowTaskStatus.get(request.getStatus());
+        Adopt adopt = requireById(task.getAdoptId(), Adopt::getApplicantId);
         requirePermission(login.is(task.getWorkerId()) // 负责工作人员
                 || login.is(task.getVolunteerId()) // 负责志愿者
-                || login.is(task.getAdoptId())); // 领养人：可修改时间
+                || login.is(adopt.getApplicantId())); // 领养人：可修改时间
         if (!login.is(task.getWorkerId())) {
             /*
             以下内容必须由工作人员修改：
@@ -508,7 +521,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         // 权限校验
         User login = requireLoginUser();
         FollowTask task = followTaskMapper.requireById(taskId,
-                FollowTask::getStatus);
+                FollowTask::getStatus, FollowTask::getVolunteerId);
         requireEqual(FollowTaskStatus.IN_PROGRESS, task.getStatus(), "exception.invalidate.follow_task.status_invalid");
         requirePermission(login.isWorker() || login.is(task.getVolunteerId()));
         if (followRecordMapper.queryByTask(taskId).exists())

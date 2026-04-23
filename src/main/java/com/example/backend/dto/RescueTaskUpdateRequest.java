@@ -38,7 +38,7 @@ public class RescueTaskUpdateRequest extends LocationRequest implements IRequest
                 task.getStatus(),
                 task.getStatus(),
                 task.getSummary(),
-                new Date(System.currentTimeMillis()));
+                new Date());
     }
 
     @Override

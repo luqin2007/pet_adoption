@@ -53,7 +53,7 @@ public class AuthController {
     @GetMapping("/check/username/{username}")
     public Result<Void> isUsernameExist(@PathVariable String username) {
         if (userService.isUsernameExist(username)) {
-            return Result.error(409, "用户名已存在");
+            return Result.error(ServiceException.E_INVALIDATE, "用户名已存在");
         }
         return Result.success();
     }
@@ -64,7 +64,7 @@ public class AuthController {
     @GetMapping("/check/email/{email}")
     public Result<Void> isMailExist(@PathVariable String email) {
         if (userService.isEmailExist(email)) {
-            return Result.error(500, "邮箱已存在");
+            return Result.error(ServiceException.E_INVALIDATE, "邮箱已存在");
         }
         return Result.success();
     }

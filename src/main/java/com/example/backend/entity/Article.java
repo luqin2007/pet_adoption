@@ -58,6 +58,12 @@ public class Article implements IId {
     private Long authorId;
 
     /**
+     * 已弃用
+     * *非空 boolean*
+     */
+    private Boolean isDiscard;
+
+    /**
      * 浏览量
      * *非空 int*
      */

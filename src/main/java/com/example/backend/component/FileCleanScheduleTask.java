@@ -60,7 +60,7 @@ public class FileCleanScheduleTask {
     }
 
     @Async
-    @Scheduled(cron = "0 0/5 0 * * ?")
+    @Scheduled(cron = "0 0/10 * * * ?")
     public void doDeleteJob() {
         beginJob(isCleanRunning, () -> {
             executeDeleteJob(10, ActionStatus.WAITING);
@@ -89,7 +89,7 @@ public class FileCleanScheduleTask {
                 try {
                     if (Files.isDirectory(file)) {
                         String uuid = file.getFileName().toString();
-                        if (!redisHelper.hasString(redisKeyTemplate, uuid)) {
+                        if (!redisHelper.hasObject(redisKeyTemplate, uuid)) {
                             FileSystemUtils.deleteRecursively(file);
                         }
                     }

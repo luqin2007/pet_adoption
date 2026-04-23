@@ -8,7 +8,7 @@ import org.hibernate.validator.constraints.Length;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * 用户注册 请求体
@@ -36,7 +36,7 @@ public class UserRegisterTable implements ITable {
     private String code;
 
     public User createUser(PasswordEncoder passwordEncoder) {
-        Date now = new Date(System.currentTimeMillis());
+        Date now = new Date();
         return new User(null,
                 username,
                 passwordEncoder.encode(password),

@@ -8,7 +8,7 @@ import com.example.backend.event.PetAddEvent;
 import com.example.backend.event.PetLocationEvent;
 import com.example.backend.event.PetStatusChangeEvent;
 import com.example.backend.event.PetUpdateEvent;
-import com.example.backend.mapper.PetLocationMapper;
+import com.example.backend.mapper.LocationMapper;
 import com.example.backend.mapper.PetMapper;
 import com.example.backend.mapper.PetStatusRecordMapper;
 import com.example.backend.mapper.PetTagMapper;
@@ -31,7 +31,7 @@ import static com.example.backend.entity.property.ParentType.PET;
 public class PetService extends BaseService<PetMapper, Pet> {
 
     private final PetStatusRecordMapper petStatusRecordMapper;
-    private final PetLocationMapper petLocationMapper;
+    private final LocationMapper locationMapper;
     private final PetTagMapper petTagMapper;
 
     private FileService fileService;
@@ -49,8 +49,8 @@ public class PetService extends BaseService<PetMapper, Pet> {
         Pet pet = request.createInfo(login.getId());
         save(pet);
         // 位置信息
-        Location location = request.createLocation(pet.getId(), login.getId());
-        petLocationMapper.insert(location);
+        Location location = request.createLocation(PET, pet.getId(), login.getId());
+        locationMapper.insert(location);
 
         eventPublisher.publishEvent(new PetAddEvent(pet, login, location));
         return PetAddResponse.create(pet);
@@ -62,8 +62,8 @@ public class PetService extends BaseService<PetMapper, Pet> {
     @Transactional
     public PetResponse addLocation(Long petId, LocationRequest request) {
         User login = requireLoginUser();
-        Location location = request.createLocation(petId, login.getId());
-        petLocationMapper.insert(location);
+        Location location = request.createLocation(PET, petId, login.getId());
+        locationMapper.insert(location);
         eventPublisher.publishEvent(new PetLocationEvent(location, login));
         return getPet(petId);
     }
@@ -98,7 +98,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         String cover = fileService.getCoverUrl(petId, PET);
         List<VaccineResponse> vaccines = medicalService.getVaccines(petId);
         List<DewormResponse> deworms = medicalService.getDeworms(petId);
-        List<Location> locations = petLocationMapper.queryByPet(petId).list();
+        List<Location> locations = locationMapper.queryByParent(PET, petId).list();
         return PetResponse.create(info, cover, discover, tags, vaccines, deworms, locations);
     }
 
@@ -122,7 +122,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         String cover = fileService.getCoverUrl(petId, PET);
         List<VaccineResponse> vaccines = medicalService.getVaccines(petId);
         List<DewormResponse> deworms = medicalService.getDeworms(petId);
-        List<Location> locations = petLocationMapper.queryByPet(petId).list();
+        List<Location> locations = locationMapper.queryByParent(PET, petId).list();
         return PetResponse.create(info, cover, discover, tags, vaccines, deworms, locations);
     }
 
@@ -143,6 +143,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
     public PetMediaResponse uploadMedia(Long petId, PetMediaUploadTable request) {
         // 检查用户
         User user = requireLoginUser();
+        requireExist(petId);
 
         // 保存图片/视频
         MultipartFile file = request.getFile();

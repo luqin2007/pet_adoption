@@ -5,11 +5,13 @@ import com.example.backend.entity.property.AdoptBreadingStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
 @Data
-public class AdoptAddRequest implements IRequest {
+@EqualsAndHashCode(callSuper = true)
+public class AdoptAddRequest extends LocationRequest implements IRequest {
 
     @NotNull(message = "request.pet.id")
     private Long petId;

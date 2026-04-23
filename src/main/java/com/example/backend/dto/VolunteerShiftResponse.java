@@ -1,9 +1,6 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.User;
-import com.example.backend.entity.VolunteerServiceRecord;
-import com.example.backend.entity.VolunteerShift;
-import com.example.backend.entity.VolunteerShiftStatusRecord;
+import com.example.backend.entity.*;
 import com.example.backend.entity.property.ParentType;
 import com.example.backend.entity.property.VolunteerRecordStatus;
 import com.example.backend.entity.property.VolunteerShiftStatus;
@@ -12,7 +9,6 @@ import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -93,10 +89,6 @@ public class VolunteerShiftResponse implements IResponse {
      */
     private Date endTime;
     /**
-     * 预计服务时长
-     */
-    private BigDecimal estimatedHours;
-    /**
      * 排班状态
      */
     private VolunteerShiftStatus status;
@@ -127,6 +119,7 @@ public class VolunteerShiftResponse implements IResponse {
     private List<VolunteerShiftStatusRecord> statusRecords;
 
     public static VolunteerShiftResponse create(VolunteerShift shift,
+                                                VolunteerTask task, Location location,
                                                 User volunteer, User assigner,
                                                 VolunteerServiceRecord record,
                                                 List<VolunteerShiftStatusRecord> statusRecords) {
@@ -138,17 +131,16 @@ public class VolunteerShiftResponse implements IResponse {
                 shift.getAssignerId(),
                 assigner == null ? null : assigner.getUsername(),
                 assigner == null ? null : FileUtils.generateAssetUrl(ParentType.USER, assigner.getId(), assigner.getAvatar()),
-                shift.getTaskType(),
+                task.getTaskType(),
                 shift.getTaskId(),
-                shift.getTitle(),
-                shift.getContent(),
-                shift.getServiceAddress(),
-                shift.getProvince(),
-                shift.getCity(),
-                shift.getDistrict(),
+                task.getTitle(),
+                task.getContent(),
+                location.getDetailAddress(),
+                location.getProvince(),
+                location.getCity(),
+                location.getDistrict(),
                 shift.getStartTime(),
                 shift.getEndTime(),
-                shift.getEstimatedHours(),
                 shift.getStatus(),
                 shift.getRemark(),
                 record == null ? null : record.getId(),
@@ -162,11 +154,17 @@ public class VolunteerShiftResponse implements IResponse {
      * 批量构造响应
      */
     public static VolunteerShiftResponse createBatch(VolunteerShift shift,
+                                                     Map<Long, VolunteerTask> tasks,
+                                                     Map<Long, Location> locations,
                                                      Map<Long, User> users,
                                                      Map<Long, VolunteerServiceRecord> records,
                                                      Map<Long, List<VolunteerShiftStatusRecord>> statusRecords) {
         return create(shift,
-                users.get(shift.getVolunteerId()), users.get(shift.getAssignerId()),
-                records.get(shift.getId()), statusRecords.get(shift.getId()));
+                tasks.get(shift.getId()),
+                locations.get(shift.getId()),
+                users.get(shift.getVolunteerId()),
+                users.get(shift.getAssignerId()),
+                records.get(shift.getId()),
+                statusRecords.get(shift.getId()));
     }
 }

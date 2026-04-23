@@ -1,10 +1,11 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Location;
+import com.example.backend.entity.property.ParentType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Data
 public class LocationRequest implements IRequest {
@@ -22,15 +23,16 @@ public class LocationRequest implements IRequest {
     @NotBlank(message = "request.location")
     protected String detailAddress;
 
-    public Location createLocation(Long parentId, Long userId) {
+    public Location createLocation(ParentType parentType, Long parentId, Long userId) {
         return new Location(null,
                 parentId,
+                parentType,
                 userId,
                 province,
                 city,
                 district,
                 detailAddress,
-                new Date(System.currentTimeMillis()));
+                new Date());
     }
 
     public void applyTo(Location location) {
@@ -38,6 +40,6 @@ public class LocationRequest implements IRequest {
         location.setCity(getCity());
         location.setDistrict(getDistrict());
         location.setDetailAddress(getDetailAddress());
-        location.setCreateTime(new Date(System.currentTimeMillis()));
+        location.setCreateTime(new Date());
     }
 }

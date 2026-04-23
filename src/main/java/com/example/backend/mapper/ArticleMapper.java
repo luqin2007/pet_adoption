@@ -26,6 +26,7 @@ public interface ArticleMapper extends IBaseMapper<Article> {
                 .in(Article::getStatus, ArticleStatus::get, params.getStatus())
                 .like(Article::getTitle, params.getTitle())
                 .in(Article::getPublishTime, params.getTime0(), params.getTime1())
+                .eq(Article::getIsDiscard, params.getIsDiscard())
                 .desc(Article::getPublishTime)
                 .desc(Article::getCreateTime);
     }

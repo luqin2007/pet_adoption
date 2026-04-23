@@ -3,6 +3,7 @@ package com.example.backend.mapper;
 import com.example.backend.dto.PetQueryParams;
 import com.example.backend.entity.Location;
 import com.example.backend.entity.Pet;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.entity.property.PetStatus;
 import com.example.backend.entity.query.PetLocations;
 import com.example.backend.util.MPJLambdaQuery;
@@ -26,6 +27,7 @@ public interface PetMapper extends IBaseMapper<Pet> {
                 .eq(Pet::getIsDiscard, params.getIsDiscard())
                 // location
                 .joinCollection(PetLocations.class, Location.class, Location::getParentId, Pet::getId, PetLocations::getLocations)
+                .eq(Location::getParentType, ParentType.PET)
                 .eq(Location::getProvince, params.getProvince())
                 .eq(Location::getCity, params.getCity())
                 .eq(Location::getDistrict, params.getDistrict())

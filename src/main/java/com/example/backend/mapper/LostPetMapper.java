@@ -4,6 +4,7 @@ import com.example.backend.dto.LostPetQueryParams;
 import com.example.backend.entity.Location;
 import com.example.backend.entity.LostPet;
 import com.example.backend.entity.property.LostPetStatus;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.entity.query.LostPetLocation;
 import com.example.backend.util.MPJLambdaQuery;
 import com.example.backend.util.MPLambdaQuery;
@@ -30,6 +31,7 @@ public interface LostPetMapper extends IBaseMapper<LostPet> {
                 .in(LostPet::getCreateTime, params.getTime0(), params.getTime1())
                 .like(LostPet::getName, params.getName())
                 .join(LostPetLocation.class, Location.class, Location::getParentId, LostPet::getId, LostPetLocation::getLocation)
+                .eq(Location::getParentType, ParentType.LOST_PET)
                 .eq(Location::getProvince, params.getProvince())
                 .eq(Location::getCity, params.getCity())
                 .like(Location::getDetailAddress, params.getAddress());
@@ -71,4 +73,3 @@ public interface LostPetMapper extends IBaseMapper<LostPet> {
         return LostPet.class;
     }
 }
-

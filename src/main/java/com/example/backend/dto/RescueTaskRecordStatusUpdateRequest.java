@@ -22,7 +22,7 @@ public class RescueTaskRecordStatusUpdateRequest extends StatusUpdateRequest {
                 statusFrom,
                 RescueTaskStatus.get(status),
                 reason,
-                new Date(System.currentTimeMillis()));
+                new Date());
     }
 
     @Override

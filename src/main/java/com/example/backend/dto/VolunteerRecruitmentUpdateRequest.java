@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.validation.Errors;
 
 import java.util.Date;
@@ -13,7 +14,8 @@ import java.util.Date;
  * 志愿者招募计划更新请求
  */
 @Data
-public class VolunteerRecruitmentUpdateRequest implements IRequest, IValidatedRequest {
+@EqualsAndHashCode(callSuper = true)
+public class VolunteerRecruitmentUpdateRequest extends LocationRequest implements IRequest, IValidatedRequest {
 
     @NotBlank(message = "request.volunteer.recruitment.title")
     private String title;
@@ -21,10 +23,6 @@ public class VolunteerRecruitmentUpdateRequest implements IRequest, IValidatedRe
     private String description;
     @NotBlank(message = "request.volunteer.recruitment.requirement")
     private String requirement;
-    private String serviceAddress;
-    private String province;
-    private String city;
-    private String district;
     @NotNull(message = "request.volunteer.recruitment.count")
     @Min(value = 1, message = "request.volunteer.recruitment.count.min")
     private Integer headcount;
@@ -40,10 +38,6 @@ public class VolunteerRecruitmentUpdateRequest implements IRequest, IValidatedRe
         recruitment.setTitle(title);
         recruitment.setDescription(description);
         recruitment.setRequirement(requirement);
-        recruitment.setServiceAddress(serviceAddress);
-        recruitment.setProvince(province);
-        recruitment.setCity(city);
-        recruitment.setDistrict(district);
         recruitment.setHeadcount(headcount);
         recruitment.setStartTime(startTime);
         recruitment.setEndTime(endTime);

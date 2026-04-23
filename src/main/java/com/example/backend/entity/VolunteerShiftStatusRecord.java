@@ -33,7 +33,7 @@ public class VolunteerShiftStatusRecord implements IId {
     private VolunteerShiftStatus statusFrom;
 
     /**
-     * 新状态
+     * 新状态Z
      * *非空 varchar(20)*
      */
     private VolunteerShiftStatus statusTo;

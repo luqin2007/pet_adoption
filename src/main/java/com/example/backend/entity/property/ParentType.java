@@ -22,7 +22,11 @@ public enum ParentType {
     FOLLOW("follow"), // 领养跟踪
     DONATION("donation"), // 捐赠
     LOST_PET("lost_pet"), // 丢失宠物
-    ARTICLE("article"); // 文章
+    ARTICLE("article"), // 文章
+    RECRUITMENT("recruitment"), // 志愿者招募
+    VOLUNTEER_APPLICATION("volunteer_app"), // 志愿者申请
+    VOLUNTEER_PROFILE("volunteer_profile"),
+    VOLUNTEER_TASK("volunteer_task");
 
     private final String folder;
 

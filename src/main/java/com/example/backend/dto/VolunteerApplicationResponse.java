@@ -1,5 +1,6 @@
 package com.example.backend.dto;
 
+import com.example.backend.entity.Location;
 import com.example.backend.entity.User;
 import com.example.backend.entity.VolunteerApplication;
 import com.example.backend.entity.VolunteerRecruitment;
@@ -125,6 +126,7 @@ public class VolunteerApplicationResponse implements IResponse {
      */
     public static VolunteerApplicationResponse create(VolunteerApplication application,
                                                       VolunteerRecruitment recruitment,
+                                                      Location location,
                                                       User applicant,
                                                       User reviewer) {
         return new VolunteerApplicationResponse(
@@ -137,10 +139,10 @@ public class VolunteerApplicationResponse implements IResponse {
                 application.getRealName(),
                 application.getPhone(),
                 application.getAge(),
-                application.getProvince(),
-                application.getCity(),
-                application.getDistrict(),
-                application.getAddress(),
+                location.getProvince(),
+                location.getCity(),
+                location.getDistrict(),
+                location.getDetailAddress(),
                 application.getExperience(),
                 application.getSkills(),
                 application.getTimeDesc(),
@@ -160,9 +162,11 @@ public class VolunteerApplicationResponse implements IResponse {
      */
     public static VolunteerApplicationResponse createBatch(VolunteerApplication application,
                                                            Map<Long, VolunteerRecruitment> recruitments,
+                                                           Map<Long, Location> locations,
                                                            Map<Long, User> users) {
         return create(application,
                 recruitments.get(application.getRecruitmentId()),
+                locations.get(application.getId()),
                 users.get(application.getUserId()),
                 users.get(application.getReviewerId()));
     }

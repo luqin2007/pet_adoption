@@ -1,10 +1,11 @@
 package com.example.backend.entity;
 
+import com.example.backend.entity.property.ParentType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * 位置信息
@@ -24,6 +25,12 @@ public class Location implements IId {
      * *非空 bigint*
      */
     private Long parentId;
+
+    /**
+     * 绑定类型
+     * *非空 varchar(20)*
+     */
+    private ParentType parentType;
 
     /**
      * 发现/记录者 id

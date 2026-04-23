@@ -66,11 +66,10 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     public String uploadDonationFile(String uuid, MultipartFile file) {
         // 权限校验
-        User user = requireLoginUser();
+        User login = requireLoginUser();
         String redisKey = requireRedisUuid(donationTemplate, uuid);
         Long userId = Long.valueOf(redisHelper.getString(redisKey));
-        if (!user.is(userId))
-            throw ServiceException.auth("exception.auth.user.mismatch");
+        requirePermission(login.is(userId));
 
         // 上传材料
         return fileService
@@ -83,11 +82,10 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      */
     public void deleteDonationFile(String uuid, String filename) {
         // 权限校验
-        User user = requireLoginUser();
+        User login = requireLoginUser();
         String redisKey = requireRedisUuid(donationTemplate, uuid);
         Long userId = Long.valueOf(redisHelper.getString(redisKey));
-        if (!user.is(userId))
-            throw ServiceException.auth("exception.auth.user.mismatch");
+        requirePermission(login.is(userId));
 
         // 删除文件
         fileService.deleteTempFile(donationFileTemplate, uuid, filename, DONATION);
@@ -100,7 +98,9 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
     public DonationResponse addDonation(DonationAddRequest request) {
         User login = requireLoginUser();
         String uuid = request.getUuid();
-        requireRedisUuid(donationTemplate, uuid);
+        String redisKey = requireRedisUuid(donationTemplate, uuid);
+        Long userId = Long.valueOf(redisHelper.getString(redisKey));
+        requirePermission(login.is(userId));
 
         // 保存数据
         Donation donation = request.create(login.getId());
@@ -157,6 +157,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
             requirePermission(login.is(donation.getUserId()) || login.isWorker());
         else
             requirePermission(login.isWorker());
+        require(status.canChangeFrom(donation.getStatus()), "exception.invalidate.donation_status");
 
         // 保存数据
         DonationStatusUpdateRecord updateRecord = request.create(donation, login.getId());
@@ -326,6 +327,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
                 break;
             case DESTROY: // 销毁
                 count = stock.getCount().subtract(count).min(BigDecimal.ZERO);
+                require(count.compareTo(BigDecimal.ZERO) >= 0, "exception.invalidate.stock.insufficient");
                 break;
         }
         // 更新库存记录

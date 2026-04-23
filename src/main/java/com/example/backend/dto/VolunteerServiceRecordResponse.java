@@ -1,8 +1,6 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.User;
-import com.example.backend.entity.VolunteerServiceRecord;
-import com.example.backend.entity.VolunteerShift;
+import com.example.backend.entity.*;
 import com.example.backend.entity.property.ParentType;
 import com.example.backend.entity.property.VolunteerRecordStatus;
 import com.example.backend.util.FileUtils;
@@ -109,13 +107,13 @@ public class VolunteerServiceRecordResponse implements IResponse {
      * 根据实体构造响应
      */
     public static VolunteerServiceRecordResponse create(VolunteerServiceRecord record,
-                                                        VolunteerShift shift,
+                                                        VolunteerTask task,
                                                         User volunteer,
                                                         User reviewer) {
         return new VolunteerServiceRecordResponse(
                 record.getId(),
                 record.getShiftId(),
-                shift == null ? null : shift.getTitle(),
+                task == null ? null : task.getTitle(),
                 record.getVolunteerId(),
                 volunteer == null ? null : volunteer.getUsername(),
                 volunteer == null ? null : FileUtils.generateAssetUrl(ParentType.USER, volunteer.getId(), volunteer.getAvatar()),
@@ -140,7 +138,7 @@ public class VolunteerServiceRecordResponse implements IResponse {
      * 批量构造响应
      */
     public static VolunteerServiceRecordResponse createBatch(VolunteerServiceRecord record,
-                                                             Map<Long, VolunteerShift> shifts,
+                                                             Map<Long, VolunteerTask> shifts,
                                                              Map<Long, User> users) {
         return create(record,
                 shifts.get(record.getShiftId()),

@@ -19,7 +19,7 @@ public class AgreementAddRequest implements IRequest, IValidatedRequest {
      * 临时上传批次 id。
      * 纸质协议时用于关联已上传的扫描件。
      */
-    private String id;
+    private String uuid;
 
     @NotNull(message = "request.adopt_breading.agreement.parent")
     private Long parentId;
@@ -60,7 +60,7 @@ public class AgreementAddRequest implements IRequest, IValidatedRequest {
 
         AgreementType agreementType = AgreementType.get(type);
         if (agreementType == AgreementType.PAPER) {
-            if (ObjectUtils.isEmpty(id)) {
+            if (ObjectUtils.isEmpty(uuid)) {
                 errors.rejectValue("id", "request.timeout");
             }
             if (ObjectUtils.isEmpty(fileOrder)) {

@@ -6,7 +6,7 @@ import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * 重置密码请求体
@@ -29,6 +29,6 @@ public class PasswordResetRequest implements IRequest {
 
     public void applyTo(User user, PasswordEncoder passwordEncoder) {
         user.setPassword(passwordEncoder.encode(password));
-        user.setUpdateTime(new Date(System.currentTimeMillis()));
+        user.setUpdateTime(new Date());
     }
 }

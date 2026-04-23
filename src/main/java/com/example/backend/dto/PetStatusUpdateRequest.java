@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.validation.Errors;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -27,7 +27,7 @@ public class PetStatusUpdateRequest extends StatusUpdateRequest {
                 pet.getStatus(),
                 PetStatus.get(status),
                 reason,
-                new Date(System.currentTimeMillis()));
+                new Date());
     }
 
     @Override

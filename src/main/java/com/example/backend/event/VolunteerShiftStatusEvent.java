@@ -3,6 +3,7 @@ package com.example.backend.event;
 import com.example.backend.entity.User;
 import com.example.backend.entity.VolunteerShift;
 import com.example.backend.entity.VolunteerShiftStatusRecord;
+import com.example.backend.entity.VolunteerTask;
 import com.example.backend.entity.property.NoticeSource;
 import com.example.backend.entity.property.VolunteerShiftStatus;
 import com.example.backend.util.LangHelper;
@@ -16,7 +17,7 @@ import com.example.backend.util.StringUtils;
  *
  * @see com.example.backend.service.VolunteerService#updateShiftStatus(Long, com.example.backend.dto.VolunteerShiftStatusUpdateRequest)
  */
-public record VolunteerShiftStatusEvent(VolunteerShift data, VolunteerShiftStatusRecord record, User user) implements IReviewEvent<VolunteerShift> {
+public record VolunteerShiftStatusEvent(VolunteerShift data, VolunteerTask task, VolunteerShiftStatusRecord record, User user) implements IReviewEvent<VolunteerShift> {
     @Override
     public NoticeSource getSource() {
         return NoticeSource.VOLUNTEER;
@@ -33,13 +34,13 @@ public record VolunteerShiftStatusEvent(VolunteerShift data, VolunteerShiftStatu
     @Override
     public String buildNotifyContent(LangHelper langHelper, Object... args) {
         if (record.getStatusTo() == VolunteerShiftStatus.CONFIRMED) {
-            return langHelper.get("notification.volunteer_shift_confirmed.content", data.getTitle());
+            return langHelper.get("notification.volunteer_shift_confirmed.content", task.getTitle());
         }
         String statusText = volunteerShiftStatus(record.getStatusTo());
         String key = StringUtils.hasText(record.getComment())
                 ? "notification.volunteer_shift_status_with_reason.content"
                 : "notification.volunteer_shift_status.content";
-        return langHelper.get(key, data.getTitle(), statusText, record.getComment());
+        return langHelper.get(key, task.getTitle(), statusText, record.getComment());
     }
 
     @Override
@@ -53,7 +54,7 @@ public record VolunteerShiftStatusEvent(VolunteerShift data, VolunteerShiftStatu
         String key = StringUtils.hasText(record.getComment())
                 ? "mail.volunteer_shift_status_with_reason.content"
                 : "mail.volunteer_shift_status.content";
-        return langHelper.get(key, data.getTitle(), statusText, record.getComment());
+        return langHelper.get(key, task.getTitle(), statusText, record.getComment());
     }
 
     @Override

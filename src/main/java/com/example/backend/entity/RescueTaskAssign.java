@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * 救助任务分配信息
@@ -48,6 +48,6 @@ public class RescueTaskAssign implements IId {
                 taskId,
                 userId,
                 assignerId,
-                new Date(System.currentTimeMillis()));
+                new Date());
     }
 }

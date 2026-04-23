@@ -36,11 +36,10 @@ import static com.example.backend.entity.property.ParentType.PET;
 @RequiredArgsConstructor
 public class LostPetService extends BaseService<LostPetMapper, LostPet> {
 
-    private final LostPetLocationMapper lostPetLocationMapper;
     private final LostPetClaimMapper lostPetClaimMapper;
     private final LostPetMismatchMapper lostPetMismatchMapper;
     private final PetMapper petMapper;
-    private final PetLocationMapper petLocationMapper;
+    private final LocationMapper locationMapper;
 
     private FileService fileService;
     private UserService userService;
@@ -56,10 +55,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
      */
     public String beginLostPet() {
         requireLoginUser();
-        String uuid = StringUtils.randomUUID(lostPetKey, redisHelper, 10);
-        String redisKey = String.format(lostPetFileKey, uuid);
-        redisHelper.putString(redisKey, "", 30);
-        return uuid;
+        return beginRedisUuid(lostPetKey, "");
     }
 
     /**
@@ -75,8 +71,8 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         // 保存数据
         LostPet lostPet = request.create(login.getId());
         save(lostPet);
-        Location location = request.createLocation(lostPet.getId(), login.getId());
-        lostPetLocationMapper.insert(location);
+        Location location = request.createLocation(LOST_PET, lostPet.getId(), login.getId());
+        locationMapper.insert(location);
 
         // 转移临时文件
         fileService.saveTempMedias(lostPetFileKey, uuid, lostPet, LOST_PET);
@@ -116,9 +112,9 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
 
         request.applyTo(lostPet);
         updateById(lostPet);
-        Location location = lostPetLocationMapper.selectById(lostPet.getId());
+        Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).one();
         request.applyTo(location);
-        lostPetLocationMapper.updateById(location);
+        locationMapper.updateById(location);
         eventPublisher.publishEvent(new LostPetUpdateEvent(lostPet, login, location));
 
         List<PetResponse> similarPets = buildSimilarPetResponses(lostPet, location);
@@ -132,7 +128,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         User login = requireLoginUser();
         LostPet lostPet = requireById(lostPetId);
         requirePermission(login.is(lostPet.getOwnerId()) || login.isWorker());
-        Location location = lostPetLocationMapper.selectById(lostPet.getId());
+        Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).one();
         return buildSimilarPetResponses(lostPet, location);
     }
 
@@ -154,7 +150,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
             lostPetMismatchMapper.insert(mismatchEntity);
         }
 
-        Location location = lostPetLocationMapper.selectById(lostPet.getId());
+        Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).one();
         return buildSimilarPetResponses(lostPet, location);
     }
 
@@ -162,7 +158,9 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
      * 获取走失宠物
      */
     public LostPetResponse getLostPet(Long lostPetId) {
+        User login = requireLoginUser();
         LostPet lostPet = requireById(lostPetId);
+        requirePermission(login.isWorker() || login.is(lostPet.getOwnerId()));
         return buildLostPetResponse(lostPet, null, null, List.of());
     }
 
@@ -172,7 +170,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
                     User::getId, User::getUsername, User::getAvatar);
 
         if (location == null)
-            location = lostPetLocationMapper.selectById(lostPet.getId());
+            location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).one();
 
         Pet pet = lostPet.getPetId() == null ? null : petService.requireById(lostPet.getPetId(),
                 Pet::getId, Pet::getName);
@@ -191,11 +189,11 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         if (params.noLocation()) {
             result = baseMapper.queryByRequest(params).page(pageParams);
             Set<Long> petIds = result.getRecords().stream().map(LostPet::getId).collect(Collectors.toSet());
-            locations = lostPetLocationMapper
-                    .queryByLostPets(petIds)
+            locations = locationMapper
+                    .queryByParents(LOST_PET, petIds)
                     .group(Location::getParentId);
         } else if (params.noPet()) {
-            Page<Location> pl = lostPetLocationMapper.queryByRequest(params).page(pageParams);
+            Page<Location> pl = locationMapper.queryByLostPetRequest(params).page(pageParams);
             result = convertDto(pl, // 1:1
                     location -> requireById(location.getParentId()));
             locations = pl.getRecords().stream()
@@ -330,8 +328,9 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
                 .collect(Collectors.toSet());
 
         // 可能宠物
-        Set<Long> petIds = petLocationMapper.queryLostPets(location, lostPet.getLostTime(), ignoredPetIds)
+        Set<Long> petIds = locationMapper.queryPetLocations(location, lostPet.getLostTime())
                 .list(Location::getParentId)
+                .filter(id -> !ignoredPetIds.contains(id))
                 .collect(Collectors.toSet());
 
         if (petIds.isEmpty()) {
@@ -356,8 +355,9 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
                 .collect(Collectors.toSet());
 
         // 可能宠物
-        Set<Long> lostPetIds = lostPetLocationMapper.queryLostPets(location, ignoredIds)
+        Set<Long> lostPetIds = locationMapper.queryLostPetLocations(location)
                 .list(Location::getParentId)
+                .filter(id -> !ignoredIds.contains(id))
                 .collect(Collectors.toSet());
 
         if (lostPetIds.isEmpty()) {

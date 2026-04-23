@@ -5,7 +5,7 @@ import com.example.backend.util.StringUtils;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -16,7 +16,7 @@ public class PetTagAddRequest implements IRequest {
     private List<String> tags;
 
     public List<PetTag> create(Long petId, Long userId, Set<String> currentTags) {
-        Date now = new Date(System.currentTimeMillis());
+        Date now = new Date();
         return tags.stream()
                 // 非空
                 .filter(StringUtils::hasText)

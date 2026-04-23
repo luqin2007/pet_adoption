@@ -29,8 +29,8 @@ public enum UserRole {
     public static final int MAX_ROLE = 0x1F;
 
     private final String role;
-    private final int setMask;
-    private final int matchMask;
+    private final int setMask;   // 权限分配时使用
+    private final int matchMask; // 权限校验时使用
 
     public static Stream<UserRole> getRoles(int mask) {
         return Stream.of(values())

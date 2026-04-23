@@ -1,6 +1,5 @@
 package com.example.backend.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.example.backend.entity.property.VolunteerRecruitmentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,34 +37,6 @@ public class VolunteerRecruitment implements IId {
      * *text*
      */
     private String requirement;
-
-    /**
-     * 服务地点
-     * *非数据库字段，存储于 location 表*
-     */
-    @TableField(exist = false)
-    private String serviceAddress;
-
-    /**
-     * 省份
-     * *非数据库字段，存储于 location 表*
-     */
-    @TableField(exist = false)
-    private String province;
-
-    /**
-     * 城市
-     * *非数据库字段，存储于 location 表*
-     */
-    @TableField(exist = false)
-    private String city;
-
-    /**
-     * 区县
-     * *非数据库字段，存储于 location 表*
-     */
-    @TableField(exist = false)
-    private String district;
 
     /**
      * 招募人数

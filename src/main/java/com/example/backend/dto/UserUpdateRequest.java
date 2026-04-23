@@ -10,7 +10,7 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * 用户更新 请求体
@@ -49,6 +49,6 @@ public class UserUpdateRequest implements IRequest {
             user.setPassword(passwordEncoder.encode(password));
         user.setEmail(email);
         user.setRole(UserRole.rezip(role));
-        user.setUpdateTime(new Date(System.currentTimeMillis()));
+        user.setUpdateTime(new Date());
     }
 }

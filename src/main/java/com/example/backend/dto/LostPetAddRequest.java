@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * 走失宠物报备请求
@@ -44,7 +44,7 @@ public class LostPetAddRequest extends LocationRequest implements IRequest {
     private String description;
 
     public LostPet create(Long ownerId) {
-        Date now = new Date(System.currentTimeMillis());
+        Date now = new Date();
         return new LostPet(null,
                 ownerId,
                 name,

@@ -58,6 +58,7 @@ public class ArticleAddRequest implements IRequest, IValidatedRequest {
                 content,
                 cover,
                 authorId,
+                Boolean.FALSE,
                 0,
                 0,
                 0,

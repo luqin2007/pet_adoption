@@ -12,6 +12,14 @@ public enum VolunteerRecruitmentStatus {
     PUBLISHED, // 招募中
     CLOSED; // 已关闭
 
+    public boolean canChangeFrom(VolunteerRecruitmentStatus from) {
+        return switch (this) {
+            case DRAFT -> from != CLOSED;
+            case PUBLISHED -> from == DRAFT;
+            case CLOSED -> true;
+        };
+    }
+
     /**
      * 根据字符串获取枚举
      */

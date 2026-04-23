@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * 添加流浪宠物请求体
@@ -58,7 +58,7 @@ public class PetInfoAddRequest extends LocationRequest implements IRequest {
     private String health;
 
     public Pet createInfo(Long userId) {
-        Date now = new Date(System.currentTimeMillis());
+        Date now = new Date();
         return new Pet(null,
                 userId,
                 name,

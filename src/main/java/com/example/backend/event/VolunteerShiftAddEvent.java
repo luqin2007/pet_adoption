@@ -2,6 +2,7 @@ package com.example.backend.event;
 
 import com.example.backend.entity.User;
 import com.example.backend.entity.VolunteerShift;
+import com.example.backend.entity.VolunteerTask;
 import com.example.backend.entity.property.NoticeSource;
 import com.example.backend.util.LangHelper;
 
@@ -12,7 +13,7 @@ import com.example.backend.util.LangHelper;
  *
  * @see com.example.backend.service.VolunteerService#addShift(com.example.backend.dto.VolunteerShiftAddRequest)
  */
-public record VolunteerShiftAddEvent(VolunteerShift data, User user) implements INotifyEvent<VolunteerShift> {
+public record VolunteerShiftAddEvent(VolunteerShift data, VolunteerTask task, User user) implements INotifyEvent<VolunteerShift> {
     @Override
     public NoticeSource getSource() {
         return NoticeSource.VOLUNTEER;
@@ -25,7 +26,7 @@ public record VolunteerShiftAddEvent(VolunteerShift data, User user) implements 
 
     @Override
     public String buildNotifyContent(LangHelper langHelper, Object... args) {
-        return langHelper.get("notification.volunteer_shift_add.content", data.getTitle());
+        return langHelper.get("notification.volunteer_shift_add.content", task.getTitle());
     }
 
     @Override
@@ -35,6 +36,6 @@ public record VolunteerShiftAddEvent(VolunteerShift data, User user) implements 
 
     @Override
     public String buildMailContent(LangHelper langHelper, Object... args) {
-        return langHelper.get("mail.volunteer_shift_add.content", data.getTitle());
+        return langHelper.get("mail.volunteer_shift_add.content", task.getTitle());
     }
 }

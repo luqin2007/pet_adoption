@@ -3,7 +3,7 @@ package com.example.backend.dto;
 import lombok.Data;
 import org.springframework.validation.Errors;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Data
 public class FirstRegistrationQueryParams implements IParam, IValidatedRequest {

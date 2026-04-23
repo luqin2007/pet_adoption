@@ -23,15 +23,11 @@ public class VolunteerApplicationStatusUpdateRequest extends StatusUpdateRequest
         validateEnum(errors, VolunteerApplicationStatusUpdateRequest::getStatus, VolunteerApplicationStatus.class, "request.volunteer.application.status");
     }
 
-    public void applyTo(VolunteerProfile profile, VolunteerApplication application, User viewer) {
+    public void applyTo(VolunteerProfile profile, VolunteerApplication application) {
         profile.setStatus(VolunteerProfileStatus.ACTIVE);
         profile.setRealName(application.getRealName());
         profile.setSex(application.getSex());
         profile.setPhone(application.getPhone());
-        profile.setProvince(application.getProvince());
-        profile.setCity(application.getCity());
-        profile.setDistrict(application.getDistrict());
-        profile.setAddress(application.getAddress());
         profile.setSkills(application.getSkills());
         profile.setServiceDesc(application.getMotivation());
         profile.setTimeDesc(application.getTimeDesc());
@@ -39,7 +35,7 @@ public class VolunteerApplicationStatusUpdateRequest extends StatusUpdateRequest
         profile.setUpdateTime(new Date());
     }
 
-    public VolunteerProfile createProfile(VolunteerApplication application, User volunteer, User viewer) {
+    public VolunteerProfile createProfile(VolunteerApplication application, User volunteer) {
         Date now = new Date();
         return new VolunteerProfile(null,
                 volunteer.getId(),
@@ -48,10 +44,6 @@ public class VolunteerApplicationStatusUpdateRequest extends StatusUpdateRequest
                 application.getSex(),
                 application.getPhone(),
                 application.getAge(),
-                application.getProvince(),
-                application.getCity(),
-                application.getDistrict(),
-                application.getAddress(),
                 application.getSkills(),
                 application.getMotivation(),
                 application.getTimeDesc(),
