@@ -5,7 +5,11 @@ import com.example.backend.entity.Article;
 import com.example.backend.entity.property.ArticleStatus;
 import com.example.backend.entity.property.ArticleType;
 import com.example.backend.util.MPLambdaQuery;
+import com.example.backend.util.MPLambdaUpdate;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 索引：
@@ -29,6 +33,13 @@ public interface ArticleMapper extends IBaseMapper<Article> {
                 .eq(Article::getIsDiscard, params.getIsDiscard())
                 .desc(Article::getPublishTime)
                 .desc(Article::getCreateTime);
+    }
+
+    default MPLambdaQuery<Article> getDisplayArticles(Set<Long> articleIds) {
+        return lambdaQuery()
+                .in(Article::getId, articleIds)
+                .eq(Article::getStatus, ArticleStatus.PUBLISHED)
+                .eq(Article::getIsDiscard, Boolean.FALSE);
     }
 
     @Override

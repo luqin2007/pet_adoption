@@ -5,6 +5,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.ObjectUtils;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -16,12 +17,7 @@ public interface IValidates {
      * 获取当前登录用户
      */
     default User requireLoginUser() {
-        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .map(Authentication::getPrincipal)
-                .filter(user -> user instanceof CustomUserDetails)
-                .map(user -> (CustomUserDetails) user)
-                .map(CustomUserDetails::getUser)
-                .orElseThrow(() -> ServiceException.auth("exception.auth.required"));
+        return getLoginUser().orElseThrow(() -> ServiceException.auth("exception.auth.required"));
     }
 
     /**
@@ -29,7 +25,9 @@ public interface IValidates {
      */
     default Optional<User> getLoginUser() {
         return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .map(auth -> (CustomUserDetails) auth.getPrincipal())
+                .map(Authentication::getPrincipal)
+                .filter(user -> user instanceof CustomUserDetails)
+                .map(user -> (CustomUserDetails) user)
                 .map(CustomUserDetails::getUser);
     }
 
@@ -51,7 +49,7 @@ public interface IValidates {
      * 确保对象相同
      */
     default void requireEqual(Object obj1, Object obj2, String message) {
-        if (obj1 != obj2 && !obj1.equals(obj2)) {
+        if (!Objects.equals(obj1, obj2)) {
             throw ServiceException.invalidate(message);
         }
     }

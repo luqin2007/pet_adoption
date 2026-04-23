@@ -62,6 +62,8 @@ public class PetService extends BaseService<PetMapper, Pet> {
     @Transactional
     public PetResponse addLocation(Long petId, LocationRequest request) {
         User login = requireLoginUser();
+        Pet pet = requireById(petId);
+        checkUserPermission(pet, login);
         Location location = request.createLocation(PET, petId, login.getId());
         locationMapper.insert(location);
         eventPublisher.publishEvent(new PetLocationEvent(location, login));
@@ -143,7 +145,8 @@ public class PetService extends BaseService<PetMapper, Pet> {
     public PetMediaResponse uploadMedia(Long petId, PetMediaUploadTable request) {
         // 检查用户
         User user = requireLoginUser();
-        requireExist(petId);
+        Pet pet = requireById(petId);
+        checkUserPermission(pet, user);
 
         // 保存图片/视频
         MultipartFile file = request.getFile();

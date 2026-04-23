@@ -24,7 +24,7 @@ public enum ParentType {
     LOST_PET("lost_pet"), // 丢失宠物
     ARTICLE("article"), // 文章
     RECRUITMENT("recruitment"), // 志愿者招募
-    VOLUNTEER_APPLICATION("volunteer_app"), // 志愿者申请
+    VOLUNTEER_APP("volunteer_app"), // 志愿者申请
     VOLUNTEER_PROFILE("volunteer_profile"),
     VOLUNTEER_TASK("volunteer_task");
 

@@ -326,7 +326,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
                 require(count.compareTo(BigDecimal.ZERO) >= 0, "exception.invalidate.stock.insufficient");
                 break;
             case DESTROY: // 销毁
-                count = stock.getCount().subtract(count).min(BigDecimal.ZERO);
+                count = stock.getCount().subtract(count);
                 require(count.compareTo(BigDecimal.ZERO) >= 0, "exception.invalidate.stock.insufficient");
                 break;
         }

@@ -11,7 +11,6 @@ import com.example.backend.event.LostPetClaimAddEvent;
 import com.example.backend.event.LostPetClaimApproveEvent;
 import com.example.backend.event.LostPetUpdateEvent;
 import com.example.backend.mapper.*;
-import com.example.backend.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,7 +111,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
 
         request.applyTo(lostPet);
         updateById(lostPet);
-        Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).one();
+        Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).require();
         request.applyTo(location);
         locationMapper.updateById(location);
         eventPublisher.publishEvent(new LostPetUpdateEvent(lostPet, login, location));
@@ -128,7 +127,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         User login = requireLoginUser();
         LostPet lostPet = requireById(lostPetId);
         requirePermission(login.is(lostPet.getOwnerId()) || login.isWorker());
-        Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).one();
+        Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).require();
         return buildSimilarPetResponses(lostPet, location);
     }
 
@@ -150,7 +149,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
             lostPetMismatchMapper.insert(mismatchEntity);
         }
 
-        Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).one();
+        Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).require();
         return buildSimilarPetResponses(lostPet, location);
     }
 

@@ -197,7 +197,9 @@ public class PublicityService extends BaseService<ArticleMapper, Article> {
         Set<Long> articleIds = favorites.getRecords().stream()
                 .map(ArticleFavorite::getArticleId)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
-        Map<Long, Article> articles = groupById(articleIds);
+        Map<Long, Article> articles = baseMapper
+                .getDisplayArticles(articleIds)
+                .groupById();
         Map<Long, User> authors = userService.groupById(
                 articles.values().stream().map(Article::getAuthorId),
                 User::getId,

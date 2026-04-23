@@ -75,7 +75,7 @@ public class VolunteerFacade {
                 Stream.of(application.getUserId(), application.getReviewerId()),
                 User::getId, User::getUsername, User::getAvatar);
         Location location = locationMapper
-                .queryByParent(ParentType.VOLUNTEER_APPLICATION, application.getId())
+                .queryByParent(ParentType.VOLUNTEER_APP, application.getId())
                 .require();
         return VolunteerApplicationResponse.create(application,
                 recruitment, location,
@@ -96,7 +96,7 @@ public class VolunteerFacade {
                 .map(VolunteerApplication::getId)
                 .collect(Collectors.toSet());
         Map<Long, Location> locations = locationMapper
-                .queryByParents(ParentType.VOLUNTEER_APPLICATION, applicationIds)
+                .queryByParents(ParentType.VOLUNTEER_APP, applicationIds)
                 .group(Location::getParentId);
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().flatMap(item -> Stream.of(item.getUserId(), item.getReviewerId())),

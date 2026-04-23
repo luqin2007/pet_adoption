@@ -114,9 +114,11 @@ public class FileService extends BaseService<MediaFileMapper, MediaFile> {
         List<TempFileInfo> files = redisHelper.getAndDeleteObjectsFromHash(fileKey, filename);
 
         // 删除文件
-        TempFileInfo fileInfo = files.get(0);
-        Path path = FileUtils.generatePath(temp, parentType, uuid, fileInfo.getFilename());
-        insertDeleteJob(path);
+        if (files != null && !files.isEmpty()) {
+            TempFileInfo fileInfo = files.get(0);
+            Path path = FileUtils.generatePath(temp, parentType, uuid, fileInfo.getFilename());
+            insertDeleteJob(path);
+        }
 
         // 刷新超时
         redisHelper.expireObject(fileKey, keyTimeout);

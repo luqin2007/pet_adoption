@@ -47,6 +47,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         User login = requireWorker();
         VolunteerRecruitment recruitment = request.create(login.getId());
         save(recruitment);
+        saveLocation(request, ParentType.RECRUITMENT, recruitment.getId(), login.getId());
         return volunteerFacade.buildRecruitmentResponse(recruitment);
     }
 
@@ -75,6 +76,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         requireEqual(VolunteerRecruitmentStatus.DRAFT, recruitment.getStatus(), "exception.invalidate.volunteer.recruitment.published_locked");
         request.applyTo(recruitment);
         updateById(recruitment);
+        upsertLocation(request, ParentType.RECRUITMENT, recruitment.getId(), recruitment.getPublisherId());
         return volunteerFacade.buildRecruitmentResponse(recruitment);
     }
 
@@ -110,6 +112,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
 
         VolunteerApplication application = request.create(login.getId());
         volunteerApplicationMapper.insert(application);
+        saveLocation(request, ParentType.VOLUNTEER_APP, application.getId(), login.getId());
 
         int appliedCount = recruitment.getAppliedCount() == null ? 0 : recruitment.getAppliedCount();
         recruitment.setAppliedCount(appliedCount + 1);
@@ -175,6 +178,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
                 request.applyTo(profile, application);
                 volunteerProfileMapper.updateById(profile);
             }
+            upsertProfileLocation(application, profile);
         }
         return volunteerFacade.buildApplicationResponse(application);
     }
@@ -208,6 +212,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         requirePermission(login.isWorker() || login.is(profile.getUserId()));
         request.applyTo(profile);
         volunteerProfileMapper.updateById(profile);
+        upsertLocation(request, ParentType.VOLUNTEER_PROFILE, profile.getId(), profile.getUserId());
         return volunteerFacade.buildProfileResponse(profile);
     }
 
@@ -476,6 +481,51 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     private void requireVolunteer(Long volunteerId) {
         User user = userService.requireById(volunteerId, User::getId, User::getRole);
         requirePermission(user.isVolunteer());
+    }
+
+    private void saveLocation(LocationRequest request, ParentType parentType, Long parentId, Long userId) {
+        Location location = request.createLocation(parentType, parentId, userId);
+        locationMapper.insert(location);
+    }
+
+    private void upsertLocation(LocationRequest request, ParentType parentType, Long parentId, Long userId) {
+        Location location = locationMapper.queryByParent(parentType, parentId).one();
+        if (location == null) {
+            saveLocation(request, parentType, parentId, userId);
+            return;
+        }
+        request.applyTo(location);
+        location.setUserId(userId);
+        locationMapper.updateById(location);
+    }
+
+    private void upsertProfileLocation(VolunteerApplication application, VolunteerProfile profile) {
+        Location applicationLocation = locationMapper
+                .queryByParent(ParentType.VOLUNTEER_APP, application.getId())
+                .require();
+        Location profileLocation = locationMapper
+                .queryByParent(ParentType.VOLUNTEER_PROFILE, profile.getId())
+                .one();
+        if (profileLocation == null) {
+            profileLocation = new Location(null,
+                    profile.getId(),
+                    ParentType.VOLUNTEER_PROFILE,
+                    profile.getUserId(),
+                    applicationLocation.getProvince(),
+                    applicationLocation.getCity(),
+                    applicationLocation.getDistrict(),
+                    applicationLocation.getDetailAddress(),
+                    new Date());
+            locationMapper.insert(profileLocation);
+            return;
+        }
+        profileLocation.setUserId(profile.getUserId());
+        profileLocation.setProvince(applicationLocation.getProvince());
+        profileLocation.setCity(applicationLocation.getCity());
+        profileLocation.setDistrict(applicationLocation.getDistrict());
+        profileLocation.setDetailAddress(applicationLocation.getDetailAddress());
+        profileLocation.setCreateTime(new Date());
+        locationMapper.updateById(profileLocation);
     }
 
     /**

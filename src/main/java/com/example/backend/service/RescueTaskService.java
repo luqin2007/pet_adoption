@@ -18,12 +18,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.backend.entity.property.ParentType.RESCUE_TASK;
 import static com.example.backend.entity.property.RescueTaskAction.STATUS;
-import static com.example.backend.entity.property.RescueTaskStatus.CREATED;
+import static com.example.backend.entity.property.RescueTaskStatus.*;
 
 /**
  * 救助任务管理
@@ -229,7 +232,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         RescueTask task = requireById(taskId);
-        requireEqual(CREATED, task.getStatus(), "exception.invalidate.rescue_task.not_approved");
+        require(APPROVED == task.getStatus() || PROCESSING == task.getStatus(), "exception.invalidate.rescue_task.not_approved");
 
         // 任务分配
         Set<Long> addUsers = rescueTaskAssignMapper.queryUserByTask(taskId)
