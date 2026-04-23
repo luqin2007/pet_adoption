@@ -6747,7 +6747,27 @@ paths:
                   data:
                     $ref: '#/components/schemas/VolunteerRewardResponse'
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    Result:
+      type: object
+      description: "统一响应"
+      properties:
+        code:
+          type: integer
+          description: "业务状态码"
+        message:
+          type: string
+          description: "响应消息"
+        data:
+          description: "响应数据"
+      required:
+        - code
+        - message
     Empty:
       type: object
       description: "空响应"
