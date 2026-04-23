@@ -16,6 +16,9 @@ public class WebMvcConfig {
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
-        binder.addValidators(requestValidator);
+        Object target = binder.getTarget();
+        if (target != null && requestValidator.supports(target.getClass())) {
+            binder.addValidators(requestValidator);
+        }
     }
 }
