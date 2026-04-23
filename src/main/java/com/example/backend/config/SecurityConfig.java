@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/**",
+                                "/assets/**",
                                 "/error",
                                 "/", "/css/**", "/js/**" // 其他静态资源
                         ).permitAll()

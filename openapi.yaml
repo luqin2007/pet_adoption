@@ -6,6 +6,45 @@ info:
 servers:
   - url: http://localhost:8080
 paths:
+  /assets/{folder}/{parentId}/{filename}:
+    get:
+      tags: [Asset]
+      summary: "获取资源文件"
+      operationId: getAsset
+      parameters:
+        - name: folder
+          in: path
+          required: true
+          description: "资源目录，对应 assetUrl 中的目录名"
+          schema:
+            type: string
+        - name: parentId
+          in: path
+          required: true
+          description: "资源所属实体 id"
+          schema:
+            type: integer
+            format: int64
+        - name: filename
+          in: path
+          required: true
+          description: "资源文件名"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 请求成功，返回资源文件内容
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: 资源不存在
   /adopt/adopt:
     post:
       tags: [AdoptBreading]

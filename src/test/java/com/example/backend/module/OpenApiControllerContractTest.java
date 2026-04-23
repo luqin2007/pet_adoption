@@ -19,6 +19,7 @@ class OpenApiControllerContractTest {
 
     private static final List<Class<?>> CONTROLLERS = List.of(
             AdoptBreadingController.class,
+            AssetController.class,
             AuthController.class,
             ItemDonationController.class,
             LostPetController.class,
