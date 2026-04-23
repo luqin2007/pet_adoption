@@ -10,6 +10,7 @@ import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AccountStatusException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -39,6 +40,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
     private final PasswordEncoder passwordEncoder;
     private final JwtHelper jwtHelper;
+    @Lazy
     private final AuthenticationManager authenticationManager;
 
     private FileService fileService;
