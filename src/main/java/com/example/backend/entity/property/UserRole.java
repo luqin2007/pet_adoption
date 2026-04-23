@@ -20,7 +20,7 @@ public enum UserRole {
     // 兽医
     DOCTOR("ROLE_DOCTOR", 0x8, 0x8),
     // 超级管理员 (ALL)
-    ADMIN("ROLE_ADMIN", 0x1F, 0x0);
+    ADMIN("ROLE_ADMIN", 0x1F, 0x1F);
 
     public static final int MAX_ROLE = 0x1F;
 
