@@ -29,7 +29,7 @@ class WorkflowBeginServiceUnitTest {
 
     @Test
     void workerCanBeginAgreementDraft() {
-        login(user(1L, "worker", UserRole.WORKER.getSetMask()));
+        login(user(1L, "worker", UserRole.WORKER.getMask()));
         RedisHelper redisHelper = mockRedisHelper();
         AdoptBreadingService service = new AdoptBreadingService(
                 mock(BreadingMapper.class),
@@ -51,7 +51,7 @@ class WorkflowBeginServiceUnitTest {
 
     @Test
     void normalUserCannotBeginAgreementDraft() {
-        login(user(2L, "normal", UserRole.NORMAL.getSetMask()));
+        login(user(2L, "normal", UserRole.NORMAL.getMask()));
         AdoptBreadingService service = new AdoptBreadingService(
                 mock(BreadingMapper.class),
                 mock(AgreementMapper.class),
@@ -70,7 +70,7 @@ class WorkflowBeginServiceUnitTest {
 
     @Test
     void loggedInUserCanBeginDonationWithUserIdPayload() {
-        login(user(12L, "donor", UserRole.DONOR.getSetMask()));
+        login(user(12L, "donor", UserRole.DONOR.getMask()));
         RedisHelper redisHelper = mockRedisHelper();
         ItemDonationService service = new ItemDonationService(
                 mock(DonationMapper.class),
@@ -93,7 +93,7 @@ class WorkflowBeginServiceUnitTest {
 
     @Test
     void loggedInUserCanBeginLostPetReport() {
-        login(user(13L, "owner", UserRole.NORMAL.getSetMask()));
+        login(user(13L, "owner", UserRole.NORMAL.getMask()));
         RedisHelper redisHelper = mockRedisHelper();
         LostPetService service = new LostPetService(
                 mock(LostPetClaimMapper.class),
@@ -111,7 +111,7 @@ class WorkflowBeginServiceUnitTest {
 
     @Test
     void doctorCanBeginExaminationForOpenMedicalDetail() {
-        login(user(14L, "doctor", UserRole.DOCTOR.getSetMask()));
+        login(user(14L, "doctor", UserRole.DOCTOR.getMask()));
         RedisHelper redisHelper = mockRedisHelper();
         MedicalDetailMapper medicalDetailMapper = mock(MedicalDetailMapper.class);
         MedicalDetail detail = new MedicalDetail();
@@ -132,13 +132,51 @@ class WorkflowBeginServiceUnitTest {
 
     @Test
     void nonDoctorCannotBeginExamination() {
-        login(user(15L, "normal", UserRole.NORMAL.getSetMask()));
+        login(user(15L, "normal", UserRole.NORMAL.getMask()));
         MedicalService service = medicalService();
         wireBase(service, mockRedisHelper());
 
         ServiceException ex = assertThrows(ServiceException.class, () -> service.beginExamination(88L));
 
         assertEquals(ServiceException.E_AUTH, ex.getCode());
+    }
+
+    @Test
+    void doctorCannotBeginExaminationForCompletedMedicalDetail() {
+        login(user(16L, "doctor", UserRole.DOCTOR.getMask()));
+        MedicalDetailMapper medicalDetailMapper = mock(MedicalDetailMapper.class);
+        MedicalDetail detail = new MedicalDetail();
+        detail.setId(88L);
+        detail.setIsCompleted(true);
+        detail.setIsDiscard(false);
+        when(medicalDetailMapper.requireById(eq(88L), anyVararg())).thenReturn(detail);
+        MedicalService service = medicalService();
+        wireBase(service, mockRedisHelper());
+        ReflectionTestUtils.setField(service, "baseMapper", medicalDetailMapper);
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.beginExamination(88L));
+
+        assertEquals(ServiceException.E_INVALIDATE, ex.getCode());
+        assertEquals("exception.invalidate.medical_detail.completed", ex.getMessage());
+    }
+
+    @Test
+    void doctorCannotBeginExaminationForDiscardedMedicalDetail() {
+        login(user(17L, "doctor", UserRole.DOCTOR.getMask()));
+        MedicalDetailMapper medicalDetailMapper = mock(MedicalDetailMapper.class);
+        MedicalDetail detail = new MedicalDetail();
+        detail.setId(88L);
+        detail.setIsCompleted(false);
+        detail.setIsDiscard(true);
+        when(medicalDetailMapper.requireById(eq(88L), anyVararg())).thenReturn(detail);
+        MedicalService service = medicalService();
+        wireBase(service, mockRedisHelper());
+        ReflectionTestUtils.setField(service, "baseMapper", medicalDetailMapper);
+
+        ServiceException ex = assertThrows(ServiceException.class, () -> service.beginExamination(88L));
+
+        assertEquals(ServiceException.E_INVALIDATE, ex.getCode());
+        assertEquals("exception.invalidate.medical_detail.discarded", ex.getMessage());
     }
 
     private static RedisHelper mockRedisHelper() {
