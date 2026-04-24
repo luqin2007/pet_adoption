@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.User;
+import com.example.backend.entity.property.UserRole;
 import com.example.backend.event.MailSendEvent;
 import com.example.backend.mapper.UserMapper;
 import com.example.backend.util.*;
@@ -249,6 +250,9 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         // 校验用户权限
         User user = requireById(userId);
         requestUserPermission(user, userId);
+        if (request.getRole() != null && UserRole.ADMIN.match(request.getRole())) {
+            requirePermission(requireLoginUser().isAdmin());
+        }
 
         // 更新用户信息
         request.applyTo(user, passwordEncoder);

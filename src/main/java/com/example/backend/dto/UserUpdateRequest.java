@@ -27,7 +27,6 @@ public class UserUpdateRequest implements IRequest {
     /**
      * 密码
      */
-    @NotBlank(message = "request.user.password")
     @Length(min = 6, message = "request.user.password.short")
     private String password;
 
@@ -38,17 +37,26 @@ public class UserUpdateRequest implements IRequest {
     private String email;
 
     /**
+     * 联系方式
+     */
+    private String phone;
+
+    /**
      * 角色
      */
     @Range(min = 0, max = UserRole.MAX_ROLE, message = "request.user.role")
-    private int role;
+    private Integer role;
 
     public void applyTo(User user, PasswordEncoder passwordEncoder) {
         user.setUsername(username);
         if (StringUtils.hasText(password))
             user.setPassword(passwordEncoder.encode(password));
-        user.setEmail(email);
-        user.setRole(UserRole.rezip(role));
+        if (email != null)
+            user.setEmail(email);
+        if (phone != null)
+            user.setPhone(phone);
+        if (role != null)
+            user.setRole(UserRole.rezip(role));
         user.setUpdateTime(new Date());
     }
 }

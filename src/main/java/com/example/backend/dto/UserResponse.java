@@ -14,7 +14,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class UserResponse implements IResponse {
 
-    private Long id;
+    private String id;
     private String username;
     private String email;
     private String avatar;
@@ -31,7 +31,7 @@ public class UserResponse implements IResponse {
 
     public static UserResponse create(User user) {
         return new UserResponse(
-                user.getId(),
+                String.valueOf(user.getId()),
                 user.getUsername(),
                 user.getEmail(),
                 FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()),
