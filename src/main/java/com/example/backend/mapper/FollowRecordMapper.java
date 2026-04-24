@@ -22,6 +22,9 @@ public interface FollowRecordMapper extends IBaseMapper<FollowRecord> {
     }
 
     default MPLambdaQuery<FollowRecord> queryByTasks(Set<Long> taskIds) {
+        if (taskIds == null || taskIds.isEmpty()) {
+            return lambdaQuery().eq(FollowRecord::getId, Long.MIN_VALUE);
+        }
         return lambdaQuery()
                 .eq(taskIds.size() == 1, FollowRecord::getTaskId, taskIds.iterator().next())
                 .in(taskIds.size() != 1, FollowRecord::getTaskId, taskIds)

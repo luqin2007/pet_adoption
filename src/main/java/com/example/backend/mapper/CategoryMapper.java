@@ -27,5 +27,10 @@ public interface CategoryMapper extends IBaseMapper<Category> {
     default String getMissingMessage() {
         return "exception.not_found.category";
     }
+
+    @Override
+    default Class<Category> getEntityClass() {
+        return Category.class;
+    }
 }
 

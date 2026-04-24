@@ -3,6 +3,7 @@ package com.example.backend.dto;
 import com.example.backend.entity.ImmunityHistory;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.validation.Errors;
 
@@ -17,14 +18,14 @@ public class ImmunityHistoryRequest implements IRequest, IValidatedRequest {
     @NotBlank(message = "request.medical.immunity.illness")
     private String illness;
 
-    @NotBlank(message = "request.medical.immunity.count")
+    @NotNull(message = "request.medical.immunity.count")
     @Min(value = 1, message = "request.medical.immunity.count_total")
     private Integer count;
 
-    @NotBlank(message = "request.medical.immunity.total")
+    @NotNull(message = "request.medical.immunity.total")
     private Integer total;
 
-    @NotBlank(message = "request.medical.immunity.time")
+    @NotNull(message = "request.medical.immunity.time")
     private Date immunityTime;
 
     public ImmunityHistory createEntity(Long registrationId) {

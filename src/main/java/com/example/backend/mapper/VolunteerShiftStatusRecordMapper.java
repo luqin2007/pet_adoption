@@ -20,8 +20,21 @@ public interface VolunteerShiftStatusRecordMapper extends IBaseMapper<VolunteerS
     }
 
     default MPLambdaQuery<VolunteerShiftStatusRecord> queryByShifts(Set<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return lambdaQuery().eq(VolunteerShiftStatusRecord::getId, Long.MIN_VALUE);
+        }
         return lambdaQuery()
                 .in(VolunteerShiftStatusRecord::getShiftId, ids)
                 .desc(VolunteerShiftStatusRecord::getCreateTime);
+    }
+
+    @Override
+    default String getMissingMessage() {
+        return "exception.not_found.volunteer.shift_status_record";
+    }
+
+    @Override
+    default Class<VolunteerShiftStatusRecord> getEntityClass() {
+        return VolunteerShiftStatusRecord.class;
     }
 }

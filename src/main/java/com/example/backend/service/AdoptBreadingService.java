@@ -195,7 +195,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.CREATE));
 
         // 转移文件
-        List<String> fileOrders = request.getFileOrder();
+        List<String> fileOrders = request.getFileOrder() == null ? List.of() : request.getFileOrder();
         List<AgreementFile> files = new ArrayList<>(fileOrders.size());
         if (agreement.getType() == PAPER) {
             Map<String, TempFileInfo> fileMap = fileService

@@ -310,7 +310,8 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
             stock = request.createEmptyStock(login.getId());
         } else {
             stock = stockMapper.requireById(request.getId(),
-                    Stock::getId, Stock::getItemId, Stock::getSourceType, Stock::getExpireTime);
+                    Stock::getId, Stock::getItemId, Stock::getUserId, Stock::getCount,
+                    Stock::getSourceType, Stock::getExpireTime);
         }
         // 库存检查
         boolean firstRecord = action == StockAction.IN && stock.getId() == null;
@@ -369,6 +370,9 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
 
         // 查询 Stock
         Page<Stock> result = stockMapper.queryByRequest(paramRequest).page(pageRequest);
+        if (result.getRecords().isEmpty()) {
+            return new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        }
         Integer count = paramRequest.getCount(5);
         return itemDonationFacade.buildStockPage(result, count);
     }

@@ -2,6 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.Item;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,7 +13,7 @@ public class ItemUpdateRequest implements IRequest {
     @NotBlank(message = "request.item_donation.item.name")
     private String name;
 
-    @NotBlank(message = "request.item_donation.item.category")
+    @NotNull(message = "request.item_donation.item.category")
     private Long categoryId;
 
     private String description;

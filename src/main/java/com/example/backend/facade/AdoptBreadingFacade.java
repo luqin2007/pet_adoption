@@ -45,7 +45,8 @@ public class AdoptBreadingFacade {
         Set<Long> taskIds = tasks.stream()
                 .map(FollowTask::getId)
                 .collect(Collectors.toSet());
-        Map<Long, FollowRecord> records = followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
+        Map<Long, FollowRecord> records = taskIds.isEmpty() ? Map.of()
+                : followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
                 FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
         return AdoptResponse.create(adopt,
                 pet, cover,
@@ -72,7 +73,8 @@ public class AdoptBreadingFacade {
         Set<Long> taskIds = tasks.stream()
                 .map(FollowTask::getId)
                 .collect(Collectors.toSet());
-        Map<Long, FollowRecord> records = followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
+        Map<Long, FollowRecord> records = taskIds.isEmpty() ? Map.of()
+                : followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
                 FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
         Map<Long, List<FollowTaskResponse>> followTasks = tasks.stream()
                 .map(task -> FollowTaskResponse.createBatch(task, users, records))
@@ -133,12 +135,13 @@ public class AdoptBreadingFacade {
     public Page<FollowTaskResponse> buildFollowTaskPage(Page<FollowTask> result) {
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
-                User::getId, User::getUsername);
+                User::getId, User::getUsername, User::getAvatar);
         Set<Long> followIds = result.getRecords().stream()
                 .map(FollowTask::getId)
                 .collect(Collectors.toSet());
-        Map<Long, FollowRecord> records = followRecordMapper.queryByTasks(followIds).groupById(
-                FollowRecord::getId, FollowRecord::getSummary, FollowRecord::getVisitTime);
+        Map<Long, FollowRecord> records = followIds.isEmpty() ? Map.of()
+                : followRecordMapper.queryByTasks(followIds).group(FollowRecord::getTaskId,
+                FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
         return convert(result, task -> FollowTaskResponse.createBatch(task, users, records));
     }
 

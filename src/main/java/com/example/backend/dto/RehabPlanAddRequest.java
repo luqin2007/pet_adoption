@@ -16,7 +16,7 @@ import static com.example.backend.entity.property.RehabPlanStatusProp.ACTIVE;
 @Data
 public class RehabPlanAddRequest implements IRequest {
 
-    @NotBlank(message = "request.pet.age")
+    @NotNull(message = "request.pet.age")
     private Integer age;
 
     @NotBlank(message = "request.medical.rehab.task.title")

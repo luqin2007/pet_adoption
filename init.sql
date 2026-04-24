@@ -39,6 +39,7 @@ DROP TABLE IF EXISTS `health_assessment`;
 DROP TABLE IF EXISTS `rehab_record`;
 DROP TABLE IF EXISTS `rehab_plan_status`;
 DROP TABLE IF EXISTS `rehab_plan`;
+DROP TABLE IF EXISTS `immunity_history`;
 DROP TABLE IF EXISTS `allergy_history`;
 DROP TABLE IF EXISTS `deworm_record`;
 DROP TABLE IF EXISTS `dewormer`;
@@ -229,7 +230,7 @@ CREATE TABLE `first_registration` (
   `name` varchar(20) COMMENT '宠物名称',
   `age` int NOT NULL COMMENT '宠物年龄（月）',
   `weight` decimal(6,2) NOT NULL COMMENT '宠物体重 kg',
-  `temperature` decimal(3,2) NOT NULL COMMENT '宠物体温 ℃',
+  `temperature` decimal(4,2) NOT NULL COMMENT '宠物体温 ℃',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
   KEY `idx_first_registration_registrar_id` (`registrar_id`),
@@ -276,7 +277,7 @@ CREATE TABLE `medical_detail` (
   `past_history` text NOT NULL COMMENT '既往史',
   `life_habit` text NOT NULL COMMENT '生活习性',
   `weight` decimal(6,2) NOT NULL COMMENT '宠物体重 kg',
-  `temperature` decimal(3,2) NOT NULL COMMENT '宠物体温 ℃',
+  `temperature` decimal(4,2) NOT NULL COMMENT '宠物体温 ℃',
   `heart_rate` int NOT NULL COMMENT '心率',
   `respiratory_rate` int NOT NULL COMMENT '呼吸频率',
   `physical_exam` text NOT NULL COMMENT '其他体检信息',
@@ -390,7 +391,7 @@ CREATE TABLE `vaccine_record` (
 CREATE TABLE `dewormer` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '驱虫药',
   `item_id` bigint NOT NULL COMMENT '物品 id',
-  `type` tinyint NOT NULL COMMENT '类型，内驱/外驱/其他',
+  `type` varchar(20) NOT NULL COMMENT '类型，内驱/外驱/其他',
   `min_age` int NOT NULL COMMENT '适用最小年龄',
   `times` int NOT NULL COMMENT '总次数',
   `create_time` datetime NOT NULL COMMENT '创建时间',
@@ -415,6 +416,20 @@ CREATE TABLE `deworm_record` (
   CONSTRAINT `fk_deworm_record_dewormer_id` FOREIGN KEY (`dewormer_id`) REFERENCES `dewormer` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='DewormRecord';
 
+CREATE TABLE `immunity_history` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '免疫史',
+  `registration_id` bigint NOT NULL COMMENT '初诊登记 id',
+  `medicine` varchar(255) NOT NULL COMMENT '免疫药品',
+  `illness` varchar(255) NOT NULL COMMENT '免疫疾病',
+  `count` int NOT NULL COMMENT '第几次免疫',
+  `total` int NOT NULL COMMENT '总需要的免疫次数',
+  `immunity_time` datetime NOT NULL COMMENT '免疫时间',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_immunity_history_registration_id` (`registration_id`),
+  CONSTRAINT `fk_immunity_history_registration_id` FOREIGN KEY (`registration_id`) REFERENCES `first_registration` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='免疫史';
+
 CREATE TABLE `allergy_history` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '过敏史',
   `registration_id` bigint NOT NULL COMMENT '初诊登记 id',
@@ -434,7 +449,7 @@ CREATE TABLE `rehab_plan` (
   `title` varchar(255) NOT NULL COMMENT '标题',
   `content` text NOT NULL COMMENT '内容',
   `frequency` varchar(255) NOT NULL COMMENT '执行频率',
-  `status` tinyint NOT NULL COMMENT '状态',
+  `status` varchar(20) NOT NULL COMMENT '状态',
   `start_time` datetime NOT NULL COMMENT '开始时间',
   `end_time` datetime NOT NULL COMMENT '预计结束时间',
   `create_time` datetime NOT NULL COMMENT '创建时间',
@@ -544,7 +559,7 @@ CREATE TABLE `agreement` (
   `parent_type` varchar(20) NOT NULL COMMENT '申请类型 (ADOPT / BREADING)',
   `content` text COMMENT '电子协议正文，null 表示纸质协议扫描',
   `type` varchar(20) NOT NULL COMMENT '协议类型',
-  `sign` varchar(20) COMMENT '签名图片',
+  `sign` varchar(255) COMMENT '签名图片',
   `sign_time` datetime COMMENT '签署时间',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_time` datetime NOT NULL COMMENT '修改时间',
@@ -554,7 +569,7 @@ CREATE TABLE `agreement` (
 CREATE TABLE `agreement_file` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '协议文件（纸质扫描件 / 签名）',
   `agreement_id` bigint COMMENT '协议 id',
-  `filename` varchar(20) NOT NULL COMMENT '文件名',
+  `filename` varchar(255) NOT NULL COMMENT '文件名',
   `page` int NOT NULL COMMENT '页数，0 表示签名',
   `create_time` datetime NOT NULL COMMENT '上传时间',
   PRIMARY KEY (`id`),
@@ -565,7 +580,7 @@ CREATE TABLE `agreement_file` (
 CREATE TABLE `agreement_update_record` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '协议更新记录',
   `agreement_id` bigint NOT NULL COMMENT '协议 id',
-  `content` text NOT NULL COMMENT '原始协议内容',
+  `content` text COMMENT '原始协议内容',
   `type` varchar(20) NOT NULL COMMENT '更新类型',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
@@ -891,7 +906,7 @@ CREATE TABLE `volunteer_task` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '志愿者任务',
   `task_type` varchar(20) NOT NULL COMMENT '任务类型',
   `task_id` bigint COMMENT '任务 id',
-  `location_id` bigint NOT NULL COMMENT '任务地址 id',
+  `location_id` bigint COMMENT '任务地址 id',
   `title` varchar(255) NOT NULL COMMENT '任务标题',
   `content` text COMMENT '任务内容',
   `start_time` datetime NOT NULL COMMENT '开始时间',

@@ -2,6 +2,7 @@ package com.example.backend.entity;
 
 import com.example.backend.entity.property.OrderType;
 import com.example.backend.entity.property.ParentType;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("`order`")
 public class Order implements IId {
 
     /**

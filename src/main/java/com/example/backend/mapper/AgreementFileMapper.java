@@ -16,6 +16,9 @@ public interface AgreementFileMapper extends IBaseMapper<AgreementFile> {
     }
 
     default MPLambdaQuery<AgreementFile> queryByAgreements(Set<Long> agreementIds) {
+        if (agreementIds == null || agreementIds.isEmpty()) {
+            return lambdaQuery().eq(AgreementFile::getId, Long.MIN_VALUE);
+        }
         return lambdaQuery().in(AgreementFile::getAgreementId, agreementIds);
     }
 
@@ -23,5 +26,9 @@ public interface AgreementFileMapper extends IBaseMapper<AgreementFile> {
     default String getMissingMessage() {
         return "exception.not_found.agreement_file";
     }
-}
 
+    @Override
+    default Class<AgreementFile> getEntityClass() {
+        return AgreementFile.class;
+    }
+}

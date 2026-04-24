@@ -4,6 +4,7 @@ import com.example.backend.entity.AllergyHistory;
 import com.example.backend.entity.FirstRegistration;
 import com.example.backend.entity.ImmunityHistory;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.validation.Errors;
 
@@ -13,19 +14,19 @@ import java.util.List;
 @Data
 public class FirstRegistrationAddRequest implements IRequest, IValidatedRequest {
 
-    @NotBlank(message = "request.pet.id")
+    @NotNull(message = "request.pet.id")
     private Long petId;
 
     @NotBlank(message = "request.pet.name")
     private String name;
 
-    @NotBlank(message = "request.pet.age")
+    @NotNull(message = "request.pet.age")
     private Integer age;
 
-    @NotBlank(message = "request.medical.weight")
+    @NotNull(message = "request.medical.weight")
     private Double weight;
 
-    @NotBlank(message = "request.medical.temperature")
+    @NotNull(message = "request.medical.temperature")
     private Double temperature;
 
     // 免疫史

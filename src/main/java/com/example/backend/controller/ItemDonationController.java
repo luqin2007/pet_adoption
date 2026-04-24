@@ -270,7 +270,7 @@ public class ItemDonationController {
      * 取消预警
      */
     @DeleteMapping("/subscribe")
-    public Result<Void> cancelSubscribe(Set<Long> subscribeIds) {
+    public Result<Void> cancelSubscribe(@RequestParam("subscribeIds") Set<Long> subscribeIds) {
         itemDonationService.cancelSubscribe(subscribeIds);
         return Result.success();
     }

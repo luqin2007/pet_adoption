@@ -305,13 +305,13 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         MedicalDetail detail = requireDetailOpen(detailId);
 
         detail.setIsCompleted(true);
-        save(detail);
+        updateById(detail);
         return buildMedicalDetailResponse(detail);
     }
 
     private MedicalDetailResponse buildMedicalDetailResponse(MedicalDetail detail) {
         Long detailId = detail.getId();
-        MedicalRecord record = medicalRecordMapper.requireById(detail.getRecordId(), MedicalRecord::getPetAge);
+        MedicalRecord record = medicalRecordMapper.requireById(detail.getRecordId(), MedicalRecord::getPetId, MedicalRecord::getPetAge);
         User doctor = userService.selectById(detail.getDoctorId(), User::getId, User::getUsername, User::getAvatar);
         Map<Long, Examination> examinationMap = examinationMapper.queryByDetail(detailId).groupById();
         Map<Long, List<ExaminationFileResponse>> files = examinationFileMapper
@@ -320,8 +320,17 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
 
         Map<Long, List<ExaminationResponse>> examinations = examinationDiagnosisMapper
                 .queryByExaminations(examinationMap.keySet())
-                .groupList(ExaminationDiagnosis::getDiagnosisId,
-                        exam -> ExaminationResponse.createBatch(exam.getExaminationId(), examinationMap, files));
+                .list()
+                .stream()
+                .map(entry -> {
+                    Examination examination = examinationMap.get(entry.getExaminationId());
+                    return examination == null ? null : Map.entry(
+                            entry.getDiagnosisId(),
+                            ExaminationResponse.createBatch(examination, files));
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
 
         // 构造返回值
         List<DiagnosisResponse> examinationDiagnoses = diagnosisMapper.queryByDetail(detailId).list().stream()
@@ -428,7 +437,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         List<TreatmentPlan> plans = treatmentPlanMapper.selectList(planIds,
                 TreatmentPlan::getDetailId, TreatmentPlan::getIsDiscard);
         boolean hasDiscardPlan = plans.stream()
-                .anyMatch(plan -> !Boolean.TRUE.equals(plan.getIsDiscard()));
+                .anyMatch(plan -> Boolean.TRUE.equals(plan.getIsDiscard()));
         if (hasDiscardPlan)
             throw ServiceException.invalidate("exception.invalidate.treatment_plan.discarded");
         Set<Long> detailIds = plans.stream().map(TreatmentPlan::getDetailId).collect(Collectors.toSet());

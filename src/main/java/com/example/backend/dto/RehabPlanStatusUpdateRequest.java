@@ -15,8 +15,8 @@ public class RehabPlanStatusUpdateRequest extends StatusUpdateRequest {
 
     public RehabPlanStatus create(Long planId, Long userId) {
         return new RehabPlanStatus(null,
-                planId,
                 userId,
+                planId,
                 RehabPlanStatusProp.get(status),
                 reason,
                 new Date());

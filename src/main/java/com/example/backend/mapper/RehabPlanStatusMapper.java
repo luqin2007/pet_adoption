@@ -28,8 +28,17 @@ public interface RehabPlanStatusMapper extends IBaseMapper<RehabPlanStatus> {
      * - 索引：(planId, createTime)
      */
     default LambdaQueryWrapper<RehabPlanStatus> queryByPlans(Set<Long> plans) {
+        if (plans == null || plans.isEmpty()) {
+            return new LambdaQueryWrapper<RehabPlanStatus>()
+                    .eq(RehabPlanStatus::getId, -1L);
+        }
         return new LambdaQueryWrapper<RehabPlanStatus>()
                 .in(RehabPlanStatus::getPlanId, plans)
                 .orderByDesc(RehabPlanStatus::getCreateTime);
+    }
+
+    @Override
+    default Class<RehabPlanStatus> getEntityClass() {
+        return RehabPlanStatus.class;
     }
 }

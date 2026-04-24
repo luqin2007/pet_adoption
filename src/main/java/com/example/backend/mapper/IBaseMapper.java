@@ -56,6 +56,7 @@ public interface IBaseMapper<T extends IId> extends MPJBaseMapper<T>, IValidates
     }
 
     default List<T> selectList(Set<Long> ids) {
+        if (ids.isEmpty()) return List.of();
         return selectList(Wrappers.lambdaQuery(getEntityClass()).in(T::getId, ids));
     }
 

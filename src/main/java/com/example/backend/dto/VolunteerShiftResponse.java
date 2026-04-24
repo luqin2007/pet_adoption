@@ -160,8 +160,8 @@ public class VolunteerShiftResponse implements IResponse {
                                                      Map<Long, VolunteerServiceRecord> records,
                                                      Map<Long, List<VolunteerShiftStatusRecord>> statusRecords) {
         return create(shift,
-                tasks.get(shift.getId()),
-                locations.get(shift.getId()),
+                tasks.get(shift.getTaskId()),
+                locations.get(shift.getTaskId()),
                 users.get(shift.getVolunteerId()),
                 users.get(shift.getAssignerId()),
                 records.get(shift.getId()),

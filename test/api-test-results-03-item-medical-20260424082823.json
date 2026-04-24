@@ -1,0 +1,4060 @@
+﻿[
+    {
+        "id":  "PRE-01",
+        "method":  "GET",
+        "path":  "/auth/check/username/api_probe_20260424082823",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  150,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-send-api3_worker_082823@example.com",
+        "method":  "POST",
+        "path":  "/auth/check/code?email=api3_worker_082823%40example.com",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  67,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-register-api3_worker_082823",
+        "method":  "POST",
+        "path":  "/auth/register",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  216,
+        "data":  {
+                     "id":  2047472688003407873,
+                     "username":  "api3_worker_082823",
+                     "email":  "api3_worker_082823@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13811000001",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-send-api3_doctor_082823@example.com",
+        "method":  "POST",
+        "path":  "/auth/check/code?email=api3_doctor_082823%40example.com",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  51,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-register-api3_doctor_082823",
+        "method":  "POST",
+        "path":  "/auth/register",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  226,
+        "data":  {
+                     "id":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "email":  "api3_doctor_082823@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13811000002",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-send-api3_donor_082823@example.com",
+        "method":  "POST",
+        "path":  "/auth/check/code?email=api3_donor_082823%40example.com",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  55,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-register-api3_donor_082823",
+        "method":  "POST",
+        "path":  "/auth/register",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  216,
+        "data":  {
+                     "id":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "email":  "api3_donor_082823@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13811000003",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-send-api3_reader_082823@example.com",
+        "method":  "POST",
+        "path":  "/auth/check/code?email=api3_reader_082823%40example.com",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  51,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-register-api3_reader_082823",
+        "method":  "POST",
+        "path":  "/auth/register",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  210,
+        "data":  {
+                     "id":  2047472693367922689,
+                     "username":  "api3_reader_082823",
+                     "email":  "api3_reader_082823@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13811000004",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-login-api3_worker_082823",
+        "method":  "POST",
+        "path":  "/auth/login",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  163,
+        "data":  {
+                     "id":  2047472688003407873,
+                     "username":  "api3_worker_082823",
+                     "email":  "api3_worker_082823@example.com",
+                     "avatar":  null,
+                     "role":  3,
+                     "phone":  "13811000001",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-login-api3_doctor_082823",
+        "method":  "POST",
+        "path":  "/auth/login",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  166,
+        "data":  {
+                     "id":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "email":  "api3_doctor_082823@example.com",
+                     "avatar":  null,
+                     "role":  8,
+                     "phone":  "13811000002",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-login-api3_donor_082823",
+        "method":  "POST",
+        "path":  "/auth/login",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  132,
+        "data":  {
+                     "id":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "email":  "api3_donor_082823@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13811000003",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-login-api3_reader_082823",
+        "method":  "POST",
+        "path":  "/auth/login",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  138,
+        "data":  {
+                     "id":  2047472693367922689,
+                     "username":  "api3_reader_082823",
+                     "email":  "api3_reader_082823@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13811000004",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PRE-PET-01",
+        "method":  "POST",
+        "path":  "/pets",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  77,
+        "data":  {
+                     "id":  2047472706424791041,
+                     "name":  "Medical Pet 082823",
+                     "age":  12,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "health":  "GOOD",
+                     "description":  "API group 03 medical pet"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PRE-PET-02",
+        "method":  "POST",
+        "path":  "/pets/2047472706424791041/media",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  91,
+        "data":  {
+                     "id":  2047472706810667010,
+                     "type":  "IMAGE",
+                     "assetUrl":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "name":  "medical-cover",
+                     "description":  "medical cover",
+                     "isCover":  true,
+                     "createDate":  "2026-04-24T00:28:28.173Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PRE-PET-03",
+        "method":  "PUT",
+        "path":  "/pets/2047472706424791041/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  78,
+        "data":  {
+                     "id":  2047472707137822721,
+                     "from":  "WAITING",
+                     "to":  "SHELTERED",
+                     "createTime":  "2026-04-24T00:28:28.251Z",
+                     "description":  "Ready for testing",
+                     "petId":  2047472706424791041,
+                     "petName":  null,
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "userId":  2047472688003407873,
+                     "username":  "api3_worker_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-01",
+        "method":  "POST",
+        "path":  "/items/categories",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  74,
+        "data":  {
+                     "id":  2047472707460784130,
+                     "name":  "API-CAT-082823",
+                     "description":  "Primary category",
+                     "isDiscard":  false,
+                     "createTime":  "2026-04-24T00:28:28.328Z",
+                     "updateTime":  "2026-04-24T00:28:28.328Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-02",
+        "method":  "PUT",
+        "path":  "/items/categories/2047472707460784130",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  67,
+        "data":  {
+                     "id":  2047472707460784130,
+                     "name":  "API-CAT-UPD-082823",
+                     "description":  "Updated category",
+                     "isDiscard":  false,
+                     "createTime":  "2026-04-24T00:28:28.000Z",
+                     "updateTime":  "2026-04-24T00:28:28.399Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-03",
+        "method":  "GET",
+        "path":  "/items/categories/2047472707460784130",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  58,
+        "data":  {
+                     "id":  2047472707460784130,
+                     "name":  "API-CAT-UPD-082823",
+                     "description":  "Updated category",
+                     "isDiscard":  false,
+                     "createTime":  "2026-04-24T00:28:28.000Z",
+                     "updateTime":  "2026-04-24T00:28:28.000Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-04",
+        "method":  "GET",
+        "path":  "/items/categories?name=API-CAT\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  78,
+        "data":  {
+                     "current":  1,
+                     "pages":  1,
+                     "records":  [
+                                     {
+                                         "id":  2047466563732267010,
+                                         "name":  "API-CAT-UPD-080357",
+                                         "description":  "Updated category",
+                                         "isDiscard":  false,
+                                         "createTime":  "2026-04-24T00:04:03.000Z",
+                                         "updateTime":  "2026-04-24T00:04:03.000Z"
+                                     },
+                                     {
+                                         "id":  2047467408842653698,
+                                         "name":  "API-CAT-UPD-080718",
+                                         "description":  "Updated category",
+                                         "isDiscard":  false,
+                                         "createTime":  "2026-04-24T00:07:25.000Z",
+                                         "updateTime":  "2026-04-24T00:07:25.000Z"
+                                     },
+                                     {
+                                         "id":  2047468917579919362,
+                                         "name":  "API-CAT-UPD-081317",
+                                         "description":  "Updated category",
+                                         "isDiscard":  false,
+                                         "createTime":  "2026-04-24T00:13:24.000Z",
+                                         "updateTime":  "2026-04-24T00:13:24.000Z"
+                                     },
+                                     {
+                                         "id":  2047469562202501121,
+                                         "name":  "API-CAT-UPD-081553",
+                                         "description":  "Updated category",
+                                         "isDiscard":  false,
+                                         "createTime":  "2026-04-24T00:15:58.000Z",
+                                         "updateTime":  "2026-04-24T00:15:58.000Z"
+                                     },
+                                     {
+                                         "id":  2047471247410946049,
+                                         "name":  "API-CAT-UPD-082232",
+                                         "description":  "Updated category",
+                                         "isDiscard":  false,
+                                         "createTime":  "2026-04-24T00:22:40.000Z",
+                                         "updateTime":  "2026-04-24T00:22:40.000Z"
+                                     },
+                                     {
+                                         "id":  2047471859045359618,
+                                         "name":  "API-CAT-UPD-082458",
+                                         "description":  "Updated category",
+                                         "isDiscard":  false,
+                                         "createTime":  "2026-04-24T00:25:06.000Z",
+                                         "updateTime":  "2026-04-24T00:25:06.000Z"
+                                     },
+                                     {
+                                         "id":  2047472356066189314,
+                                         "name":  "API-CAT-UPD-082659",
+                                         "description":  "Updated category",
+                                         "isDiscard":  false,
+                                         "createTime":  "2026-04-24T00:27:04.000Z",
+                                         "updateTime":  "2026-04-24T00:27:04.000Z"
+                                     },
+                                     {
+                                         "id":  2047472707460784130,
+                                         "name":  "API-CAT-UPD-082823",
+                                         "description":  "Updated category",
+                                         "isDiscard":  false,
+                                         "createTime":  "2026-04-24T00:28:28.000Z",
+                                         "updateTime":  "2026-04-24T00:28:28.000Z"
+                                     }
+                                 ],
+                     "size":  10,
+                     "total":  8
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-10-pre",
+        "method":  "POST",
+        "path":  "/items/categories",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  64,
+        "data":  {
+                     "id":  2047472708622606338,
+                     "name":  "API-EMPTY-082823",
+                     "description":  "Empty category",
+                     "isDiscard":  false,
+                     "createTime":  "2026-04-24T00:28:28.598Z",
+                     "updateTime":  "2026-04-24T00:28:28.598Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-05",
+        "method":  "POST",
+        "path":  "/items/items",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  61,
+        "data":  {
+                     "id":  2047472708886847490,
+                     "name":  "API Item 082823",
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "description":  "General stock item",
+                     "unit":  "bag",
+                     "discard":  false,
+                     "createTime":  "2026-04-24T00:28:28.661Z",
+                     "updateTime":  "2026-04-24T00:28:28.661Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-06",
+        "method":  "PUT",
+        "path":  "/items/items/2047472708886847490",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  78,
+        "data":  {
+                     "id":  2047472708886847490,
+                     "name":  "API Item Updated 082823",
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "description":  "Updated stock item",
+                     "unit":  "box",
+                     "discard":  false,
+                     "createTime":  "2026-04-24T00:28:28.000Z",
+                     "updateTime":  "2026-04-24T00:28:28.738Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-07",
+        "method":  "GET",
+        "path":  "/items/items/2047472708886847490",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  63,
+        "data":  {
+                     "id":  2047472708886847490,
+                     "name":  "API Item Updated 082823",
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "description":  "Updated stock item",
+                     "unit":  "box",
+                     "discard":  false,
+                     "createTime":  "2026-04-24T00:28:28.000Z",
+                     "updateTime":  "2026-04-24T00:28:28.000Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-08",
+        "method":  "GET",
+        "path":  "/items/items?category=2047472707460784130\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  59,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047472708886847490,
+                                     "name":  "API Item Updated 082823",
+                                     "categoryId":  2047472707460784130,
+                                     "categoryName":  "API-CAT-UPD-082823",
+                                     "description":  "Updated stock item",
+                                     "unit":  "box",
+                                     "discard":  false,
+                                     "createTime":  "2026-04-24T00:28:28.000Z",
+                                     "updateTime":  "2026-04-24T00:28:28.000Z"
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-09-unauthorized",
+        "method":  "DELETE",
+        "path":  "/items/items/2047472708886847490",
+        "status":  403,
+        "code":  403,
+        "expected":  "HTTP 403 / code 403",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  56,
+        "data":  null,
+        "message":  "权限不足"
+    },
+    {
+        "id":  "ITEM-10-not-empty",
+        "method":  "DELETE",
+        "path":  "/items/categories/2047472707460784130",
+        "status":  409,
+        "code":  409,
+        "expected":  "HTTP 409 / code 409",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  62,
+        "data":  null,
+        "message":  "分类非空"
+    },
+    {
+        "id":  "ITEM-09-pre",
+        "method":  "POST",
+        "path":  "/items/items",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  107,
+        "data":  {
+                     "id":  2047472710635872257,
+                     "name":  "Discard Item 082823",
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "description":  "Disposable item",
+                     "unit":  "piece",
+                     "discard":  false,
+                     "createTime":  "2026-04-24T00:28:29.086Z",
+                     "updateTime":  "2026-04-24T00:28:29.086Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-09",
+        "method":  "DELETE",
+        "path":  "/items/items/2047472710635872257",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  57,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-10",
+        "method":  "DELETE",
+        "path":  "/items/categories/2047472708622606338",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  65,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "MED-seed-item-vaccine",
+        "method":  "POST",
+        "path":  "/items/items",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  66,
+        "data":  {
+                     "id":  2047472711420207106,
+                     "name":  "API Vaccine Item 082823",
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "description":  "Seed vaccine item",
+                     "unit":  "dose",
+                     "discard":  false,
+                     "createTime":  "2026-04-24T00:28:29.277Z",
+                     "updateTime":  "2026-04-24T00:28:29.277Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-seed-item-deworm",
+        "method":  "POST",
+        "path":  "/items/items",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  61,
+        "data":  {
+                     "id":  2047472711743168514,
+                     "name":  "API Dewormer Item 082823",
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "description":  "Seed deworm item",
+                     "unit":  "pill",
+                     "discard":  false,
+                     "createTime":  "2026-04-24T00:28:29.342Z",
+                     "updateTime":  "2026-04-24T00:28:29.342Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-seed-item-order",
+        "method":  "POST",
+        "path":  "/items/items",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  67,
+        "data":  {
+                     "id":  2047472712003215361,
+                     "name":  "API Order Item 082823",
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "description":  "Treatment order item",
+                     "unit":  "tablet",
+                     "discard":  false,
+                     "createTime":  "2026-04-24T00:28:29.407Z",
+                     "updateTime":  "2026-04-24T00:28:29.407Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-01",
+        "method":  "PUT",
+        "path":  "/items/donations",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  117,
+        "data":  "37af6374-01f8-4167-905a-1a7c434d4ec7",
+        "message":  "success"
+    },
+    {
+        "id":  "DON-02",
+        "method":  "POST",
+        "path":  "/items/donations/upload/37af6374-01f8-4167-905a-1a7c434d4ec7",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  100,
+        "data":  "20260424082838_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "message":  "success"
+    },
+    {
+        "id":  "DON-03",
+        "method":  "DELETE",
+        "path":  "/items/donations/upload/37af6374-01f8-4167-905a-1a7c434d4ec7/20260424082838_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  76,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "DON-03-reupload",
+        "method":  "POST",
+        "path":  "/items/donations/upload/37af6374-01f8-4167-905a-1a7c434d4ec7",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  74,
+        "data":  "20260424082839_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "message":  "success"
+    },
+    {
+        "id":  "DON-04",
+        "method":  "POST",
+        "path":  "/items/donations",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  76,
+        "data":  {
+                     "id":  2047472755225518081,
+                     "delivery":  "ADDRESS",
+                     "address":  "Donation room 082823",
+                     "trackingNumber":  null,
+                     "description":  "Initial donation",
+                     "status":  "CREATED",
+                     "createTime":  "2026-04-24T00:28:39.720Z",
+                     "updateTime":  "2026-04-24T00:28:39.720Z",
+                     "files":  {
+                                   "id":  2047472755288432643,
+                                   "donationId":  2047472755225518081,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472755225518081/20260424082839_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:39.658Z"
+                               },
+                     "items":  {
+                                   "id":  2047472755225518082,
+                                   "donationId":  2047472755225518081,
+                                   "count":  5,
+                                   "description":  "Stock item donation",
+                                   "createTime":  "2026-04-24T00:28:39.720Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  {
+
+                                 },
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-05",
+        "method":  "PUT",
+        "path":  "/items/donations/2047472755225518081",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  76,
+        "data":  {
+                     "id":  2047472755225518081,
+                     "delivery":  "EXPRESS",
+                     "address":  null,
+                     "trackingNumber":  "EXP-082823",
+                     "description":  "Updated donation",
+                     "status":  "CREATED",
+                     "createTime":  "2026-04-24T00:28:39.000Z",
+                     "updateTime":  "2026-04-24T00:28:39.803Z",
+                     "files":  {
+                                   "id":  2047472755288432643,
+                                   "donationId":  2047472755225518081,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472755225518081/20260424082839_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:39.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472755615588353,
+                                   "donationId":  2047472755225518081,
+                                   "count":  6,
+                                   "description":  "Updated item donation",
+                                   "createTime":  "2026-04-24T00:28:39.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  {
+
+                                 },
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-06-1",
+        "method":  "PATCH",
+        "path":  "/items/donations/2047472755225518081/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  68,
+        "data":  {
+                     "id":  2047472755225518081,
+                     "delivery":  "EXPRESS",
+                     "address":  "Donation room 082823",
+                     "trackingNumber":  "EXP-082823",
+                     "description":  "Updated donation",
+                     "status":  "CREATED",
+                     "createTime":  "2026-04-24T00:28:39.000Z",
+                     "updateTime":  "2026-04-24T00:28:39.000Z",
+                     "files":  {
+                                   "id":  2047472755288432643,
+                                   "donationId":  2047472755225518081,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472755225518081/20260424082839_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:39.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472755615588353,
+                                   "donationId":  2047472755225518081,
+                                   "count":  {
+
+                                             },
+                                   "description":  "Updated item donation",
+                                   "createTime":  "2026-04-24T00:28:39.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  {
+                                     "id":  2047472755875635201,
+                                     "donationId":  2047472755225518081,
+                                     "oldStatus":  "CREATED",
+                                     "newStatus":  "PENDING",
+                                     "reason":  "Accepted",
+                                     "createTime":  "2026-04-24T00:28:39.000Z",
+                                     "userId":  2047472688003407873,
+                                     "username":  "api3_worker_082823",
+                                     "avatar":  null
+                                 },
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-06-2",
+        "method":  "PATCH",
+        "path":  "/items/donations/2047472755225518081/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  69,
+        "data":  {
+                     "id":  2047472755225518081,
+                     "delivery":  "EXPRESS",
+                     "address":  "Donation room 082823",
+                     "trackingNumber":  "EXP-082823",
+                     "description":  "Updated donation",
+                     "status":  "PENDING",
+                     "createTime":  "2026-04-24T00:28:39.000Z",
+                     "updateTime":  "2026-04-24T00:28:39.000Z",
+                     "files":  {
+                                   "id":  2047472755288432643,
+                                   "donationId":  2047472755225518081,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472755225518081/20260424082839_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:39.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472755615588353,
+                                   "donationId":  2047472755225518081,
+                                   "count":  {
+
+                                             },
+                                   "description":  "Updated item donation",
+                                   "createTime":  "2026-04-24T00:28:39.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  [
+                                     {
+                                         "id":  2047472756206985217,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "PENDING",
+                                         "newStatus":  "TRANSFERRING",
+                                         "reason":  "On the way",
+                                         "createTime":  "2026-04-24T00:28:39.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472755875635201,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "CREATED",
+                                         "newStatus":  "PENDING",
+                                         "reason":  "Accepted",
+                                         "createTime":  "2026-04-24T00:28:39.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-06-3",
+        "method":  "PATCH",
+        "path":  "/items/donations/2047472755225518081/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  71,
+        "data":  {
+                     "id":  2047472755225518081,
+                     "delivery":  "EXPRESS",
+                     "address":  "Donation room 082823",
+                     "trackingNumber":  "EXP-082823",
+                     "description":  "Updated donation",
+                     "status":  "TRANSFERRING",
+                     "createTime":  "2026-04-24T00:28:39.000Z",
+                     "updateTime":  "2026-04-24T00:28:39.000Z",
+                     "files":  {
+                                   "id":  2047472755288432643,
+                                   "donationId":  2047472755225518081,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472755225518081/20260424082839_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:39.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472755615588353,
+                                   "donationId":  2047472755225518081,
+                                   "count":  {
+
+                                             },
+                                   "description":  "Updated item donation",
+                                   "createTime":  "2026-04-24T00:28:39.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  [
+                                     {
+                                         "id":  2047472756471226369,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "TRANSFERRING",
+                                         "newStatus":  "RECEIVED",
+                                         "reason":  "Received",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472756206985217,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "PENDING",
+                                         "newStatus":  "TRANSFERRING",
+                                         "reason":  "On the way",
+                                         "createTime":  "2026-04-24T00:28:39.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472755875635201,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "CREATED",
+                                         "newStatus":  "PENDING",
+                                         "reason":  "Accepted",
+                                         "createTime":  "2026-04-24T00:28:39.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-06-4",
+        "method":  "PATCH",
+        "path":  "/items/donations/2047472755225518081/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  84,
+        "data":  {
+                     "id":  2047472755225518081,
+                     "delivery":  "EXPRESS",
+                     "address":  "Donation room 082823",
+                     "trackingNumber":  "EXP-082823",
+                     "description":  "Updated donation",
+                     "status":  "RECEIVED",
+                     "createTime":  "2026-04-24T00:28:39.000Z",
+                     "updateTime":  "2026-04-24T00:28:40.000Z",
+                     "files":  {
+                                   "id":  2047472755288432643,
+                                   "donationId":  2047472755225518081,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472755225518081/20260424082839_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:39.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472755615588353,
+                                   "donationId":  2047472755225518081,
+                                   "count":  {
+
+                                             },
+                                   "description":  "Updated item donation",
+                                   "createTime":  "2026-04-24T00:28:39.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  [
+                                     {
+                                         "id":  2047472756471226369,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "TRANSFERRING",
+                                         "newStatus":  "RECEIVED",
+                                         "reason":  "Received",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472756798382082,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "RECEIVED",
+                                         "newStatus":  "STOCKED",
+                                         "reason":  "Stocked",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472756206985217,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "PENDING",
+                                         "newStatus":  "TRANSFERRING",
+                                         "reason":  "On the way",
+                                         "createTime":  "2026-04-24T00:28:39.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472755875635201,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "CREATED",
+                                         "newStatus":  "PENDING",
+                                         "reason":  "Accepted",
+                                         "createTime":  "2026-04-24T00:28:39.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-07",
+        "method":  "PATCH",
+        "path":  "/items/donations/2047472755225518081/status",
+        "status":  422,
+        "code":  422,
+        "expected":  "HTTP 422 / code 422",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  69,
+        "data":  null,
+        "message":  "无效捐赠状态"
+    },
+    {
+        "id":  "DON-08-pre-begin",
+        "method":  "PUT",
+        "path":  "/items/donations",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  52,
+        "data":  "e0204049-5234-4ff7-aac3-5b23f49b522f",
+        "message":  "success"
+    },
+    {
+        "id":  "DON-08-pre-upload",
+        "method":  "POST",
+        "path":  "/items/donations/upload/e0204049-5234-4ff7-aac3-5b23f49b522f",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  78,
+        "data":  "20260424082840_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "message":  "success"
+    },
+    {
+        "id":  "DON-08-pre-add",
+        "method":  "POST",
+        "path":  "/items/donations",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  84,
+        "data":  {
+                     "id":  2047472757964398593,
+                     "delivery":  "OTHER",
+                     "address":  null,
+                     "trackingNumber":  null,
+                     "description":  "Backing flow donation",
+                     "status":  "CREATED",
+                     "createTime":  "2026-04-24T00:28:40.369Z",
+                     "updateTime":  "2026-04-24T00:28:40.369Z",
+                     "files":  {
+                                   "id":  2047472758023118850,
+                                   "donationId":  2047472757964398593,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472757964398593/20260424082840_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:40.302Z"
+                               },
+                     "items":  {
+                                   "id":  2047472757964398594,
+                                   "donationId":  2047472757964398593,
+                                   "count":  2,
+                                   "description":  "Backing item",
+                                   "createTime":  "2026-04-24T00:28:40.369Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  {
+
+                                 },
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-08-pre-pending",
+        "method":  "PATCH",
+        "path":  "/items/donations/2047472757964398593/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  72,
+        "data":  {
+                     "id":  2047472757964398593,
+                     "delivery":  "OTHER",
+                     "address":  null,
+                     "trackingNumber":  null,
+                     "description":  "Backing flow donation",
+                     "status":  "CREATED",
+                     "createTime":  "2026-04-24T00:28:40.000Z",
+                     "updateTime":  "2026-04-24T00:28:40.000Z",
+                     "files":  {
+                                   "id":  2047472758023118850,
+                                   "donationId":  2047472757964398593,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472757964398593/20260424082840_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:40.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472757964398594,
+                                   "donationId":  2047472757964398593,
+                                   "count":  {
+
+                                             },
+                                   "description":  "Backing item",
+                                   "createTime":  "2026-04-24T00:28:40.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  {
+                                     "id":  2047472758350274561,
+                                     "donationId":  2047472757964398593,
+                                     "oldStatus":  "CREATED",
+                                     "newStatus":  "PENDING",
+                                     "reason":  "Pending",
+                                     "createTime":  "2026-04-24T00:28:40.000Z",
+                                     "userId":  2047472688003407873,
+                                     "username":  "api3_worker_082823",
+                                     "avatar":  null
+                                 },
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-08-pre-refused",
+        "method":  "PATCH",
+        "path":  "/items/donations/2047472757964398593/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  71,
+        "data":  {
+                     "id":  2047472757964398593,
+                     "delivery":  "OTHER",
+                     "address":  null,
+                     "trackingNumber":  null,
+                     "description":  "Backing flow donation",
+                     "status":  "PENDING",
+                     "createTime":  "2026-04-24T00:28:40.000Z",
+                     "updateTime":  "2026-04-24T00:28:40.000Z",
+                     "files":  {
+                                   "id":  2047472758023118850,
+                                   "donationId":  2047472757964398593,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472757964398593/20260424082840_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:40.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472757964398594,
+                                   "donationId":  2047472757964398593,
+                                   "count":  {
+
+                                             },
+                                   "description":  "Backing item",
+                                   "createTime":  "2026-04-24T00:28:40.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  [
+                                     {
+                                         "id":  2047472758350274561,
+                                         "donationId":  2047472757964398593,
+                                         "oldStatus":  "CREATED",
+                                         "newStatus":  "PENDING",
+                                         "reason":  "Pending",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472758610321410,
+                                         "donationId":  2047472757964398593,
+                                         "oldStatus":  "PENDING",
+                                         "newStatus":  "REFUSED",
+                                         "reason":  "Cannot receive",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-08-pre-backing",
+        "method":  "PATCH",
+        "path":  "/items/donations/2047472757964398593/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  76,
+        "data":  {
+                     "id":  2047472757964398593,
+                     "delivery":  "OTHER",
+                     "address":  null,
+                     "trackingNumber":  null,
+                     "description":  "Backing flow donation",
+                     "status":  "REFUSED",
+                     "createTime":  "2026-04-24T00:28:40.000Z",
+                     "updateTime":  "2026-04-24T00:28:40.000Z",
+                     "files":  {
+                                   "id":  2047472758023118850,
+                                   "donationId":  2047472757964398593,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472757964398593/20260424082840_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:40.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472757964398594,
+                                   "donationId":  2047472757964398593,
+                                   "count":  {
+
+                                             },
+                                   "description":  "Backing item",
+                                   "createTime":  "2026-04-24T00:28:40.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  [
+                                     {
+                                         "id":  2047472758350274561,
+                                         "donationId":  2047472757964398593,
+                                         "oldStatus":  "CREATED",
+                                         "newStatus":  "PENDING",
+                                         "reason":  "Pending",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472758610321410,
+                                         "donationId":  2047472757964398593,
+                                         "oldStatus":  "PENDING",
+                                         "newStatus":  "REFUSED",
+                                         "reason":  "Cannot receive",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472758929088514,
+                                         "donationId":  2047472757964398593,
+                                         "oldStatus":  "REFUSED",
+                                         "newStatus":  "BACKING",
+                                         "reason":  "Return to donor",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-08",
+        "method":  "PATCH",
+        "path":  "/items/donations/2047472757964398593/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  70,
+        "data":  {
+                     "id":  2047472757964398593,
+                     "delivery":  "OTHER",
+                     "address":  null,
+                     "trackingNumber":  null,
+                     "description":  "Backing flow donation",
+                     "status":  "BACKING",
+                     "createTime":  "2026-04-24T00:28:40.000Z",
+                     "updateTime":  "2026-04-24T00:28:40.000Z",
+                     "files":  {
+                                   "id":  2047472758023118850,
+                                   "donationId":  2047472757964398593,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472757964398593/20260424082840_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:40.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472757964398594,
+                                   "donationId":  2047472757964398593,
+                                   "count":  {
+
+                                             },
+                                   "description":  "Backing item",
+                                   "createTime":  "2026-04-24T00:28:40.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  [
+                                     {
+                                         "id":  2047472759252049921,
+                                         "donationId":  2047472757964398593,
+                                         "oldStatus":  "BACKING",
+                                         "newStatus":  "CLOSED",
+                                         "reason":  "Closed by donor",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472691631480834,
+                                         "username":  "api3_donor_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472758350274561,
+                                         "donationId":  2047472757964398593,
+                                         "oldStatus":  "CREATED",
+                                         "newStatus":  "PENDING",
+                                         "reason":  "Pending",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472758610321410,
+                                         "donationId":  2047472757964398593,
+                                         "oldStatus":  "PENDING",
+                                         "newStatus":  "REFUSED",
+                                         "reason":  "Cannot receive",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472758929088514,
+                                         "donationId":  2047472757964398593,
+                                         "oldStatus":  "REFUSED",
+                                         "newStatus":  "BACKING",
+                                         "reason":  "Return to donor",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-09",
+        "method":  "GET",
+        "path":  "/items/donations/2047472755225518081",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  60,
+        "data":  {
+                     "id":  2047472755225518081,
+                     "delivery":  "EXPRESS",
+                     "address":  "Donation room 082823",
+                     "trackingNumber":  "EXP-082823",
+                     "description":  "Updated donation",
+                     "status":  "STOCKED",
+                     "createTime":  "2026-04-24T00:28:39.000Z",
+                     "updateTime":  "2026-04-24T00:28:40.000Z",
+                     "files":  {
+                                   "id":  2047472755288432643,
+                                   "donationId":  2047472755225518081,
+                                   "type":  "IMAGE",
+                                   "assetUrl":  "/assets/donation/2047472755225518081/20260424082839_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:39.000Z"
+                               },
+                     "items":  {
+                                   "id":  2047472755615588353,
+                                   "donationId":  2047472755225518081,
+                                   "count":  {
+
+                                             },
+                                   "description":  "Updated item donation",
+                                   "createTime":  "2026-04-24T00:28:39.000Z",
+                                   "itemId":  2047472708886847490,
+                                   "itemName":  "API Item Updated 082823",
+                                   "itemUnit":  "box",
+                                   "categoryId":  2047472707460784130,
+                                   "categoryName":  "API-CAT-UPD-082823"
+                               },
+                     "records":  [
+                                     {
+                                         "id":  2047472756471226369,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "TRANSFERRING",
+                                         "newStatus":  "RECEIVED",
+                                         "reason":  "Received",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472756798382082,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "RECEIVED",
+                                         "newStatus":  "STOCKED",
+                                         "reason":  "Stocked",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472756206985217,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "PENDING",
+                                         "newStatus":  "TRANSFERRING",
+                                         "reason":  "On the way",
+                                         "createTime":  "2026-04-24T00:28:39.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472755875635201,
+                                         "donationId":  2047472755225518081,
+                                         "oldStatus":  "CREATED",
+                                         "newStatus":  "PENDING",
+                                         "reason":  "Accepted",
+                                         "createTime":  "2026-04-24T00:28:39.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "userId":  2047472691631480834,
+                     "username":  "api3_donor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "DON-10",
+        "method":  "GET",
+        "path":  "/items/donations?user=2047472691631480834\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  64,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  [
+                                     {
+                                         "id":  2047472755225518081,
+                                         "delivery":  "EXPRESS",
+                                         "address":  "Donation room 082823",
+                                         "trackingNumber":  "EXP-082823",
+                                         "description":  "Updated donation",
+                                         "status":  "STOCKED",
+                                         "createTime":  "2026-04-24T00:28:39.000Z",
+                                         "updateTime":  "2026-04-24T00:28:40.000Z",
+                                         "files":  {
+                                                       "id":  2047472755288432643,
+                                                       "donationId":  2047472755225518081,
+                                                       "type":  "IMAGE",
+                                                       "assetUrl":  "/assets/donation/2047472755225518081/20260424082839_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                                       "createTime":  "2026-04-24T00:28:39.000Z"
+                                                   },
+                                         "items":  {
+                                                       "id":  2047472755615588353,
+                                                       "donationId":  2047472755225518081,
+                                                       "count":  {
+
+                                                                 },
+                                                       "description":  "Updated item donation",
+                                                       "createTime":  "2026-04-24T00:28:39.000Z",
+                                                       "itemId":  2047472708886847490,
+                                                       "itemName":  "API Item Updated 082823",
+                                                       "itemUnit":  "box",
+                                                       "categoryId":  2047472707460784130,
+                                                       "categoryName":  "API-CAT-UPD-082823"
+                                                   },
+                                         "records":  [
+                                                         {
+                                                             "id":  2047472756471226369,
+                                                             "donationId":  2047472755225518081,
+                                                             "oldStatus":  "TRANSFERRING",
+                                                             "newStatus":  "RECEIVED",
+                                                             "reason":  "Received",
+                                                             "createTime":  "2026-04-24T00:28:40.000Z",
+                                                             "userId":  2047472688003407873,
+                                                             "username":  "api3_worker_082823",
+                                                             "avatar":  null
+                                                         },
+                                                         {
+                                                             "id":  2047472756798382082,
+                                                             "donationId":  2047472755225518081,
+                                                             "oldStatus":  "RECEIVED",
+                                                             "newStatus":  "STOCKED",
+                                                             "reason":  "Stocked",
+                                                             "createTime":  "2026-04-24T00:28:40.000Z",
+                                                             "userId":  2047472688003407873,
+                                                             "username":  "api3_worker_082823",
+                                                             "avatar":  null
+                                                         },
+                                                         {
+                                                             "id":  2047472756206985217,
+                                                             "donationId":  2047472755225518081,
+                                                             "oldStatus":  "PENDING",
+                                                             "newStatus":  "TRANSFERRING",
+                                                             "reason":  "On the way",
+                                                             "createTime":  "2026-04-24T00:28:39.000Z",
+                                                             "userId":  2047472688003407873,
+                                                             "username":  "api3_worker_082823",
+                                                             "avatar":  null
+                                                         },
+                                                         {
+                                                             "id":  2047472755875635201,
+                                                             "donationId":  2047472755225518081,
+                                                             "oldStatus":  "CREATED",
+                                                             "newStatus":  "PENDING",
+                                                             "reason":  "Accepted",
+                                                             "createTime":  "2026-04-24T00:28:39.000Z",
+                                                             "userId":  2047472688003407873,
+                                                             "username":  "api3_worker_082823",
+                                                             "avatar":  null
+                                                         }
+                                                     ],
+                                         "userId":  2047472691631480834,
+                                         "username":  "api3_donor_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472757964398593,
+                                         "delivery":  "OTHER",
+                                         "address":  null,
+                                         "trackingNumber":  null,
+                                         "description":  "Backing flow donation",
+                                         "status":  "CLOSED",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "updateTime":  "2026-04-24T00:28:40.000Z",
+                                         "files":  {
+                                                       "id":  2047472758023118850,
+                                                       "donationId":  2047472757964398593,
+                                                       "type":  "IMAGE",
+                                                       "assetUrl":  "/assets/donation/2047472757964398593/20260424082840_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                                       "createTime":  "2026-04-24T00:28:40.000Z"
+                                                   },
+                                         "items":  {
+                                                       "id":  2047472757964398594,
+                                                       "donationId":  2047472757964398593,
+                                                       "count":  {
+
+                                                                 },
+                                                       "description":  "Backing item",
+                                                       "createTime":  "2026-04-24T00:28:40.000Z",
+                                                       "itemId":  2047472708886847490,
+                                                       "itemName":  "API Item Updated 082823",
+                                                       "itemUnit":  "box",
+                                                       "categoryId":  2047472707460784130,
+                                                       "categoryName":  "API-CAT-UPD-082823"
+                                                   },
+                                         "records":  [
+                                                         {
+                                                             "id":  2047472759252049921,
+                                                             "donationId":  2047472757964398593,
+                                                             "oldStatus":  "BACKING",
+                                                             "newStatus":  "CLOSED",
+                                                             "reason":  "Closed by donor",
+                                                             "createTime":  "2026-04-24T00:28:40.000Z",
+                                                             "userId":  2047472691631480834,
+                                                             "username":  "api3_donor_082823",
+                                                             "avatar":  null
+                                                         },
+                                                         {
+                                                             "id":  2047472758350274561,
+                                                             "donationId":  2047472757964398593,
+                                                             "oldStatus":  "CREATED",
+                                                             "newStatus":  "PENDING",
+                                                             "reason":  "Pending",
+                                                             "createTime":  "2026-04-24T00:28:40.000Z",
+                                                             "userId":  2047472688003407873,
+                                                             "username":  "api3_worker_082823",
+                                                             "avatar":  null
+                                                         },
+                                                         {
+                                                             "id":  2047472758610321410,
+                                                             "donationId":  2047472757964398593,
+                                                             "oldStatus":  "PENDING",
+                                                             "newStatus":  "REFUSED",
+                                                             "reason":  "Cannot receive",
+                                                             "createTime":  "2026-04-24T00:28:40.000Z",
+                                                             "userId":  2047472688003407873,
+                                                             "username":  "api3_worker_082823",
+                                                             "avatar":  null
+                                                         },
+                                                         {
+                                                             "id":  2047472758929088514,
+                                                             "donationId":  2047472757964398593,
+                                                             "oldStatus":  "REFUSED",
+                                                             "newStatus":  "BACKING",
+                                                             "reason":  "Return to donor",
+                                                             "createTime":  "2026-04-24T00:28:40.000Z",
+                                                             "userId":  2047472688003407873,
+                                                             "username":  "api3_worker_082823",
+                                                             "avatar":  null
+                                                         }
+                                                     ],
+                                         "userId":  2047472691631480834,
+                                         "username":  "api3_donor_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  2
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-11",
+        "method":  "POST",
+        "path":  "/items/stocks",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  75,
+        "data":  {
+                     "id":  2047472760027996162,
+                     "count":  "10",
+                     "sourceType":  "PURCHASE",
+                     "expireTime":  "2026-07-23T00:28:28.018Z",
+                     "createTime":  "2026-04-24T00:28:40.866Z",
+                     "updateTime":  "2026-04-24T00:28:40.866Z",
+                     "records":  {
+                                     "id":  2047472760090910721,
+                                     "stockId":  2047472760027996162,
+                                     "action":  "IN",
+                                     "changeCount":  10,
+                                     "remainCount":  10,
+                                     "price":  {
+
+                                               },
+                                     "totalPrice":  {
+
+                                                    },
+                                     "purpose":  "Initial purchase",
+                                     "createTime":  "2026-04-24T00:28:40.867Z",
+                                     "userId":  2047472688003407873,
+                                     "username":  "api3_worker_082823",
+                                     "avatar":  null
+                                 },
+                     "itemId":  2047472708886847490,
+                     "itemName":  "API Item Updated 082823",
+                     "unit":  null,
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "userId":  2047472688003407873,
+                     "username":  "api3_worker_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-12",
+        "method":  "POST",
+        "path":  "/items/stocks",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  70,
+        "data":  {
+                     "id":  2047472760027996162,
+                     "count":  "7.00",
+                     "sourceType":  "PURCHASE",
+                     "expireTime":  "2026-07-23T00:28:28.000Z",
+                     "createTime":  null,
+                     "updateTime":  null,
+                     "records":  [
+                                     {
+                                         "id":  2047472760090910721,
+                                         "stockId":  2047472760027996162,
+                                         "action":  "IN",
+                                         "changeCount":  {
+
+                                                         },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Initial purchase",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472760350957570,
+                                         "stockId":  2047472760027996162,
+                                         "action":  "OUT",
+                                         "changeCount":  {
+
+                                                         },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Medical use",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472689878261762,
+                                         "username":  "api3_doctor_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "itemId":  2047472708886847490,
+                     "itemName":  "API Item Updated 082823",
+                     "unit":  null,
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "userId":  2047472688003407873,
+                     "username":  "api3_worker_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-13",
+        "method":  "POST",
+        "path":  "/items/stocks",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  69,
+        "data":  {
+                     "id":  2047472760027996162,
+                     "count":  "5.00",
+                     "sourceType":  "PURCHASE",
+                     "expireTime":  "2026-07-23T00:28:28.000Z",
+                     "createTime":  null,
+                     "updateTime":  null,
+                     "records":  [
+                                     {
+                                         "id":  2047472760090910721,
+                                         "stockId":  2047472760027996162,
+                                         "action":  "IN",
+                                         "changeCount":  {
+
+                                                         },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Initial purchase",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472760350957570,
+                                         "stockId":  2047472760027996162,
+                                         "action":  "OUT",
+                                         "changeCount":  {
+
+                                                         },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Medical use",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472689878261762,
+                                         "username":  "api3_doctor_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472760678113281,
+                                         "stockId":  2047472760027996162,
+                                         "action":  "DESTROY",
+                                         "changeCount":  {
+
+                                                         },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Broken packages",
+                                         "createTime":  "2026-04-24T00:28:41.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "itemId":  2047472708886847490,
+                     "itemName":  "API Item Updated 082823",
+                     "unit":  null,
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "userId":  2047472688003407873,
+                     "username":  "api3_worker_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-13-insufficient",
+        "method":  "POST",
+        "path":  "/items/stocks",
+        "status":  422,
+        "code":  422,
+        "expected":  "HTTP 422 / code 422",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  60,
+        "data":  null,
+        "message":  "库存不足"
+    },
+    {
+        "id":  "ITEM-14",
+        "method":  "GET",
+        "path":  "/items/stocks/2047472760027996162",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  69,
+        "data":  {
+                     "id":  2047472760027996162,
+                     "count":  "5.00",
+                     "sourceType":  "PURCHASE",
+                     "expireTime":  "2026-07-23T00:28:28.000Z",
+                     "createTime":  "2026-04-24T00:28:40.000Z",
+                     "updateTime":  "2026-04-24T00:28:41.000Z",
+                     "records":  [
+                                     {
+                                         "id":  2047472760090910721,
+                                         "stockId":  2047472760027996162,
+                                         "action":  "IN",
+                                         "changeCount":  {
+
+                                                         },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Initial purchase",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472760350957570,
+                                         "stockId":  2047472760027996162,
+                                         "action":  "OUT",
+                                         "changeCount":  {
+
+                                                         },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Medical use",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "userId":  2047472689878261762,
+                                         "username":  "api3_doctor_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472760678113281,
+                                         "stockId":  2047472760027996162,
+                                         "action":  "DESTROY",
+                                         "changeCount":  {
+
+                                                         },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Broken packages",
+                                         "createTime":  "2026-04-24T00:28:41.000Z",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "itemId":  2047472708886847490,
+                     "itemName":  "API Item Updated 082823",
+                     "unit":  null,
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "userId":  2047472688003407873,
+                     "username":  "api3_worker_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-15-worker",
+        "method":  "GET",
+        "path":  "/items/stocks?item=2047472708886847490\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  70,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047472760027996162,
+                                     "count":  "5.00",
+                                     "sourceType":  "PURCHASE",
+                                     "expireTime":  "2026-07-23T00:28:28.000Z",
+                                     "createTime":  "2026-04-24T00:28:40.000Z",
+                                     "updateTime":  "2026-04-24T00:28:41.000Z",
+                                     "records":  [
+                                                     {
+                                                         "id":  2047472760350957570,
+                                                         "stockId":  2047472760027996162,
+                                                         "action":  "OUT",
+                                                         "changeCount":  {
+
+                                                                         },
+                                                         "remainCount":  {
+
+                                                                         },
+                                                         "price":  {
+
+                                                                   },
+                                                         "totalPrice":  {
+
+                                                                        },
+                                                         "purpose":  "Medical use",
+                                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                                         "userId":  2047472689878261762,
+                                                         "username":  "api3_doctor_082823",
+                                                         "avatar":  null
+                                                     },
+                                                     {
+                                                         "id":  2047472760090910721,
+                                                         "stockId":  2047472760027996162,
+                                                         "action":  "IN",
+                                                         "changeCount":  {
+
+                                                                         },
+                                                         "remainCount":  {
+
+                                                                         },
+                                                         "price":  {
+
+                                                                   },
+                                                         "totalPrice":  {
+
+                                                                        },
+                                                         "purpose":  "Initial purchase",
+                                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                                         "userId":  2047472688003407873,
+                                                         "username":  "api3_worker_082823",
+                                                         "avatar":  null
+                                                     },
+                                                     {
+                                                         "id":  2047472760678113281,
+                                                         "stockId":  2047472760027996162,
+                                                         "action":  "DESTROY",
+                                                         "changeCount":  {
+
+                                                                         },
+                                                         "remainCount":  {
+
+                                                                         },
+                                                         "price":  {
+
+                                                                   },
+                                                         "totalPrice":  {
+
+                                                                        },
+                                                         "purpose":  "Broken packages",
+                                                         "createTime":  "2026-04-24T00:28:41.000Z",
+                                                         "userId":  2047472688003407873,
+                                                         "username":  "api3_worker_082823",
+                                                         "avatar":  null
+                                                     }
+                                                 ],
+                                     "itemId":  2047472708886847490,
+                                     "itemName":  "API Item Updated 082823",
+                                     "unit":  null,
+                                     "categoryId":  2047472707460784130,
+                                     "categoryName":  "API-CAT-UPD-082823",
+                                     "userId":  2047472688003407873,
+                                     "username":  "api3_worker_082823",
+                                     "avatar":  null
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-15-user",
+        "method":  "GET",
+        "path":  "/items/stocks?page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  60,
+        "data":  {
+                     "current":  1,
+                     "pages":  0,
+                     "records":  {
+
+                                 },
+                     "size":  10,
+                     "total":  0
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-16",
+        "method":  "GET",
+        "path":  "/items/records?stock=2047472760027996162\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  60,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  [
+                                     {
+                                         "id":  2047472760090910721,
+                                         "action":  "IN",
+                                         "count":  {
+
+                                                   },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Initial purchase",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "stockId":  2047472760027996162,
+                                         "sourceType":  "PURCHASE",
+                                         "expireTime":  "2026-07-23T00:28:28.000Z",
+                                         "stockCreateTime":  "2026-04-24T00:28:40.000Z",
+                                         "itemId":  2047472708886847490,
+                                         "itemName":  "API Item Updated 082823",
+                                         "categoryId":  2047472707460784130,
+                                         "categoryName":  "API-CAT-UPD-082823",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472760350957570,
+                                         "action":  "OUT",
+                                         "count":  {
+
+                                                   },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Medical use",
+                                         "createTime":  "2026-04-24T00:28:40.000Z",
+                                         "stockId":  2047472760027996162,
+                                         "sourceType":  "PURCHASE",
+                                         "expireTime":  "2026-07-23T00:28:28.000Z",
+                                         "stockCreateTime":  "2026-04-24T00:28:40.000Z",
+                                         "itemId":  2047472708886847490,
+                                         "itemName":  "API Item Updated 082823",
+                                         "categoryId":  2047472707460784130,
+                                         "categoryName":  "API-CAT-UPD-082823",
+                                         "userId":  2047472689878261762,
+                                         "username":  "api3_doctor_082823",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472760678113281,
+                                         "action":  "DESTROY",
+                                         "count":  {
+
+                                                   },
+                                         "remainCount":  {
+
+                                                         },
+                                         "price":  {
+
+                                                   },
+                                         "totalPrice":  {
+
+                                                        },
+                                         "purpose":  "Broken packages",
+                                         "createTime":  "2026-04-24T00:28:41.000Z",
+                                         "stockId":  2047472760027996162,
+                                         "sourceType":  "PURCHASE",
+                                         "expireTime":  "2026-07-23T00:28:28.000Z",
+                                         "stockCreateTime":  "2026-04-24T00:28:40.000Z",
+                                         "itemId":  2047472708886847490,
+                                         "itemName":  "API Item Updated 082823",
+                                         "categoryId":  2047472707460784130,
+                                         "categoryName":  "API-CAT-UPD-082823",
+                                         "userId":  2047472688003407873,
+                                         "username":  "api3_worker_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  3
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-17",
+        "method":  "POST",
+        "path":  "/items/subscribe",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  67,
+        "data":  {
+                     "id":  2047472762301308929,
+                     "createTime":  "2026-04-24T00:28:41.401Z",
+                     "action":  "ITEM_COUNT",
+                     "count":  "3",
+                     "itemId":  2047472708886847490,
+                     "itemName":  "API Item Updated 082823",
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "stockId":  null,
+                     "inTime":  null,
+                     "userId":  null,
+                     "username":  null,
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-18",
+        "method":  "GET",
+        "path":  "/items/subscribe/2047472762301308929",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  63,
+        "data":  {
+                     "id":  2047472762301308929,
+                     "createTime":  "2026-04-24T00:28:41.000Z",
+                     "action":  "ITEM_COUNT",
+                     "count":  "3.00",
+                     "itemId":  2047472708886847490,
+                     "itemName":  "API Item Updated 082823",
+                     "categoryId":  2047472707460784130,
+                     "categoryName":  "API-CAT-UPD-082823",
+                     "stockId":  null,
+                     "inTime":  null,
+                     "userId":  null,
+                     "username":  null,
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-19",
+        "method":  "GET",
+        "path":  "/items/subscribe?element=2047472708886847490\u0026action=ITEM_COUNT\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  95,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047472762301308929,
+                                     "createTime":  "2026-04-24T00:28:41.000Z",
+                                     "action":  "ITEM_COUNT",
+                                     "count":  "3.00",
+                                     "itemId":  2047472708886847490,
+                                     "itemName":  "API Item Updated 082823",
+                                     "categoryId":  2047472707460784130,
+                                     "categoryName":  "API-CAT-UPD-082823",
+                                     "stockId":  null,
+                                     "inTime":  null,
+                                     "userId":  null,
+                                     "username":  null,
+                                     "avatar":  null
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "ITEM-20",
+        "method":  "DELETE",
+        "path":  "/items/subscribe?subscribeIds=2047472762301308929",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  65,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "MED-01",
+        "method":  "POST",
+        "path":  "/medical/first",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  85,
+        "data":  {
+                     "id":  2047472763601543170,
+                     "name":  "Medical Pet 082823",
+                     "age":  12,
+                     "weight":  {
+
+                                },
+                     "temperature":  {
+
+                                     },
+                     "immunity":  {
+                                      "id":  2047472763601543171,
+                                      "registrationId":  2047472763601543170,
+                                      "medicine":  "Triple Vaccine",
+                                      "illness":  "Panleukopenia",
+                                      "count":  1,
+                                      "total":  3,
+                                      "immunityTime":  "2026-04-21T00:28:28.018Z",
+                                      "createTime":  "2026-04-24T00:28:41.711Z"
+                                  },
+                     "allergy":  {
+                                     "id":  2047472763601543172,
+                                     "registrationId":  2047472763601543170,
+                                     "source":  "Seafood",
+                                     "discoveryTime":  "2026-04-21T00:28:28.018Z",
+                                     "createTime":  "2026-04-24T00:28:41.713Z"
+                                 },
+                     "createTime":  "2026-04-24T00:28:41.709Z",
+                     "results":  {
+
+                                 },
+                     "petId":  2047472706424791041,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "userId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-02",
+        "method":  "GET",
+        "path":  "/medical/first?pet=2047472706424791041\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  62,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047472763601543170,
+                                     "name":  "Medical Pet 082823",
+                                     "age":  12,
+                                     "createTime":  "2026-04-24T00:28:41.000Z",
+                                     "petId":  2047472706424791041,
+                                     "sex":  "FEMALE",
+                                     "type":  "CAT",
+                                     "breed":  "Domestic Short Hair",
+                                     "userId":  2047472689878261762,
+                                     "username":  "api3_doctor_082823",
+                                     "avatar":  null
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-03",
+        "method":  "GET",
+        "path":  "/medical/first/2047472763601543170",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  56,
+        "data":  {
+                     "id":  2047472763601543170,
+                     "name":  "Medical Pet 082823",
+                     "age":  12,
+                     "weight":  {
+
+                                },
+                     "temperature":  {
+
+                                     },
+                     "immunity":  {
+                                      "id":  2047472763601543171,
+                                      "registrationId":  2047472763601543170,
+                                      "medicine":  "Triple Vaccine",
+                                      "illness":  "Panleukopenia",
+                                      "count":  1,
+                                      "total":  3,
+                                      "immunityTime":  "2026-04-21T00:28:28.000Z",
+                                      "createTime":  "2026-04-24T00:28:41.000Z"
+                                  },
+                     "allergy":  {
+                                     "id":  2047472763601543172,
+                                     "registrationId":  2047472763601543170,
+                                     "source":  "Seafood",
+                                     "discoveryTime":  "2026-04-21T00:28:28.000Z",
+                                     "createTime":  "2026-04-24T00:28:41.000Z"
+                                 },
+                     "createTime":  "2026-04-24T00:28:41.000Z",
+                     "results":  {
+
+                                 },
+                     "petId":  2047472706424791041,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "userId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-04",
+        "method":  "POST",
+        "path":  "/medical/record/pet/2047472706424791041",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  67,
+        "data":  {
+                     "id":  2047472764385878017,
+                     "status":  "WAITING",
+                     "type":  "FIRST",
+                     "startTime":  null,
+                     "endTime":  null,
+                     "price":  "88.00",
+                     "cost":  "20.00",
+                     "ownerPhone":  "13811000003",
+                     "createTime":  "2026-04-24T00:28:41.901Z",
+                     "updateTime":  "2026-04-24T00:28:41.901Z",
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petSex":  "FEMALE",
+                     "petType":  "CAT",
+                     "petBreed":  "Domestic Short Hair",
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "userId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "ownerId":  2047472691631480834,
+                     "ownerName":  "api3_donor_082823",
+                     "ownerAvatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-05",
+        "method":  "PUT",
+        "path":  "/medical/record/2047472764385878017",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  64,
+        "data":  {
+                     "id":  2047472764385878017,
+                     "status":  "PROCESSING",
+                     "type":  "REVISIT",
+                     "startTime":  "2026-04-23T23:28:41.916Z",
+                     "endTime":  "2026-04-24T00:28:41.918Z",
+                     "price":  "88.00",
+                     "cost":  "35.00",
+                     "ownerPhone":  "13811000999",
+                     "createTime":  "2026-04-24T00:28:41.000Z",
+                     "updateTime":  "2026-04-24T00:28:41.967Z",
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petSex":  "FEMALE",
+                     "petType":  "CAT",
+                     "petBreed":  "Domestic Short Hair",
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "userId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "ownerId":  2047472691631480834,
+                     "ownerName":  "api3_donor_082823",
+                     "ownerAvatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-06",
+        "method":  "GET",
+        "path":  "/medical/record/2047472764385878017",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  60,
+        "data":  {
+                     "id":  2047472764385878017,
+                     "status":  "PROCESSING",
+                     "type":  "REVISIT",
+                     "startTime":  "2026-04-23T23:28:41.000Z",
+                     "endTime":  "2026-04-24T00:28:41.000Z",
+                     "price":  "88.00",
+                     "cost":  "35.00",
+                     "ownerPhone":  "13811000999",
+                     "createTime":  "2026-04-24T00:28:41.000Z",
+                     "updateTime":  "2026-04-24T00:28:41.000Z",
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petSex":  "FEMALE",
+                     "petType":  "CAT",
+                     "petBreed":  "Domestic Short Hair",
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "userId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "ownerId":  2047472691631480834,
+                     "ownerName":  "api3_donor_082823",
+                     "ownerAvatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-07",
+        "method":  "GET",
+        "path":  "/medical/record?pet=2047472706424791041\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  64,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047472764385878017,
+                                     "status":  "PROCESSING",
+                                     "type":  "REVISIT",
+                                     "startTime":  "2026-04-23T23:28:41.000Z",
+                                     "endTime":  "2026-04-24T00:28:41.000Z",
+                                     "price":  "88.00",
+                                     "cost":  "35.00",
+                                     "ownerPhone":  "13811000999",
+                                     "createTime":  "2026-04-24T00:28:41.000Z",
+                                     "updateTime":  "2026-04-24T00:28:41.000Z",
+                                     "petId":  2047472706424791041,
+                                     "petName":  "Medical Pet 082823",
+                                     "petSex":  "FEMALE",
+                                     "petType":  "CAT",
+                                     "petBreed":  "Domestic Short Hair",
+                                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                     "userId":  2047472689878261762,
+                                     "username":  "api3_doctor_082823",
+                                     "avatar":  null,
+                                     "ownerId":  2047472691631480834,
+                                     "ownerName":  "api3_donor_082823",
+                                     "ownerAvatar":  null
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-08",
+        "method":  "POST",
+        "path":  "/medical/detail",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  112,
+        "data":  {
+                     "id":  2047472765694500865,
+                     "recordId":  2047472764385878017,
+                     "createTime":  "2026-04-24T00:28:42.204Z",
+                     "isCompleted":  false,
+                     "description":  "Mild cough and low appetite",
+                     "history":  "2 days cough",
+                     "pastHistory":  "No major history",
+                     "lifeHabit":  "Indoor foster",
+                     "weight":  {
+
+                                },
+                     "temperature":  {
+
+                                     },
+                     "heartRate":  120,
+                     "respiratoryRate":  26,
+                     "physicalExam":  "Lungs slightly noisy",
+                     "objectiveDiagnoses":  {
+
+                                            },
+                     "diagnosis":  null,
+                     "differential":  null,
+                     "exam":  null,
+                     "treatment":  null,
+                     "advice":  null,
+                     "treatments":  {
+
+                                    },
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "age":  12,
+                     "petId":  2047472706424791041,
+                     "name":  "Medical Pet 082823",
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "tags":  {
+
+                              },
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-09",
+        "method":  "GET",
+        "path":  "/medical/detail/2047472765694500865",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  66,
+        "data":  {
+                     "id":  2047472765694500865,
+                     "recordId":  2047472764385878017,
+                     "createTime":  "2026-04-24T00:28:42.000Z",
+                     "isCompleted":  false,
+                     "description":  "Mild cough and low appetite",
+                     "history":  "2 days cough",
+                     "pastHistory":  "No major history",
+                     "lifeHabit":  "Indoor foster",
+                     "weight":  {
+
+                                },
+                     "temperature":  {
+
+                                     },
+                     "heartRate":  120,
+                     "respiratoryRate":  26,
+                     "physicalExam":  "Lungs slightly noisy",
+                     "objectiveDiagnoses":  {
+
+                                            },
+                     "diagnosis":  null,
+                     "differential":  null,
+                     "exam":  null,
+                     "treatment":  null,
+                     "advice":  null,
+                     "treatments":  {
+
+                                    },
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "age":  12,
+                     "petId":  2047472706424791041,
+                     "name":  "Medical Pet 082823",
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "tags":  {
+
+                              },
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-10",
+        "method":  "GET",
+        "path":  "/medical/detail?record=2047472764385878017\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  72,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047472765694500865,
+                                     "recordId":  2047472764385878017,
+                                     "createTime":  "2026-04-24T00:28:42.000Z",
+                                     "isCompleted":  false,
+                                     "description":  "Mild cough and low appetite",
+                                     "history":  "2 days cough",
+                                     "pastHistory":  "No major history",
+                                     "lifeHabit":  "Indoor foster",
+                                     "weight":  {
+
+                                                },
+                                     "temperature":  {
+
+                                                     },
+                                     "heartRate":  120,
+                                     "respiratoryRate":  26,
+                                     "physicalExam":  "Lungs slightly noisy",
+                                     "objectiveDiagnoses":  null,
+                                     "diagnosis":  null,
+                                     "differential":  null,
+                                     "exam":  null,
+                                     "treatment":  null,
+                                     "advice":  null,
+                                     "treatments":  null,
+                                     "doctorId":  2047472689878261762,
+                                     "username":  "api3_doctor_082823",
+                                     "avatar":  null,
+                                     "age":  12,
+                                     "petId":  2047472706424791041,
+                                     "name":  "Medical Pet 082823",
+                                     "sex":  "FEMALE",
+                                     "type":  "CAT",
+                                     "breed":  "Domestic Short Hair",
+                                     "tags":  null,
+                                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg"
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-11",
+        "method":  "PUT",
+        "path":  "/medical/detail/2047472765694500865",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  79,
+        "data":  {
+                     "id":  2047472765694500865,
+                     "recordId":  2047472764385878017,
+                     "createTime":  "2026-04-24T00:28:42.000Z",
+                     "isCompleted":  false,
+                     "description":  "Mild cough and low appetite",
+                     "history":  "2 days cough",
+                     "pastHistory":  "No major history",
+                     "lifeHabit":  "Indoor foster",
+                     "weight":  {
+
+                                },
+                     "temperature":  {
+
+                                     },
+                     "heartRate":  120,
+                     "respiratoryRate":  26,
+                     "physicalExam":  "Exam updated",
+                     "objectiveDiagnoses":  {
+
+                                            },
+                     "diagnosis":  "Pending",
+                     "differential":  "URI",
+                     "exam":  "Blood + xray",
+                     "treatment":  "Supportive care",
+                     "advice":  "Observe appetite",
+                     "treatments":  {
+
+                                    },
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "age":  12,
+                     "petId":  2047472706424791041,
+                     "name":  "Medical Pet 082823",
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "tags":  {
+
+                              },
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-17",
+        "method":  "PUT",
+        "path":  "/medical/details/2047472765694500865/exam",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  64,
+        "data":  "0c455e75-f7b8-4adb-9e92-1910aa36e14e",
+        "message":  "success"
+    },
+    {
+        "id":  "MED-18",
+        "method":  "PUT",
+        "path":  "/medical/exam/0c455e75-f7b8-4adb-9e92-1910aa36e14e/doc",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  87,
+        "data":  "20260424082842_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "message":  "success"
+    },
+    {
+        "id":  "MED-19",
+        "method":  "DELETE",
+        "path":  "/medical/exam/0c455e75-f7b8-4adb-9e92-1910aa36e14e/doc/20260424082842_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  66,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "MED-19-reupload",
+        "method":  "PUT",
+        "path":  "/medical/exam/0c455e75-f7b8-4adb-9e92-1910aa36e14e/doc",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  91,
+        "data":  "20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "message":  "success"
+    },
+    {
+        "id":  "MED-20",
+        "method":  "POST",
+        "path":  "/medical/exam/0c455e75-f7b8-4adb-9e92-1910aa36e14e",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  81,
+        "data":  {
+                     "id":  2047472772388610050,
+                     "detailId":  2047472765694500865,
+                     "text":  "Slight inflammation",
+                     "examType":  "BLOOD",
+                     "files":  {
+                                   "id":  2047472772451524610,
+                                   "name":  "20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "assetUrl":  "/assets/exam/2047472772388610050/20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:43.739Z"
+                               },
+                     "checkTime":  "2026-04-24T00:28:43.750Z",
+                     "createTime":  "2026-04-24T00:28:43.806Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-21",
+        "method":  "GET",
+        "path":  "/medical/exam/2047472772388610050",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  51,
+        "data":  {
+                     "id":  2047472772388610050,
+                     "detailId":  2047472765694500865,
+                     "text":  "Slight inflammation",
+                     "examType":  "BLOOD",
+                     "files":  {
+                                   "id":  2047472772451524610,
+                                   "name":  "20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "assetUrl":  "/assets/exam/2047472772388610050/20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                   "createTime":  "2026-04-24T00:28:43.000Z"
+                               },
+                     "checkTime":  "2026-04-24T00:28:43.000Z",
+                     "createTime":  "2026-04-24T00:28:43.000Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-21-asset",
+        "method":  "GET",
+        "path":  "/assets/exam/2047472772388610050/20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "status":  200,
+        "code":  null,
+        "expected":  "HTTP 200 exam asset",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  351,
+        "data":  "content length=0",
+        "message":  ""
+    },
+    {
+        "id":  "MED-13",
+        "method":  "POST",
+        "path":  "/medical/detail/2047472765694500865/diagnosis",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  70,
+        "data":  {
+                     "id":  2047472774460596226,
+                     "detailId":  2047472765694500865,
+                     "result":  "Upper respiratory infection",
+                     "createTime":  "2026-04-24T00:28:44.294Z",
+                     "examinations":  {
+                                          "id":  2047472772388610050,
+                                          "detailId":  2047472765694500865,
+                                          "text":  "Slight inflammation",
+                                          "examType":  "BLOOD",
+                                          "files":  {
+                                                        "id":  2047472772451524610,
+                                                        "name":  "20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                                        "assetUrl":  "/assets/exam/2047472772388610050/20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                                        "createTime":  "2026-04-24T00:28:43.000Z"
+                                                    },
+                                          "checkTime":  "2026-04-24T00:28:43.000Z",
+                                          "createTime":  "2026-04-24T00:28:43.000Z"
+                                      }
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-14",
+        "method":  "DELETE",
+        "path":  "/medical/diagnosis/2047472774460596226",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  59,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "MED-15",
+        "method":  "POST",
+        "path":  "/medical/detail/2047472765694500865/plan",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  70,
+        "data":  {
+                     "id":  2047472774980689921,
+                     "detailId":  2047472765694500865,
+                     "plan":  "Supportive medicine for 5 days",
+                     "creatTime":  "2026-04-24T00:28:44.425Z",
+                     "startTime":  "2026-04-24T00:28:44.370Z",
+                     "endTime":  "2026-05-24T00:28:28.016Z",
+                     "isDiscard":  false,
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "orders":  {
+                                    "id":  2047472774980689922,
+                                    "type":  "MEDICINE",
+                                    "count":  "5",
+                                    "unit":  "tablet",
+                                    "price":  "2.50",
+                                    "createTime":  "2026-04-24T00:28:44.427Z",
+                                    "parentId":  2047472774980689921,
+                                    "parentType":  "TREATMENT_PLAN",
+                                    "allowerId":  2047472689878261762,
+                                    "allerName":  "api3_doctor_082823",
+                                    "allerAvatar":  null,
+                                    "itemId":  2047472712003215361,
+                                    "itemName":  "API Order Item 082823"
+                                }
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-16",
+        "method":  "DELETE",
+        "path":  "/medical/plan",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  59,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "MED-12",
+        "method":  "PATCH",
+        "path":  "/medical/detail/2047472765694500865",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  71,
+        "data":  {
+                     "id":  2047472765694500865,
+                     "recordId":  2047472764385878017,
+                     "createTime":  "2026-04-24T00:28:42.000Z",
+                     "isCompleted":  true,
+                     "description":  "Mild cough and low appetite",
+                     "history":  "2 days cough",
+                     "pastHistory":  "No major history",
+                     "lifeHabit":  "Indoor foster",
+                     "weight":  {
+
+                                },
+                     "temperature":  {
+
+                                     },
+                     "heartRate":  120,
+                     "respiratoryRate":  26,
+                     "physicalExam":  "Exam updated",
+                     "objectiveDiagnoses":  {
+                                                "id":  2047472774460596226,
+                                                "detailId":  2047472765694500865,
+                                                "result":  "Upper respiratory infection",
+                                                "createTime":  "2026-04-24T00:28:44.000Z",
+                                                "examinations":  {
+                                                                     "id":  2047472772388610050,
+                                                                     "detailId":  2047472765694500865,
+                                                                     "text":  "Slight inflammation",
+                                                                     "examType":  "BLOOD",
+                                                                     "files":  {
+                                                                                   "id":  2047472772451524610,
+                                                                                   "name":  "20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                                                                   "assetUrl":  "/assets/exam/2047472772388610050/20260424082843_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+                                                                                   "createTime":  "2026-04-24T00:28:43.000Z"
+                                                                               },
+                                                                     "checkTime":  "2026-04-24T00:28:43.000Z",
+                                                                     "createTime":  "2026-04-24T00:28:43.000Z"
+                                                                 }
+                                            },
+                     "diagnosis":  "Pending",
+                     "differential":  "URI",
+                     "exam":  "Blood + xray",
+                     "treatment":  "Supportive care",
+                     "advice":  "Observe appetite",
+                     "treatments":  {
+                                        "id":  2047472774980689921,
+                                        "detailId":  2047472765694500865,
+                                        "plan":  "Supportive medicine for 5 days",
+                                        "creatTime":  "2026-04-24T00:28:44.000Z",
+                                        "startTime":  "2026-04-24T00:28:44.000Z",
+                                        "endTime":  "2026-05-24T00:28:28.000Z",
+                                        "isDiscard":  true,
+                                        "doctorId":  2047472689878261762,
+                                        "username":  "api3_doctor_082823",
+                                        "avatar":  null,
+                                        "orders":  {
+                                                       "id":  2047472774980689922,
+                                                       "type":  "MEDICINE",
+                                                       "count":  "5.00000",
+                                                       "unit":  "tablet",
+                                                       "price":  "2.50",
+                                                       "createTime":  "2026-04-24T00:28:44.000Z",
+                                                       "parentId":  2047472774980689921,
+                                                       "parentType":  "TREATMENT_PLAN",
+                                                       "allowerId":  2047472689878261762,
+                                                       "allerName":  "api3_doctor_082823",
+                                                       "allerAvatar":  null,
+                                                       "itemId":  2047472712003215361,
+                                                       "itemName":  "API Order Item 082823"
+                                                   }
+                                    },
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "age":  12,
+                     "petId":  2047472706424791041,
+                     "name":  "Medical Pet 082823",
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "tags":  {
+
+                              },
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-17-closed",
+        "method":  "PUT",
+        "path":  "/medical/details/2047472765694500865/exam",
+        "status":  422,
+        "code":  422,
+        "expected":  "HTTP 422 / code 422",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  59,
+        "data":  null,
+        "message":  "病历已完成"
+    },
+    {
+        "id":  "MED-22",
+        "method":  "POST",
+        "path":  "/medical/vaccine/pet/2047472706424791041",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  64,
+        "data":  {
+                     "id":  2047472776025071618,
+                     "times":  1,
+                     "createTime":  "2026-04-24T00:28:44.681Z",
+                     "vaccineId":  7,
+                     "itemId":  2047472711420207106,
+                     "vaccineName":  "API Vaccine Item 082823",
+                     "vaccineIll":  "Cat Flu 082823",
+                     "vaccineTotal":  3,
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petType":  "CAT",
+                     "petSex":  "FEMALE",
+                     "petBreed":  "Domestic Short Hair",
+                     "petAge":  12,
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-23",
+        "method":  "GET",
+        "path":  "/medical/vaccine/pet/2047472706424791041",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  59,
+        "data":  {
+                     "id":  2047472776025071618,
+                     "times":  1,
+                     "createTime":  "2026-04-23T16:00:00.000Z",
+                     "vaccineId":  7,
+                     "itemId":  2047472711420207106,
+                     "vaccineName":  "API Vaccine Item 082823",
+                     "vaccineIll":  "Cat Flu 082823",
+                     "vaccineTotal":  3,
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petType":  "CAT",
+                     "petSex":  "FEMALE",
+                     "petBreed":  "Domestic Short Hair",
+                     "petAge":  12,
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-24",
+        "method":  "GET",
+        "path":  "/medical/vaccine/pet/2047472706424791041/new",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  68,
+        "data":  {
+                     "id":  2047472776025071618,
+                     "times":  1,
+                     "createTime":  "2026-04-23T16:00:00.000Z",
+                     "vaccineId":  7,
+                     "itemId":  2047472711420207106,
+                     "vaccineName":  "API Vaccine Item 082823",
+                     "vaccineIll":  "Cat Flu 082823",
+                     "vaccineTotal":  3,
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petType":  "CAT",
+                     "petSex":  "FEMALE",
+                     "petBreed":  "Domestic Short Hair",
+                     "petAge":  12,
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-25",
+        "method":  "POST",
+        "path":  "/medical/deworm/pet/2047472706424791041",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  70,
+        "data":  {
+                     "id":  2047472776876515330,
+                     "times":  1,
+                     "createTime":  "2026-04-24T00:28:44.878Z",
+                     "dewormerId":  7,
+                     "itemId":  2047472711743168514,
+                     "dewormerType":  "OTHER",
+                     "dewormerName":  "API Dewormer Item 082823",
+                     "dewormerTotal":  2,
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petType":  "CAT",
+                     "petSex":  "FEMALE",
+                     "petBreed":  "Domestic Short Hair",
+                     "petAge":  12,
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "doctorId":  2047472688003407873,
+                     "username":  "api3_worker_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-26",
+        "method":  "GET",
+        "path":  "/medical/deworm/pet/2047472706424791041",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  61,
+        "data":  {
+                     "id":  2047472776876515330,
+                     "times":  1,
+                     "createTime":  "2026-04-23T16:00:00.000Z",
+                     "dewormerId":  7,
+                     "itemId":  2047472711743168514,
+                     "dewormerType":  "OTHER",
+                     "dewormerName":  "API Dewormer Item 082823",
+                     "dewormerTotal":  2,
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petType":  "CAT",
+                     "petSex":  "FEMALE",
+                     "petBreed":  "Domestic Short Hair",
+                     "petAge":  12,
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "doctorId":  2047472688003407873,
+                     "username":  "api3_worker_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-27",
+        "method":  "POST",
+        "path":  "/medical/rehab/pet/2047472706424791041",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  71,
+        "data":  {
+                     "id":  2047472777451134977,
+                     "title":  "Rehab plan 082823",
+                     "content":  "Daily gentle exercise",
+                     "frequency":  "Daily",
+                     "status":  "ACTIVE",
+                     "startTime":  "2026-04-24T00:28:44.952Z",
+                     "endTime":  "2026-07-23T00:28:28.018Z",
+                     "createTime":  "2026-04-24T00:28:45.007Z",
+                     "petAge":  null,
+                     "statusRecords":  {
+                                           "id":  2047472777451134979,
+                                           "planId":  2047472777451134977,
+                                           "status":  "ACTIVE",
+                                           "reason":  "~~~create~~~",
+                                           "createTime":  "2026-04-24T00:28:45.007Z",
+                                           "userId":  2047472689878261762,
+                                           "username":  "api3_doctor_082823",
+                                           "avatar":  null
+                                       },
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petSex":  "FEMALE",
+                     "petType":  "CAT",
+                     "petBreed":  "Domestic Short Hair",
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-28",
+        "method":  "GET",
+        "path":  "/medical/rehab/2047472777451134977",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  61,
+        "data":  {
+                     "id":  2047472777451134977,
+                     "title":  "Rehab plan 082823",
+                     "content":  "Daily gentle exercise",
+                     "frequency":  "Daily",
+                     "status":  "ACTIVE",
+                     "startTime":  "2026-04-24T00:28:44.000Z",
+                     "endTime":  "2026-07-23T00:28:28.000Z",
+                     "createTime":  "2026-04-24T00:28:45.000Z",
+                     "petAge":  null,
+                     "statusRecords":  {
+                                           "id":  2047472777451134979,
+                                           "planId":  2047472777451134977,
+                                           "status":  "ACTIVE",
+                                           "reason":  "~~~create~~~",
+                                           "createTime":  "2026-04-24T00:28:45.000Z",
+                                           "userId":  2047472689878261762,
+                                           "username":  "api3_doctor_082823",
+                                           "avatar":  null
+                                       },
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petSex":  "FEMALE",
+                     "petType":  "CAT",
+                     "petBreed":  "Domestic Short Hair",
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-29",
+        "method":  "GET",
+        "path":  "/medical/rehab?pet=2047472706424791041\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  61,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047472777451134977,
+                                     "title":  "Rehab plan 082823",
+                                     "content":  "Daily gentle exercise",
+                                     "frequency":  "Daily",
+                                     "status":  "ACTIVE",
+                                     "startTime":  "2026-04-24T00:28:44.000Z",
+                                     "endTime":  "2026-07-23T00:28:28.000Z",
+                                     "createTime":  "2026-04-24T00:28:45.000Z",
+                                     "petAge":  null,
+                                     "statusRecords":  {
+                                                           "id":  2047472777451134979,
+                                                           "planId":  2047472777451134977,
+                                                           "status":  "ACTIVE",
+                                                           "reason":  "~~~create~~~",
+                                                           "createTime":  "2026-04-24T00:28:45.000Z",
+                                                           "userId":  2047472689878261762,
+                                                           "username":  "api3_doctor_082823",
+                                                           "avatar":  null
+                                                       },
+                                     "doctorId":  2047472689878261762,
+                                     "username":  "api3_doctor_082823",
+                                     "avatar":  null,
+                                     "petId":  2047472706424791041,
+                                     "petName":  "Medical Pet 082823",
+                                     "petSex":  "FEMALE",
+                                     "petType":  "CAT",
+                                     "petBreed":  "Domestic Short Hair",
+                                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg"
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-30",
+        "method":  "PUT",
+        "path":  "/medical/rehab/2047472777451134977/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  67,
+        "data":  {
+                     "id":  2047472777451134977,
+                     "title":  "Rehab plan 082823",
+                     "content":  "Daily gentle exercise",
+                     "frequency":  "Daily",
+                     "status":  "COMPLETED",
+                     "startTime":  "2026-04-24T00:28:44.000Z",
+                     "endTime":  "2026-07-23T00:28:28.000Z",
+                     "createTime":  "2026-04-24T00:28:45.000Z",
+                     "petAge":  null,
+                     "statusRecords":  [
+                                           {
+                                               "id":  2047472778235469826,
+                                               "planId":  2047472777451134977,
+                                               "status":  "COMPLETED",
+                                               "reason":  "Recovered well",
+                                               "createTime":  "2026-04-24T00:28:45.000Z",
+                                               "userId":  2047472689878261762,
+                                               "username":  "api3_doctor_082823",
+                                               "avatar":  null
+                                           },
+                                           {
+                                               "id":  2047472777451134979,
+                                               "planId":  2047472777451134977,
+                                               "status":  "ACTIVE",
+                                               "reason":  "~~~create~~~",
+                                               "createTime":  "2026-04-24T00:28:45.000Z",
+                                               "userId":  2047472689878261762,
+                                               "username":  "api3_doctor_082823",
+                                               "avatar":  null
+                                           }
+                                       ],
+                     "doctorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petSex":  "FEMALE",
+                     "petType":  "CAT",
+                     "petBreed":  "Domestic Short Hair",
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-31",
+        "method":  "POST",
+        "path":  "/medical/rehab/2047472777451134977/record",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  71,
+        "data":  {
+                     "id":  2047472778499710978,
+                     "planId":  2047472777451134977,
+                     "step":  "Step 1",
+                     "reaction":  "Cooperative",
+                     "note":  "Good progress",
+                     "createTime":  "2026-04-24T00:28:45.266Z",
+                     "userId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "assets":  "/assets/rehab/2047472777451134977/20260424082845_0ddd22359d33d90a778e0019a99d352e01b20852c4d2a7c8b4c8c6fa94334d9e.webp"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-32",
+        "method":  "GET",
+        "path":  "/medical/rehab/2047472777451134977/record",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  55,
+        "data":  {
+                     "id":  2047472778499710978,
+                     "planId":  2047472777451134977,
+                     "step":  "Step 1",
+                     "reaction":  "Cooperative",
+                     "note":  "Good progress",
+                     "createTime":  "2026-04-24T00:28:45.000Z",
+                     "userId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null,
+                     "assets":  {
+
+                                }
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-33",
+        "method":  "POST",
+        "path":  "/medical/health/pet/2047472706424791041",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  67,
+        "data":  {
+                     "id":  2047472779082719234,
+                     "scoreBcs":  88,
+                     "scoreMental":  90,
+                     "scoreAppetite":  84,
+                     "weight":  {
+
+                                },
+                     "summary":  "Healthy overall",
+                     "createTime":  "2026-04-24T00:28:45.396Z",
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petType":  "CAT",
+                     "petSex":  "FEMALE",
+                     "petBreed":  "Domestic Short Hair",
+                     "petAge":  12,
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "assessorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-34",
+        "method":  "GET",
+        "path":  "/medical/health/2047472779082719234",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  62,
+        "data":  {
+                     "id":  2047472779082719234,
+                     "scoreBcs":  88,
+                     "scoreMental":  90,
+                     "scoreAppetite":  84,
+                     "weight":  {
+
+                                },
+                     "summary":  "Healthy overall",
+                     "createTime":  "2026-04-24T00:28:45.000Z",
+                     "petId":  2047472706424791041,
+                     "petName":  "Medical Pet 082823",
+                     "petType":  "CAT",
+                     "petSex":  "FEMALE",
+                     "petBreed":  "Domestic Short Hair",
+                     "petAge":  12,
+                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "assessorId":  2047472689878261762,
+                     "username":  "api3_doctor_082823",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-35",
+        "method":  "GET",
+        "path":  "/medical/health?page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  70,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  [
+                                     {
+                                         "id":  2047466634578255874,
+                                         "scoreBcs":  88,
+                                         "scoreMental":  90,
+                                         "scoreAppetite":  84,
+                                         "weight":  {
+
+                                                    },
+                                         "summary":  "Healthy overall",
+                                         "createTime":  "2026-04-24T00:04:20.000Z",
+                                         "petId":  2047466562511724545,
+                                         "petName":  "Medical Pet 080357",
+                                         "petType":  "CAT",
+                                         "petSex":  "FEMALE",
+                                         "petBreed":  "Domestic Short Hair",
+                                         "petAge":  12,
+                                         "cover":  "/assets/pet/2047466562511724545/20260424080403_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                         "assessorId":  2047466544492994562,
+                                         "username":  "api3_doctor_080357",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047467480825298945,
+                                         "scoreBcs":  88,
+                                         "scoreMental":  90,
+                                         "scoreAppetite":  84,
+                                         "weight":  {
+
+                                                    },
+                                         "summary":  "Healthy overall",
+                                         "createTime":  "2026-04-24T00:07:42.000Z",
+                                         "petId":  2047467407081046018,
+                                         "petName":  "Medical Pet 080718",
+                                         "petType":  "CAT",
+                                         "petSex":  "FEMALE",
+                                         "petBreed":  "Domestic Short Hair",
+                                         "petAge":  12,
+                                         "cover":  "/assets/pet/2047467407081046018/20260424080724_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                         "assessorId":  2047467389645324290,
+                                         "username":  "api3_doctor_080718",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047468996789350401,
+                                         "scoreBcs":  88,
+                                         "scoreMental":  90,
+                                         "scoreAppetite":  84,
+                                         "weight":  {
+
+                                                    },
+                                         "summary":  "Healthy overall",
+                                         "createTime":  "2026-04-24T00:13:43.000Z",
+                                         "petId":  2047468915822505985,
+                                         "petName":  "Medical Pet 081317",
+                                         "petType":  "CAT",
+                                         "petSex":  "FEMALE",
+                                         "petBreed":  "Domestic Short Hair",
+                                         "petAge":  12,
+                                         "cover":  "/assets/pet/2047468915822505985/20260424081324_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                         "assessorId":  2047468899947065346,
+                                         "username":  "api3_doctor_081317",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047469635913199617,
+                                         "scoreBcs":  88,
+                                         "scoreMental":  90,
+                                         "scoreAppetite":  84,
+                                         "weight":  {
+
+                                                    },
+                                         "summary":  "Healthy overall",
+                                         "createTime":  "2026-04-24T00:16:16.000Z",
+                                         "petId":  2047469560772243458,
+                                         "petName":  "Medical Pet 081553",
+                                         "petType":  "CAT",
+                                         "petSex":  "FEMALE",
+                                         "petBreed":  "Domestic Short Hair",
+                                         "petAge":  12,
+                                         "cover":  "/assets/pet/2047469560772243458/20260424081558_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                         "assessorId":  2047469544137633793,
+                                         "username":  "api3_doctor_081553",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047471328251961345,
+                                         "scoreBcs":  88,
+                                         "scoreMental":  90,
+                                         "scoreAppetite":  84,
+                                         "weight":  {
+
+                                                    },
+                                         "summary":  "Healthy overall",
+                                         "createTime":  "2026-04-24T00:22:59.000Z",
+                                         "petId":  2047471245850664962,
+                                         "petName":  "Medical Pet 082232",
+                                         "petType":  "CAT",
+                                         "petSex":  "FEMALE",
+                                         "petBreed":  "Domestic Short Hair",
+                                         "petAge":  12,
+                                         "cover":  "/assets/pet/2047471245850664962/20260424082240_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                         "assessorId":  2047471227458641922,
+                                         "username":  "api3_doctor_082232",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047471932596674562,
+                                         "scoreBcs":  88,
+                                         "scoreMental":  90,
+                                         "scoreAppetite":  84,
+                                         "weight":  {
+
+                                                    },
+                                         "summary":  "Healthy overall",
+                                         "createTime":  "2026-04-24T00:25:23.000Z",
+                                         "petId":  2047471857480884225,
+                                         "petName":  "Medical Pet 082458",
+                                         "petType":  "CAT",
+                                         "petSex":  "FEMALE",
+                                         "petBreed":  "Domestic Short Hair",
+                                         "petAge":  12,
+                                         "cover":  "/assets/pet/2047471857480884225/20260424082505_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                         "assessorId":  2047471840347152386,
+                                         "username":  "api3_doctor_082458",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047472779082719234,
+                                         "scoreBcs":  88,
+                                         "scoreMental":  90,
+                                         "scoreAppetite":  84,
+                                         "weight":  {
+
+                                                    },
+                                         "summary":  "Healthy overall",
+                                         "createTime":  "2026-04-24T00:28:45.000Z",
+                                         "petId":  2047472706424791041,
+                                         "petName":  "Medical Pet 082823",
+                                         "petType":  "CAT",
+                                         "petSex":  "FEMALE",
+                                         "petBreed":  "Domestic Short Hair",
+                                         "petAge":  12,
+                                         "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                         "assessorId":  2047472689878261762,
+                                         "username":  "api3_doctor_082823",
+                                         "avatar":  null
+                                     }
+                                 ],
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  7
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "MED-36",
+        "method":  "GET",
+        "path":  "/medical/health/pet/2047472706424791041?page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  66,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047472779082719234,
+                                     "scoreBcs":  88,
+                                     "scoreMental":  90,
+                                     "scoreAppetite":  84,
+                                     "weight":  {
+
+                                                },
+                                     "summary":  "Healthy overall",
+                                     "createTime":  "2026-04-24T00:28:45.000Z",
+                                     "petId":  2047472706424791041,
+                                     "petName":  "Medical Pet 082823",
+                                     "petType":  "CAT",
+                                     "petSex":  "FEMALE",
+                                     "petBreed":  "Domestic Short Hair",
+                                     "petAge":  12,
+                                     "cover":  "/assets/pet/2047472706424791041/20260424082828_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                     "assessorId":  2047472689878261762,
+                                     "username":  "api3_doctor_082823",
+                                     "avatar":  null
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    }
+]

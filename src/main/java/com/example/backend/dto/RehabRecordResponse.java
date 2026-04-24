@@ -11,6 +11,7 @@ import lombok.Data;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
@@ -44,7 +45,8 @@ public class RehabRecordResponse implements IResponse {
                 user.getId(),
                 user.getUsername(),
                 FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()),
-                files.stream()
+                (files == null ? List.<MediaFile>of() : files).stream()
+                        .filter(Objects::nonNull)
                         .map(file ->
                                 FileUtils.generateAssetUrl(ParentType.REHAB_PLAN, record.getPlanId(), file.getFilename()))
                         .toList());

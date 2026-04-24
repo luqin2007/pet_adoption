@@ -72,7 +72,7 @@ public class StockRequest implements IRequest, IValidatedRequest {
 
     @Override
     public void validate(Errors errors) {
-        if (expireTime.before(new Date()))
+        if (expireTime != null && expireTime.before(new Date()))
             errors.rejectValue("expireTime", "request.item_donation.expired");
         validateNumber(errors, StockRequest::getPrice, "request.price");
         validateNumber(errors, StockRequest::getTotalPrice, "request.price");

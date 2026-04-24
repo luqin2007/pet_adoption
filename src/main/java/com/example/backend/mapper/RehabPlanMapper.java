@@ -32,7 +32,7 @@ public interface RehabPlanMapper extends IBaseMapper<RehabPlan> {
     default MPLambdaUpdate<RehabPlan> updateStatusById(Long planId, RehabPlanStatusProp status) {
         return lambdaUpdate()
                 .eq(RehabPlan::getId, planId)
-                .set(RehabPlan::getStatus, status.name());
+                .set(RehabPlan::getStatus, status);
     }
 
     @Override

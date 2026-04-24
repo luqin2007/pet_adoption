@@ -57,12 +57,14 @@ public interface StockRecordMapper extends IBaseMapper<StockRecord> {
     ) t
     WHERE t.rn <= #{count}
      */
-    @Select("select * from (" +
+    @Select("<script>" +
+            "select * from (" +
             "select *, ROW_NUMBER() OVER (PARTITION BY stock_id ORDER BY create_time ASC) as rn " +
             "from stock_record " +
             "where stock_id in " +
             "    <foreach collection='ids' item='id' open='(' separator=',' close=')'>#{id}</foreach>" +
-            ") t where t.rn <= #{count}")
+            ") t where t.rn &lt;= #{count}" +
+            "</script>")
     List<StockRecord> queryByStocks(@Param("ids") Set<Long> stockIds, @Param("count") Integer count);
 
     @Override
