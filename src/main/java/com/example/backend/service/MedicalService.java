@@ -656,6 +656,9 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取疫苗接种记录
      */
     public Map<Long, List<VaccineResponse>> getVaccinesByPetIds(Set<Long> petIds) {
+        if (petIds == null || petIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
         Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
@@ -677,6 +680,9 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     public Map<Long, List<DewormResponse>> getDewormsByPetIds(Set<Long> petIds) {
         requireLoginUser();
+        if (petIds == null || petIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
         Map<Long, Pet> pets = petService.groupById(petIds,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
         Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);

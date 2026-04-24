@@ -81,6 +81,10 @@ public class PetService extends BaseService<PetMapper, Pet> {
 
         Page<PetLocations> result = baseMapper.queryByParams(paramRequest).page(pageRequest);
         Set<Long> petIds = result.getRecords().stream().map(Pet::getId).collect(Collectors.toSet());
+        if (petIds.isEmpty()) {
+            return convertDto(result, info -> PetResponse.createBatch(
+                    info, Map.of(), Map.of(), Map.of(), Map.of(), Map.of()));
+        }
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().map(Pet::getDiscoverId),
                 User::getId, User::getUsername, User::getAvatar);
