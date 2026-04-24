@@ -4,6 +4,7 @@ import com.example.backend.entity.Location;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.User;
 import com.example.backend.entity.query.PetLocations;
+import com.example.backend.entity.property.PetStatus;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +18,7 @@ import static com.example.backend.entity.property.ParentType.USER;
 @AllArgsConstructor
 public class PetResponse implements IResponse {
 
-    private Long id;
+    private String id;
     private String name;
     private Integer age;
     private String sex;
@@ -25,13 +26,14 @@ public class PetResponse implements IResponse {
     private String breed;
     private String health;
     private String description;
+    private PetStatus status;
     private List<PetTagResponse> tags;
     private String cover;
     private List<VaccineResponse> vaccines;
     private List<DewormResponse> deworms;
 
     // discover
-    private Long discoverId;
+    private String discoverId;
     private String username;
     private String avatar;
 
@@ -48,7 +50,7 @@ public class PetResponse implements IResponse {
                                      List<DewormResponse> deworms,
                                      List<Location> locations) {
         return new PetResponse(
-                pet.getId(),
+                String.valueOf(pet.getId()),
                 pet.getName(),
                 pet.getAge(),
                 pet.getSex(),
@@ -56,11 +58,12 @@ public class PetResponse implements IResponse {
                 pet.getBreed(),
                 pet.getHealth(),
                 pet.getDescription(),
+                pet.getStatus(),
                 tags,
                 coverUrl,
                 vaccines,
                 deworms,
-                discover.getId(),
+                String.valueOf(discover.getId()),
                 discover.getUsername(),
                 FileUtils.generateAssetUrl(USER, discover.getId(), discover.getAvatar()),
                 locations);

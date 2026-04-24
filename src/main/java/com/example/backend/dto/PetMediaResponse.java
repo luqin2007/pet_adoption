@@ -13,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class PetMediaResponse implements IResponse {
 
-    private Long id;
+    private String id;
 
     /**
      * 媒体文件类型，IMAGE/VIDEO
@@ -38,7 +38,7 @@ public class PetMediaResponse implements IResponse {
 
     public static PetMediaResponse create(MediaFile media) {
         return new PetMediaResponse(
-                media.getId(),
+                String.valueOf(media.getId()),
                 media.getType(),
                 FileUtils.generateAssetUrl(ParentType.PET, media.getParentId(), media.getFilename()),
                 media.getName(),

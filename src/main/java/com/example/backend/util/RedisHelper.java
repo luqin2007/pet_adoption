@@ -31,6 +31,17 @@ public class RedisHelper {
     }
 
     /**
+     * 存储字符串
+     *
+     * @param key            键
+     * @param value          值
+     * @param timeoutSeconds 超时时间，单位：秒
+     */
+    public void putStringSec(String key, String value, long timeoutSeconds) {
+        redisTemplateString.opsForValue().set(key, value, Duration.ofSeconds(timeoutSeconds));
+    }
+
+    /**
      * 检查字符串键 key 是否存在，使用 <code>String.format(keyTemplate, params)</code> 生成键
      *
      * @param keyTemplate 键模板

@@ -17,19 +17,19 @@ import java.util.Map;
 public class PetStatusRecordResponse implements IResponse {
 
     // 状态记录
-    private Long id;
+    private String id;
     private PetStatus from;
     private PetStatus to;
     private Date createTime;
     private String description;
 
     // 对应宠物信息
-    private Long petId;
+    private String petId;
     private String petName;
     private String cover;
 
     // 发起用户信息
-    private Long userId;
+    private String userId;
     private String username;
     private String avatar;
 
@@ -39,15 +39,15 @@ public class PetStatusRecordResponse implements IResponse {
      */
     public static PetStatusRecordResponse create(PetStatusRecord record, Pet pet, String cover, User user) {
         return new PetStatusRecordResponse(
-                record.getId(),
+                String.valueOf(record.getId()),
                 record.getFrom(),
                 record.getTo(),
                 record.getCreateTime(),
                 record.getDescription(),
-                record.getPetId(),
+                String.valueOf(record.getPetId()),
                 pet.getName(),
                 cover,
-                user.getId(),
+                String.valueOf(user.getId()),
                 user.getUsername(),
                 FileUtils.generateAssetUrl(ParentType.USER, user.getId(), user.getAvatar()));
     }

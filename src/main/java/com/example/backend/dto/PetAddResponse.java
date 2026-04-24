@@ -8,7 +8,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class PetAddResponse implements IResponse {
 
-    private Long id;
+    private String id;
     private String name;
     private Integer age;
     private String sex;
@@ -19,7 +19,7 @@ public class PetAddResponse implements IResponse {
 
     public static PetAddResponse create(Pet pet) {
         return new PetAddResponse(
-                pet.getId(),
+                String.valueOf(pet.getId()),
                 pet.getName(),
                 pet.getAge(),
                 pet.getSex(),

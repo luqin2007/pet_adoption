@@ -49,8 +49,12 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     private String hostAddress;
     @Value("${application.code_timeout}")
     private Long codeTimeout;
+    @Value("${application.mail_timeout}")
+    private Long mailTimeout;
     @Value("${key.mail_code}")
     private String mailKeyTemplate;
+    @Value("${key.mail_code_limit}")
+    private String mailLimitKeyTemplate;
     @Value("${key.password_reset}")
     private String pwdKeyTemplate;
 
@@ -108,6 +112,15 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
      * 发送邮箱验证码
      */
     public void sendMailCode(String email) {
+        email = URLDecoder.decode(email, StandardCharsets.UTF_8);
+        if (isEmailExist(email)) { // 存在检查
+            throw ServiceException.invalidate("邮箱已存在");
+        }
+        if (redisHelper.hasString(mailLimitKeyTemplate, email)) { // 发送检查
+            throw ServiceException.invalidate("邮件过于频繁");
+        }
+        redisHelper.putString(String.format(mailLimitKeyTemplate, email), "", mailTimeout);
+
         // 生成随机验证码
         String redisKey = String.format(mailKeyTemplate, email);
         String code = StringUtils.generateRandomString(6);
@@ -115,7 +128,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
 
         // 发送邮件
         eventPublisher.publishEvent(new MailSendEvent(
-                Set.of(URLDecoder.decode(email, StandardCharsets.UTF_8)),
+                Set.of(email),
                 langHelper.get("mail.send_mail_code.title"),
                 langHelper.get("mail.send_mail_code.content", code)));
     }
