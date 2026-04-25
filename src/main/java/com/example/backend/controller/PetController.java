@@ -36,7 +36,7 @@ import java.util.Set;
  */
 @Validated
 @RestController
-@RequestMapping("/pets")
+@RequestMapping("/api/v1/pets")
 @RequiredArgsConstructor
 public class PetController {
 

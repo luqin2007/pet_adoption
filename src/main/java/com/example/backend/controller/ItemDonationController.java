@@ -52,7 +52,7 @@ import java.util.Set;
  */
 @Validated
 @RestController
-@RequestMapping("/items")
+@RequestMapping("/api/v1/items")
 @RequiredArgsConstructor
 public class ItemDonationController {
 

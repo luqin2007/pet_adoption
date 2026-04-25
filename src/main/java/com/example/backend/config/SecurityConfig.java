@@ -39,9 +39,8 @@ public class SecurityConfig {
                 // 页面权限
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/**",
-                                "/assets/**",
-                                "/error",
+                                "/api/v1/auth/**",
+                                "/api/v1/assets/**",
                                 "/", "/css/**", "/js/**" // 其他静态资源
                         ).permitAll()
                         .anyRequest().authenticated())

@@ -90,6 +90,6 @@ WHERE `type` IS NOT NULL AND TRIM(`type`) <> '';
 INSERT IGNORE INTO `info_pet_type` (`type`, `breed`, `create_time`)
 SELECT DISTINCT TRIM(`pet_type`), COALESCE(TRIM(`pet_breed`), ''), NOW()
 FROM `breading`
-WHERE `type` IS NOT NULL AND TRIM(`type`) <> '';
+WHERE `pet_type` IS NOT NULL AND TRIM(`pet_type`) <> '';
 
 SET FOREIGN_KEY_CHECKS = 1;

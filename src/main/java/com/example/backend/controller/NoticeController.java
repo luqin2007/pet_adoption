@@ -19,7 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  */
 @Validated
 @RestController
-@RequestMapping("/notices")
+@RequestMapping("/api/v1/notices")
 @RequiredArgsConstructor
 public class NoticeController {
 

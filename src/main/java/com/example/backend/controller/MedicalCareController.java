@@ -60,7 +60,7 @@ import java.util.List;
  */
 @Validated
 @RestController
-@RequestMapping("/medical")
+@RequestMapping("/api/v1/medical")
 @RequiredArgsConstructor
 public class MedicalCareController {
 

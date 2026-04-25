@@ -33,7 +33,7 @@ import java.util.List;
  */
 @Validated
 @RestController
-@RequestMapping("/lost")
+@RequestMapping("/api/v1/lost")
 @RequiredArgsConstructor
 public class LostPetController {
 

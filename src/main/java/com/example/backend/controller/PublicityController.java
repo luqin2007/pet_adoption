@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Validated
 @RestController
-@RequestMapping("/publicity")
+@RequestMapping("/api/v1/publicity")
 @RequiredArgsConstructor
 public class PublicityController {
 

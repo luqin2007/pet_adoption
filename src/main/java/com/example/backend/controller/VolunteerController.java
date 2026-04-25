@@ -46,7 +46,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Validated
 @RestController
-@RequestMapping("/volunteers")
+@RequestMapping("/api/v1/volunteers")
 @RequiredArgsConstructor
 public class VolunteerController {
 

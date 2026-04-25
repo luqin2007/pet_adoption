@@ -46,7 +46,7 @@ import java.util.List;
  */
 @Validated
 @RestController
-@RequestMapping("/adopt")
+@RequestMapping("/api/v1/adopt")
 @RequiredArgsConstructor
 public class AdoptBreadingController {
 

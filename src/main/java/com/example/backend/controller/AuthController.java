@@ -31,7 +31,7 @@ import java.util.Optional;
  */
 @Validated
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 

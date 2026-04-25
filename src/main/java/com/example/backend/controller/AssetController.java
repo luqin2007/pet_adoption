@@ -24,7 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/assets")
+@RequestMapping("/api/v1/assets")
 public class AssetController {
 
     private static final Set<String> ASSET_FOLDERS = Arrays.stream(ParentType.values())

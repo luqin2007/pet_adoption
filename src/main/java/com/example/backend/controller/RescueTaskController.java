@@ -31,7 +31,7 @@ import java.util.List;
  */
 @Validated
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/v1/tasks")
 @RequiredArgsConstructor
 public class RescueTaskController {
 
