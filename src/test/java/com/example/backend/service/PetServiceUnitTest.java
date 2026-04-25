@@ -24,11 +24,13 @@ class PetServiceUnitTest {
 
     private PetMapper petMapper;
     private PetService service;
+    private InformationService informationService;
 
     @BeforeEach
     void setUp() {
         petMapper = mock(PetMapper.class);
-        service = new PetService(mock(PetStatusRecordMapper.class), mock(LocationMapper.class), mock(PetTagMapper.class));
+        informationService = mock(InformationService.class);
+        service = new PetService(mock(PetStatusRecordMapper.class), mock(LocationMapper.class), mock(PetTagMapper.class), informationService);
         ReflectionTestUtils.setField(service, "baseMapper", petMapper);
     }
 

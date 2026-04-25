@@ -37,6 +37,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     private final FollowRecordMapper followRecordMapper;
     private final AdoptBreadingFacade adoptBreadingFacade;
     private final LocationMapper locationMapper;
+    private final InformationService informationService;
 
     private PetService petService;
     private UserService userService;
@@ -60,7 +61,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         // 保存
         Adopt adopt = request.create(login.getId());
         save(adopt);
-        Location location = request.createLocation(ParentType.ADOPT, adopt.getId(), login.getId());
+        Location location = informationService.createValidatedLocation(request, ParentType.ADOPT, adopt.getId(), login.getId());
         locationMapper.insert(location);
         eventPublisher.publishEvent(new AdoptAddEvent(adopt, login));
         return adoptBreadingFacade.buildAdoptResponse(adopt);

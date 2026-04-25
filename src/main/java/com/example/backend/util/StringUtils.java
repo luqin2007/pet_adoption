@@ -1,6 +1,6 @@
 package com.example.backend.util;
 
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.UUID;
 
 /**
@@ -8,7 +8,8 @@ import java.util.UUID;
  */
 public class StringUtils {
 
-    private static final Random random = new Random(System.currentTimeMillis());
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
 
     /**
      * 生成随机字符串，包含 大小写字母、数字
@@ -16,22 +17,11 @@ public class StringUtils {
      * @param length 字符串长度
      */
     public static String generateRandomString(int length) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder str = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
-            int number = random.nextInt(3);
-            switch (number) {
-                case 0:
-                    sb.append((char) Math.round(Math.random() * 25 + 65));
-                    break;
-                case 1:
-                    sb.append((char) Math.round(Math.random() * 25 + 97));
-                    break;
-                case 2:
-                    sb.append(Math.round(Math.random() * 9));
-                    break;
-            }
+            str.append(CHARS.charAt(RANDOM.nextInt(CHARS.length())));
         }
-        return sb.toString();
+        return str.toString();
     }
 
     /**
@@ -60,5 +50,9 @@ public class StringUtils {
      */
     public static boolean hasText(String str) {
         return org.springframework.util.StringUtils.hasText(str);
+    }
+
+    public static String normalize(String value, boolean notNull) {
+        return value == null ? (notNull ? "" : null) : value.trim();
     }
 }

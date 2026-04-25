@@ -27,6 +27,7 @@ class LostPetServiceUnitTest {
     private PetMapper petMapper;
     private LocationMapper locationMapper;
     private LostPetService service;
+    private InformationService informationService;
 
     @BeforeEach
     void setUp() {
@@ -34,7 +35,8 @@ class LostPetServiceUnitTest {
         lostPetMismatchMapper = mock(LostPetMismatchMapper.class);
         petMapper = mock(PetMapper.class);
         locationMapper = mock(LocationMapper.class);
-        service = new LostPetService(lostPetClaimMapper(), lostPetMismatchMapper, petMapper, locationMapper);
+        informationService = mock(InformationService.class);
+        service = new LostPetService(lostPetClaimMapper(), lostPetMismatchMapper, petMapper, locationMapper, informationService);
         ReflectionTestUtils.setField(service, "baseMapper", lostPetMapper);
     }
 

@@ -39,6 +39,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
     private final LostPetMismatchMapper lostPetMismatchMapper;
     private final PetMapper petMapper;
     private final LocationMapper locationMapper;
+    private final InformationService informationService;
 
     private FileService fileService;
     private UserService userService;
@@ -70,7 +71,8 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         // 保存数据
         LostPet lostPet = request.create(login.getId());
         save(lostPet);
-        Location location = request.createLocation(LOST_PET, lostPet.getId(), login.getId());
+        informationService.addPetType(lostPet.getType(), lostPet.getBreed());
+        Location location = informationService.createValidatedLocation(request, LOST_PET, lostPet.getId(), login.getId());
         locationMapper.insert(location);
 
         // 转移临时文件
@@ -111,8 +113,9 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
 
         request.applyTo(lostPet);
         updateById(lostPet);
+        informationService.addPetType(lostPet.getType(), lostPet.getBreed());
         Location location = locationMapper.queryByParent(LOST_PET, lostPet.getId()).require();
-        request.applyTo(location);
+        informationService.applyValidatedLocation(request, location);
         locationMapper.updateById(location);
         eventPublisher.publishEvent(new LostPetUpdateEvent(lostPet, login, location));
 

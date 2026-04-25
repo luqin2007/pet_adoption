@@ -8,6 +8,8 @@ import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
+import static com.example.backend.util.StringUtils.normalize;
+
 /**
  * 更新走失宠物报备请求
  */
@@ -43,8 +45,8 @@ public class LostPetUpdateRequest extends LocationRequest implements IRequest {
         lostPet.setName(name);
         lostPet.setAge(age);
         lostPet.setSex(sex);
-        lostPet.setType(type);
-        lostPet.setBreed(breed);
+        lostPet.setType(normalize(type, true));
+        lostPet.setBreed(normalize(breed, true));
         lostPet.setFeatures(features);
         lostPet.setLostTime(lostTime);
         lostPet.setPhone(phone);

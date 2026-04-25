@@ -35,7 +35,8 @@ class RescueTaskServiceUnitTest {
         service = new RescueTaskService(
                 mock(LocationMapper.class),
                 mock(RescueTaskAssignMapper.class),
-                mock(RescueTaskRecordMapper.class));
+                mock(RescueTaskRecordMapper.class),
+                mock(InformationService.class));
         ReflectionTestUtils.setField(service, "baseMapper", rescueTaskMapper);
     }
 

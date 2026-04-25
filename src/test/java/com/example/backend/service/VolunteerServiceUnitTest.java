@@ -43,7 +43,8 @@ class VolunteerServiceUnitTest {
                 volunteerRewardMapper,
                 mock(VolunteerTaskMapper.class),
                 mock(LocationMapper.class),
-                volunteerFacade);
+                volunteerFacade,
+                mock(InformationService.class));
         ReflectionTestUtils.setField(service, "baseMapper", mock(VolunteerRecruitmentMapper.class));
     }
 

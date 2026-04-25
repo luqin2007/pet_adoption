@@ -39,7 +39,8 @@ class WorkflowBeginServiceUnitTest {
                 mock(FollowTaskMapper.class),
                 mock(FollowRecordMapper.class),
                 mock(AdoptBreadingFacade.class),
-                mock(LocationMapper.class));
+                mock(LocationMapper.class),
+                mock(InformationService.class));
         wireBase(service, redisHelper);
         ReflectionTestUtils.setField(service, "agreementTemplate", "agreement:%s");
 
@@ -60,7 +61,8 @@ class WorkflowBeginServiceUnitTest {
                 mock(FollowTaskMapper.class),
                 mock(FollowRecordMapper.class),
                 mock(AdoptBreadingFacade.class),
-                mock(LocationMapper.class));
+                mock(LocationMapper.class),
+                mock(InformationService.class));
         wireBase(service, mockRedisHelper());
 
         ServiceException ex = assertThrows(ServiceException.class, service::beginAgreement);
@@ -99,7 +101,8 @@ class WorkflowBeginServiceUnitTest {
                 mock(LostPetClaimMapper.class),
                 mock(LostPetMismatchMapper.class),
                 mock(PetMapper.class),
-                mock(LocationMapper.class));
+                mock(LocationMapper.class),
+                mock(InformationService.class));
         wireBase(service, redisHelper);
         ReflectionTestUtils.setField(service, "lostPetKey", "lost:%s");
 

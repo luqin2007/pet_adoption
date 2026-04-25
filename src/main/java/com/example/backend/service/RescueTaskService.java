@@ -38,6 +38,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
     private final LocationMapper locationMapper;
     private final RescueTaskAssignMapper rescueTaskAssignMapper;
     private final RescueTaskRecordMapper rescueTaskRecordMapper;
+    private final InformationService informationService;
 
     private UserService userService;
     private FileService fileService;
@@ -69,7 +70,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         // 存储任务信息
         RescueTask task = request.createTask(login.getId());
         save(task);
-        Location location = request.createLocation(RESCUE_TASK, task.getId(), login.getId());
+        Location location = informationService.createValidatedLocation(request, RESCUE_TASK, task.getId(), login.getId());
         locationMapper.insert(location);
         RescueTaskRecord record = request.createRecord(task, login.getId());
         rescueTaskRecordMapper.insert(record);
@@ -128,10 +129,10 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         // 更新位置信息
         Location location = locationMapper.queryByParent(RESCUE_TASK, taskId).one();
         if (location == null) { // 位置信息缺失
-            location = request.createLocation(RESCUE_TASK, taskId, login.getId());
+            location = informationService.createValidatedLocation(request, RESCUE_TASK, taskId, login.getId());
             locationMapper.insert(location);
         } else { // 更新
-            request.applyTo(location);
+            informationService.applyValidatedLocation(request, location);
             locationMapper.updateById(location);
         }
 

@@ -7,6 +7,8 @@ import lombok.Data;
 
 import java.util.Date;
 
+import static com.example.backend.util.StringUtils.normalize;
+
 @Data
 public class PetUpdateRequest implements IRequest {
 
@@ -55,8 +57,8 @@ public class PetUpdateRequest implements IRequest {
         info.setName(name);
         info.setAge(age);
         info.setSex(sex);
-        info.setType(type);
-        info.setBreed(breed);
+        info.setType(normalize(type, true));
+        info.setBreed(normalize(breed, true));
         info.setHealth(health);
         info.setDescription(description);
         info.setUpdateTime(new Date());

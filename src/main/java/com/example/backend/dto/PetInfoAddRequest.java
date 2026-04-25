@@ -11,6 +11,8 @@ import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
+import static com.example.backend.util.StringUtils.normalize;
+
 /**
  * 添加流浪宠物请求体
  */
@@ -64,8 +66,8 @@ public class PetInfoAddRequest extends LocationRequest implements IRequest {
                 name,
                 age,
                 sex,
-                type,
-                breed == null ? "" : breed,
+                normalize(type, true),
+                normalize(breed, true),
                 health == null ? "" : health,
                 description == null ? "" : description,
                 PetStatus.WAITING,

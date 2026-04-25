@@ -36,6 +36,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     private final LocationMapper locationMapper;
 
     private final VolunteerFacade volunteerFacade;
+    private final InformationService informationService;
 
     private UserService userService;
 
@@ -242,7 +243,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         if (request.getTaskId() == null) { // 新任务
             task = request.createTask();
             volunteerTaskMapper.insert(task);
-            Location location = request.createLocation(ParentType.VOLUNTEER_TASK, task.getId(), login.getId());
+            Location location = informationService.createValidatedLocation(request, ParentType.VOLUNTEER_TASK, task.getId(), login.getId());
             locationMapper.insert(location);
             task.setLocationId(location.getId());
             volunteerTaskMapper.updateById(task);
@@ -484,7 +485,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     }
 
     private void saveLocation(LocationRequest request, ParentType parentType, Long parentId, Long userId) {
-        Location location = request.createLocation(parentType, parentId, userId);
+        Location location = informationService.createValidatedLocation(request, parentType, parentId, userId);
         locationMapper.insert(location);
     }
 
@@ -494,7 +495,7 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
             saveLocation(request, parentType, parentId, userId);
             return;
         }
-        request.applyTo(location);
+        informationService.applyValidatedLocation(request, location);
         location.setUserId(userId);
         locationMapper.updateById(location);
     }

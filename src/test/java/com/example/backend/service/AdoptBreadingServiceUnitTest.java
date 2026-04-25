@@ -37,7 +37,8 @@ class AdoptBreadingServiceUnitTest {
                 mock(FollowTaskMapper.class),
                 mock(FollowRecordMapper.class),
                 mock(AdoptBreadingFacade.class),
-                mock(LocationMapper.class));
+                mock(LocationMapper.class),
+                mock(InformationService.class));
         ReflectionTestUtils.setField(service, "baseMapper", adoptMapper);
     }
 

@@ -34,6 +34,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
     private final PetStatusRecordMapper petStatusRecordMapper;
     private final LocationMapper locationMapper;
     private final PetTagMapper petTagMapper;
+    private final InformationService informationService;
 
     private FileService fileService;
     private UserService userService;
@@ -49,8 +50,9 @@ public class PetService extends BaseService<PetMapper, Pet> {
         // 宠物信息
         Pet pet = request.createInfo(login.getId());
         save(pet);
+        informationService.addPetType(pet.getType(), pet.getBreed());
         // 位置信息
-        Location location = request.createLocation(PET, pet.getId(), login.getId());
+        Location location = informationService.createValidatedLocation(request, PET, pet.getId(), login.getId());
         locationMapper.insert(location);
 
         eventPublisher.publishEvent(new PetAddEvent(pet, login, location));
@@ -65,7 +67,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         User login = requireLoginUser();
         Pet pet = requireById(petId);
         checkUserPermission(pet, login);
-        Location location = request.createLocation(PET, petId, login.getId());
+        Location location = informationService.createValidatedLocation(request, PET, petId, login.getId());
         locationMapper.insert(location);
         eventPublisher.publishEvent(new PetLocationEvent(location, login));
         return getPet(petId);
@@ -122,6 +124,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         // 更新宠物信息
         request.applyTo(info);
         updateById(info);
+        informationService.addPetType(info.getType(), info.getBreed());
         eventPublisher.publishEvent(new PetUpdateEvent(info, login));
 
         User discover = userService.selectById(info.getDiscoverId(), User::getId, User::getUsername, User::getAvatar);
