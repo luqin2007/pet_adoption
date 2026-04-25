@@ -109,6 +109,15 @@ public class PetController {
     }
 
     /**
+     * 获取流浪宠物图片/视频列表
+     */
+    @GetMapping("/{id}/media")
+    public Result<List<PetMediaResponse>> getMedia(@PathVariable("id") Long petId) {
+        List<PetMediaResponse> response = petService.getMedia(petId);
+        return Result.success(response);
+    }
+
+    /**
      * 修改流浪宠物图片/视频信息
      */
     @PutMapping("/{id}/media/{mid}")

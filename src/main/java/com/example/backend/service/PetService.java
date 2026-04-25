@@ -164,6 +164,16 @@ public class PetService extends BaseService<PetMapper, Pet> {
     }
 
     /**
+     * 获取流浪宠物图片/视频列表
+     */
+    public List<PetMediaResponse> getMedia(Long petId) {
+        requireById(petId);
+        return fileService.getBaseMapper().queryByParent(PET, petId).list().stream()
+                .map(PetMediaResponse::create)
+                .toList();
+    }
+
+    /**
      * 更新流浪宠物图片/视频信息
      */
     @Transactional
