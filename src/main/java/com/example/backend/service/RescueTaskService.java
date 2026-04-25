@@ -188,8 +188,12 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         requireEqual(CREATED, task.getStatus(), "exception.invalidate.rescue_task.delete_after_approve");
         requirePermission(Objects.equals(task.getUserId(), login.getId()) || login.isWorker());
 
-        // 删除媒体数据
+        // 删除外键记录
+        // TODO 使用 discard 替代 delete
         fileService.deleteAllMediaFiles(taskId, RESCUE_TASK);
+        rescueTaskRecordMapper.queryByTask(taskId).delete();
+        rescueTaskAssignMapper.queryUserByTask(taskId).delete();
+        locationMapper.queryByParent(RESCUE_TASK, taskId).delete();
         // 删除数据库
         removeById(taskId);
     }
