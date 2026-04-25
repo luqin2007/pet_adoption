@@ -13,6 +13,9 @@ public class AllergyHistoryAddRequest implements IRequest {
     @NotBlank(message = "request.medical.allergy.source")
     private String source;
 
+    @NotBlank(message = "request.medical.allergy.source")
+    private String reaction;
+
     @NotNull(message = "request.medical.allergy.discovery")
     private Date discoveryTime;
 
@@ -20,6 +23,7 @@ public class AllergyHistoryAddRequest implements IRequest {
         return new AllergyHistory(null,
                 registrationId,
                 source,
+                reaction,
                 discoveryTime,
                 new Date());
     }

@@ -32,6 +32,12 @@ public class AllergyHistory implements IId {
     private String source;
 
     /**
+     * 过敏反应
+     * *非空 varchar(255)*
+     */
+    private String reaction;
+
+    /**
      * 发现时间
      * *非空 datetime*
      */
