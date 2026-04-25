@@ -130,17 +130,6 @@ CREATE TABLE `location` (
   CONSTRAINT `fk_location_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='位置信息';
 
-CREATE TABLE `info_city` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '省市县信息',
-  `province` varchar(20) NOT NULL COMMENT '省份',
-  `city` varchar(20) NOT NULL COMMENT '城市',
-  `district` varchar(20) NOT NULL COMMENT '县/县级市',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_info_city_location` (`province`, `city`, `district`),
-  KEY `idx_info_city_province_city` (`province`, `city`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='省市县信息';
-
 CREATE TABLE `info_pet_type` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '宠物类型与品种信息',
   `type` varchar(50) NOT NULL COMMENT '宠物类型',
