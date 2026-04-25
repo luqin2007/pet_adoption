@@ -41,8 +41,7 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
                 .eq(MediaFile::getParentType, parentType)
                 .eq(MediaFile::getParentId, parentId)
                 .eq(MediaFile::getIsCover, true)
-                .eq(MediaFile::getType, IMAGE)
-                .select(MediaFile::getParentId, MediaFile::getFilename);
+                .eq(MediaFile::getType, IMAGE);
     }
 
     /**
@@ -125,6 +124,18 @@ public interface MediaFileMapper extends IBaseMapper<MediaFile> {
         return lambdaQuery()
                 .eq(MediaFile::getParentType, parentType)
                 .in(MediaFile::getParentId, parentIds);
+    }
+
+    /**
+     * 查询单个资源下的全部媒体<br>
+     * - 索引：(parentType, parentId, type, createTime)<br>
+     * - 查询：[MediaInfo]
+     */
+    default MPLambdaQuery<MediaFile> queryByParent(ParentType parentType, Long parentId) {
+        return lambdaQuery()
+                .eq(MediaFile::getParentType, parentType)
+                .eq(MediaFile::getParentId, parentId)
+                .desc(MediaFile::getCreateTime);
     }
 
     default MPLambdaUpdate<MediaFile> updateCover(Long mediaId, boolean isCover) {

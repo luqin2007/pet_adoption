@@ -81,7 +81,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         // 清理缓存
         redisHelper.deleteString(redisKey);
         eventPublisher.publishEvent(new RescueTaskAddEvent(task, location, login));
-        return RescueTaskResponse.fromEntity(task);
+        return buildResponse(task);
     }
 
     /**
@@ -94,7 +94,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
                 || login.is(task.getUserId())
                 || login.is(task.getApproveId()));
 
-        return RescueTaskResponse.fromEntity(task);
+        return buildResponse(task);
     }
 
     /**
@@ -137,7 +137,17 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         }
 
         eventPublisher.publishEvent(new RescueTaskUpdateEvent(task, location, login));
-        return RescueTaskResponse.fromEntity(task);
+        return buildResponse(task);
+    }
+
+    /**
+     * 获取救助任务图片/视频列表
+     */
+    public List<PetMediaResponse> getRescueTaskMedia(Long taskId) {
+        requireById(taskId);
+        return fileService.getBaseMapper().queryByParent(RESCUE_TASK, taskId).list().stream()
+                .map(media -> PetMediaResponse.create(media, RESCUE_TASK))
+                .toList();
     }
 
     /**
@@ -221,7 +231,20 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
      */
     public Page<RescueTaskResponse> getRescueTasks(PageParams page) {
         Page<RescueTask> result = page(page.createPage());
-        return convertDto(result, RescueTaskResponse::fromEntity);
+        Set<Long> taskIds = result.getRecords().stream().map(RescueTask::getId).collect(Collectors.toSet());
+        if (taskIds.isEmpty()) {
+            return convertDto(result, RescueTaskResponse::fromEntity);
+        }
+        Map<Long, Location> locations = locationMapper.queryByParents(RESCUE_TASK, taskIds).group(Location::getParentId);
+        Map<Long, List<PetMediaResponse>> mediaMap = fileService.getBaseMapper().queryByParents(RESCUE_TASK, taskIds)
+                .groupList(MediaFile::getParentId, media -> PetMediaResponse.create(media, RESCUE_TASK));
+        return convertDto(result, task -> RescueTaskResponse.fromEntity(task, locations.get(task.getId()), mediaMap.get(task.getId())));
+    }
+
+    private RescueTaskResponse buildResponse(RescueTask task) {
+        Location location = locationMapper.queryByParent(RESCUE_TASK, task.getId()).one();
+        List<PetMediaResponse> media = getRescueTaskMedia(task.getId());
+        return RescueTaskResponse.fromEntity(task, location, media);
     }
 
     /**

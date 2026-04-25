@@ -37,10 +37,14 @@ public class PetMediaResponse implements IResponse {
     private Date createDate;
 
     public static PetMediaResponse create(MediaFile media) {
+        return create(media, ParentType.PET);
+    }
+
+    public static PetMediaResponse create(MediaFile media, ParentType parentType) {
         return new PetMediaResponse(
                 String.valueOf(media.getId()),
                 media.getType(),
-                FileUtils.generateAssetUrl(ParentType.PET, media.getParentId(), media.getFilename()),
+                FileUtils.generateAssetUrl(parentType, media.getParentId(), media.getFilename()),
                 media.getName(),
                 media.getDescription(),
                 media.getIsCover(),

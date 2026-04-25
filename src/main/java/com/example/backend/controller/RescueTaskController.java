@@ -97,6 +97,15 @@ public class RescueTaskController {
     }
 
     /**
+     * 获取救助任务图片/视频列表
+     */
+    @GetMapping("/{id}/media")
+    public Result<List<PetMediaResponse>> getRescueTaskMedia(@PathVariable("id") Long taskId) {
+        List<PetMediaResponse> response = rescueTaskService.getRescueTaskMedia(taskId);
+        return Result.success(response);
+    }
+
+    /**
      * 更新救助任务信息
      */
     @PutMapping("/{id}")
