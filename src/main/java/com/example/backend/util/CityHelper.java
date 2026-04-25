@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -40,9 +41,9 @@ public class CityHelper {
             return;
         }
 
-        List<Province> pca =
+        Province[] pca =
                 objectMapper.readerForArrayOf(Province.class).readValue(resource.getInputStream());
-        provinces = new ArrayList<>(pca.size());
+        provinces = new ArrayList<>(pca.length);
         for (Province province : pca) {
             provinces.add(province.getName());
             List<String> cityNames = new ArrayList<>(province.getChildren().size());
