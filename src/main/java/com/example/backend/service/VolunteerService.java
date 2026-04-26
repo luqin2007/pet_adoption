@@ -85,10 +85,10 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
      * 修改招募计划状态
      */
     @Transactional
-    public VolunteerRecruitmentResponse updateRecruitmentStatus(Long recruitmentId, String statusName) {
+    public VolunteerRecruitmentResponse updateRecruitmentStatus(Long recruitmentId, VolunteerRecruitmentStatusUpdateRequest request) {
         requireWorker();
         VolunteerRecruitment recruitment = requireById(recruitmentId);
-        VolunteerRecruitmentStatus status = VolunteerRecruitmentStatus.get(statusName);
+        VolunteerRecruitmentStatus status = VolunteerRecruitmentStatus.get(request.getStatus());
         require(status.canChangeFrom(recruitment.getStatus()), "exception.invalidate.status");
 
         recruitment.setStatus(status);

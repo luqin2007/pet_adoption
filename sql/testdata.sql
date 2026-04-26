@@ -92,4 +92,63 @@ SELECT DISTINCT TRIM(`pet_type`), COALESCE(TRIM(`pet_breed`), ''), NOW()
 FROM `breading`
 WHERE `pet_type` IS NOT NULL AND TRIM(`pet_type`) <> '';
 
+INSERT INTO `user` (`id`, `username`, `password`, `email`, `role`, `avatar`, `phone`, `create_time`, `update_time`) VALUES
+    (3000000000000000101, 'seed_volunteer_user_01', 'seed-data-not-for-login', 'seed-volunteer-01@example.test', 0, NULL, '13800001001', NOW(), NOW()),
+    (3000000000000000102, 'seed_volunteer_user_02', 'seed-data-not-for-login', 'seed-volunteer-02@example.test', 0, NULL, '13800001002', NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+                     `username` = VALUES(`username`),
+                     `email` = VALUES(`email`),
+                     `role` = VALUES(`role`),
+                     `phone` = VALUES(`phone`),
+                     `update_time` = NOW();
+
+INSERT INTO `volunteer_recruitment` (`id`, `title`, `description`, `requirement`, `headcount`, `applied_count`, `start_time`, `end_time`, `status`, `publisher_id`, `create_time`, `update_time`) VALUES
+    (3000000000000005001, '西湖步道周末巡护招募', '协助完成周末步道巡护、现场拍照、基础记录和异常情况上报。', '能接受步行巡护，有耐心与责任心，能按时反馈现场情况。', 12, 1, '2026-04-27 09:00:00', '2026-05-25 18:00:00', 'PUBLISHED', 2047564282341691394, NOW(), NOW()),
+    (3000000000000005002, '救助站开放日接待志愿者', '在开放日协助来访接待、签到、档案介绍和简单秩序维护。', '沟通表达清晰，能配合接待安排，有线下活动服务经验优先。', 8, 1, '2026-04-29 10:00:00', '2026-05-18 17:00:00', 'PUBLISHED', 2047545148891525121, NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+                     `title` = VALUES(`title`),
+                     `description` = VALUES(`description`),
+                     `requirement` = VALUES(`requirement`),
+                     `headcount` = VALUES(`headcount`),
+                     `applied_count` = VALUES(`applied_count`),
+                     `start_time` = VALUES(`start_time`),
+                     `end_time` = VALUES(`end_time`),
+                     `status` = VALUES(`status`),
+                     `publisher_id` = VALUES(`publisher_id`),
+                     `update_time` = NOW();
+
+INSERT INTO `location` (`id`, `parent_id`, `parent_type`, `user_id`, `province`, `city`, `district`, `detail_address`, `create_time`) VALUES
+    (3000000000000005101, 3000000000000005001, 'RECRUITMENT', 2047564282341691394, '浙江省', '杭州市', '西湖区', '北山街沿线志愿服务点', NOW()),
+    (3000000000000005102, 3000000000000005002, 'RECRUITMENT', 2047545148891525121, '浙江省', '杭州市', '拱墅区', '城北救助站接待大厅', NOW()),
+    (3000000000000005103, 3000000000000005201, 'VOLUNTEER_APP', 3000000000000000101, '浙江省', '杭州市', '西湖区', '古荡新村 6 幢 2 单元', NOW()),
+    (3000000000000005104, 3000000000000005202, 'VOLUNTEER_APP', 3000000000000000102, '浙江省', '杭州市', '上城区', '复兴南街 88 号', NOW())
+ON DUPLICATE KEY UPDATE
+                     `parent_id` = VALUES(`parent_id`),
+                     `parent_type` = VALUES(`parent_type`),
+                     `user_id` = VALUES(`user_id`),
+                     `province` = VALUES(`province`),
+                     `city` = VALUES(`city`),
+                     `district` = VALUES(`district`),
+                     `detail_address` = VALUES(`detail_address`);
+
+INSERT INTO `volunteer_application` (`id`, `recruitment_id`, `user_id`, `real_name`, `sex`, `phone`, `age`, `experience`, `skills`, `time_desc`, `motivation`, `status`, `reviewer_id`, `review_comment`, `review_time`, `create_time`, `update_time`) VALUES
+    (3000000000000005201, 3000000000000005001, 3000000000000000101, '林若溪', '女', '13800001001', 26, '参与过社区流浪猫喂养和照片建档，能独立完成基础记录。', '拍照记录、表格整理、现场沟通', '周末全天可参与，每周至少一次', '希望稳定参与线下巡护，把零散帮助变成长期投入。', 'SUBMITTED', NULL, NULL, NULL, NOW(), NOW()),
+    (3000000000000005202, 3000000000000005002, 3000000000000000102, '周知远', '男', '13800001002', 31, '有公益活动签到与现场接待经验，也参与过宠物领养日协助。', '接待引导、信息登记、活动协调', '工作日晚间可培训，周末可到场服务', '想长期参与救助站开放日，帮助更多人顺利了解领养流程。', 'UNDER_REVIEW', 2047545148891525121, '已进入人工沟通确认阶段', NOW(), NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+                     `recruitment_id` = VALUES(`recruitment_id`),
+                     `user_id` = VALUES(`user_id`),
+                     `real_name` = VALUES(`real_name`),
+                     `sex` = VALUES(`sex`),
+                     `phone` = VALUES(`phone`),
+                     `age` = VALUES(`age`),
+                     `experience` = VALUES(`experience`),
+                     `skills` = VALUES(`skills`),
+                     `time_desc` = VALUES(`time_desc`),
+                     `motivation` = VALUES(`motivation`),
+                     `status` = VALUES(`status`),
+                     `reviewer_id` = VALUES(`reviewer_id`),
+                     `review_comment` = VALUES(`review_comment`),
+                     `review_time` = VALUES(`review_time`),
+                     `update_time` = NOW();
+
 SET FOREIGN_KEY_CHECKS = 1;

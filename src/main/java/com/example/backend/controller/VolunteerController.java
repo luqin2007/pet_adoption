@@ -88,10 +88,10 @@ public class VolunteerController {
     /**
      * 修改招募计划状态
      */
-    @PatchMapping("/recruitments/{id}/{st}")
+    @PatchMapping("/recruitments/{id}")
     public Result<VolunteerRecruitmentResponse> updateRecruitmentStatus(@PathVariable("id") Long recruitmentId,
-                                                                        @PathVariable("st") String status) {
-        return Result.success(volunteerService.updateRecruitmentStatus(recruitmentId, status));
+                                                                        @Valid @RequestBody VolunteerRecruitmentStatusUpdateRequest request) {
+        return Result.success(volunteerService.updateRecruitmentStatus(recruitmentId, request));
     }
 
     /**
