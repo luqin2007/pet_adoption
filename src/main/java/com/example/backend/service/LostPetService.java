@@ -124,6 +124,28 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
     }
 
     /**
+     * 修改走失宠物状态
+     */
+    @Transactional
+    public LostPetResponse updateLostPetStatus(Long lostPetId, LostPetStatusUpdateRequest request) {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
+        LostPet lostPet = requireById(lostPetId);
+
+        LostPetStatus status = LostPetStatus.get(request.getStatus());
+        lostPet.setStatus(status);
+        lostPet.setUpdateTime(new Date());
+        if (request.getReason() != null && !request.getReason().isBlank()) {
+            String note = "审核备注：" + request.getReason().trim();
+            String description = lostPet.getDescription();
+            lostPet.setDescription(description == null || description.isBlank() ? note : description + "\n\n" + note);
+        }
+        updateById(lostPet);
+
+        return buildLostPetResponse(lostPet, null, null, List.of());
+    }
+
+    /**
      * 查看相似流浪宠物
      */
     public List<PetResponse> getSimilarPets(Long lostPetId) {

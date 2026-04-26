@@ -87,6 +87,16 @@ public class LostPetController {
     }
 
     /**
+     * 修改走失宠物状态
+     */
+    @PatchMapping("/pets/{id}/status")
+    public Result<LostPetResponse> updateLostPetStatus(@PathVariable("id") Long lostPetId,
+                                                       @Valid @RequestBody LostPetStatusUpdateRequest request) {
+        LostPetResponse response = lostPetService.updateLostPetStatus(lostPetId, request);
+        return Result.success(response);
+    }
+
+    /**
      * 查看相似流浪宠物
      */
     @GetMapping("/pets/{id}/similar")
