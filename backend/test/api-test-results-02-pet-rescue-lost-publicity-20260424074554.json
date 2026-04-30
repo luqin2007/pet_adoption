@@ -1,0 +1,3234 @@
+﻿[
+    {
+        "id":  "PRE-01",
+        "method":  "GET",
+        "path":  "/auth/check/username/api_probe_20260424074554",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  122,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-send-api2_worker_074554@example.com",
+        "method":  "POST",
+        "path":  "/auth/check/code?email=api2_worker_074554%40example.com",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  53,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-register-api2_worker_074554",
+        "method":  "POST",
+        "path":  "/auth/register",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  274,
+        "data":  {
+                     "id":  2047461999419351041,
+                     "username":  "api2_worker_074554",
+                     "email":  "api2_worker_074554@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13810000001",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-send-api2_owner_074554@example.com",
+        "method":  "POST",
+        "path":  "/auth/check/code?email=api2_owner_074554%40example.com",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  110,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-register-api2_owner_074554",
+        "method":  "POST",
+        "path":  "/auth/register",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  251,
+        "data":  {
+                     "id":  2047462001621360642,
+                     "username":  "api2_owner_074554",
+                     "email":  "api2_owner_074554@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13810000002",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-send-api2_other_074554@example.com",
+        "method":  "POST",
+        "path":  "/auth/check/code?email=api2_other_074554%40example.com",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  75,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-register-api2_other_074554",
+        "method":  "POST",
+        "path":  "/auth/register",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  233,
+        "data":  {
+                     "id":  2047462003559129089,
+                     "username":  "api2_other_074554",
+                     "email":  "api2_other_074554@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13810000003",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-login-api2_worker_074554",
+        "method":  "POST",
+        "path":  "/auth/login",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  161,
+        "data":  {
+                     "id":  2047461999419351041,
+                     "username":  "api2_worker_074554",
+                     "email":  "api2_worker_074554@example.com",
+                     "avatar":  null,
+                     "role":  3,
+                     "phone":  "13810000001",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-login-api2_owner_074554",
+        "method":  "POST",
+        "path":  "/auth/login",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  142,
+        "data":  {
+                     "id":  2047462001621360642,
+                     "username":  "api2_owner_074554",
+                     "email":  "api2_owner_074554@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13810000002",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "AUTH-login-api2_other_074554",
+        "method":  "POST",
+        "path":  "/auth/login",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  146,
+        "data":  {
+                     "id":  2047462003559129089,
+                     "username":  "api2_other_074554",
+                     "email":  "api2_other_074554@example.com",
+                     "avatar":  null,
+                     "role":  0,
+                     "phone":  "13810000003",
+                     "accessToken":  "\u003credacted\u003e",
+                     "refreshToken":  "\u003credacted\u003e"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-01",
+        "method":  "POST",
+        "path":  "/pets",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  92,
+        "data":  {
+                     "id":  2047462014883749890,
+                     "name":  "API Pet 074554",
+                     "age":  8,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "health":  "GOOD",
+                     "description":  "Created by API group 02"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-02",
+        "method":  "POST",
+        "path":  "/pets/2047462014883749890/location",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  88,
+        "data":  {
+                     "id":  2047462014883749890,
+                     "name":  "API Pet 074554",
+                     "age":  8,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "health":  "GOOD",
+                     "description":  "Created by API group 02",
+                     "tags":  {
+
+                              },
+                     "cover":  null,
+                     "vaccines":  {
+
+                                  },
+                     "deworms":  {
+
+                                 },
+                     "discoverId":  2047461999419351041,
+                     "username":  "api2_worker_074554",
+                     "avatar":  null,
+                     "locations":  [
+                                       {
+                                           "id":  2047462014883749891,
+                                           "parentId":  2047462014883749890,
+                                           "parentType":  "PET",
+                                           "userId":  2047461999419351041,
+                                           "province":  "Guangdong",
+                                           "city":  "Shenzhen",
+                                           "district":  "Nanshan",
+                                           "detailAddress":  "Pet Street 1",
+                                           "createTime":  "2026-04-23T23:45:59.000Z"
+                                       },
+                                       {
+                                           "id":  2047462015269625858,
+                                           "parentId":  2047462014883749890,
+                                           "parentType":  "PET",
+                                           "userId":  2047461999419351041,
+                                           "province":  "Guangdong",
+                                           "city":  "Shenzhen",
+                                           "district":  "Futian",
+                                           "detailAddress":  "Second shelter address",
+                                           "createTime":  "2026-04-23T23:45:59.000Z"
+                                       }
+                                   ]
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-03",
+        "method":  "GET",
+        "path":  "/pets?status=WAITING\u0026page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  86,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  2,
+                     "records":  [
+                                     {
+                                         "id":  2047458303176392706,
+                                         "name":  "API Pet 073107",
+                                         "age":  8,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "Domestic Short Hair",
+                                         "health":  "GOOD",
+                                         "description":  "Created by API group 02",
+                                         "tags":  [
+                                                      {
+                                                          "id":  2047458307160981506,
+                                                          "tag":  "friendly"
+                                                      },
+                                                      {
+                                                          "id":  2047458307160981507,
+                                                          "tag":  "dewormed"
+                                                      }
+                                                  ],
+                                         "cover":  null,
+                                         "vaccines":  null,
+                                         "deworms":  null,
+                                         "discoverId":  2047458283136008193,
+                                         "username":  "api2_worker_073107",
+                                         "avatar":  null,
+                                         "locations":  {
+                                                           "id":  2047458303235112962,
+                                                           "parentId":  2047458303176392706,
+                                                           "parentType":  "PET",
+                                                           "userId":  2047458283136008193,
+                                                           "province":  "Guangdong",
+                                                           "city":  "Shenzhen",
+                                                           "district":  "Nanshan",
+                                                           "detailAddress":  "Pet Street 1",
+                                                           "createTime":  "2026-04-23T23:31:14.000Z"
+                                                       }
+                                     },
+                                     {
+                                         "id":  2047459607277805570,
+                                         "name":  "API Pet Updated 073619",
+                                         "age":  10,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "health":  "RECOVERING",
+                                         "description":  "Updated by API group 02",
+                                         "tags":  [
+                                                      {
+                                                          "id":  2047459614408122370,
+                                                          "tag":  "friendly"
+                                                      },
+                                                      {
+                                                          "id":  2047459614408122371,
+                                                          "tag":  "dewormed"
+                                                      }
+                                                  ],
+                                         "cover":  null,
+                                         "vaccines":  null,
+                                         "deworms":  null,
+                                         "discoverId":  2047459589615591426,
+                                         "username":  "api2_worker_073619",
+                                         "avatar":  null,
+                                         "locations":  [
+                                                           {
+                                                               "id":  2047459607344914433,
+                                                               "parentId":  2047459607277805570,
+                                                               "parentType":  "PET",
+                                                               "userId":  2047459589615591426,
+                                                               "province":  "Guangdong",
+                                                               "city":  "Shenzhen",
+                                                               "district":  "Nanshan",
+                                                               "detailAddress":  "Pet Street 1",
+                                                               "createTime":  "2026-04-23T23:36:25.000Z"
+                                                           },
+                                                           {
+                                                               "id":  2047459608066334721,
+                                                               "parentId":  2047459607277805570,
+                                                               "parentType":  "PET",
+                                                               "userId":  2047459589615591426,
+                                                               "province":  "Guangdong",
+                                                               "city":  "Shenzhen",
+                                                               "district":  "Futian",
+                                                               "detailAddress":  "Second shelter address",
+                                                               "createTime":  "2026-04-23T23:36:25.000Z"
+                                                           }
+                                                       ]
+                                     },
+                                     {
+                                         "id":  2047460228038991873,
+                                         "name":  "API Pet Updated 073848",
+                                         "age":  10,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "health":  "RECOVERING",
+                                         "description":  "Updated by API group 02",
+                                         "tags":  [
+                                                      {
+                                                          "id":  2047460230970810369,
+                                                          "tag":  "friendly"
+                                                      },
+                                                      {
+                                                          "id":  2047460230970810370,
+                                                          "tag":  "dewormed"
+                                                      }
+                                                  ],
+                                         "cover":  null,
+                                         "vaccines":  null,
+                                         "deworms":  null,
+                                         "discoverId":  2047460212616536065,
+                                         "username":  "api2_worker_073848",
+                                         "avatar":  null,
+                                         "locations":  [
+                                                           {
+                                                               "id":  2047460228101906433,
+                                                               "parentId":  2047460228038991873,
+                                                               "parentType":  "PET",
+                                                               "userId":  2047460212616536065,
+                                                               "province":  "Guangdong",
+                                                               "city":  "Shenzhen",
+                                                               "district":  "Nanshan",
+                                                               "detailAddress":  "Pet Street 1",
+                                                               "createTime":  "2026-04-23T23:38:53.000Z"
+                                                           },
+                                                           {
+                                                               "id":  2047460228429062145,
+                                                               "parentId":  2047460228038991873,
+                                                               "parentType":  "PET",
+                                                               "userId":  2047460212616536065,
+                                                               "province":  "Guangdong",
+                                                               "city":  "Shenzhen",
+                                                               "district":  "Futian",
+                                                               "detailAddress":  "Second shelter address",
+                                                               "createTime":  "2026-04-23T23:38:53.000Z"
+                                                           }
+                                                       ]
+                                     },
+                                     {
+                                         "id":  2047460992048250881,
+                                         "name":  "API Pet Updated 074149",
+                                         "age":  10,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "health":  "RECOVERING",
+                                         "description":  "Updated by API group 02",
+                                         "tags":  [
+                                                      {
+                                                          "id":  2047460996624236545,
+                                                          "tag":  "friendly"
+                                                      },
+                                                      {
+                                                          "id":  2047460996624236546,
+                                                          "tag":  "dewormed"
+                                                      }
+                                                  ],
+                                         "cover":  null,
+                                         "vaccines":  null,
+                                         "deworms":  null,
+                                         "discoverId":  2047460973731725313,
+                                         "username":  "api2_worker_074149",
+                                         "avatar":  null,
+                                         "locations":  [
+                                                           {
+                                                               "id":  2047460992048250882,
+                                                               "parentId":  2047460992048250881,
+                                                               "parentType":  "PET",
+                                                               "userId":  2047460973731725313,
+                                                               "province":  "Guangdong",
+                                                               "city":  "Shenzhen",
+                                                               "district":  "Nanshan",
+                                                               "detailAddress":  "Pet Street 1",
+                                                               "createTime":  "2026-04-23T23:41:55.000Z"
+                                                           },
+                                                           {
+                                                               "id":  2047460992442515458,
+                                                               "parentId":  2047460992048250881,
+                                                               "parentType":  "PET",
+                                                               "userId":  2047460973731725313,
+                                                               "province":  "Guangdong",
+                                                               "city":  "Shenzhen",
+                                                               "district":  "Futian",
+                                                               "detailAddress":  "Second shelter address",
+                                                               "createTime":  "2026-04-23T23:41:55.000Z"
+                                                           }
+                                                       ]
+                                     },
+                                     {
+                                         "id":  2047461840069353473,
+                                         "name":  "API Pet Updated 074511",
+                                         "age":  10,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "health":  "RECOVERING",
+                                         "description":  "Updated by API group 02",
+                                         "tags":  [
+                                                      {
+                                                          "id":  2047461845865881601,
+                                                          "tag":  "friendly"
+                                                      },
+                                                      {
+                                                          "id":  2047461845865881602,
+                                                          "tag":  "dewormed"
+                                                      }
+                                                  ],
+                                         "cover":  null,
+                                         "vaccines":  null,
+                                         "deworms":  null,
+                                         "discoverId":  2047461819081056258,
+                                         "username":  "api2_worker_074511",
+                                         "avatar":  null,
+                                         "locations":  [
+                                                           {
+                                                               "id":  2047461840069353474,
+                                                               "parentId":  2047461840069353473,
+                                                               "parentType":  "PET",
+                                                               "userId":  2047461819081056258,
+                                                               "province":  "Guangdong",
+                                                               "city":  "Shenzhen",
+                                                               "district":  "Nanshan",
+                                                               "detailAddress":  "Pet Street 1",
+                                                               "createTime":  "2026-04-23T23:45:17.000Z"
+                                                           },
+                                                           {
+                                                               "id":  2047461840652361730,
+                                                               "parentId":  2047461840069353473,
+                                                               "parentType":  "PET",
+                                                               "userId":  2047461819081056258,
+                                                               "province":  "Guangdong",
+                                                               "city":  "Shenzhen",
+                                                               "district":  "Futian",
+                                                               "detailAddress":  "Second shelter address",
+                                                               "createTime":  "2026-04-23T23:45:17.000Z"
+                                                           }
+                                                       ]
+                                     },
+                                     {
+                                         "id":  2047462014883749890,
+                                         "name":  "API Pet 074554",
+                                         "age":  8,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "Domestic Short Hair",
+                                         "health":  "GOOD",
+                                         "description":  "Created by API group 02",
+                                         "tags":  null,
+                                         "cover":  null,
+                                         "vaccines":  null,
+                                         "deworms":  null,
+                                         "discoverId":  2047461999419351041,
+                                         "username":  "api2_worker_074554",
+                                         "avatar":  null,
+                                         "locations":  {
+                                                           "id":  2047462014883749891,
+                                                           "parentId":  2047462014883749890,
+                                                           "parentType":  "PET",
+                                                           "userId":  2047461999419351041,
+                                                           "province":  "Guangdong",
+                                                           "city":  "Shenzhen",
+                                                           "district":  "Nanshan",
+                                                           "detailAddress":  "Pet Street 1",
+                                                           "createTime":  "2026-04-23T23:45:59.000Z"
+                                                       }
+                                     }
+                                 ],
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  11
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-04",
+        "method":  "GET",
+        "path":  "/pets/2047462014883749890",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  77,
+        "data":  {
+                     "id":  2047462014883749890,
+                     "name":  "API Pet 074554",
+                     "age":  8,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "Domestic Short Hair",
+                     "health":  "GOOD",
+                     "description":  "Created by API group 02",
+                     "tags":  {
+
+                              },
+                     "cover":  null,
+                     "vaccines":  {
+
+                                  },
+                     "deworms":  {
+
+                                 },
+                     "discoverId":  2047461999419351041,
+                     "username":  "api2_worker_074554",
+                     "avatar":  null,
+                     "locations":  [
+                                       {
+                                           "id":  2047462014883749891,
+                                           "parentId":  2047462014883749890,
+                                           "parentType":  "PET",
+                                           "userId":  2047461999419351041,
+                                           "province":  "Guangdong",
+                                           "city":  "Shenzhen",
+                                           "district":  "Nanshan",
+                                           "detailAddress":  "Pet Street 1",
+                                           "createTime":  "2026-04-23T23:45:59.000Z"
+                                       },
+                                       {
+                                           "id":  2047462015269625858,
+                                           "parentId":  2047462014883749890,
+                                           "parentType":  "PET",
+                                           "userId":  2047461999419351041,
+                                           "province":  "Guangdong",
+                                           "city":  "Shenzhen",
+                                           "district":  "Futian",
+                                           "detailAddress":  "Second shelter address",
+                                           "createTime":  "2026-04-23T23:45:59.000Z"
+                                       }
+                                   ]
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-05",
+        "method":  "PUT",
+        "path":  "/pets/2047462014883749890",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  85,
+        "data":  {
+                     "id":  2047462014883749890,
+                     "name":  "API Pet Updated 074554",
+                     "age":  10,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "British Shorthair",
+                     "health":  "RECOVERING",
+                     "description":  "Updated by API group 02",
+                     "tags":  {
+
+                              },
+                     "cover":  null,
+                     "vaccines":  {
+
+                                  },
+                     "deworms":  {
+
+                                 },
+                     "discoverId":  2047461999419351041,
+                     "username":  "api2_worker_074554",
+                     "avatar":  null,
+                     "locations":  [
+                                       {
+                                           "id":  2047462014883749891,
+                                           "parentId":  2047462014883749890,
+                                           "parentType":  "PET",
+                                           "userId":  2047461999419351041,
+                                           "province":  "Guangdong",
+                                           "city":  "Shenzhen",
+                                           "district":  "Nanshan",
+                                           "detailAddress":  "Pet Street 1",
+                                           "createTime":  "2026-04-23T23:45:59.000Z"
+                                       },
+                                       {
+                                           "id":  2047462015269625858,
+                                           "parentId":  2047462014883749890,
+                                           "parentType":  "PET",
+                                           "userId":  2047461999419351041,
+                                           "province":  "Guangdong",
+                                           "city":  "Shenzhen",
+                                           "district":  "Futian",
+                                           "detailAddress":  "Second shelter address",
+                                           "createTime":  "2026-04-23T23:45:59.000Z"
+                                       }
+                                   ]
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-06",
+        "method":  "POST",
+        "path":  "/pets/2047462014883749890/media",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  96,
+        "data":  {
+                     "id":  2047462016825712641,
+                     "type":  "IMAGE",
+                     "assetUrl":  "/assets/pet/2047462014883749890/20260424074559_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "name":  "Pet cover",
+                     "description":  "Main cover",
+                     "isCover":  true,
+                     "createDate":  "2026-04-23T23:45:59.471Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-06-asset",
+        "method":  "GET",
+        "path":  "/assets/pet/2047462014883749890/20260424074559_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+        "status":  200,
+        "code":  null,
+        "expected":  "HTTP 200 pet asset",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  95,
+        "data":  "content length=7447",
+        "message":  ""
+    },
+    {
+        "id":  "PET-07",
+        "method":  "PUT",
+        "path":  "/pets/2047462014883749890/media/2047462016825712641",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  76,
+        "data":  {
+                     "id":  2047462016825712641,
+                     "type":  "IMAGE",
+                     "assetUrl":  "/assets/pet/2047462014883749890/20260424074559_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "name":  "Pet cover updated",
+                     "description":  "Updated description",
+                     "isCover":  true,
+                     "createDate":  "2026-04-23T23:45:59.000Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-09",
+        "method":  "POST",
+        "path":  "/pets/2047462014883749890/tags",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  75,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "PET-11",
+        "method":  "PUT",
+        "path":  "/pets/2047462014883749890/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  78,
+        "data":  {
+                     "id":  2047462018193055746,
+                     "from":  "WAITING",
+                     "to":  "SHELTERED",
+                     "createTime":  "2026-04-23T23:45:59.801Z",
+                     "description":  "Sheltered by worker",
+                     "petId":  2047462014883749890,
+                     "petName":  null,
+                     "cover":  "/assets/pet/2047462014883749890/20260424074559_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                     "userId":  2047461999419351041,
+                     "username":  "api2_worker_074554",
+                     "avatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-12",
+        "method":  "GET",
+        "path":  "/pets/2047462014883749890/status?page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  67,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047462018193055746,
+                                     "from":  "WAITING",
+                                     "to":  "SHELTERED",
+                                     "createTime":  "2026-04-23T23:45:59.000Z",
+                                     "description":  "Sheltered by worker",
+                                     "petId":  2047462014883749890,
+                                     "petName":  "API Pet Updated 074554",
+                                     "cover":  "/assets/pet/2047462014883749890/20260424074559_005d70677bbf3c352f7070c730f8686ad6d9314bb167a16b2f2b2588ad90fb13.jpg",
+                                     "userId":  2047461999419351041,
+                                     "username":  "api2_worker_074554",
+                                     "avatar":  null
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PET-08",
+        "method":  "DELETE",
+        "path":  "/pets/2047462014883749890/media/2047462016825712641",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  75,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "PET-13-unauthorized",
+        "method":  "DELETE",
+        "path":  "/pets/2047462014883749890",
+        "status":  403,
+        "code":  403,
+        "expected":  "HTTP 403 / code 403",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  75,
+        "data":  null,
+        "message":  "权限不足"
+    },
+    {
+        "id":  "PET-13",
+        "method":  "DELETE",
+        "path":  "/pets/2047462014883749890",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  107,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-01",
+        "method":  "PUT",
+        "path":  "/tasks",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  71,
+        "data":  "1482c98c-0cfc-4cd1-a630-2d950dc3d41f",
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-02",
+        "method":  "POST",
+        "path":  "/tasks/1482c98c-0cfc-4cd1-a630-2d950dc3d41f/uploads",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  99,
+        "data":  "20260424074600_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-03",
+        "method":  "DELETE",
+        "path":  "/tasks/1482c98c-0cfc-4cd1-a630-2d950dc3d41f/uploads/20260424074600_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  115,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-03-reupload",
+        "method":  "POST",
+        "path":  "/tasks/1482c98c-0cfc-4cd1-a630-2d950dc3d41f/uploads",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  98,
+        "data":  "20260424074601_0c526c6fef62bce303082cf2a0ffeaefe596e415cf460674841e24cf8d84f563.jpg",
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-04",
+        "method":  "POST",
+        "path":  "/tasks",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  75,
+        "data":  {
+                     "description":  "Need help for injured stray cat",
+                     "id":  2047462026472611842,
+                     "previousId":  null,
+                     "summary":  "Rescue 074554",
+                     "type":  "MEDICAL"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-05",
+        "method":  "GET",
+        "path":  "/tasks?page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  54,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  [
+                                     {
+                                         "description":  "Updated details for injured stray cat",
+                                         "id":  2047460234338836481,
+                                         "previousId":  null,
+                                         "summary":  "Rescue upd 073848",
+                                         "type":  "OTHER"
+                                     },
+                                     {
+                                         "description":  "Updated details for injured stray cat",
+                                         "id":  2047461000843706369,
+                                         "previousId":  null,
+                                         "summary":  "Rescue upd 074149",
+                                         "type":  "OTHER"
+                                     },
+                                     {
+                                         "description":  "Updated details for injured stray cat",
+                                         "id":  2047461849833693185,
+                                         "previousId":  null,
+                                         "summary":  "Rescue upd 074511",
+                                         "type":  "OTHER"
+                                     },
+                                     {
+                                         "description":  "Need help for injured stray cat",
+                                         "id":  2047462026472611842,
+                                         "previousId":  null,
+                                         "summary":  "Rescue 074554",
+                                         "type":  "MEDICAL"
+                                     }
+                                 ],
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  4
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-06-owner",
+        "method":  "GET",
+        "path":  "/tasks/2047462026472611842",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  52,
+        "data":  {
+                     "description":  "Need help for injured stray cat",
+                     "id":  2047462026472611842,
+                     "previousId":  null,
+                     "summary":  "Rescue 074554",
+                     "type":  "MEDICAL"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-06-other",
+        "method":  "GET",
+        "path":  "/tasks/2047462026472611842",
+        "status":  403,
+        "code":  403,
+        "expected":  "HTTP 403 / code 403",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  52,
+        "data":  null,
+        "message":  "权限不足"
+    },
+    {
+        "id":  "RESCUE-07",
+        "method":  "PUT",
+        "path":  "/tasks/2047462026472611842",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  98,
+        "data":  {
+                     "description":  "Updated details for injured stray cat",
+                     "id":  2047462026472611842,
+                     "previousId":  null,
+                     "summary":  "Rescue upd 074554",
+                     "type":  "OTHER"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-08",
+        "method":  "GET",
+        "path":  "/tasks/2047462026472611842/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  60,
+        "data":  {
+                     "records":  [
+                                     {
+                                         "id":  2047462026472611844,
+                                         "taskId":  2047462026472611842,
+                                         "action":  "CREATE",
+                                         "statusFrom":  "CREATED",
+                                         "statusTo":  "CREATED",
+                                         "reason":  "Rescue 074554",
+                                         "createTime":  "2026-04-23T23:46:01.000Z",
+                                         "userId":  2047462001621360642,
+                                         "username":  "api2_owner_074554",
+                                         "avatar":  null
+                                     },
+                                     {
+                                         "id":  2047462027579908097,
+                                         "taskId":  2047462026472611842,
+                                         "action":  "UPDATE",
+                                         "statusFrom":  "CREATED",
+                                         "statusTo":  "CREATED",
+                                         "reason":  "Rescue upd 074554",
+                                         "createTime":  "2026-04-23T23:46:02.000Z",
+                                         "userId":  2047462001621360642,
+                                         "username":  "api2_owner_074554",
+                                         "avatar":  null
+                                     }
+                                 ]
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-09-approved",
+        "method":  "PATCH",
+        "path":  "/tasks/2047462026472611842/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  76,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-09-invalid",
+        "method":  "PATCH",
+        "path":  "/tasks/2047462026472611842/status",
+        "status":  422,
+        "code":  422,
+        "expected":  "HTTP 422 / code 422",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  58,
+        "data":  null,
+        "message":  "无效状态"
+    },
+    {
+        "id":  "RESCUE-10",
+        "method":  "POST",
+        "path":  "/tasks/2047462026472611842/assign",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  69,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-09-processing",
+        "method":  "PATCH",
+        "path":  "/tasks/2047462026472611842/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  65,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-09-completed",
+        "method":  "PATCH",
+        "path":  "/tasks/2047462026472611842/status",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  65,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "RESCUE-12",
+        "method":  "DELETE",
+        "path":  "/tasks/2047462026472611842",
+        "status":  422,
+        "code":  422,
+        "expected":  "HTTP 422 / code 422",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  51,
+        "data":  null,
+        "message":  "无法删除已通过的任务"
+    },
+    {
+        "id":  "LOST-01",
+        "method":  "PUT",
+        "path":  "/lost/pets",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  51,
+        "data":  "46642f54-4339-45a2-ac93-656ab76deeb9",
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-02",
+        "method":  "PUT",
+        "path":  "/lost/pets/46642f54-4339-45a2-ac93-656ab76deeb9/media",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  63,
+        "data":  "20260424074602_0ddd22359d33d90a778e0019a99d352e01b20852c4d2a7c8b4c8c6fa94334d9e.webp",
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-03",
+        "method":  "DELETE",
+        "path":  "/lost/pets/46642f54-4339-45a2-ac93-656ab76deeb9/media/20260424074602_0ddd22359d33d90a778e0019a99d352e01b20852c4d2a7c8b4c8c6fa94334d9e.webp",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  63,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-03-reupload",
+        "method":  "PUT",
+        "path":  "/lost/pets/46642f54-4339-45a2-ac93-656ab76deeb9/media",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  88,
+        "data":  "20260424074603_0ddd22359d33d90a778e0019a99d352e01b20852c4d2a7c8b4c8c6fa94334d9e.webp",
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-04",
+        "method":  "POST",
+        "path":  "/lost/pets",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  135,
+        "data":  {
+                     "id":  2047462036014653441,
+                     "name":  "Lost Cat 074554",
+                     "age":  10,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "British Shorthair",
+                     "features":  "White paws",
+                     "lostTime":  "2026-04-23T21:46:03.997Z",
+                     "contactPhone":  "13810000002",
+                     "description":  "Lost near shelter",
+                     "status":  "SEARCHING",
+                     "createTime":  "2026-04-23T23:46:04.060Z",
+                     "updateTime":  "2026-04-23T23:46:04.060Z",
+                     "location":  {
+                                      "id":  2047462036014653442,
+                                      "parentId":  2047462036014653441,
+                                      "parentType":  "LOST_PET",
+                                      "userId":  2047462001621360642,
+                                      "province":  "Guangdong",
+                                      "city":  "Shenzhen",
+                                      "district":  "Nanshan",
+                                      "detailAddress":  "Pet Street 1",
+                                      "createTime":  "2026-04-23T23:46:04.063Z"
+                                  },
+                     "ownerId":  2047462001621360642,
+                     "ownerName":  "api2_owner_074554",
+                     "ownerAvatar":  null,
+                     "petId":  null,
+                     "petName":  null,
+                     "petCover":  null,
+                     "pets":  [
+                                  {
+                                      "id":  2047459607277805570,
+                                      "name":  "API Pet Updated 073619",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047459614408122370,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047459614408122371,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047459589615591426,
+                                      "username":  "api2_worker_073619",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047459607344914433,
+                                                            "parentId":  2047459607277805570,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047459589615591426,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:36:25.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047459608066334721,
+                                                            "parentId":  2047459607277805570,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047459589615591426,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:36:25.000Z"
+                                                        }
+                                                    ]
+                                  },
+                                  {
+                                      "id":  2047460228038991873,
+                                      "name":  "API Pet Updated 073848",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047460230970810369,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047460230970810370,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047460212616536065,
+                                      "username":  "api2_worker_073848",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047460228101906433,
+                                                            "parentId":  2047460228038991873,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047460212616536065,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:38:53.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047460228429062145,
+                                                            "parentId":  2047460228038991873,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047460212616536065,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:38:53.000Z"
+                                                        }
+                                                    ]
+                                  },
+                                  {
+                                      "id":  2047460992048250881,
+                                      "name":  "API Pet Updated 074149",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047460996624236545,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047460996624236546,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047460973731725313,
+                                      "username":  "api2_worker_074149",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047460992048250882,
+                                                            "parentId":  2047460992048250881,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047460973731725313,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:41:55.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047460992442515458,
+                                                            "parentId":  2047460992048250881,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047460973731725313,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:41:55.000Z"
+                                                        }
+                                                    ]
+                                  },
+                                  {
+                                      "id":  2047461840069353473,
+                                      "name":  "API Pet Updated 074511",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047461845865881601,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047461845865881602,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047461819081056258,
+                                      "username":  "api2_worker_074511",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047461840069353474,
+                                                            "parentId":  2047461840069353473,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047461819081056258,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:45:17.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047461840652361730,
+                                                            "parentId":  2047461840069353473,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047461819081056258,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:45:17.000Z"
+                                                        }
+                                                    ]
+                                  },
+                                  {
+                                      "id":  2047462014883749890,
+                                      "name":  "API Pet Updated 074554",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047462017865900033,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047462017865900034,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047461999419351041,
+                                      "username":  "api2_worker_074554",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047462014883749891,
+                                                            "parentId":  2047462014883749890,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047461999419351041,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:45:59.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047462015269625858,
+                                                            "parentId":  2047462014883749890,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047461999419351041,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:45:59.000Z"
+                                                        }
+                                                    ]
+                                  }
+                              ]
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-05",
+        "method":  "PUT",
+        "path":  "/lost/pets/2047462036014653441",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  139,
+        "data":  {
+                     "id":  2047462036014653441,
+                     "name":  "Lost Cat Updated 074554",
+                     "age":  11,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "British Shorthair",
+                     "features":  "White paws and bell",
+                     "lostTime":  "2026-04-23T22:46:04.135Z",
+                     "contactPhone":  "13810000099",
+                     "description":  "Updated lost description",
+                     "status":  "SEARCHING",
+                     "createTime":  "2026-04-23T23:46:04.000Z",
+                     "updateTime":  "2026-04-23T23:46:04.203Z",
+                     "location":  {
+                                      "id":  2047462036014653442,
+                                      "parentId":  2047462036014653441,
+                                      "parentType":  "LOST_PET",
+                                      "userId":  2047462001621360642,
+                                      "province":  "Guangdong",
+                                      "city":  "Shenzhen",
+                                      "district":  "Nanshan",
+                                      "detailAddress":  "Pet Street 1",
+                                      "createTime":  "2026-04-23T23:46:04.207Z"
+                                  },
+                     "ownerId":  2047462001621360642,
+                     "ownerName":  "api2_owner_074554",
+                     "ownerAvatar":  null,
+                     "petId":  null,
+                     "petName":  null,
+                     "petCover":  null,
+                     "pets":  [
+                                  {
+                                      "id":  2047459607277805570,
+                                      "name":  "API Pet Updated 073619",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047459614408122370,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047459614408122371,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047459589615591426,
+                                      "username":  "api2_worker_073619",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047459607344914433,
+                                                            "parentId":  2047459607277805570,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047459589615591426,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:36:25.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047459608066334721,
+                                                            "parentId":  2047459607277805570,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047459589615591426,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:36:25.000Z"
+                                                        }
+                                                    ]
+                                  },
+                                  {
+                                      "id":  2047460228038991873,
+                                      "name":  "API Pet Updated 073848",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047460230970810369,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047460230970810370,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047460212616536065,
+                                      "username":  "api2_worker_073848",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047460228101906433,
+                                                            "parentId":  2047460228038991873,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047460212616536065,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:38:53.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047460228429062145,
+                                                            "parentId":  2047460228038991873,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047460212616536065,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:38:53.000Z"
+                                                        }
+                                                    ]
+                                  },
+                                  {
+                                      "id":  2047460992048250881,
+                                      "name":  "API Pet Updated 074149",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047460996624236545,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047460996624236546,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047460973731725313,
+                                      "username":  "api2_worker_074149",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047460992048250882,
+                                                            "parentId":  2047460992048250881,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047460973731725313,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:41:55.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047460992442515458,
+                                                            "parentId":  2047460992048250881,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047460973731725313,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:41:55.000Z"
+                                                        }
+                                                    ]
+                                  },
+                                  {
+                                      "id":  2047461840069353473,
+                                      "name":  "API Pet Updated 074511",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047461845865881601,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047461845865881602,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047461819081056258,
+                                      "username":  "api2_worker_074511",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047461840069353474,
+                                                            "parentId":  2047461840069353473,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047461819081056258,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:45:17.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047461840652361730,
+                                                            "parentId":  2047461840069353473,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047461819081056258,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:45:17.000Z"
+                                                        }
+                                                    ]
+                                  },
+                                  {
+                                      "id":  2047462014883749890,
+                                      "name":  "API Pet Updated 074554",
+                                      "age":  10,
+                                      "sex":  "FEMALE",
+                                      "type":  "CAT",
+                                      "breed":  "British Shorthair",
+                                      "health":  "RECOVERING",
+                                      "description":  "Updated by API group 02",
+                                      "tags":  [
+                                                   {
+                                                       "id":  2047462017865900033,
+                                                       "tag":  "friendly"
+                                                   },
+                                                   {
+                                                       "id":  2047462017865900034,
+                                                       "tag":  "dewormed"
+                                                   }
+                                               ],
+                                      "cover":  null,
+                                      "vaccines":  {
+
+                                                   },
+                                      "deworms":  {
+
+                                                  },
+                                      "discoverId":  2047461999419351041,
+                                      "username":  "api2_worker_074554",
+                                      "avatar":  null,
+                                      "locations":  [
+                                                        {
+                                                            "id":  2047462014883749891,
+                                                            "parentId":  2047462014883749890,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047461999419351041,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Nanshan",
+                                                            "detailAddress":  "Pet Street 1",
+                                                            "createTime":  "2026-04-23T23:45:59.000Z"
+                                                        },
+                                                        {
+                                                            "id":  2047462015269625858,
+                                                            "parentId":  2047462014883749890,
+                                                            "parentType":  "PET",
+                                                            "userId":  2047461999419351041,
+                                                            "province":  "Guangdong",
+                                                            "city":  "Shenzhen",
+                                                            "district":  "Futian",
+                                                            "detailAddress":  "Second shelter address",
+                                                            "createTime":  "2026-04-23T23:45:59.000Z"
+                                                        }
+                                                    ]
+                                  }
+                              ]
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-06",
+        "method":  "GET",
+        "path":  "/lost/pets/2047462036014653441/similar",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  170,
+        "data":  [
+                     {
+                         "id":  2047459607277805570,
+                         "name":  "API Pet Updated 073619",
+                         "age":  10,
+                         "sex":  "FEMALE",
+                         "type":  "CAT",
+                         "breed":  "British Shorthair",
+                         "health":  "RECOVERING",
+                         "description":  "Updated by API group 02",
+                         "tags":  [
+                                      {
+                                          "id":  2047459614408122370,
+                                          "tag":  "friendly"
+                                      },
+                                      {
+                                          "id":  2047459614408122371,
+                                          "tag":  "dewormed"
+                                      }
+                                  ],
+                         "cover":  null,
+                         "vaccines":  {
+
+                                      },
+                         "deworms":  {
+
+                                     },
+                         "discoverId":  2047459589615591426,
+                         "username":  "api2_worker_073619",
+                         "avatar":  null,
+                         "locations":  [
+                                           {
+                                               "id":  2047459607344914433,
+                                               "parentId":  2047459607277805570,
+                                               "parentType":  "PET",
+                                               "userId":  2047459589615591426,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Nanshan",
+                                               "detailAddress":  "Pet Street 1",
+                                               "createTime":  "2026-04-23T23:36:25.000Z"
+                                           },
+                                           {
+                                               "id":  2047459608066334721,
+                                               "parentId":  2047459607277805570,
+                                               "parentType":  "PET",
+                                               "userId":  2047459589615591426,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Futian",
+                                               "detailAddress":  "Second shelter address",
+                                               "createTime":  "2026-04-23T23:36:25.000Z"
+                                           }
+                                       ]
+                     },
+                     {
+                         "id":  2047460228038991873,
+                         "name":  "API Pet Updated 073848",
+                         "age":  10,
+                         "sex":  "FEMALE",
+                         "type":  "CAT",
+                         "breed":  "British Shorthair",
+                         "health":  "RECOVERING",
+                         "description":  "Updated by API group 02",
+                         "tags":  [
+                                      {
+                                          "id":  2047460230970810369,
+                                          "tag":  "friendly"
+                                      },
+                                      {
+                                          "id":  2047460230970810370,
+                                          "tag":  "dewormed"
+                                      }
+                                  ],
+                         "cover":  null,
+                         "vaccines":  {
+
+                                      },
+                         "deworms":  {
+
+                                     },
+                         "discoverId":  2047460212616536065,
+                         "username":  "api2_worker_073848",
+                         "avatar":  null,
+                         "locations":  [
+                                           {
+                                               "id":  2047460228101906433,
+                                               "parentId":  2047460228038991873,
+                                               "parentType":  "PET",
+                                               "userId":  2047460212616536065,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Nanshan",
+                                               "detailAddress":  "Pet Street 1",
+                                               "createTime":  "2026-04-23T23:38:53.000Z"
+                                           },
+                                           {
+                                               "id":  2047460228429062145,
+                                               "parentId":  2047460228038991873,
+                                               "parentType":  "PET",
+                                               "userId":  2047460212616536065,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Futian",
+                                               "detailAddress":  "Second shelter address",
+                                               "createTime":  "2026-04-23T23:38:53.000Z"
+                                           }
+                                       ]
+                     },
+                     {
+                         "id":  2047460992048250881,
+                         "name":  "API Pet Updated 074149",
+                         "age":  10,
+                         "sex":  "FEMALE",
+                         "type":  "CAT",
+                         "breed":  "British Shorthair",
+                         "health":  "RECOVERING",
+                         "description":  "Updated by API group 02",
+                         "tags":  [
+                                      {
+                                          "id":  2047460996624236545,
+                                          "tag":  "friendly"
+                                      },
+                                      {
+                                          "id":  2047460996624236546,
+                                          "tag":  "dewormed"
+                                      }
+                                  ],
+                         "cover":  null,
+                         "vaccines":  {
+
+                                      },
+                         "deworms":  {
+
+                                     },
+                         "discoverId":  2047460973731725313,
+                         "username":  "api2_worker_074149",
+                         "avatar":  null,
+                         "locations":  [
+                                           {
+                                               "id":  2047460992048250882,
+                                               "parentId":  2047460992048250881,
+                                               "parentType":  "PET",
+                                               "userId":  2047460973731725313,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Nanshan",
+                                               "detailAddress":  "Pet Street 1",
+                                               "createTime":  "2026-04-23T23:41:55.000Z"
+                                           },
+                                           {
+                                               "id":  2047460992442515458,
+                                               "parentId":  2047460992048250881,
+                                               "parentType":  "PET",
+                                               "userId":  2047460973731725313,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Futian",
+                                               "detailAddress":  "Second shelter address",
+                                               "createTime":  "2026-04-23T23:41:55.000Z"
+                                           }
+                                       ]
+                     },
+                     {
+                         "id":  2047461840069353473,
+                         "name":  "API Pet Updated 074511",
+                         "age":  10,
+                         "sex":  "FEMALE",
+                         "type":  "CAT",
+                         "breed":  "British Shorthair",
+                         "health":  "RECOVERING",
+                         "description":  "Updated by API group 02",
+                         "tags":  [
+                                      {
+                                          "id":  2047461845865881601,
+                                          "tag":  "friendly"
+                                      },
+                                      {
+                                          "id":  2047461845865881602,
+                                          "tag":  "dewormed"
+                                      }
+                                  ],
+                         "cover":  null,
+                         "vaccines":  {
+
+                                      },
+                         "deworms":  {
+
+                                     },
+                         "discoverId":  2047461819081056258,
+                         "username":  "api2_worker_074511",
+                         "avatar":  null,
+                         "locations":  [
+                                           {
+                                               "id":  2047461840069353474,
+                                               "parentId":  2047461840069353473,
+                                               "parentType":  "PET",
+                                               "userId":  2047461819081056258,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Nanshan",
+                                               "detailAddress":  "Pet Street 1",
+                                               "createTime":  "2026-04-23T23:45:17.000Z"
+                                           },
+                                           {
+                                               "id":  2047461840652361730,
+                                               "parentId":  2047461840069353473,
+                                               "parentType":  "PET",
+                                               "userId":  2047461819081056258,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Futian",
+                                               "detailAddress":  "Second shelter address",
+                                               "createTime":  "2026-04-23T23:45:17.000Z"
+                                           }
+                                       ]
+                     },
+                     {
+                         "id":  2047462014883749890,
+                         "name":  "API Pet Updated 074554",
+                         "age":  10,
+                         "sex":  "FEMALE",
+                         "type":  "CAT",
+                         "breed":  "British Shorthair",
+                         "health":  "RECOVERING",
+                         "description":  "Updated by API group 02",
+                         "tags":  [
+                                      {
+                                          "id":  2047462017865900033,
+                                          "tag":  "friendly"
+                                      },
+                                      {
+                                          "id":  2047462017865900034,
+                                          "tag":  "dewormed"
+                                      }
+                                  ],
+                         "cover":  null,
+                         "vaccines":  {
+
+                                      },
+                         "deworms":  {
+
+                                     },
+                         "discoverId":  2047461999419351041,
+                         "username":  "api2_worker_074554",
+                         "avatar":  null,
+                         "locations":  [
+                                           {
+                                               "id":  2047462014883749891,
+                                               "parentId":  2047462014883749890,
+                                               "parentType":  "PET",
+                                               "userId":  2047461999419351041,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Nanshan",
+                                               "detailAddress":  "Pet Street 1",
+                                               "createTime":  "2026-04-23T23:45:59.000Z"
+                                           },
+                                           {
+                                               "id":  2047462015269625858,
+                                               "parentId":  2047462014883749890,
+                                               "parentType":  "PET",
+                                               "userId":  2047461999419351041,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Futian",
+                                               "detailAddress":  "Second shelter address",
+                                               "createTime":  "2026-04-23T23:45:59.000Z"
+                                           }
+                                       ]
+                     }
+                 ],
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-07",
+        "method":  "POST",
+        "path":  "/lost/pets/2047462036014653441/mismatch/2047462014883749890",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  116,
+        "data":  [
+                     {
+                         "id":  2047459607277805570,
+                         "name":  "API Pet Updated 073619",
+                         "age":  10,
+                         "sex":  "FEMALE",
+                         "type":  "CAT",
+                         "breed":  "British Shorthair",
+                         "health":  "RECOVERING",
+                         "description":  "Updated by API group 02",
+                         "tags":  [
+                                      {
+                                          "id":  2047459614408122370,
+                                          "tag":  "friendly"
+                                      },
+                                      {
+                                          "id":  2047459614408122371,
+                                          "tag":  "dewormed"
+                                      }
+                                  ],
+                         "cover":  null,
+                         "vaccines":  {
+
+                                      },
+                         "deworms":  {
+
+                                     },
+                         "discoverId":  2047459589615591426,
+                         "username":  "api2_worker_073619",
+                         "avatar":  null,
+                         "locations":  [
+                                           {
+                                               "id":  2047459607344914433,
+                                               "parentId":  2047459607277805570,
+                                               "parentType":  "PET",
+                                               "userId":  2047459589615591426,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Nanshan",
+                                               "detailAddress":  "Pet Street 1",
+                                               "createTime":  "2026-04-23T23:36:25.000Z"
+                                           },
+                                           {
+                                               "id":  2047459608066334721,
+                                               "parentId":  2047459607277805570,
+                                               "parentType":  "PET",
+                                               "userId":  2047459589615591426,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Futian",
+                                               "detailAddress":  "Second shelter address",
+                                               "createTime":  "2026-04-23T23:36:25.000Z"
+                                           }
+                                       ]
+                     },
+                     {
+                         "id":  2047460228038991873,
+                         "name":  "API Pet Updated 073848",
+                         "age":  10,
+                         "sex":  "FEMALE",
+                         "type":  "CAT",
+                         "breed":  "British Shorthair",
+                         "health":  "RECOVERING",
+                         "description":  "Updated by API group 02",
+                         "tags":  [
+                                      {
+                                          "id":  2047460230970810369,
+                                          "tag":  "friendly"
+                                      },
+                                      {
+                                          "id":  2047460230970810370,
+                                          "tag":  "dewormed"
+                                      }
+                                  ],
+                         "cover":  null,
+                         "vaccines":  {
+
+                                      },
+                         "deworms":  {
+
+                                     },
+                         "discoverId":  2047460212616536065,
+                         "username":  "api2_worker_073848",
+                         "avatar":  null,
+                         "locations":  [
+                                           {
+                                               "id":  2047460228101906433,
+                                               "parentId":  2047460228038991873,
+                                               "parentType":  "PET",
+                                               "userId":  2047460212616536065,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Nanshan",
+                                               "detailAddress":  "Pet Street 1",
+                                               "createTime":  "2026-04-23T23:38:53.000Z"
+                                           },
+                                           {
+                                               "id":  2047460228429062145,
+                                               "parentId":  2047460228038991873,
+                                               "parentType":  "PET",
+                                               "userId":  2047460212616536065,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Futian",
+                                               "detailAddress":  "Second shelter address",
+                                               "createTime":  "2026-04-23T23:38:53.000Z"
+                                           }
+                                       ]
+                     },
+                     {
+                         "id":  2047460992048250881,
+                         "name":  "API Pet Updated 074149",
+                         "age":  10,
+                         "sex":  "FEMALE",
+                         "type":  "CAT",
+                         "breed":  "British Shorthair",
+                         "health":  "RECOVERING",
+                         "description":  "Updated by API group 02",
+                         "tags":  [
+                                      {
+                                          "id":  2047460996624236545,
+                                          "tag":  "friendly"
+                                      },
+                                      {
+                                          "id":  2047460996624236546,
+                                          "tag":  "dewormed"
+                                      }
+                                  ],
+                         "cover":  null,
+                         "vaccines":  {
+
+                                      },
+                         "deworms":  {
+
+                                     },
+                         "discoverId":  2047460973731725313,
+                         "username":  "api2_worker_074149",
+                         "avatar":  null,
+                         "locations":  [
+                                           {
+                                               "id":  2047460992048250882,
+                                               "parentId":  2047460992048250881,
+                                               "parentType":  "PET",
+                                               "userId":  2047460973731725313,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Nanshan",
+                                               "detailAddress":  "Pet Street 1",
+                                               "createTime":  "2026-04-23T23:41:55.000Z"
+                                           },
+                                           {
+                                               "id":  2047460992442515458,
+                                               "parentId":  2047460992048250881,
+                                               "parentType":  "PET",
+                                               "userId":  2047460973731725313,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Futian",
+                                               "detailAddress":  "Second shelter address",
+                                               "createTime":  "2026-04-23T23:41:55.000Z"
+                                           }
+                                       ]
+                     },
+                     {
+                         "id":  2047461840069353473,
+                         "name":  "API Pet Updated 074511",
+                         "age":  10,
+                         "sex":  "FEMALE",
+                         "type":  "CAT",
+                         "breed":  "British Shorthair",
+                         "health":  "RECOVERING",
+                         "description":  "Updated by API group 02",
+                         "tags":  [
+                                      {
+                                          "id":  2047461845865881601,
+                                          "tag":  "friendly"
+                                      },
+                                      {
+                                          "id":  2047461845865881602,
+                                          "tag":  "dewormed"
+                                      }
+                                  ],
+                         "cover":  null,
+                         "vaccines":  {
+
+                                      },
+                         "deworms":  {
+
+                                     },
+                         "discoverId":  2047461819081056258,
+                         "username":  "api2_worker_074511",
+                         "avatar":  null,
+                         "locations":  [
+                                           {
+                                               "id":  2047461840069353474,
+                                               "parentId":  2047461840069353473,
+                                               "parentType":  "PET",
+                                               "userId":  2047461819081056258,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Nanshan",
+                                               "detailAddress":  "Pet Street 1",
+                                               "createTime":  "2026-04-23T23:45:17.000Z"
+                                           },
+                                           {
+                                               "id":  2047461840652361730,
+                                               "parentId":  2047461840069353473,
+                                               "parentType":  "PET",
+                                               "userId":  2047461819081056258,
+                                               "province":  "Guangdong",
+                                               "city":  "Shenzhen",
+                                               "district":  "Futian",
+                                               "detailAddress":  "Second shelter address",
+                                               "createTime":  "2026-04-23T23:45:17.000Z"
+                                           }
+                                       ]
+                     }
+                 ],
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-08",
+        "method":  "GET",
+        "path":  "/lost/pets/2047462036014653441",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  66,
+        "data":  {
+                     "id":  2047462036014653441,
+                     "name":  "Lost Cat Updated 074554",
+                     "age":  11,
+                     "sex":  "FEMALE",
+                     "type":  "CAT",
+                     "breed":  "British Shorthair",
+                     "features":  "White paws and bell",
+                     "lostTime":  "2026-04-23T22:46:04.000Z",
+                     "contactPhone":  "13810000099",
+                     "description":  "Updated lost description",
+                     "status":  "SEARCHING",
+                     "createTime":  "2026-04-23T23:46:04.000Z",
+                     "updateTime":  "2026-04-23T23:46:04.000Z",
+                     "location":  {
+                                      "id":  2047462036014653442,
+                                      "parentId":  2047462036014653441,
+                                      "parentType":  "LOST_PET",
+                                      "userId":  2047462001621360642,
+                                      "province":  "Guangdong",
+                                      "city":  "Shenzhen",
+                                      "district":  "Nanshan",
+                                      "detailAddress":  "Pet Street 1",
+                                      "createTime":  "2026-04-23T23:46:04.000Z"
+                                  },
+                     "ownerId":  2047462001621360642,
+                     "ownerName":  "api2_owner_074554",
+                     "ownerAvatar":  null,
+                     "petId":  null,
+                     "petName":  null,
+                     "petCover":  null,
+                     "pets":  {
+
+                              }
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-09",
+        "method":  "GET",
+        "path":  "/lost/pets?page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  72,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  [
+                                     {
+                                         "id":  2047458321216094210,
+                                         "name":  "Lost Cat Updated 073107",
+                                         "age":  11,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "features":  "White paws and bell",
+                                         "lostTime":  "2026-04-23T22:31:18.000Z",
+                                         "contactPhone":  "13810000099",
+                                         "description":  "Updated lost description",
+                                         "status":  "SEARCHING",
+                                         "createTime":  "2026-04-23T23:31:18.000Z",
+                                         "updateTime":  "2026-04-23T23:31:18.000Z",
+                                         "location":  {
+                                                          "id":  2047458321279008770,
+                                                          "parentId":  2047458321216094210,
+                                                          "parentType":  "LOST_PET",
+                                                          "userId":  2047458287028322305,
+                                                          "province":  "Guangdong",
+                                                          "city":  "Shenzhen",
+                                                          "district":  "Nanshan",
+                                                          "detailAddress":  "Pet Street 1",
+                                                          "createTime":  "2026-04-23T23:31:18.000Z"
+                                                      },
+                                         "ownerId":  2047458287028322305,
+                                         "ownerName":  "api2_owner_073107",
+                                         "ownerAvatar":  null,
+                                         "petId":  null,
+                                         "petName":  null,
+                                         "petCover":  null,
+                                         "pets":  {
+
+                                                  }
+                                     },
+                                     {
+                                         "id":  2047459630497472514,
+                                         "name":  "Lost Cat Updated 073619",
+                                         "age":  11,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "features":  "White paws and bell",
+                                         "lostTime":  "2026-04-23T22:36:30.000Z",
+                                         "contactPhone":  "13810000099",
+                                         "description":  "Updated lost description",
+                                         "status":  "CLAIMED",
+                                         "createTime":  "2026-04-23T23:36:30.000Z",
+                                         "updateTime":  "2026-04-23T23:36:31.000Z",
+                                         "location":  {
+                                                          "id":  2047459630497472515,
+                                                          "parentId":  2047459630497472514,
+                                                          "parentType":  "LOST_PET",
+                                                          "userId":  2047459593059115010,
+                                                          "province":  "Guangdong",
+                                                          "city":  "Shenzhen",
+                                                          "district":  "Nanshan",
+                                                          "detailAddress":  "Pet Street 1",
+                                                          "createTime":  "2026-04-23T23:36:30.000Z"
+                                                      },
+                                         "ownerId":  2047459593059115010,
+                                         "ownerName":  "api2_owner_073619",
+                                         "ownerAvatar":  null,
+                                         "petId":  2047459607277805570,
+                                         "petName":  "API Pet Updated 073619",
+                                         "petCover":  null,
+                                         "pets":  {
+
+                                                  }
+                                     },
+                                     {
+                                         "id":  2047460239216812033,
+                                         "name":  "Lost Cat Updated 073848",
+                                         "age":  11,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "features":  "White paws and bell",
+                                         "lostTime":  "2026-04-23T22:38:55.000Z",
+                                         "contactPhone":  "13810000099",
+                                         "description":  "Updated lost description",
+                                         "status":  "CLAIMED",
+                                         "createTime":  "2026-04-23T23:38:55.000Z",
+                                         "updateTime":  "2026-04-23T23:38:56.000Z",
+                                         "location":  {
+                                                          "id":  2047460239283920898,
+                                                          "parentId":  2047460239216812033,
+                                                          "parentType":  "LOST_PET",
+                                                          "userId":  2047460214873071617,
+                                                          "province":  "Guangdong",
+                                                          "city":  "Shenzhen",
+                                                          "district":  "Nanshan",
+                                                          "detailAddress":  "Pet Street 1",
+                                                          "createTime":  "2026-04-23T23:38:55.000Z"
+                                                      },
+                                         "ownerId":  2047460214873071617,
+                                         "ownerName":  "api2_owner_073848",
+                                         "ownerAvatar":  null,
+                                         "petId":  2047460228038991873,
+                                         "petName":  "API Pet Updated 073848",
+                                         "petCover":  null,
+                                         "pets":  {
+
+                                                  }
+                                     },
+                                     {
+                                         "id":  2047461008385064961,
+                                         "name":  "Lost Cat Updated 074149",
+                                         "age":  11,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "features":  "White paws and bell",
+                                         "lostTime":  "2026-04-23T22:41:59.000Z",
+                                         "contactPhone":  "13810000099",
+                                         "description":  "Updated lost description",
+                                         "status":  "CLAIMED",
+                                         "createTime":  "2026-04-23T23:41:59.000Z",
+                                         "updateTime":  "2026-04-23T23:42:00.000Z",
+                                         "location":  {
+                                                          "id":  2047461008385064962,
+                                                          "parentId":  2047461008385064961,
+                                                          "parentType":  "LOST_PET",
+                                                          "userId":  2047460977254940673,
+                                                          "province":  "Guangdong",
+                                                          "city":  "Shenzhen",
+                                                          "district":  "Nanshan",
+                                                          "detailAddress":  "Pet Street 1",
+                                                          "createTime":  "2026-04-23T23:41:59.000Z"
+                                                      },
+                                         "ownerId":  2047460977254940673,
+                                         "ownerName":  "api2_owner_074149",
+                                         "ownerAvatar":  null,
+                                         "petId":  2047460992048250881,
+                                         "petName":  "API Pet Updated 074149",
+                                         "petCover":  null,
+                                         "pets":  {
+
+                                                  }
+                                     },
+                                     {
+                                         "id":  2047461860344619010,
+                                         "name":  "Lost Cat Updated 074511",
+                                         "age":  11,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "features":  "White paws and bell",
+                                         "lostTime":  "2026-04-23T22:45:22.000Z",
+                                         "contactPhone":  "13810000099",
+                                         "description":  "Updated lost description",
+                                         "status":  "CLAIMED",
+                                         "createTime":  "2026-04-23T23:45:22.000Z",
+                                         "updateTime":  "2026-04-23T23:45:23.000Z",
+                                         "location":  {
+                                                          "id":  2047461860344619011,
+                                                          "parentId":  2047461860344619010,
+                                                          "parentType":  "LOST_PET",
+                                                          "userId":  2047461822876901377,
+                                                          "province":  "Guangdong",
+                                                          "city":  "Shenzhen",
+                                                          "district":  "Nanshan",
+                                                          "detailAddress":  "Pet Street 1",
+                                                          "createTime":  "2026-04-23T23:45:22.000Z"
+                                                      },
+                                         "ownerId":  2047461822876901377,
+                                         "ownerName":  "api2_owner_074511",
+                                         "ownerAvatar":  null,
+                                         "petId":  2047461840069353473,
+                                         "petName":  "API Pet Updated 074511",
+                                         "petCover":  null,
+                                         "pets":  {
+
+                                                  }
+                                     },
+                                     {
+                                         "id":  2047462036014653441,
+                                         "name":  "Lost Cat Updated 074554",
+                                         "age":  11,
+                                         "sex":  "FEMALE",
+                                         "type":  "CAT",
+                                         "breed":  "British Shorthair",
+                                         "features":  "White paws and bell",
+                                         "lostTime":  "2026-04-23T22:46:04.000Z",
+                                         "contactPhone":  "13810000099",
+                                         "description":  "Updated lost description",
+                                         "status":  "SEARCHING",
+                                         "createTime":  "2026-04-23T23:46:04.000Z",
+                                         "updateTime":  "2026-04-23T23:46:04.000Z",
+                                         "location":  {
+                                                          "id":  2047462036014653442,
+                                                          "parentId":  2047462036014653441,
+                                                          "parentType":  "LOST_PET",
+                                                          "userId":  2047462001621360642,
+                                                          "province":  "Guangdong",
+                                                          "city":  "Shenzhen",
+                                                          "district":  "Nanshan",
+                                                          "detailAddress":  "Pet Street 1",
+                                                          "createTime":  "2026-04-23T23:46:04.000Z"
+                                                      },
+                                         "ownerId":  2047462001621360642,
+                                         "ownerName":  "api2_owner_074554",
+                                         "ownerAvatar":  null,
+                                         "petId":  null,
+                                         "petName":  null,
+                                         "petCover":  null,
+                                         "pets":  {
+
+                                                  }
+                                     }
+                                 ],
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  6
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-10",
+        "method":  "POST",
+        "path":  "/lost/claim",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  82,
+        "data":  {
+                     "id":  2047462039009386498,
+                     "status":  "PENDING",
+                     "reason":  "This matches my observation",
+                     "rejectReason":  null,
+                     "reviewTime":  null,
+                     "claimTime":  null,
+                     "createTime":  "2026-04-23T23:46:04.762Z",
+                     "updateTime":  "2026-04-23T23:46:04.762Z",
+                     "lostPetId":  2047462036014653441,
+                     "petId":  null,
+                     "lostPetName":  "Lost Cat Updated 074554",
+                     "lostPetType":  "CAT",
+                     "lostPetBreed":  "British Shorthair",
+                     "applicantId":  2047462003559129089,
+                     "applicantName":  "api2_other_074554",
+                     "applicantPhone":  "13810000003",
+                     "applicantAvatar":  null,
+                     "reviewerId":  null,
+                     "reviewerName":  null,
+                     "reviewerAvatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-11",
+        "method":  "GET",
+        "path":  "/lost/claim/2047462039009386498",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  67,
+        "data":  {
+                     "id":  2047462039009386498,
+                     "status":  "PENDING",
+                     "reason":  "This matches my observation",
+                     "rejectReason":  null,
+                     "reviewTime":  null,
+                     "claimTime":  null,
+                     "createTime":  "2026-04-23T23:46:04.000Z",
+                     "updateTime":  "2026-04-23T23:46:04.000Z",
+                     "lostPetId":  2047462036014653441,
+                     "petId":  null,
+                     "lostPetName":  "Lost Cat Updated 074554",
+                     "lostPetType":  "CAT",
+                     "lostPetBreed":  "British Shorthair",
+                     "applicantId":  2047462003559129089,
+                     "applicantName":  "api2_other_074554",
+                     "applicantPhone":  "13810000003",
+                     "applicantAvatar":  null,
+                     "reviewerId":  null,
+                     "reviewerName":  null,
+                     "reviewerAvatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-12",
+        "method":  "GET",
+        "path":  "/lost/claim?page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  68,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  [
+                                     {
+                                         "id":  2047459632519127041,
+                                         "status":  "PASS",
+                                         "reason":  "This matches my observation",
+                                         "rejectReason":  "Verified by worker",
+                                         "reviewTime":  "2026-04-23T23:36:31.000Z",
+                                         "claimTime":  "2026-04-23T23:36:31.000Z",
+                                         "createTime":  "2026-04-23T23:36:31.000Z",
+                                         "updateTime":  "2026-04-23T23:36:31.000Z",
+                                         "lostPetId":  2047459630497472514,
+                                         "petId":  null,
+                                         "lostPetName":  "Lost Cat Updated 073619",
+                                         "lostPetType":  "CAT",
+                                         "lostPetBreed":  "British Shorthair",
+                                         "applicantId":  2047459594929774594,
+                                         "applicantName":  "api2_other_073619",
+                                         "applicantPhone":  "13810000003",
+                                         "applicantAvatar":  null,
+                                         "reviewerId":  null,
+                                         "reviewerName":  null,
+                                         "reviewerAvatar":  null
+                                     },
+                                     {
+                                         "id":  2047460241557233665,
+                                         "status":  "PASS",
+                                         "reason":  "This matches my observation",
+                                         "rejectReason":  "Verified by worker",
+                                         "reviewTime":  "2026-04-23T23:38:56.000Z",
+                                         "claimTime":  "2026-04-23T23:38:56.000Z",
+                                         "createTime":  "2026-04-23T23:38:56.000Z",
+                                         "updateTime":  "2026-04-23T23:38:56.000Z",
+                                         "lostPetId":  2047460239216812033,
+                                         "petId":  null,
+                                         "lostPetName":  "Lost Cat Updated 073848",
+                                         "lostPetType":  "CAT",
+                                         "lostPetBreed":  "British Shorthair",
+                                         "applicantId":  2047460216747925505,
+                                         "applicantName":  "api2_other_073848",
+                                         "applicantPhone":  "13810000003",
+                                         "applicantAvatar":  null,
+                                         "reviewerId":  null,
+                                         "reviewerName":  null,
+                                         "reviewerAvatar":  null
+                                     },
+                                     {
+                                         "id":  2047461011258163201,
+                                         "status":  "PASS",
+                                         "reason":  "This matches my observation",
+                                         "rejectReason":  "Verified by worker",
+                                         "reviewTime":  "2026-04-23T23:42:00.000Z",
+                                         "claimTime":  "2026-04-23T23:42:00.000Z",
+                                         "createTime":  "2026-04-23T23:41:59.000Z",
+                                         "updateTime":  "2026-04-23T23:42:00.000Z",
+                                         "lostPetId":  2047461008385064961,
+                                         "petId":  null,
+                                         "lostPetName":  "Lost Cat Updated 074149",
+                                         "lostPetType":  "CAT",
+                                         "lostPetBreed":  "British Shorthair",
+                                         "applicantId":  2047460979331121153,
+                                         "applicantName":  "api2_other_074149",
+                                         "applicantPhone":  "13810000003",
+                                         "applicantAvatar":  null,
+                                         "reviewerId":  null,
+                                         "reviewerName":  null,
+                                         "reviewerAvatar":  null
+                                     },
+                                     {
+                                         "id":  2047461863351934977,
+                                         "status":  "PASS",
+                                         "reason":  "This matches my observation",
+                                         "rejectReason":  "Verified by worker",
+                                         "reviewTime":  "2026-04-23T23:45:23.000Z",
+                                         "claimTime":  "2026-04-23T23:45:23.000Z",
+                                         "createTime":  "2026-04-23T23:45:22.000Z",
+                                         "updateTime":  "2026-04-23T23:45:23.000Z",
+                                         "lostPetId":  2047461860344619010,
+                                         "petId":  null,
+                                         "lostPetName":  "Lost Cat Updated 074511",
+                                         "lostPetType":  "CAT",
+                                         "lostPetBreed":  "British Shorthair",
+                                         "applicantId":  2047461824894361601,
+                                         "applicantName":  "api2_other_074511",
+                                         "applicantPhone":  "13810000003",
+                                         "applicantAvatar":  null,
+                                         "reviewerId":  null,
+                                         "reviewerName":  null,
+                                         "reviewerAvatar":  null
+                                     },
+                                     {
+                                         "id":  2047462039009386498,
+                                         "status":  "PENDING",
+                                         "reason":  "This matches my observation",
+                                         "rejectReason":  null,
+                                         "reviewTime":  null,
+                                         "claimTime":  null,
+                                         "createTime":  "2026-04-23T23:46:04.000Z",
+                                         "updateTime":  "2026-04-23T23:46:04.000Z",
+                                         "lostPetId":  2047462036014653441,
+                                         "petId":  null,
+                                         "lostPetName":  "Lost Cat Updated 074554",
+                                         "lostPetType":  "CAT",
+                                         "lostPetBreed":  "British Shorthair",
+                                         "applicantId":  2047462003559129089,
+                                         "applicantName":  "api2_other_074554",
+                                         "applicantPhone":  "13810000003",
+                                         "applicantAvatar":  null,
+                                         "reviewerId":  null,
+                                         "reviewerName":  null,
+                                         "reviewerAvatar":  null
+                                     }
+                                 ],
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  5
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-10b",
+        "method":  "POST",
+        "path":  "/lost/claim",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  83,
+        "data":  {
+                     "id":  2047462039927939074,
+                     "status":  "PENDING",
+                     "reason":  "Temporary claim to cancel",
+                     "rejectReason":  null,
+                     "reviewTime":  null,
+                     "claimTime":  null,
+                     "createTime":  "2026-04-23T23:46:04.982Z",
+                     "updateTime":  "2026-04-23T23:46:04.982Z",
+                     "lostPetId":  2047462036014653441,
+                     "petId":  null,
+                     "lostPetName":  "Lost Cat Updated 074554",
+                     "lostPetType":  "CAT",
+                     "lostPetBreed":  "British Shorthair",
+                     "applicantId":  2047462003559129089,
+                     "applicantName":  "api2_other_074554",
+                     "applicantPhone":  "13810000003",
+                     "applicantAvatar":  null,
+                     "reviewerId":  null,
+                     "reviewerName":  null,
+                     "reviewerAvatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-13",
+        "method":  "DELETE",
+        "path":  "/lost/claim/2047462039927939074",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  68,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "LOST-14",
+        "method":  "PATCH",
+        "path":  "/lost/claim/2047462039009386498/approve",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  93,
+        "data":  {
+                     "id":  2047462039009386498,
+                     "status":  "PENDING",
+                     "reason":  "This matches my observation",
+                     "rejectReason":  null,
+                     "reviewTime":  null,
+                     "claimTime":  null,
+                     "createTime":  "2026-04-23T23:46:04.000Z",
+                     "updateTime":  "2026-04-23T23:46:04.000Z",
+                     "lostPetId":  2047462036014653441,
+                     "petId":  2047462014883749890,
+                     "lostPetName":  "Lost Cat Updated 074554",
+                     "lostPetType":  "CAT",
+                     "lostPetBreed":  "British Shorthair",
+                     "applicantId":  2047462003559129089,
+                     "applicantName":  "api2_other_074554",
+                     "applicantPhone":  "13810000003",
+                     "applicantAvatar":  null,
+                     "reviewerId":  null,
+                     "reviewerName":  null,
+                     "reviewerAvatar":  null
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-01",
+        "method":  "POST",
+        "path":  "/publicity/articles",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  79,
+        "data":  {
+                     "id":  2047462040901017602,
+                     "type":  "ACTIVITY",
+                     "status":  "DRAFT",
+                     "title":  "API Activity 074554",
+                     "content":  "This is a publicity article for API group 02.",
+                     "cover":  null,
+                     "authorId":  2047461999419351041,
+                     "authorName":  "api2_worker_074554",
+                     "authorAvatar":  null,
+                     "viewCount":  0,
+                     "likeCount":  0,
+                     "shareCount":  0,
+                     "liked":  false,
+                     "favorited":  false,
+                     "publishTime":  null,
+                     "createTime":  "2026-04-23T23:46:05.225Z",
+                     "updateTime":  "2026-04-23T23:46:05.225Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-02",
+        "method":  "GET",
+        "path":  "/publicity/articles?page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  69,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  0,
+                     "records":  {
+
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  0
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-04",
+        "method":  "PUT",
+        "path":  "/publicity/articles/2047462040901017602",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  77,
+        "data":  {
+                     "id":  2047462040901017602,
+                     "type":  "ACTIVITY",
+                     "status":  "DRAFT",
+                     "title":  "API Activity Updated 074554",
+                     "content":  "Updated activity article body.",
+                     "cover":  null,
+                     "authorId":  2047461999419351041,
+                     "authorName":  "api2_worker_074554",
+                     "authorAvatar":  null,
+                     "viewCount":  0,
+                     "likeCount":  0,
+                     "shareCount":  0,
+                     "liked":  false,
+                     "favorited":  false,
+                     "publishTime":  null,
+                     "createTime":  "2026-04-23T23:46:05.000Z",
+                     "updateTime":  "2026-04-23T23:46:05.372Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-05-published",
+        "method":  "PATCH",
+        "path":  "/publicity/articles/2047462040901017602/PUBLISHED",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  75,
+        "data":  {
+                     "id":  2047462040901017602,
+                     "type":  "ACTIVITY",
+                     "status":  "PUBLISHED",
+                     "title":  "API Activity Updated 074554",
+                     "content":  "Updated activity article body.",
+                     "cover":  null,
+                     "authorId":  2047461999419351041,
+                     "authorName":  "api2_worker_074554",
+                     "authorAvatar":  null,
+                     "viewCount":  0,
+                     "likeCount":  0,
+                     "shareCount":  0,
+                     "liked":  false,
+                     "favorited":  false,
+                     "publishTime":  null,
+                     "createTime":  "2026-04-23T23:46:05.000Z",
+                     "updateTime":  "2026-04-23T23:46:05.000Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-03",
+        "method":  "GET",
+        "path":  "/publicity/articles/2047462040901017602",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  72,
+        "data":  {
+                     "id":  2047462040901017602,
+                     "type":  "ACTIVITY",
+                     "status":  "PUBLISHED",
+                     "title":  "API Activity Updated 074554",
+                     "content":  "Updated activity article body.",
+                     "cover":  null,
+                     "authorId":  2047461999419351041,
+                     "authorName":  "api2_worker_074554",
+                     "authorAvatar":  null,
+                     "viewCount":  1,
+                     "likeCount":  0,
+                     "shareCount":  0,
+                     "liked":  false,
+                     "favorited":  false,
+                     "publishTime":  null,
+                     "createTime":  "2026-04-23T23:46:05.000Z",
+                     "updateTime":  "2026-04-23T23:46:05.522Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-06",
+        "method":  "POST",
+        "path":  "/publicity/articles/2047462040901017602/like",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  70,
+        "data":  {
+                     "articleId":  2047462040901017602,
+                     "userId":  2047462003559129089,
+                     "like":  true
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-07",
+        "method":  "DELETE",
+        "path":  "/publicity/articles/2047462040901017602/like",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  70,
+        "data":  {
+                     "articleId":  2047462040901017602,
+                     "userId":  2047462003559129089,
+                     "like":  false
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-08",
+        "method":  "POST",
+        "path":  "/publicity/articles/2047462040901017602/favorite",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  74,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-10",
+        "method":  "GET",
+        "path":  "/publicity/favorites?page=1\u0026size=10",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  75,
+        "data":  {
+                     "countId":  null,
+                     "current":  1,
+                     "maxLimit":  null,
+                     "optimizeCountSql":  true,
+                     "optimizeJoinOfCountSql":  true,
+                     "orders":  {
+
+                                },
+                     "pages":  1,
+                     "records":  {
+                                     "id":  2047462040901017602,
+                                     "type":  "ACTIVITY",
+                                     "status":  "PUBLISHED",
+                                     "title":  "API Activity Updated 074554",
+                                     "content":  null,
+                                     "cover":  null,
+                                     "authorId":  2047461999419351041,
+                                     "authorName":  "api2_worker_074554",
+                                     "authorAvatar":  null,
+                                     "viewCount":  1,
+                                     "likeCount":  0,
+                                     "shareCount":  0,
+                                     "liked":  false,
+                                     "favorited":  true,
+                                     "publishTime":  null,
+                                     "createTime":  "2026-04-23T23:46:05.000Z",
+                                     "updateTime":  "2026-04-23T23:46:05.000Z"
+                                 },
+                     "searchCount":  true,
+                     "size":  10,
+                     "total":  1
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-09",
+        "method":  "DELETE",
+        "path":  "/publicity/articles/2047462040901017602/favorite",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  74,
+        "data":  null,
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-11",
+        "method":  "POST",
+        "path":  "/publicity/articles/2047462040901017602/share",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  71,
+        "data":  {
+                     "articleId":  2047462040901017602,
+                     "title":  "API Activity Updated 074554",
+                     "detailUrl":  "http://127.0.0.1:8080/publicity/articles/2047462040901017602"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-05-draft",
+        "method":  "PATCH",
+        "path":  "/publicity/articles/2047462040901017602/DRAFT",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  74,
+        "data":  {
+                     "id":  2047462040901017602,
+                     "type":  "ACTIVITY",
+                     "status":  "DRAFT",
+                     "title":  "API Activity Updated 074554",
+                     "content":  "Updated activity article body.",
+                     "cover":  null,
+                     "authorId":  2047461999419351041,
+                     "authorName":  "api2_worker_074554",
+                     "authorAvatar":  null,
+                     "viewCount":  1,
+                     "likeCount":  0,
+                     "shareCount":  1,
+                     "liked":  false,
+                     "favorited":  false,
+                     "publishTime":  null,
+                     "createTime":  "2026-04-23T23:46:05.000Z",
+                     "updateTime":  "2026-04-23T23:46:05.000Z"
+                 },
+        "message":  "success"
+    },
+    {
+        "id":  "PUB-12",
+        "method":  "DELETE",
+        "path":  "/publicity/articles/2047462040901017602",
+        "status":  200,
+        "code":  200,
+        "expected":  "HTTP 200 / code 200",
+        "passed":  true,
+        "contentType":  "",
+        "elapsedMs":  77,
+        "data":  null,
+        "message":  "success"
+    }
+]
