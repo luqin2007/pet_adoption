@@ -94,7 +94,6 @@ class AdoptBreadingServiceUnitTest {
                 "13800000000",
                 null,
                 status,
-                "有稳定住所",
                 null,
                 null,
                 null,

@@ -19,8 +19,6 @@ public class AdoptAddRequest extends LocationRequest implements IRequest {
     @NotBlank(message = "request.phone")
     private String applicantPhone;
 
-    private String requirement;
-
     public Adopt create(Long applicantId) {
         Date now = new Date();
         return new Adopt(null,
@@ -29,7 +27,6 @@ public class AdoptAddRequest extends LocationRequest implements IRequest {
                 applicantPhone,
                 null,
                 AdoptBreadingStatus.CREATE,
-                requirement,
                 null,
                 null,
                 null,

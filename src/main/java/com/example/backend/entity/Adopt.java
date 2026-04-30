@@ -51,12 +51,6 @@ public class Adopt implements IId {
     private AdoptBreadingStatus status;
 
     /**
-     * 申请要求
-     * *非空 text*
-     */
-    private String requirement;
-
-    /**
      * 审核拒绝原因
      * *text*
      */

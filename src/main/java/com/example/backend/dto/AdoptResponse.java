@@ -19,7 +19,6 @@ public class AdoptResponse implements IResponse {
 
     private Long id;
     private AdoptBreadingStatus status;
-    private String requirement;
     private String rejectReason;
     private Date reviewTime;
     private Date adoptTime;
@@ -52,7 +51,6 @@ public class AdoptResponse implements IResponse {
         return new AdoptResponse(
                 adopt.getId(),
                 adopt.getStatus(),
-                adopt.getRequirement(),
                 adopt.getRejectReason(),
                 adopt.getReviewTime(),
                 adopt.getAdoptTime(),
