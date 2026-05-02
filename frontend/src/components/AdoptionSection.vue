@@ -67,7 +67,11 @@ function coverStyle(cover) {
           </div>
         </el-card>
       </article>
-      <el-empty v-if="!props.loading && props.pets.length === 0" description="当前还没有可展示的领养推荐" />
+      <el-empty
+        v-if="!props.loading && props.pets.length === 0"
+        class="section-empty"
+        description="当前还没有可展示的领养推荐"
+      />
     </div>
     <div class="section-action">
       <el-button class="soft-btn" size="large" @click="goToPets">查看全部待领养宠物</el-button>

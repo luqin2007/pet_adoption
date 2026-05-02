@@ -634,7 +634,6 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取驱虫记录
      */
     public List<DewormResponse> getDeworms(Long petId) {
-        requireLoginUser();
         Pet pet = petService.requireById(petId,
                 Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
 
@@ -679,7 +678,6 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取驱虫记录
      */
     public Map<Long, List<DewormResponse>> getDewormsByPetIds(Set<Long> petIds) {
-        requireLoginUser();
         if (petIds == null || petIds.isEmpty()) {
             return Collections.emptyMap();
         }

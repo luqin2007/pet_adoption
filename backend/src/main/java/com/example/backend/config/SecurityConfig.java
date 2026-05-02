@@ -1,11 +1,8 @@
 package com.example.backend.config;
 
-import com.example.backend.component.JwtAuthenticationFilter;
-import com.example.backend.component.AccessDeniedExceptionHandler;
-import com.example.backend.component.AuthenticationExceptionPoint;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,9 +11,14 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.example.backend.component.AccessDeniedExceptionHandler;
+import com.example.backend.component.AuthenticationExceptionPoint;
+import com.example.backend.component.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
@@ -44,12 +46,16 @@ public class SecurityConfig {
                                 "/api/v1/assets/**",
                                 "/", "/css/**", "/js/**" // 其他静态资源
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET,
+                        .requestMatchers(HttpMethod.GET, // 公共数据
                                 "/api/v1/info/**",
                                 "/api/v1/pets",
                                 "/api/v1/pets/",
                                 "/api/v1/pets/*",
-                                "/api/v1/pets/*/media"
+                                "/api/v1/pets/*/media",
+                                "/api/v1/volunteers/recruitments",
+                                "/api/v1/volunteers/recruitments/*",
+                                "/api/v1/publicity/articles",
+                                "/api/v1/publicity/articles/*"
                         ).permitAll()
                         .anyRequest().authenticated())
                 // 异常处理

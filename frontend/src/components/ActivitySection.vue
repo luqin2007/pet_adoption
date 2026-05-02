@@ -54,7 +54,11 @@ function goToArticles() {
           </div>
         </el-card>
       </article>
-      <el-empty v-if="!props.loading && props.activities.length === 0" description="当前还没有活动内容" />
+      <el-empty
+        v-if="!props.loading && props.activities.length === 0"
+        class="section-empty"
+        description="当前还没有活动内容"
+      />
     </div>
     <div class="section-action">
       <el-button class="soft-btn" size="large" @click="goToArticles">查看全部活动与故事</el-button>
