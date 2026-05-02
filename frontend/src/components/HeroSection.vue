@@ -1,10 +1,61 @@
 <script setup>
-import { ArrowRight, Bell, DataLine, LocationInformation, StarFilled } from '@element-plus/icons-vue'
+import {
+  ArrowRight,
+  Bell,
+  Box,
+  DataLine,
+  House,
+  Location,
+  LocationInformation,
+  Plus,
+  StarFilled,
+  Suitcase,
+  User,
+} from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits(['navigate'])
+const router = useRouter()
+
+const quickActions = [
+  {
+    title: '志愿申请',
+    icon: User,
+    to: '/volunteers',
+  },
+  {
+    title: '发现宠物',
+    icon: Plus,
+    to: '/pets/new',
+  },
+  {
+    title: '申请救助',
+    icon: Suitcase,
+    to: '/tasks/new',
+  },
+  {
+    title: '物资捐赠',
+    icon: Box,
+    to: '/donations/new',
+  },
+  {
+    title: '宠物寄养',
+    icon: House,
+    to: '/breading/new',
+  },
+  {
+    title: '走失报备',
+    icon: Location,
+    to: '/lost/new',
+  },
+]
 
 function handleNavigate(id) {
   emit('navigate', id)
+}
+
+function openAction(path) {
+  router.push(path)
 }
 </script>
 
@@ -36,25 +87,19 @@ function handleNavigate(id) {
     <div class="hero-panel">
       <el-card class="progress-card" shadow="never">
         <div class="panel-head">
-          <h3>本周救助进度</h3>
-          <el-tag type="success">进行中</el-tag>
+          <h3>快捷入口</h3>
+          <el-tag type="success">在线办理</el-tag>
         </div>
-        <div class="progress-metrics">
-          <div>
-            <span>新接收</span>
-            <strong>42</strong>
-          </div>
-          <div>
-            <span>医疗处理</span>
-            <strong>29</strong>
-          </div>
-          <div>
-            <span>完成安置</span>
-            <strong>17</strong>
-          </div>
+        <div class="quick-action-grid">
+          <button v-for="item in quickActions" :key="item.title" class="quick-action-card" type="button" @click="openAction(item.to)">
+            <el-icon class="quick-action-icon">
+              <component :is="item.icon" />
+            </el-icon>
+            <span>
+              <strong>{{ item.title }}</strong>
+            </span>
+          </button>
         </div>
-        <el-progress :stroke-width="12" :percentage="78" color="#e77a3b" />
-        <p class="panel-note">距离本周目标还差 13 只，正在持续接力。</p>
       </el-card>
 
       <el-card class="story-card" shadow="hover">

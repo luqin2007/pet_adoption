@@ -66,10 +66,32 @@ export function getUserById(id) {
   })
 }
 
+export function getUsers(query = {}) {
+  return request('/users', {
+    method: 'GET',
+    query,
+  })
+}
+
 export function updateUserById(id, payload) {
   return request(`/users/${id}`, {
     method: 'PUT',
     body: payload,
+  })
+}
+
+export function uploadUserAvatar(id, file) {
+  const formData = new FormData()
+  formData.append('avatar', file)
+  return request(`/users/${id}/avatar`, {
+    method: 'PATCH',
+    body: formData,
+  })
+}
+
+export function deleteUserAvatar(id) {
+  return request(`/users/${id}/avatar`, {
+    method: 'DELETE',
   })
 }
 

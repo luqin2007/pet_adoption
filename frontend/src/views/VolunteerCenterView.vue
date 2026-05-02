@@ -1,76 +1,74 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { Icon } from '@iconify/vue'
-import { RefreshRight } from '@element-plus/icons-vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { Calendar, Location, Search, UserFilled } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
+import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { getRecruitments } from '../api/volunteer'
+import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
-const navItems = [
-  { id: 'home', label: '首页', to: '/' },
-  { id: 'volunteers', label: '志愿者中心' },
-  { id: 'articles', label: '公益文章', to: '/articles' },
-  { id: 'console', label: '个人空间', to: '/console' },
-]
-
+const router = useRouter()
 const loading = ref(false)
-const cityFilter = ref('')
 const recruitments = ref([])
+const page = reactive({ page: 1, size: 9 })
+const searchForm = reactive({
+  title: '',
+  province: '',
+  city: '',
+  status: 'PUBLISHED',
+  timeRange: [],
+})
 
-const fallbackRecruitments = [
-  {
-    id: 1,
-    title: '周末巡护志愿者招募',
-    description: '协助完成夜巡、拍照、定位和现场记录。',
-    requirement: '有责任心，能接受夜间巡护优先。',
-    serviceAddress: '滨江区四个巡护点',
-    city: '杭州市',
-    district: '滨江区',
-    headcount: 20,
-    appliedCount: 11,
-    publisherName: '暖窝排班组',
-    startTime: '2026-04-20',
-    endTime: '2026-05-20',
-  },
-  {
-    id: 2,
-    title: '开放日志愿接待员',
-    description: '在领养开放日协助接待、签到、介绍宠物背景资料。',
-    requirement: '具备基础沟通能力，喜欢和人交流。',
-    serviceAddress: '西湖区救助中心',
-    city: '杭州市',
-    district: '西湖区',
-    headcount: 12,
-    appliedCount: 6,
-    publisherName: '领养服务组',
-    startTime: '2026-04-25',
-    endTime: '2026-05-08',
-  },
-]
+const {
+  ensureInformationCatalog,
+  ensureCityOptions,
+  provinceOptions,
+  getCityOptions,
+} = useInformationCatalog()
+
+const cityOptions = computed(() => getCityOptions(searchForm.province))
 
 const filteredRecruitments = computed(() =>
-  recruitments.value.filter((item) => {
-    if (!cityFilter.value) {
-      return true
-    }
-    return [item.city, item.district, item.serviceAddress].join('').includes(cityFilter.value)
-  }),
+  recruitments.value,
 )
+
+function handleProvinceChange() {
+  searchForm.city = ''
+  if (searchForm.province) {
+    ensureCityOptions(searchForm.province)
+  }
+}
+
+function buildQuery() {
+  const [time0, time1] = searchForm.timeRange || []
+  return {
+    page: page.page,
+    size: page.size,
+    title: searchForm.title.trim() || undefined,
+    province: searchForm.province || undefined,
+    city: searchForm.city || undefined,
+    status: searchForm.status ? [searchForm.status] : undefined,
+    time0: time0 || undefined,
+    time1: time1 || undefined,
+  }
+}
 
 async function loadRecruitments() {
   loading.value = true
   try {
-    const result = await getRecruitments({
-      size: 9,
-      city: cityFilter.value || undefined,
-      status: ['PUBLISHED'],
-    })
-    recruitments.value = result?.records?.length ? result.records : fallbackRecruitments
+    const result = await getRecruitments(buildQuery())
+    recruitments.value = Array.isArray(result?.records) ? result.records : []
   } catch {
-    recruitments.value = fallbackRecruitments
+    recruitments.value = []
   } finally {
     loading.value = false
   }
+}
+
+function handleSearch() {
+  page.page = 1
+  loadRecruitments()
 }
 
 function formatDate(value) {
@@ -89,7 +87,15 @@ function progressText(item) {
   return `${current}/${total} 已报名`
 }
 
+function openRecruitmentDetail(id) {
+  if (!id) {
+    return
+  }
+  router.push(`/volunteers/recruitments/${id}`)
+}
+
 onMounted(() => {
+  ensureInformationCatalog()
   loadRecruitments()
 })
 </script>
@@ -99,34 +105,62 @@ onMounted(() => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main">
-      <section class="volunteer-hero">
-        <div class="content-hero-copy">
-          <span class="hero-chip">志愿者中心</span>
-          <h1>让每一次巡护、接待、记录和回访都有人接力</h1>
-          <p>
-            这一页对接后端 `volunteers/recruitments` 招募计划接口，用统一风格展示招募信息、报名热度和服务地点，方便后续继续补申请提交流程。
-          </p>
-        </div>
-        <div class="volunteer-sidecard">
-          <div>
-            <strong>{{ filteredRecruitments.length }}</strong>
-            <span>当前开放中的志愿者招募</span>
-          </div>
-          <ul>
-            <li>夜巡与救助陪护</li>
-            <li>领养开放日接待</li>
-            <li>档案记录与回访协助</li>
-          </ul>
-        </div>
-      </section>
+      <div class="content-hero-copy volunteer-hero-copy-full">
+        <h1>志愿者中心</h1>
+      </div>
 
       <section class="filter-panel volunteer-filter-panel">
-        <el-input v-model="cityFilter" placeholder="按城市或服务地点筛选" clearable />
-        <el-button class="warm-btn" :icon="RefreshRight" @click="loadRecruitments">刷新招募</el-button>
+        <el-form label-position="top" class="console-filter-form">
+          <div class="console-filter-grid console-filter-grid-5">
+            <el-form-item label="招募标题" class="console-filter-span-2">
+              <el-input v-model="searchForm.title" placeholder="输入招募标题关键词" clearable />
+            </el-form-item>
+            <el-form-item label="省份">
+              <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
+                <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="城市">
+              <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province">
+                <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="状态">
+              <el-select v-model="searchForm.status" placeholder="状态" clearable>
+                <el-option label="招募中" value="PUBLISHED" />
+                <el-option label="草稿" value="DRAFT" />
+                <el-option label="已关闭" value="CLOSED" />
+              </el-select>
+            </el-form-item>
+          </div>
+          <div class="console-filter-grid console-filter-grid-actions">
+            <el-form-item label="招募开始时间" class="console-filter-span-2">
+              <el-date-picker
+                v-model="searchForm.timeRange"
+                type="daterange"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                class="full-width-control"
+              />
+            </el-form-item>
+            <div class="console-filter-actions">
+              <el-button class="warm-btn" :icon="Search" @click="handleSearch">搜索</el-button>
+            </div>
+          </div>
+        </el-form>
       </section>
 
       <section class="volunteer-grid" v-loading="loading">
-        <article v-for="item in filteredRecruitments" :key="item.id" class="hub-card volunteer-card">
+        <article
+          v-for="item in filteredRecruitments"
+          :key="item.id"
+          class="hub-card volunteer-card volunteer-card-compact"
+          tabindex="0"
+          role="button"
+          @click="openRecruitmentDetail(item.id)"
+          @keyup.enter="openRecruitmentDetail(item.id)"
+        >
           <div class="hub-card-body">
             <div class="hub-card-head">
               <el-tag type="success" effect="plain">招募中</el-tag>
@@ -135,17 +169,17 @@ onMounted(() => {
             <h3>{{ item.title }}</h3>
             <p>{{ item.description }}</p>
             <div class="volunteer-meta">
-              <span><Icon icon="mdi:map-marker-radius-outline" />{{ item.serviceAddress }}</span>
-              <span><Icon icon="mdi:calendar-range" />{{ formatDate(item.startTime) }} - {{ formatDate(item.endTime) }}</span>
-              <span><Icon icon="mdi:account-supervisor-outline" />发布：{{ item.publisherName || '暖窝志愿组' }}</span>
+              <span><el-icon><Location /></el-icon>{{ item.serviceAddress }}</span>
+              <span><el-icon><Calendar /></el-icon>{{ formatDate(item.startTime) }} - {{ formatDate(item.endTime) }}</span>
+              <span><el-icon><UserFilled /></el-icon>{{ progressText(item) }}</span>
             </div>
-            <div class="volunteer-requirement">
-              <strong>参与要求</strong>
-              <p>{{ item.requirement || '请保持沟通及时、服从排班安排。' }}</p>
+            <div class="volunteer-card-footer">
+              <span>查看招募详情并申请</span>
+              <el-button class="soft-btn" plain @click.stop="openRecruitmentDetail(item.id)">查看</el-button>
             </div>
-            <el-button class="soft-btn" plain>后续接申请页</el-button>
           </div>
         </article>
+        <el-empty v-if="!loading && filteredRecruitments.length === 0" description="当前还没有开放中的志愿招募" />
       </section>
     </main>
 

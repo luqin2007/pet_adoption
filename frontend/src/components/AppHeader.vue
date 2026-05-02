@@ -16,6 +16,7 @@ const menuOpen = ref(false)
 const router = useRouter()
 const userStore = useUserStore()
 const actionButtonText = computed(() => (userStore.isLoggedIn ? '个人空间' : '立即加入'))
+const avatarText = computed(() => (userStore.displayName || '用户').slice(0, 1).toUpperCase())
 
 function handleNavigate(id) {
   const target = props.navItems.find((item) => item.id === id)
@@ -72,7 +73,19 @@ function handleActionClick() {
       </nav>
 
       <div class="nav-action">
-        <el-button class="nav-btn" type="warning" @click="handleActionClick">
+        <button
+          v-if="userStore.isLoggedIn"
+          class="user-pill"
+          type="button"
+          @click="handleActionClick"
+        >
+          <span class="user-pill-avatar">
+            <img v-if="userStore.profile.avatar" :src="userStore.profile.avatar" alt="用户头像" />
+            <span v-else>{{ avatarText }}</span>
+          </span>
+          <span class="user-pill-name">{{ userStore.displayName }}</span>
+        </button>
+        <el-button v-else class="nav-btn" type="warning" @click="handleActionClick">
           {{ actionButtonText }}
         </el-button>
         <button

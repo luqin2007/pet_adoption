@@ -1,4 +1,8 @@
 const API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+const API_PREFIX = String(import.meta.env.VITE_API_PREFIX || '/api/v1')
+  .replace(/^\/?/, '/')
+  .replace(/\/$/, '')
+const SHOULD_APPLY_API_PREFIX = Boolean(API_PREFIX && !API_BASE_URL.endsWith(API_PREFIX))
 const SESSION_STORAGE_KEY = 'pet_adoption_user_session'
 let refreshAccessTokenPromise = null
 
@@ -49,10 +53,10 @@ function readSession() {
       accessToken: parsed?.accessToken || parsed?.token || '',
       refreshToken: parsed?.refreshToken || '',
       profile: {
-        id: Number(parsed?.profile?.id || 0),
+        id: String(parsed?.profile?.id || ''),
         username: parsed?.profile?.username || '',
         email: parsed?.profile?.email || '',
-        avatar: parsed?.profile?.avatar || '',
+        avatar: buildAssetUrl(parsed?.profile?.avatar || ''),
       },
     }
   } catch {
@@ -93,16 +97,45 @@ function syncSessionFromAuthData(userData) {
     accessToken: userData.accessToken || current.accessToken || '',
     refreshToken: userData.refreshToken || current.refreshToken || '',
     profile: {
-      id: Number(userData.id ?? current.profile.id ?? 0),
+      id: String(userData.id ?? current.profile.id ?? ''),
       username: userData.username ?? current.profile.username ?? '',
       email: userData.email ?? current.profile.email ?? '',
-      avatar: userData.avatar ?? current.profile.avatar ?? '',
+      avatar: buildAssetUrl(userData.avatar ?? current.profile.avatar ?? ''),
     },
   })
 }
 
+function withApiPrefix(path) {
+  const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${path || ''}`
+  if (
+    !SHOULD_APPLY_API_PREFIX ||
+    normalizedPath === API_PREFIX ||
+    normalizedPath.startsWith(`${API_PREFIX}/`)
+  ) {
+    return normalizedPath
+  }
+  return `${API_PREFIX}${normalizedPath}`
+}
+
+function buildAssetUrl(path) {
+  const normalizedPath = String(path || '').trim()
+  if (!normalizedPath) {
+    return normalizedPath
+  }
+  if (/^(https?:)?\/\//.test(normalizedPath) || normalizedPath.startsWith('data:') || normalizedPath.startsWith('blob:')) {
+    return normalizedPath
+  }
+  if (normalizedPath.startsWith('/assets/')) {
+    return `${API_BASE_URL}${withApiPrefix(normalizedPath)}`
+  }
+  if (API_PREFIX && normalizedPath.startsWith(`${API_PREFIX}/assets/`)) {
+    return `${API_BASE_URL}${normalizedPath}`
+  }
+  return normalizedPath
+}
+
 function buildUrl(path, query) {
-  const base = `${API_BASE_URL}${path}`
+  const base = `${API_BASE_URL}${withApiPrefix(path)}`
   if (!query || Object.keys(query).length === 0) {
     return base
   }
@@ -110,7 +143,15 @@ function buildUrl(path, query) {
   const search = new URLSearchParams()
   Object.entries(query).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
-      search.append(key, String(value))
+      if (Array.isArray(value)) {
+        value.forEach((item) => {
+          if (item !== undefined && item !== null && item !== '') {
+            search.append(key, String(item))
+          }
+        })
+      } else {
+        search.append(key, String(value))
+      }
     }
   })
 
@@ -119,6 +160,22 @@ function buildUrl(path, query) {
     return base
   }
   return `${base}?${queryString}`
+}
+
+function normalizeApiAssetUrls(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeApiAssetUrls(item))
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalizeApiAssetUrls(item)]))
+  }
+
+  if (typeof value === 'string') {
+    return buildAssetUrl(value)
+  }
+
+  return value
 }
 
 function getRequestHeaders(headers, skipAuth) {
@@ -263,5 +320,5 @@ export async function request(path, options = {}) {
     syncSessionFromAuthData(result.data)
   }
 
-  return result.data ?? null
+  return normalizeApiAssetUrls(result.data ?? null)
 }

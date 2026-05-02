@@ -1,12 +1,14 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 import { ElMessage } from 'element-plus'
-import { computed, onBeforeUnmount, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Lock, Message, User } from '@element-plus/icons-vue'
+import { checkEmailExists } from '../api/user'
 import { useUserStore } from '../stores/user'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const activeTab = ref('login')
 const loginRef = ref()
@@ -41,6 +43,41 @@ const codeButtonText = computed(() => {
   return '获取验证码'
 })
 
+const redirectPath = computed(() => {
+  const redirect = route.query.redirect
+  if (typeof redirect !== 'string') {
+    return '/'
+  }
+  if (!redirect.startsWith('/') || redirect.startsWith('/login')) {
+    return '/'
+  }
+  return redirect
+})
+
+async function navigateAfterAuth() {
+  if (typeof window !== 'undefined') {
+    const search = new URLSearchParams(window.location.search)
+    let target = search.get('redirect') || redirectPath.value || '/'
+    if (!target.startsWith('/') || target.startsWith('/login')) {
+      target = '/'
+    }
+    window.location.href = target
+    return
+  }
+
+  await router.replace(redirectPath.value || '/')
+}
+
+watch(
+  () => userStore.accessToken,
+  (token) => {
+    if (token) {
+      navigateAfterAuth()
+    }
+  },
+  { immediate: true },
+)
+
 function validateConfirmPassword(_rule, value, callback) {
   if (!value) {
     callback(new Error('请再次输入密码'))
@@ -65,6 +102,25 @@ function validateEmailCode(_rule, value, callback) {
   callback()
 }
 
+async function validateRegisterEmail(_rule, value, callback) {
+  if (!value) {
+    callback(new Error('请输入邮箱'))
+    return
+  }
+  const email = String(value).trim()
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailPattern.test(email)) {
+    callback(new Error('邮箱格式不正确'))
+    return
+  }
+  try {
+    await checkEmailExists(email)
+    callback()
+  } catch (error) {
+    callback(new Error(getErrorMessage(error, '邮箱已存在')))
+  }
+}
+
 const loginRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
@@ -72,10 +128,7 @@ const loginRules = {
 
 const registerRules = {
   name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '邮箱格式不正确', trigger: ['blur', 'change'] },
-  ],
+  email: [{ validator: validateRegisterEmail, trigger: 'blur' }],
   emailCode: [{ validator: validateEmailCode, trigger: ['blur', 'change'] }],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
@@ -114,9 +167,10 @@ async function sendEmailCode() {
   try {
     await registerRef.value.validateField('email')
     sendingCode.value = true
+    await checkEmailExists(registerForm.email.trim())
     await userStore.sendRegisterCode(registerForm.email.trim())
     ElMessage.success(`验证码已发送到 ${registerForm.email.trim()}`)
-    startCodeCountdown(60)
+    startCodeCountdown(30)
   } catch (error) {
     ElMessage.warning(getErrorMessage(error, '请先输入有效邮箱地址'))
   } finally {
@@ -135,11 +189,11 @@ async function submitLogin() {
       username: loginForm.username.trim(),
       password: loginForm.password,
     })
-    if (!loginData?.token) {
-      throw new Error('登录成功但未返回 token')
+    if (!loginData?.accessToken) {
+      throw new Error('登录成功但未返回 accessToken')
     }
     ElMessage.success(`登录成功，欢迎回来 ${loginData.username || ''}`.trim())
-    router.push('/')
+    await navigateAfterAuth()
   } catch (error) {
     ElMessage.warning(getErrorMessage(error, '请完善登录信息'))
   } finally {
@@ -160,9 +214,9 @@ async function submitRegister() {
       email: registerForm.email.trim(),
       code: registerForm.emailCode.trim(),
     })
-    if (registerData?.token) {
+    if (registerData?.accessToken) {
       ElMessage.success('注册并登录成功')
-      router.push('/')
+      await navigateAfterAuth()
       return
     }
     ElMessage.success('注册成功，请使用新账号登录')
@@ -240,7 +294,7 @@ onBeforeUnmount(() => {
 
                 <div class="auth-form-row">
                   <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
-                  <el-button text type="warning">忘记密码</el-button>
+                  <el-button text type="warning" @click="router.push('/forgot-password')">忘记密码</el-button>
                 </div>
 
                 <el-button class="auth-submit" type="warning" :loading="loginSubmitting" @click="submitLogin">

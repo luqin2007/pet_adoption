@@ -8,6 +8,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const router = useRouter()
@@ -26,7 +30,8 @@ function goToArticles() {
       <article v-for="item in props.activities" :key="item.title">
         <el-card class="activity-card" shadow="hover">
           <div class="activity-cover">
-            <img :src="item.cover" :alt="item.title" loading="lazy" />
+            <img v-if="item.cover" :src="item.cover" :alt="item.title" loading="lazy" />
+            <div v-else class="activity-cover-placeholder">暂无封面</div>
             <el-tag class="activity-tag" type="warning" effect="dark" size="small">{{ item.type }}</el-tag>
           </div>
           <div class="activity-body">
@@ -49,6 +54,7 @@ function goToArticles() {
           </div>
         </el-card>
       </article>
+      <el-empty v-if="!props.loading && props.activities.length === 0" description="当前还没有活动内容" />
     </div>
     <div class="section-action">
       <el-button class="soft-btn" size="large" @click="goToArticles">查看全部活动与故事</el-button>

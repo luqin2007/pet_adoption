@@ -1,4 +1,5 @@
 <script setup>
+import { computed, onMounted, ref } from 'vue'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
 import AdoptionSection from '../components/AdoptionSection.vue'
@@ -6,114 +7,29 @@ import ActivitySection from '../components/ActivitySection.vue'
 import FeaturedArticlesSection from '../components/FeaturedArticlesSection.vue'
 import HeroSection from '../components/HeroSection.vue'
 import StatsOverview from '../components/StatsOverview.vue'
+import { getPets } from '../api/pets'
+import { getArticles } from '../api/publicity'
+import { getRescueTasks } from '../api/services'
+import { getRecruitments } from '../api/volunteer'
+import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
-const navItems = [
-  { id: 'adoption', label: '领养推荐' },
-  { id: 'news', label: '近期活动' },
-  { id: 'articles', label: '精选文章' },
-]
+const loading = ref(false)
+const pets = ref([])
+const activities = ref([])
+const articles = ref([])
+const overview = ref({
+  pets: 0,
+  tasks: 0,
+  recruitments: 0,
+  articles: 0,
+})
 
-const stats = [
-  { label: '累计救助', value: 1268, suffix: '只' },
-  { label: '成功领养', value: 873, suffix: '只' },
-  { label: '在线志愿者', value: 342, suffix: '人' },
-  { label: '合作医院', value: 28, suffix: '家' },
-]
-
-const pets = [
-  {
-    name: '姜糖',
-    age: '约 8 个月',
-    city: '杭州市 · 西湖区',
-    summary: '亲人、爱撒娇，已完成体检与首针疫苗。',
-    status: '可预约见面',
-    cover: 'linear-gradient(135deg, #ffd6ad 0%, #ffe8cf 100%)',
-  },
-  {
-    name: '豆包',
-    age: '约 2 岁',
-    city: '杭州市 · 拱墅区',
-    summary: '稳定安静，适合有陪伴时间的家庭。',
-    status: '等待领养',
-    cover: 'linear-gradient(135deg, #bce6dc 0%, #e8f8f3 100%)',
-  },
-  {
-    name: '小杏仁',
-    age: '约 1 岁',
-    city: '杭州市 · 滨江区',
-    summary: '活泼聪明，喜欢玩具球，社交能力强。',
-    status: '热门推荐',
-    cover: 'linear-gradient(135deg, #fddbb8 0%, #fff4e8 100%)',
-  },
-  {
-    name: '奶盖',
-    age: '约 3 岁',
-    city: '杭州市 · 上城区',
-    summary: '温柔黏人，已绝育，适合新手领养人。',
-    status: '可视频看宠',
-    cover: 'linear-gradient(135deg, #cfe9e4 0%, #f4fbf9 100%)',
-  },
-]
-
-const activities = [
-  {
-    date: '2026-03-01',
-    title: '周末流浪犬义诊专场',
-    location: '城北爱心驿站',
-    summary: '兽医团队将现场完成基础检查、驱虫评估与登记建档，支持志愿者协同引导。',
-    type: '线下活动',
-    cover: 'https://images.pexels.com/photos/6568940/pexels-photo-6568940.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  },
-  {
-    date: '2026-03-05',
-    title: '社区夜间巡护联动',
-    location: '滨江区四个巡护点',
-    summary: '联合社区与志愿者开展夜间巡查，重点排查伤病与幼崽，实时回传定位信息。',
-    type: '巡护行动',
-    cover: 'https://images.pexels.com/photos/5732474/pexels-photo-5732474.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  },
-  {
-    date: '2026-03-09',
-    title: '春季领养开放日',
-    location: '西湖区救助中心',
-    summary: '开放 30+ 只健康待领养毛孩子，现场提供领养评估、喂养建议与适应期指导。',
-    type: '领养活动',
-    cover: 'https://images.pexels.com/photos/4587991/pexels-photo-4587991.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  },
-]
-
-const articles = [
-  {
-    category: '公益宣传',
-    title: '遇到受伤流浪宠物时，普通人第一步该做什么？',
-    desc: '从环境安全判断、远距离观察到上报信息填写，整理成一份可执行的三步指南。',
-    date: '2026-02-21',
-    reading: '5 分钟阅读',
-    icon: 'mdi:bullhorn-variant-outline',
-    cover: 'https://picsum.photos/seed/pet-article-01/960/540',
-    source: 'Picsum 占位图',
-  },
-  {
-    category: '科普知识',
-    title: '新手领养准备清单：疫苗、驱虫和家庭环境一次讲清',
-    desc: '涵盖健康档案核验、居家防护改造、食谱过渡与应激应对，帮助领养更平稳。',
-    date: '2026-02-19',
-    reading: '8 分钟阅读',
-    icon: 'mdi:book-open-page-variant-outline',
-    cover: 'https://picsum.photos/seed/pet-article-02/960/540',
-    source: 'Picsum 占位图',
-  },
-  {
-    category: '公益宣传',
-    title: '社区共建案例：一条街如何从高频救助到稳定管理',
-    desc: '通过绝育、免疫、回访和科普四条线协同，三个月内显著降低了重复救助数量。',
-    date: '2026-02-16',
-    reading: '6 分钟阅读',
-    icon: 'mdi:heart-circle-outline',
-    cover: 'https://picsum.photos/seed/pet-article-03/960/540',
-    source: 'Picsum 占位图',
-  },
-]
+const stats = computed(() => [
+  { label: '流浪宠物档案', value: overview.value.pets, suffix: '只' },
+  { label: '救助任务', value: overview.value.tasks, suffix: '项' },
+  { label: '开放招募', value: overview.value.recruitments, suffix: '项' },
+  { label: '公益内容', value: overview.value.articles, suffix: '篇' },
+])
 
 function scrollToSection(id) {
   const target = document.getElementById(id)
@@ -121,6 +37,103 @@ function scrollToSection(id) {
     target.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 }
+
+function formatPetAge(age) {
+  if (!age && age !== 0) {
+    return '年龄待补充'
+  }
+  return `约 ${age} 个月`
+}
+
+function petStatusText(status) {
+  if (status === 'HEALTH') return '可预约见面'
+  if (status === 'SHELTERED') return '等待领养'
+  return '待完善'
+}
+
+function articleCategory(type) {
+  if (type === 'ACTIVITY') return '近期活动'
+  if (type === 'KNOWLEDGE') return '养护知识'
+  if (type === 'STORY') return '救助故事'
+  return '公益内容'
+}
+
+function articleIcon(type) {
+  if (type === 'ACTIVITY') return 'mdi:calendar-clock-outline'
+  if (type === 'KNOWLEDGE') return 'mdi:book-open-page-variant-outline'
+  if (type === 'STORY') return 'mdi:heart-circle-outline'
+  return 'mdi:bullhorn-variant-outline'
+}
+
+async function loadHomeData() {
+  loading.value = true
+  try {
+    const [petResult, taskResult, recruitmentResult, activityResult, articleResult] = await Promise.allSettled([
+      getPets({ size: 4, status: ['SHELTERED', 'HEALTH'] }),
+      getRescueTasks({ size: 1 }),
+      getRecruitments({ size: 1, status: ['PUBLISHED'] }),
+      getArticles({ size: 3, type: 'ACTIVITY' }),
+      getArticles({ size: 3 }),
+    ])
+
+    const petRecords = petResult.status === 'fulfilled' && Array.isArray(petResult.value?.records) ? petResult.value.records : []
+    const activityRecords =
+      activityResult.status === 'fulfilled' && Array.isArray(activityResult.value?.records) ? activityResult.value.records : []
+    const articleRecords =
+      articleResult.status === 'fulfilled' && Array.isArray(articleResult.value?.records) ? articleResult.value.records : []
+
+    pets.value = petRecords.map((pet) => ({
+        id: pet.id,
+        name: pet.name || '未命名',
+        age: formatPetAge(pet.age),
+        city: [pet.locations?.[0]?.city, pet.locations?.[0]?.district].filter(Boolean).join(' · ') || '位置待补充',
+        summary: pet.description || pet.health || '救助站正在完善它的故事与健康档案。',
+        status: petStatusText(pet.status),
+        cover: pet.cover,
+      }))
+
+    activities.value = activityRecords.map((item) => ({
+      id: item.id,
+      date: String(item.publishTime || '').slice(0, 10),
+      title: item.title || '未命名活动',
+      location: '查看详情了解活动安排',
+      summary: item.content || '活动说明待补充',
+      type: articleCategory(item.type),
+      cover: item.cover || '',
+    }))
+
+    articles.value = articleRecords
+      .filter((item) => item.type !== 'ACTIVITY')
+      .slice(0, 3)
+      .map((item) => ({
+        id: item.id,
+        category: articleCategory(item.type),
+        title: item.title || '未命名内容',
+        desc: item.content || '内容摘要待补充',
+        date: String(item.publishTime || '').slice(0, 10),
+        reading: `${Math.max(1, Math.ceil(String(item.content || '').length / 120))} 分钟阅读`,
+        icon: articleIcon(item.type),
+        cover: item.cover || '',
+        source: '公益内容库',
+      }))
+
+    overview.value = {
+      pets: petResult.status === 'fulfilled' ? Number(petResult.value?.total || petRecords.length || 0) : 0,
+      tasks: taskResult.status === 'fulfilled' ? Number(taskResult.value?.total || taskResult.value?.records?.length || 0) : 0,
+      recruitments:
+        recruitmentResult.status === 'fulfilled'
+          ? Number(recruitmentResult.value?.total || recruitmentResult.value?.records?.length || 0)
+          : 0,
+      articles: articleResult.status === 'fulfilled' ? Number(articleResult.value?.total || articleRecords.length || 0) : 0,
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  loadHomeData()
+})
 </script>
 
 <template>
@@ -130,9 +143,9 @@ function scrollToSection(id) {
     <main>
       <HeroSection @navigate="scrollToSection" />
       <StatsOverview :stats="stats" />
-      <AdoptionSection :pets="pets" />
-      <ActivitySection :activities="activities" />
-      <FeaturedArticlesSection :articles="articles" />
+      <AdoptionSection :pets="pets" :loading="loading" />
+      <ActivitySection :activities="activities" :loading="loading" />
+      <FeaturedArticlesSection :articles="articles" :loading="loading" />
     </main>
 
     <AppFooter />

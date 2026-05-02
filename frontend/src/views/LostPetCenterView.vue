@@ -1,87 +1,92 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { Icon } from '@iconify/vue'
-import { RefreshRight } from '@element-plus/icons-vue'
+import { Search } from '@element-plus/icons-vue'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
 import { getLostPets } from '../api/lost'
-
-const navItems = [
-  { id: 'home', label: '首页', to: '/' },
-  { id: 'lost', label: '走失认领' },
-  { id: 'pets', label: '领养大厅', to: '/pets' },
-  { id: 'console', label: '个人空间', to: '/console' },
-]
+import { useInformationCatalog } from '../composables/useInformationCatalog'
+import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const loading = ref(false)
-const keyword = ref('')
 const lostPets = ref([])
+const total = ref(0)
+const page = reactive({
+  page: 1,
+  size: 12,
+})
 
-const fallbackRecords = [
-  {
-    id: 1,
-    name: '奶盖',
-    age: 36,
-    sex: '母',
-    type: '猫',
-    breed: '英短',
-    features: '脖子上有橙色项圈',
-    lostTime: '2026-04-10',
-    contactPhone: '13900000003',
-    description: '于湖滨路附近走失，平时胆子小，听到名字会回头。',
-    ownerName: '林女士',
-    status: 'CLAIMING',
-    location: {
-      city: '杭州市',
-      detailAddress: '上城区湖滨路',
-    },
-    petCover:
-      'https://images.pexels.com/photos/2558605/pexels-photo-2558605.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  },
-  {
-    id: 2,
-    name: '阿布',
-    age: 18,
-    sex: '公',
-    type: '狗',
-    breed: '柯基',
-    features: '蓝色项圈，右耳有小缺口',
-    lostTime: '2026-04-15',
-    contactPhone: '13900000005',
-    description: '最后一次出现在滨江公园西门。',
-    ownerName: '周先生',
-    status: 'SEARCHING',
-    location: {
-      city: '杭州市',
-      detailAddress: '滨江公园西门',
-    },
-    petCover:
-      'https://images.pexels.com/photos/58997/pexels-photo-58997.jpeg?auto=compress&cs=tinysrgb&w=1200',
-  },
-]
+const searchForm = reactive({
+  name: '',
+  type: '',
+  breed: '',
+  province: '',
+  city: '',
+  address: '',
+  lostDate: '',
+})
 
-const visibleRecords = computed(() =>
-  lostPets.value.filter((item) =>
-    [item.name, item.type, item.breed, item.ownerName, item.location?.city, item.location?.detailAddress]
-      .filter(Boolean)
-      .join('')
-      .includes(keyword.value),
-  ),
-)
+const {
+  ensureInformationCatalog,
+  ensureCityOptions,
+  provinceOptions,
+  typeOptions,
+  getCityOptions,
+  getBreedOptions,
+} = useInformationCatalog()
+
+const cityOptions = computed(() => getCityOptions(searchForm.province))
+const breedOptions = computed(() => getBreedOptions(searchForm.type))
+const visibleRecords = computed(() => lostPets.value.filter((item) => item.status === 'SEARCHING'))
+
+function handleTypeChange() {
+  searchForm.breed = ''
+}
+
+function handleProvinceChange() {
+  searchForm.city = ''
+  if (searchForm.province) {
+    ensureCityOptions(searchForm.province)
+  }
+}
+
+function buildQuery() {
+  return {
+    page: page.page,
+    size: page.size,
+    status: ['SEARCHING'],
+    name: searchForm.name.trim() || undefined,
+    type: searchForm.type ? [searchForm.type] : undefined,
+    bread: searchForm.breed ? [searchForm.breed] : undefined,
+    province: searchForm.province || undefined,
+    city: searchForm.city || undefined,
+    address: searchForm.address.trim() || undefined,
+    time0: searchForm.lostDate || undefined,
+  }
+}
 
 async function loadLostPets() {
   loading.value = true
   try {
-    const result = await getLostPets({
-      size: 12,
-      name: keyword.value || undefined,
-    })
-    lostPets.value = result?.records?.length ? result.records : fallbackRecords
+    const result = await getLostPets(buildQuery())
+    lostPets.value = Array.isArray(result?.records) ? result.records : []
+    total.value = Number(result?.total || 0)
   } catch {
-    lostPets.value = fallbackRecords
+    lostPets.value = []
+    total.value = 0
   } finally {
     loading.value = false
   }
+}
+
+function handleSearch() {
+  page.page = 1
+  loadLostPets()
+}
+
+function changePage(nextPage) {
+  page.page = nextPage
+  loadLostPets()
 }
 
 function formatDate(value) {
@@ -91,17 +96,8 @@ function formatDate(value) {
   return String(value).slice(0, 10)
 }
 
-function statusLabel(status) {
-  if (status === 'CLAIMING') {
-    return '认领处理中'
-  }
-  if (status === 'CLAIMED') {
-    return '已找回'
-  }
-  return '寻找中'
-}
-
-onMounted(() => {
+onMounted(async () => {
+  await ensureInformationCatalog()
   loadLostPets()
 })
 </script>
@@ -111,56 +107,78 @@ onMounted(() => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main">
-      <section class="lost-hero">
-        <div class="content-hero-copy">
-          <span class="hero-chip">走失认领</span>
-          <h1>把线索、位置和相似宠物信息集中到一处</h1>
-          <p>
-            这一页对接后端 `lost/pets` 查询接口，用于承接首页之外的走失宠物浏览场景，也为后续继续补“相似宠物比对”和“认领申请”页面预留入口。
-          </p>
+      <section class="filter-panel pet-directory-filter-panel">
+        <div class="pet-filter-row lost-filter-grid-top">
+          <el-input v-model="searchForm.name" placeholder="宠物名称" clearable />
+          <el-select v-model="searchForm.type" placeholder="宠物类型" clearable filterable @change="handleTypeChange">
+            <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="searchForm.breed" placeholder="品种" clearable filterable :disabled="!searchForm.type">
+            <el-option v-for="item in breedOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
+            <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province">
+            <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+          </el-select>
         </div>
-        <div class="lost-sidecard">
-          <strong>{{ visibleRecords.length }}</strong>
-          <span>当前展示的走失档案</span>
-          <small>建议与救助中心的流浪宠物记录、地点和时间线联合比对。</small>
-        </div>
-      </section>
 
-      <section class="filter-panel volunteer-filter-panel">
-        <el-input v-model="keyword" placeholder="输入宠物名、品种、地点或联系人关键词" clearable />
-        <el-button class="warm-btn" :icon="RefreshRight" @click="loadLostPets">刷新档案</el-button>
+        <div class="pet-filter-row lost-filter-grid-bottom">
+          <el-date-picker
+            v-model="searchForm.lostDate"
+            class="lost-filter-date"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="走失日期"
+          />
+          <el-input v-model="searchForm.address" class="lost-filter-address" placeholder="详细地点" clearable />
+          <div class="pet-filter-action lost-filter-submit">
+            <el-button class="warm-btn" :icon="Search" @click="handleSearch">搜索</el-button>
+          </div>
+        </div>
       </section>
 
       <section class="lost-grid" v-loading="loading">
         <article v-for="item in visibleRecords" :key="item.id" class="lost-card">
           <div class="lost-cover">
-            <img :src="item.petCover || fallbackRecords[0].petCover" :alt="item.name" loading="lazy" />
-            <span class="directory-badge">{{ statusLabel(item.status) }}</span>
+            <img v-if="item.petCover" :src="item.petCover" :alt="item.name" loading="lazy" />
+            <div v-else class="lost-cover-placeholder">暂无图片</div>
           </div>
           <div class="lost-body">
             <div class="directory-head">
               <div>
                 <h3>{{ item.name }}</h3>
-                <p>{{ item.type }} · {{ item.breed }} · {{ item.sex }}</p>
+                <p>{{ item.type }} · {{ item.breed || '品种待补充' }} · {{ item.sex }}</p>
               </div>
               <span class="directory-type">{{ formatDate(item.lostTime) }}</span>
             </div>
 
-            <p class="directory-desc">{{ item.description }}</p>
+            <p class="directory-desc">{{ item.description || '走失经过待补充' }}</p>
 
             <div class="volunteer-meta">
               <span><Icon icon="mdi:map-marker-radius-outline" />{{ item.location?.city }} {{ item.location?.detailAddress }}</span>
-              <span><Icon icon="mdi:star-four-points-outline" />{{ item.features }}</span>
+              <span v-if="item.features"><Icon icon="mdi:star-four-points-outline" />{{ item.features }}</span>
               <span><Icon icon="mdi:phone-outline" />{{ item.ownerName }} · {{ item.contactPhone }}</span>
             </div>
 
             <div class="lost-actions">
-              <el-button class="soft-btn" plain>后续接认领申请页</el-button>
-              <el-button text type="warning">查看相似宠物线索</el-button>
+              <el-button text type="warning">查看线索</el-button>
             </div>
           </div>
         </article>
+        <el-empty v-if="!loading && visibleRecords.length === 0" description="当前没有符合条件的丢失宠物记录" />
       </section>
+
+      <div class="user-admin-pagination">
+        <el-pagination
+          layout="prev, pager, next, total"
+          :current-page="page.page"
+          :page-size="page.size"
+          :total="total"
+          @current-change="changePage"
+        />
+      </div>
     </main>
 
     <AppFooter />
