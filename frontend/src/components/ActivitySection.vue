@@ -23,8 +23,12 @@ function goToArticles() {
 
 <template>
   <section id="news" class="content-section">
-    <div class="section-head left">
+    <div class="section-head section-head-row">
       <h2>近期活动</h2>
+      <el-button text type="warning" class="section-more" @click="goToArticles">
+        查看全部
+        <el-icon><ArrowRight /></el-icon>
+      </el-button>
     </div>
     <div class="activity-row">
       <article v-for="item in props.activities" :key="item.title">
@@ -57,11 +61,8 @@ function goToArticles() {
       <el-empty
         v-if="!props.loading && props.activities.length === 0"
         class="section-empty"
-        description="当前还没有活动内容"
+        description="暂时没有近期活动"
       />
-    </div>
-    <div class="section-action">
-      <el-button class="soft-btn" size="large" @click="goToArticles">查看全部活动与故事</el-button>
     </div>
   </section>
 </template>

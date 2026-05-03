@@ -40,7 +40,7 @@ const canEditArticles = computed(() => isWorker.value || isVolunteer.value)
 const articleTypeOptions = computed(() => (isWorker.value ? ARTICLE_TYPE_OPTIONS : ARTICLE_TYPE_OPTIONS.filter((item) => item.value === 'STORY')))
 const isEditMode = computed(() => Boolean(route.params.id))
 const pageTitle = computed(() => (isEditMode.value ? '编辑文章' : '发表文章'))
-const pageHint = computed(() => (isWorker.value ? '工作人员可发布救助故事、活动推广与科普知识。' : '志愿者仅可发布救助故事。'))
+const pageHint = computed(() => (isWorker.value ? '写救助故事、活动消息或养护知识。' : '先写下你的救助故事。'))
 
 const rules = {
   type: [{ required: true, message: '请选择文章类型', trigger: 'change' }],

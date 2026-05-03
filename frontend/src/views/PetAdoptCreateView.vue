@@ -100,7 +100,7 @@ async function submitForm() {
       detailAddress: form.detailAddress.trim(),
     })
     ElMessage.success('领养申请已提交')
-    router.push('/services')
+    router.push('/console')
   } catch (error) {
     ElMessage.warning(error?.message || '提交领养申请失败')
   } finally {
@@ -123,7 +123,7 @@ onMounted(async () => {
         <div>
           <span class="hero-chip">领养申请</span>
           <h1>提交领养意向</h1>
-          <p v-if="pet">为 {{ pet.name || '这只毛孩子' }} 填写领养申请，工作人员会结合档案与联系方式安排后续沟通。</p>
+          <p v-if="pet">想把 {{ pet.name || '这只毛孩子' }} 带回家，先留下联系方式和居住位置。</p>
         </div>
         <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回宠物档案</el-button>
       </section>
@@ -138,8 +138,8 @@ onMounted(async () => {
           v-if="!canAdopt"
           type="warning"
           :closable="false"
-          title="当前档案暂不开放领养申请"
-          description="仅“可领养”或“等待领养”状态的宠物可直接提交领养意向。"
+          title="这份档案暂不开放领养"
+          description="只有开放领养的宠物可以提交申请。"
         />
 
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">

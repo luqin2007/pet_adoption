@@ -162,7 +162,7 @@ async function handleImageChange(event) {
   event.target.value = ''
   const images = files.filter((file) => file.type.startsWith('image/'))
   if (images.length !== files.length) {
-    ElMessage.warning('走失报备目前仅支持上传图片')
+    ElMessage.warning('走失报备目前只能上传图片')
   }
   if (!images.length || uploadingImages.value) {
     return
@@ -338,7 +338,7 @@ watch(
             <div class="lost-pet-similar-panel" v-loading="loadingSimilarLostPets">
               <div class="lost-pet-similar-head">
                 <strong>相近走失记录</strong>
-                <span>根据宠物类型和填写地点自动匹配</span>
+                <span>按类型和地点帮你找一找</span>
               </div>
 
               <div v-if="similarLostPets.length" class="lost-pet-similar-list">
@@ -353,12 +353,12 @@ watch(
               </div>
 
               <p v-else class="lost-pet-similar-empty">
-                {{ hasSimilarQuery ? '当前没有查到相近的走失记录。' : '填写宠物类型和地点后，这里会自动显示相近记录。' }}
+                {{ hasSimilarQuery ? '没有查到相近走失记录。' : '填好类型和地点后，这里会显示相近记录。' }}
               </p>
             </div>
           </el-form-item>
           <el-form-item label="补充说明" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="5" placeholder="补充走失经过、宠物习惯、是否怕生等信息" />
+            <el-input v-model="form.description" type="textarea" :rows="5" placeholder="写下走失经过、习惯、是否怕生" />
           </el-form-item>
           <el-form-item label="宠物照片" class="action-form-span-2">
             <input ref="fileInputRef" class="profile-avatar-input" type="file" accept="image/*" multiple @change="handleImageChange" />

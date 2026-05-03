@@ -77,6 +77,61 @@ ON DUPLICATE KEY UPDATE
                      `filename` = VALUES(`filename`),
                      `type` = VALUES(`type`);
 
+INSERT INTO `lost_pet` (`id`, `owner_id`, `name`, `age`, `sex`, `type`, `breed`, `features`, `lost_time`, `phone`, `description`, `pet_id`, `status`, `create_time`, `update_time`) VALUES
+    (3000000000000006001, 3000000000000000001, '团团', 18, '公', '猫', '英短蓝白', '蓝白短毛，左前爪有一小块白色斑纹，佩戴蓝色铃铛项圈', '2026-04-30 19:20:00', '13800006001', '晚饭后从阳台纱窗缝隙跑出，胆子较小，听到陌生声音会躲起来。', NULL, 'SEARCHING', NOW(), NOW()),
+    (3000000000000006002, 3000000000000000001, '可乐', 30, '母', '狗', '边牧混血', '黑白花，耳朵半立，胸前白毛明显，红色牵引绳可能还在身上', '2026-04-29 08:10:00', '13800006002', '晨间散步时受惊挣脱，最后一次出现在河边绿道入口。', NULL, 'SEARCHING', NOW(), NOW()),
+    (3000000000000006003, 3000000000000000001, '奶昔', 9, '母', '猫', '布偶混血', '浅色长毛，尾巴较蓬松，眼睛蓝色，右耳有轻微缺口', '2026-04-27 21:40:00', '13800006003', '小区搬家时从门口跑出，可能躲在地下车库或楼道角落。', NULL, 'CLAIMING', NOW(), NOW()),
+    (3000000000000006004, 3000000000000000001, '小虎', 48, '公', '狗', '柴犬', '黄白色，卷尾，脖子上有绿色项圈，亲人但容易兴奋', '2026-04-25 16:30:00', '13800006004', '在公园草坪附近走散，熟悉自己的名字，看到食物会靠近。', NULL, 'SEARCHING', NOW(), NOW()),
+    (3000000000000006005, 3000000000000000001, '米粒', 6, '未知', '猫', '狸花猫', '体型较小，背部虎斑明显，鼻尖有黑点', '2026-04-22 12:05:00', '13800006005', '午间开门取快递时跑出，年龄较小，可能还在附近楼栋间活动。', NULL, 'CLOSED', NOW(), NOW()),
+    (3000000000000006006, 3000000000000000001, '糯糯', 24, '母', '狗', '比熊', '白色卷毛，刚修剪过，身上有粉色胸背带', '2026-04-20 18:50:00', '13800006006', '傍晚在商场停车场附近走失，比较亲人，可能会跟随行人。', NULL, 'SEARCHING', NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+                     `owner_id` = VALUES(`owner_id`),
+                     `name` = VALUES(`name`),
+                     `age` = VALUES(`age`),
+                     `sex` = VALUES(`sex`),
+                     `type` = VALUES(`type`),
+                     `breed` = VALUES(`breed`),
+                     `features` = VALUES(`features`),
+                     `lost_time` = VALUES(`lost_time`),
+                     `phone` = VALUES(`phone`),
+                     `description` = VALUES(`description`),
+                     `pet_id` = VALUES(`pet_id`),
+                     `status` = VALUES(`status`),
+                     `update_time` = NOW();
+
+INSERT INTO `location` (`id`, `parent_id`, `parent_type`, `user_id`, `province`, `city`, `district`, `detail_address`, `create_time`) VALUES
+    (3000000000000006101, 3000000000000006001, 'LOST_PET', 3000000000000000001, '浙江省', '杭州市', '西湖区', '文三西路兰桂花园 3 幢附近', NOW()),
+    (3000000000000006102, 3000000000000006002, 'LOST_PET', 3000000000000000001, '浙江省', '杭州市', '滨江区', '闻涛路江边绿道入口', NOW()),
+    (3000000000000006103, 3000000000000006003, 'LOST_PET', 3000000000000000001, '浙江省', '杭州市', '拱墅区', '城北万象城地下车库 B2 区', NOW()),
+    (3000000000000006104, 3000000000000006004, 'LOST_PET', 3000000000000000001, '浙江省', '杭州市', '上城区', '湖滨公园草坪东侧', NOW()),
+    (3000000000000006105, 3000000000000006005, 'LOST_PET', 3000000000000000001, '浙江省', '杭州市', '余杭区', '良睦路未来社区快递柜旁', NOW()),
+    (3000000000000006106, 3000000000000006006, 'LOST_PET', 3000000000000000001, '浙江省', '杭州市', '萧山区', '银隆百货停车场出口', NOW())
+ON DUPLICATE KEY UPDATE
+                     `parent_id` = VALUES(`parent_id`),
+                     `parent_type` = VALUES(`parent_type`),
+                     `user_id` = VALUES(`user_id`),
+                     `province` = VALUES(`province`),
+                     `city` = VALUES(`city`),
+                     `district` = VALUES(`district`),
+                     `detail_address` = VALUES(`detail_address`);
+
+INSERT INTO `media_file` (`id`, `parent_id`, `parent_type`, `user_id`, `name`, `description`, `is_cover`, `filename`, `type`, `create_time`) VALUES
+    (3000000000000006201, 3000000000000006001, 'LOST_PET', 3000000000000000001, '团团走失照片', '本地测试图', 1, 'seed_lost_pet_01.jpg', 'IMAGE', NOW()),
+    (3000000000000006202, 3000000000000006002, 'LOST_PET', 3000000000000000001, '可乐走失照片', '本地测试图', 1, 'seed_lost_pet_02.jpg', 'IMAGE', NOW()),
+    (3000000000000006203, 3000000000000006003, 'LOST_PET', 3000000000000000001, '奶昔走失照片', '本地测试图', 1, 'seed_lost_pet_03.jpg', 'IMAGE', NOW()),
+    (3000000000000006204, 3000000000000006004, 'LOST_PET', 3000000000000000001, '小虎走失照片', '本地测试图', 1, 'seed_lost_pet_04.jpg', 'IMAGE', NOW()),
+    (3000000000000006205, 3000000000000006005, 'LOST_PET', 3000000000000000001, '米粒走失照片', '本地测试图', 1, 'seed_lost_pet_05.jpg', 'IMAGE', NOW()),
+    (3000000000000006206, 3000000000000006006, 'LOST_PET', 3000000000000000001, '糯糯走失照片', '本地测试图', 1, 'seed_lost_pet_06.jpg', 'IMAGE', NOW())
+ON DUPLICATE KEY UPDATE
+                     `parent_id` = VALUES(`parent_id`),
+                     `parent_type` = VALUES(`parent_type`),
+                     `user_id` = VALUES(`user_id`),
+                     `name` = VALUES(`name`),
+                     `description` = VALUES(`description`),
+                     `is_cover` = VALUES(`is_cover`),
+                     `filename` = VALUES(`filename`),
+                     `type` = VALUES(`type`);
+
 INSERT IGNORE INTO `info_pet_type` (`type`, `breed`, `create_time`)
 SELECT DISTINCT TRIM(`type`), COALESCE(TRIM(`breed`), ''), NOW()
 FROM `pet`

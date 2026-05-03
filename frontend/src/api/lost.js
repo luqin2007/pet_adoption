@@ -7,6 +7,12 @@ export function getLostPets(query = {}) {
   })
 }
 
+export function getLostPet(id) {
+  return request(`/lost/pets/${id}`, {
+    method: 'GET',
+  })
+}
+
 export function createLostPetClaim(payload) {
   return request('/lost/claim', {
     method: 'POST',

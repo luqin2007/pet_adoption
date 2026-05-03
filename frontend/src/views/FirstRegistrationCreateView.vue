@@ -160,7 +160,7 @@ function goBack() {
               v-model="form.description" 
               type="textarea" 
               :rows="3" 
-              placeholder="描述宠物的精神状态、外伤或其它异常情况..." 
+              placeholder="写下精神状态、外伤或其他异常" 
             />
           </el-form-item>
 
@@ -195,7 +195,7 @@ function goBack() {
               </div>
             </div>
           </div>
-          <div v-else class="empty-list-tip action-form-span-2">暂无免疫记录数据</div>
+          <div v-else class="empty-list-tip action-form-span-2">还没有免疫记录</div>
 
           <!-- 过敏史 -->
           <div class="form-group-title action-form-span-2">
@@ -221,7 +221,7 @@ function goBack() {
               </div>
             </div>
           </div>
-          <div v-else class="empty-list-tip action-form-span-2">暂无过敏记录数据</div>
+          <div v-else class="empty-list-tip action-form-span-2">还没有过敏记录</div>
         </el-form>
 
         <div class="action-form-actions">

@@ -1,0 +1,6 @@
+import './articleNavigation.static.test.mjs'
+import './articleHubLayout.static.test.mjs'
+import './navigation.static.test.mjs'
+import './volunteerCenterLayout.static.test.mjs'
+import './volunteerRecruitmentDetail.static.test.mjs'
+import './lostPetCenterDetail.static.test.mjs'

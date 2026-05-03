@@ -182,7 +182,7 @@ onMounted(() => {
             <el-input v-model="form.detailAddress" placeholder="例如：小区东门、绿道入口、公交站旁" clearable />
           </el-form-item>
           <el-form-item label="情况描述" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="4" placeholder="补充宠物状态、发现经过、是否亲人等信息" />
+            <el-input v-model="form.description" type="textarea" :rows="4" placeholder="写下状态、发现经过、是否亲人" />
           </el-form-item>
         </el-form>
 

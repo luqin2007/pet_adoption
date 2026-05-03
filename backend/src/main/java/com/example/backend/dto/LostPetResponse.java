@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static com.example.backend.entity.property.ParentType.PET;
 import static com.example.backend.entity.property.ParentType.USER;
 
 /**
@@ -57,7 +56,7 @@ public class LostPetResponse implements IResponse {
      * Pet: id, name
      */
     public static LostPetResponse create(LostPet lostPet, Location location, User owner,
-                                         Pet pet, String cover,
+                                         Pet pet, String coverUrl,
                                          List<PetResponse> pets) {
         return new LostPetResponse(
                 lostPet.getId(),
@@ -79,7 +78,7 @@ public class LostPetResponse implements IResponse {
                 FileUtils.generateAssetUrl(USER, owner.getId(), owner.getAvatar()),
                 lostPet.getPetId(),
                 pet == null ? null : pet.getName(),
-                pet == null ? null : FileUtils.generateAssetUrl(PET, pet.getId(), cover),
+                coverUrl,
                 pets);
     }
 
@@ -96,13 +95,18 @@ public class LostPetResponse implements IResponse {
                                               Map<Long, Location> locations,
                                               Map<Long, User> owners,
                                               Map<Long, Pet> pets,
-                                              Map<Long, String> petCovers) {
+                                              Map<Long, String> petCovers,
+                                              Map<Long, String> lostPetCovers) {
         Long petId = lostPet.getPetId();
+        String coverUrl = petId == null ? null : petCovers.get(petId);
+        if (coverUrl == null) {
+            coverUrl = lostPetCovers.get(lostPet.getId());
+        }
         return create(lostPet,
                 lostPet instanceof LostPetLocation l ? l.getLocation() : locations.get(lostPet.getId()),
                 owners.get(lostPet.getOwnerId()),
                 petId == null ? null : pets.get(petId),
-                petId == null ? null : petCovers.get(petId),
+                coverUrl,
                 List.of());
     }
 }

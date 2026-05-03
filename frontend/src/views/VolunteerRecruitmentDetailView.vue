@@ -6,7 +6,6 @@ import {
   Calendar,
   Check,
   Location,
-  Opportunity,
   UserFilled,
 } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -45,6 +44,7 @@ const rules = {
   realName: [{ required: true, message: '请输入真实姓名', trigger: 'blur' }],
   phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }],
   sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
+  age: [{ required: true, message: '请输入年龄', trigger: 'change' }],
   province: [{ required: true, message: '请选择省份', trigger: 'change' }],
   city: [{ required: true, message: '请选择城市', trigger: 'change' }],
   district: [{ required: true, message: '请选择区县', trigger: 'change' }],
@@ -95,6 +95,13 @@ function goBack() {
   router.push('/volunteers')
 }
 
+function goLogin() {
+  router.push({
+    path: '/login',
+    query: { redirect: route.fullPath },
+  })
+}
+
 function handleProvinceChange() {
   form.city = ''
   form.district = ''
@@ -127,10 +134,7 @@ async function loadRecruitment() {
 async function submitApplication() {
   if (!userStore.isLoggedIn) {
     ElMessage.warning('请先登录后再提交志愿申请')
-    router.push({
-      path: '/login',
-      query: { redirect: route.fullPath },
-    })
+    goLogin()
     return
   }
   if (!formRef.value || !recruitment.value || submitting.value || isExpired.value) {
@@ -149,7 +153,7 @@ async function submitApplication() {
       realName: form.realName.trim(),
       phone: form.phone.trim(),
       sex: form.sex,
-      age: form.age ? Number(form.age) : undefined,
+      age: Number(form.age),
       profession: form.profession.trim() || undefined,
       province: form.province,
       city: form.city,
@@ -161,7 +165,7 @@ async function submitApplication() {
       motivation: form.motivation.trim(),
     })
     ElMessage.success('志愿申请已提交')
-    router.push('/services')
+    router.push('/console')
   } catch (error) {
     ElMessage.warning(error?.message || '提交志愿申请失败')
   } finally {
@@ -196,7 +200,7 @@ onMounted(async () => {
         <div class="recruitment-detail-sidecard">
           <span>发布人</span>
           <strong>{{ recruitment.publisherName || '暖窝志愿组' }}</strong>
-          <p>建议先阅读招募要求，再直接在下方完成申请。</p>
+          <p>读完要求后，可以直接在下方申请。</p>
           <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回招募列表</el-button>
         </div>
       </section>
@@ -228,73 +232,84 @@ onMounted(async () => {
           </div>
 
           <el-alert
-            v-if="!userStore.isLoggedIn"
-            type="info"
-            :closable="false"
-            title="登录后可直接提交志愿申请"
-            description="你现在可以先阅读招募信息，提交时会自动带你回到当前页面。"
-          />
-          <el-alert
-            v-else-if="isExpired"
+            v-if="userStore.isLoggedIn && isExpired"
             type="warning"
             :closable="false"
             title="当前招募暂不可提交申请"
-            description="该招募当前不是发布中状态，请返回列表查看其他开放中的项目。"
+            description="这项招募暂未开放，可以看看其他项目。"
           />
 
-          <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid volunteer-apply-grid">
-            <el-form-item label="真实姓名" prop="realName">
-              <el-input v-model="form.realName" placeholder="请输入真实姓名" clearable />
-            </el-form-item>
-            <el-form-item label="联系电话" prop="phone">
-              <el-input v-model="form.phone" placeholder="请输入手机号或常用联系方式" clearable />
-            </el-form-item>
-            <el-form-item label="性别" prop="sex">
-              <el-select v-model="form.sex" placeholder="请选择性别" clearable>
-                <el-option v-for="item in sexOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="年龄">
-              <el-input-number v-model="form.age" :min="0" :max="100" controls-position="right" class="full-width-control" />
-            </el-form-item>
-            <el-form-item label="职业">
-              <el-input v-model="form.profession" placeholder="可填写当前职业或身份" clearable />
-            </el-form-item>
-            <el-form-item label="省份" prop="province">
-              <el-select v-model="form.province" placeholder="选择省份" filterable clearable @change="handleProvinceChange">
-                <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="城市" prop="city">
-              <el-select v-model="form.city" placeholder="选择城市" filterable clearable :disabled="!form.province" @change="handleCityChange">
-                <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="区县" prop="district">
-              <el-select v-model="form.district" placeholder="选择区县" filterable clearable :disabled="!form.city">
-                <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="详细地址" prop="detailAddress" class="action-form-span-2">
-              <el-input v-model="form.detailAddress" placeholder="填写便于后续联系的常驻位置" clearable />
-            </el-form-item>
-            <el-form-item label="过往经历" prop="experience" class="action-form-span-2">
-              <el-input v-model="form.experience" type="textarea" :rows="4" placeholder="例如：是否参与过巡护、救助、接待、记录整理等" />
-            </el-form-item>
-            <el-form-item label="可提供的技能" prop="skills" class="action-form-span-2">
-              <el-input v-model="form.skills" type="textarea" :rows="3" placeholder="例如：拍照、沟通、驾驶、基础护理、表格整理等" />
-            </el-form-item>
-            <el-form-item label="可服务时间" prop="availableTimeDesc" class="action-form-span-2">
-              <el-input v-model="form.availableTimeDesc" type="textarea" :rows="3" placeholder="例如：工作日晚上、周末全天、每周可固定排班两次" />
-            </el-form-item>
-            <el-form-item label="申请动机" prop="motivation" class="action-form-span-2">
-              <el-input v-model="form.motivation" type="textarea" :rows="4" placeholder="说说你为什么想参与这项志愿服务" />
-            </el-form-item>
-          </el-form>
+          <div class="volunteer-apply-shell" :class="{ 'is-locked': !userStore.isLoggedIn }">
+            <el-form
+              ref="formRef"
+              :model="form"
+              :rules="rules"
+              :disabled="!userStore.isLoggedIn || isExpired"
+              label-position="top"
+              class="action-form-grid volunteer-apply-grid"
+            >
+              <el-form-item label="真实姓名" prop="realName">
+                <el-input v-model="form.realName" placeholder="请输入真实姓名" clearable />
+              </el-form-item>
+              <el-form-item label="联系电话" prop="phone">
+                <el-input v-model="form.phone" placeholder="请输入手机号或常用联系方式" clearable />
+              </el-form-item>
+              <el-form-item label="性别" prop="sex">
+                <el-select v-model="form.sex" placeholder="请选择性别" clearable>
+                  <el-option v-for="item in sexOptions" :key="item" :label="item" :value="item" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="年龄" prop="age">
+                <el-input-number v-model="form.age" :min="1" :max="100" controls-position="right" class="full-width-control" />
+              </el-form-item>
+              <el-form-item label="职业">
+                <el-input v-model="form.profession" placeholder="可填写当前职业或身份" clearable />
+              </el-form-item>
+              <el-form-item label="省份" prop="province">
+                <el-select v-model="form.province" placeholder="选择省份" filterable clearable @change="handleProvinceChange">
+                  <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="城市" prop="city">
+                <el-select v-model="form.city" placeholder="选择城市" filterable clearable :disabled="!form.province" @change="handleCityChange">
+                  <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="区县" prop="district">
+                <el-select v-model="form.district" placeholder="选择区县" filterable clearable :disabled="!form.city">
+                  <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="详细地址" prop="detailAddress" class="action-form-span-2">
+                <el-input v-model="form.detailAddress" placeholder="填写常驻位置" clearable />
+              </el-form-item>
+              <el-form-item label="过往经历" prop="experience" class="action-form-span-2">
+                <el-input v-model="form.experience" type="textarea" :rows="4" placeholder="参与过巡护、救助、接待或记录整理吗" />
+              </el-form-item>
+              <el-form-item label="可提供的技能" prop="skills" class="action-form-span-2">
+                <el-input v-model="form.skills" type="textarea" :rows="3" placeholder="比如拍照、沟通、驾驶、基础护理" />
+              </el-form-item>
+              <el-form-item label="可服务时间" prop="availableTimeDesc" class="action-form-span-2">
+                <el-input v-model="form.availableTimeDesc" type="textarea" :rows="3" placeholder="比如周末全天、工作日晚上" />
+              </el-form-item>
+              <el-form-item label="申请动机" prop="motivation" class="action-form-span-2">
+                <el-input v-model="form.motivation" type="textarea" :rows="4" placeholder="说说你为什么想参与这项志愿服务" />
+              </el-form-item>
+            </el-form>
+
+            <div v-if="!userStore.isLoggedIn" class="volunteer-login-overlay">
+              <div class="volunteer-login-card">
+                <span class="volunteer-login-icon"><el-icon><UserFilled /></el-icon></span>
+                <strong>登录后可直接提交志愿申请</strong>
+                <p>登录后会回到当前招募，继续填写申请。</p>
+                <el-button class="warm-btn" @click="goLogin">去登录</el-button>
+              </div>
+            </div>
+          </div>
 
           <div class="action-form-actions">
             <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回列表</el-button>
-            <el-button class="warm-btn" :icon="Check" :disabled="isExpired" :loading="submitting" @click="submitApplication">提交申请</el-button>
+            <el-button class="warm-btn" :icon="Check" :disabled="!userStore.isLoggedIn || isExpired" :loading="submitting" @click="submitApplication">提交申请</el-button>
           </div>
         </article>
       </section>

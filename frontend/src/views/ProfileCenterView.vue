@@ -1564,7 +1564,7 @@ watch(
           <template #header>
             <div class="profile-card-header">
               <strong>用户账号管理</strong>
-              <span>工作人员可维护用户资料和角色</span>
+              <span>维护用户资料和角色</span>
             </div>
           </template>
 
@@ -1630,7 +1630,7 @@ watch(
           <template #header>
             <div class="profile-card-header">
               <strong>流浪宠物</strong>
-              <span>按后端宠物查询接口筛选在库档案</span>
+              <span>筛选和维护在库宠物档案</span>
             </div>
           </template>
 
@@ -1750,7 +1750,7 @@ watch(
           <template #header>
             <div class="profile-card-header">
               <strong>丢失宠物</strong>
-              <span>按走失宠物报备接口筛选登记记录</span>
+              <span>筛选和审核走失登记</span>
             </div>
           </template>
 
@@ -1865,7 +1865,7 @@ watch(
           <template #header>
             <div class="profile-card-header">
               <strong>救助任务</strong>
-              <span>查看任务详情、现场图片和处理进度</span>
+              <span>处理现场任务和进度</span>
             </div>
           </template>
 
@@ -1924,7 +1924,7 @@ watch(
           <template #header>
             <div class="profile-card-header">
               <strong>初诊登记</strong>
-              <span>记录流浪宠物收容时的初次检查信息</span>
+              <span>记录首次检查结果</span>
             </div>
           </template>
           <section class="pet-admin-section">

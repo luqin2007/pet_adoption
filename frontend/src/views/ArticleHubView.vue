@@ -1,12 +1,14 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { Icon } from '@iconify/vue'
-import { ArrowRight, Search } from '@element-plus/icons-vue'
+import { Search } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
 import { getArticles } from '../api/publicity'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
+const router = useRouter()
 const loading = ref(false)
 const articles = ref([])
 const activeType = ref('ALL')
@@ -79,6 +81,13 @@ function applySearch() {
   appliedSearch.timeRange = Array.isArray(draftSearch.timeRange) ? [...draftSearch.timeRange] : []
 }
 
+function openArticle(article) {
+  if (!article?.id) {
+    return
+  }
+  router.push(`/articles/${article.id}`)
+}
+
 function typeText(type) {
   return tabOptions.find((item) => item.value === type)?.label || '公益内容'
 }
@@ -102,13 +111,32 @@ onMounted(() => {
     <main class="subpage-main">
       <section class="content-hero article-hero-simple">
         <div class="content-hero-copy article-hero-copy-full">
-          <span class="hero-chip">公益中心</span>
+          <span class="hero-chip">公益文章</span>
           <h1>把一线救助经验，变成看得见也读得懂的内容</h1>
-          <p>这里收集救助故事、活动推广和养护知识，让每一次现场经验都能继续被看见、被接力。</p>
+          <p>这里有救助故事、活动消息和养护知识，随时翻一翻。</p>
         </div>
       </section>
 
-      <section class="filter-panel article-filter-panel-v2">
+      <section class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
+        <div class="pet-filter-row article-filter-row-inline">
+          <el-input class="article-filter-author" v-model="draftSearch.author" clearable placeholder="作者" @keyup.enter="applySearch" />
+          <el-input class="article-filter-title" v-model="draftSearch.title" clearable placeholder="标题" @keyup.enter="applySearch" />
+          <el-date-picker
+            v-model="draftSearch.timeRange"
+            type="datetimerange"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            class="article-filter-date full-width-control"
+          />
+          <div class="pet-filter-action article-filter-action">
+            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="applySearch">搜索</el-button>
+          </div>
+        </div>
+      </section>
+
+      <section class="article-category-panel" aria-label="文章分类">
         <div class="article-type-tabs" role="tablist" aria-label="文章分类">
           <button
             v-for="item in tabOptions"
@@ -121,45 +149,37 @@ onMounted(() => {
             {{ item.label }}
           </button>
         </div>
-
-        <div class="article-public-search">
-          <el-input v-model="draftSearch.author" clearable placeholder="作者" @keyup.enter="applySearch" />
-          <el-input v-model="draftSearch.title" clearable placeholder="标题" @keyup.enter="applySearch" />
-          <el-date-picker
-            v-model="draftSearch.timeRange"
-            type="datetimerange"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            range-separator="至"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            class="full-width-control"
-          />
-          <el-button class="soft-btn article-search-btn" :icon="Search" :loading="loading" @click="applySearch">搜索</el-button>
-        </div>
       </section>
 
       <section class="article-hub-grid" v-loading="loading">
-        <article v-for="article in visibleArticles" :key="article.id" class="hub-card article-list-card">
+        <article
+          v-for="article in visibleArticles"
+          :key="article.id"
+          class="hub-card article-list-card"
+          tabindex="0"
+          role="button"
+          @click="openArticle(article)"
+          @keyup.enter="openArticle(article)"
+        >
+          <div class="hub-card-cover article-list-cover">
+            <img v-if="article.cover" :src="article.cover" :alt="article.title" loading="lazy" />
+            <div v-else class="hub-card-cover-placeholder article-list-cover-placeholder">暂无封面</div>
+          </div>
           <div class="hub-card-body article-list-body">
             <div class="hub-card-head article-list-head">
               <el-tag type="warning" effect="plain">{{ typeText(article.type) }}</el-tag>
               <span>{{ formatDate(article.publishTime) }}</span>
             </div>
             <h3>{{ article.title }}</h3>
-            <p>{{ article.content }}</p>
             <div class="article-list-meta">
               <span>{{ article.authorName || '匿名作者' }}</span>
               <span><Icon icon="mdi:eye-outline" />{{ article.viewCount || 0 }} 次浏览</span>
               <span><Icon icon="mdi:thumb-up-outline" />{{ article.likeCount || 0 }}</span>
               <span><Icon icon="mdi:share-variant-outline" />{{ article.shareCount || 0 }}</span>
             </div>
-            <el-button text type="warning" class="card-link">
-              阅读专题
-              <el-icon><ArrowRight /></el-icon>
-            </el-button>
           </div>
         </article>
-        <el-empty v-if="!loading && visibleArticles.length === 0" description="当前筛选下暂无内容" />
+        <el-empty v-if="!loading && visibleArticles.length === 0" class="grid-empty" description="没有找到相关内容" />
       </section>
     </main>
 

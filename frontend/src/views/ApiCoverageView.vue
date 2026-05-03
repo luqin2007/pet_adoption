@@ -153,7 +153,7 @@ watch(filteredOperations, (operations) => {
     <header class="console-topbar">
       <div>
         <h1>OpenAPI 接口覆盖台</h1>
-        <p>{{ OPENAPI_OPERATION_COUNT }} 个后端操作已接入前端调用目录</p>
+        <p>已整理 {{ OPENAPI_OPERATION_COUNT }} 个可调试操作</p>
       </div>
       <el-button text type="warning" @click="goConsole">
         <el-icon><ArrowLeft /></el-icon>

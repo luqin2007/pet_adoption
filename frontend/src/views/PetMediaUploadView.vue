@@ -94,7 +94,7 @@ function handleFileChange(event) {
     return
   }
   if (!isSupportedFile(file)) {
-    ElMessage.warning('仅支持图片或视频文件')
+    ElMessage.warning('只能上传图片或视频文件')
     return
   }
 
@@ -266,7 +266,7 @@ onBeforeUnmount(() => {
             <template v-else>
               <el-icon><Upload /></el-icon>
               <strong>选择图片/视频</strong>
-              <span>上传前填写名称、说明和封面设置</span>
+              <span>添加名称、说明，也可设为封面</span>
             </template>
           </div>
 

@@ -182,9 +182,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
      * 获取走失宠物
      */
     public LostPetResponse getLostPet(Long lostPetId) {
-        User login = requireLoginUser();
         LostPet lostPet = requireById(lostPetId);
-        requirePermission(login.isWorker() || login.is(lostPet.getOwnerId()));
         return buildLostPetResponse(lostPet, null, null, List.of());
     }
 
@@ -199,6 +197,9 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         Pet pet = lostPet.getPetId() == null ? null : petService.requireById(lostPet.getPetId(),
                 Pet::getId, Pet::getName);
         String cover = pet == null ? null : fileService.getCoverUrl(pet.getId(), PET);
+        if (cover == null) {
+            cover = fileService.getCoverUrl(lostPet.getId(), LOST_PET);
+        }
 
         return LostPetResponse.create(lostPet, location, owner, pet, cover, pets);
     }
@@ -212,9 +213,9 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         // 根据参数不同，尽量避免联表查询
         if (params.noLocation()) {
             result = baseMapper.queryByRequest(params).page(pageParams);
-            Set<Long> petIds = result.getRecords().stream().map(LostPet::getId).collect(Collectors.toSet());
+            Set<Long> lostPetIds = result.getRecords().stream().map(LostPet::getId).collect(Collectors.toSet());
             locations = locationMapper
-                    .queryByParents(LOST_PET, petIds)
+                    .queryByParents(LOST_PET, lostPetIds)
                     .group(Location::getParentId);
         } else if (params.noPet()) {
             Page<Location> pl = locationMapper.queryByLostPetRequest(params).page(pageParams);
@@ -236,8 +237,10 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
                 Pet::getId, Pet::getName);
         Map<Long, String> petCovers = fileService.getCoverUrls(PET,
                 pets.values().stream().map(Pet::getId).collect(Collectors.toSet()));
+        Set<Long> lostPetIds = result.getRecords().stream().map(LostPet::getId).collect(Collectors.toSet());
+        Map<Long, String> lostPetCovers = fileService.getCoverUrls(LOST_PET, lostPetIds);
         return convertDto(result, lostPet ->
-                LostPetResponse.createBatch(lostPet, locations, owners, pets, petCovers));
+                LostPetResponse.createBatch(lostPet, locations, owners, pets, petCovers, lostPetCovers));
     }
 
     /**

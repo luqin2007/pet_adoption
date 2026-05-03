@@ -19,12 +19,24 @@ const router = useRouter()
 function goToArticles() {
   router.push('/articles')
 }
+
+function goToArticle(article) {
+  if (!article?.id) {
+    router.push('/articles')
+    return
+  }
+  router.push(`/articles/${article.id}`)
+}
 </script>
 
 <template>
   <section id="articles" class="content-section">
-    <div class="section-head left">
+    <div class="section-head section-head-row">
       <h2>精选文章</h2>
+      <el-button text type="warning" class="section-more" @click="goToArticles">
+        查看全部
+        <el-icon><ArrowRight /></el-icon>
+      </el-button>
     </div>
     <div class="article-row">
       <article v-for="article in props.articles" :key="article.title">
@@ -45,7 +57,7 @@ function goToArticles() {
                 <Icon :icon="article.icon" />
                 {{ article.reading }}
               </span>
-              <el-button text type="warning" class="card-link" @click="goToArticles">
+              <el-button text type="warning" class="card-link" @click="goToArticle(article)">
                 阅读全文
                 <el-icon><ArrowRight /></el-icon>
               </el-button>
@@ -57,10 +69,7 @@ function goToArticles() {
           </div>
         </el-card>
       </article>
-      <el-empty v-if="!props.loading && props.articles.length === 0" description="当前还没有精选文章" />
-    </div>
-    <div class="section-action">
-      <el-button class="soft-btn" size="large" @click="goToArticles">查看公益文章中心</el-button>
+      <el-empty v-if="!props.loading && props.articles.length === 0" class="section-empty" description="暂时没有精选文章" />
     </div>
   </section>
 </template>

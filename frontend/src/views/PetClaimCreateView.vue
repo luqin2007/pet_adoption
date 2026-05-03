@@ -76,7 +76,7 @@ async function submitForm() {
       reason: form.reason.trim(),
     })
     ElMessage.success('认领申请已提交')
-    router.push('/services')
+    router.push('/console')
   } catch (error) {
     ElMessage.warning(error?.message || '提交认领申请失败')
   } finally {
@@ -113,16 +113,16 @@ onMounted(() => {
           v-if="!lostPetOptions.length"
           type="info"
           :closable="false"
-          title="你还没有可用于认领的走失记录"
-          description="请先登记走失宠物，再返回这里提交认领申请。"
+          title="还没有走失登记"
+          description="先登记走失宠物，再回来发起认领。"
         />
 
         <el-alert
           v-else-if="!canClaim"
           type="warning"
           :closable="false"
-          title="当前档案暂不支持认领"
-          description="已完成领养或已回家的档案不能继续发起认领。"
+          title="这份档案暂不能认领"
+          description="已领养或已回家的宠物不能继续认领。"
         />
 
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
@@ -140,7 +140,7 @@ onMounted(() => {
             <el-input v-model="form.applicantPhone" placeholder="请输入可联系到你的电话" clearable />
           </el-form-item>
           <el-form-item label="认领说明" prop="reason" class="action-form-span-2">
-            <el-input v-model="form.reason" type="textarea" :rows="5" placeholder="说明为什么判断这只宠物可能是你的，比如毛色、项圈、走失时间地点等" />
+            <el-input v-model="form.reason" type="textarea" :rows="5" placeholder="写下毛色、项圈、走失时间地点等线索" />
           </el-form-item>
         </el-form>
 

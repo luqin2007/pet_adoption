@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
+import ArticleDetailView from '../views/ArticleDetailView.vue'
 import ArticleHubView from '../views/ArticleHubView.vue'
 import ArticleEditorView from '../views/ArticleEditorView.vue'
 import AuthView from '../views/AuthView.vue'
@@ -11,6 +12,7 @@ import DonationCreateView from '../views/DonationCreateView.vue'
 import HomeView from '../views/HomeView.vue'
 import LostPetCenterView from '../views/LostPetCenterView.vue'
 import LostPetCreateView from '../views/LostPetCreateView.vue'
+import LostPetDetailView from '../views/LostPetDetailView.vue'
 import PetCreateView from '../views/PetCreateView.vue'
 import PetDirectoryView from '../views/PetDirectoryView.vue'
 import PetEditView from '../views/PetEditView.vue'
@@ -21,7 +23,6 @@ import PetProfileView from '../views/PetProfileView.vue'
 import ProfileCenterView from '../views/ProfileCenterView.vue'
 import RescueTaskCreateView from '../views/RescueTaskCreateView.vue'
 import RescueTaskDetailView from '../views/RescueTaskDetailView.vue'
-import ServiceWorkbenchView from '../views/ServiceWorkbenchView.vue'
 import VolunteerCenterView from '../views/VolunteerCenterView.vue'
 import VolunteerRecruitmentDetailView from '../views/VolunteerRecruitmentDetailView.vue'
 import FirstRegistrationCreateView from '../views/FirstRegistrationCreateView.vue'
@@ -106,6 +107,11 @@ const router = createRouter({
       component: ArticleHubView,
     },
     {
+      path: '/articles/:id',
+      name: 'article-detail',
+      component: ArticleDetailView,
+    },
+    {
       path: '/console/articles/new',
       name: 'article-create',
       component: ArticleEditorView,
@@ -145,9 +151,9 @@ const router = createRouter({
       },
     },
     {
-      path: '/services',
-      name: 'services',
-      component: ServiceWorkbenchView,
+      path: '/lost/:id',
+      name: 'lost-detail',
+      component: LostPetDetailView,
     },
     {
       path: '/tasks/new',

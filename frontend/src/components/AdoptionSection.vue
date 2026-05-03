@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { ArrowRight, Calendar, LocationInformation } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 
@@ -14,6 +15,17 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const visiblePets = computed(() => {
+  if (props.pets.length <= 4) {
+    return props.pets.slice(0, 4)
+  }
+  if (props.pets.length < 8) {
+    return props.pets.slice(0, 4)
+  }
+  return props.pets.slice(0, 8)
+})
+const hasPartialSingleRow = computed(() => visiblePets.value.length > 0 && visiblePets.value.length < 4)
+const hasSecondRow = computed(() => visiblePets.value.length > 4)
 
 function goToPets() {
   router.push('/pets')
@@ -43,11 +55,15 @@ function coverStyle(cover) {
 
 <template>
   <section id="adoption" class="content-section">
-    <div class="section-head">
+    <div class="section-head section-head-row">
       <h2>领养推荐</h2>
+      <el-button text type="warning" class="section-more" @click="goToPets">
+        查看全部
+        <el-icon><ArrowRight /></el-icon>
+      </el-button>
     </div>
-    <div class="pet-grid">
-      <article v-for="pet in props.pets" :key="pet.name">
+    <div class="pet-grid" :class="{ 'is-partial-row': hasPartialSingleRow, 'has-fade': hasSecondRow }">
+      <article v-for="pet in visiblePets" :key="pet.id || pet.name">
         <el-card class="pet-card" shadow="hover">
           <div class="pet-cover" :style="coverStyle(pet.cover)">
             <img v-if="isImageCover(pet.cover)" :src="pet.cover" :alt="pet.name" />
@@ -70,11 +86,9 @@ function coverStyle(cover) {
       <el-empty
         v-if="!props.loading && props.pets.length === 0"
         class="section-empty"
-        description="当前还没有可展示的领养推荐"
+        description="暂时没有领养推荐"
       />
-    </div>
-    <div class="section-action">
-      <el-button class="soft-btn" size="large" @click="goToPets">查看全部待领养宠物</el-button>
+      <div v-if="hasSecondRow" class="pet-grid-fade" aria-hidden="true"></div>
     </div>
   </section>
 </template>

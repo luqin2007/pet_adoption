@@ -47,6 +47,15 @@ public class RescueTaskController {
     }
 
     /**
+     * 获取救助任务数量
+     */
+    @GetMapping("/count")
+    public Result<Long> countRescueTasks() {
+        Long response = rescueTaskService.countRescueTasks();
+        return Result.success(response);
+    }
+
+    /**
      * 准备上报新救助任务
      */
     @PutMapping({"", "/"})

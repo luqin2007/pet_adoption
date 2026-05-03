@@ -196,7 +196,7 @@ onMounted(async () => {
           <span class="hero-chip">领养大厅</span>
           <h1>把一只流浪生命，接回一个真正的家</h1>
           <p>
-            根据后端宠物档案、健康与位置数据展示待领养毛孩子。你可以先按宠物信息和所在位置筛选，再查看合适的见面对象。
+            按类型、年龄和位置筛一筛，找到想见面的毛孩子。
           </p>
         </div>
         <div class="directory-hero-card">
@@ -286,7 +286,7 @@ onMounted(async () => {
           </div>
         </article>
 
-        <el-empty v-if="!loading && filteredPets.length === 0" description="暂无符合条件的领养档案" />
+        <el-empty v-if="!loading && filteredPets.length === 0" description="没有找到合适的领养档案" />
       </section>
     </main>
 

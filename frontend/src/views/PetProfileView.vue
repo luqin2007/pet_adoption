@@ -262,7 +262,7 @@ onMounted(() => {
 
           <h1>{{ pageTitle }}</h1>
           <p class="pet-profile-summary">
-            {{ pet.description || '这只毛孩子已经完成基础建档，当前页汇总了后端返回的基本资料、位置、标签和护理记录。' }}
+            {{ pet.description || '这只毛孩子的故事还在整理，先看看基本信息和近期位置。' }}
           </p>
 
           <div class="pet-profile-location">

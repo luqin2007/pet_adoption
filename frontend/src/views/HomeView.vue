@@ -9,7 +9,7 @@ import HeroSection from '../components/HeroSection.vue'
 import StatsOverview from '../components/StatsOverview.vue'
 import { getPets } from '../api/pets'
 import { getArticles } from '../api/publicity'
-import { getRescueTasks } from '../api/services'
+import { getRescueTaskCount } from '../api/services'
 import { getRecruitments } from '../api/volunteer'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
@@ -69,8 +69,8 @@ async function loadHomeData() {
   loading.value = true
   try {
     const [petResult, taskResult, recruitmentResult, activityResult, articleResult] = await Promise.allSettled([
-      getPets({ size: 4, status: ['SHELTERED', 'HEALTH'] }),
-      getRescueTasks({ size: 1 }),
+      getPets({ size: 9, status: ['SHELTERED', 'HEALTH'] }),
+      getRescueTaskCount(),
       getRecruitments({ size: 1, status: ['PUBLISHED'] }),
       getArticles({ size: 3, type: 'ACTIVITY' }),
       getArticles({ size: 3 }),
@@ -119,7 +119,7 @@ async function loadHomeData() {
 
     overview.value = {
       pets: petResult.status === 'fulfilled' ? Number(petResult.value?.total || petRecords.length || 0) : 0,
-      tasks: taskResult.status === 'fulfilled' ? Number(taskResult.value?.total || taskResult.value?.records?.length || 0) : 0,
+      tasks: taskResult.status === 'fulfilled' ? Number(taskResult.value || 0) : 0,
       recruitments:
         recruitmentResult.status === 'fulfilled'
           ? Number(recruitmentResult.value?.total || recruitmentResult.value?.records?.length || 0)

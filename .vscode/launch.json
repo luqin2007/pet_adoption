@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Frontend: Vite + Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend",
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/frontend/**",
+        "!**/node_modules/**"
+      ],
+      "preLaunchTask": "frontend: dev"
+    },
+    {
+      "name": "Backend: Spring Boot",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "com.example.backend.PetAdoptionApplication",
+      "projectName": "backend",
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack: Frontend + Backend",
+      "configurations": [
+        "Backend: Spring Boot",
+        "Frontend: Vite + Chrome"
+      ],
+      "stopAll": true
+    }
+  ]
+}

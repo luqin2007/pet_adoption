@@ -7,6 +7,12 @@ export function getRescueTasks(query = {}) {
   })
 }
 
+export function getRescueTaskCount() {
+  return request('/tasks/count', {
+    method: 'GET',
+  })
+}
+
 export function getRescueTask(id) {
   return request(`/tasks/${id}`, {
     method: 'GET',

@@ -245,6 +245,13 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
         return convertDto(result, task -> RescueTaskResponse.fromEntity(task, locations.get(task.getId()), mediaMap.get(task.getId())));
     }
 
+    /**
+     * 获取救助任务数量
+     */
+    public Long countRescueTasks() {
+        return count();
+    }
+
     private RescueTaskResponse buildResponse(RescueTask task) {
         Location location = locationMapper.queryByParent(RESCUE_TASK, task.getId()).one();
         List<PetMediaResponse> media = getRescueTaskMedia(task.getId());

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "test": "node test/run-static-tests.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },

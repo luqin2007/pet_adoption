@@ -65,8 +65,7 @@ function openAction(path) {
       <el-tag class="hero-tag" type="warning" effect="plain">城市联合救助计划</el-tag>
       <h1>让每一次相遇，都成为被温柔接住的开始</h1>
       <p>
-        连接居民、志愿者、医院与公益组织，建立从“发现”到“救助”再到“领养”的完整闭环。
-        每一条上报都会被记录、追踪、反馈。
+        连接居民、志愿者、医院与公益组织，让求助更快抵达，领养更安心。
       </p>
       <div class="hero-buttons">
         <el-button class="warm-btn" type="warning" size="large" @click="handleNavigate('adoption')">
@@ -80,7 +79,7 @@ function openAction(path) {
       <ul class="hero-list">
         <li><el-icon><LocationInformation /></el-icon> 覆盖 12 个城区联动响应</li>
         <li><el-icon><Bell /></el-icon> 重要事件实时通知与回访</li>
-        <li><el-icon><DataLine /></el-icon> 救助数据全流程可追溯</li>
+        <li><el-icon><DataLine /></el-icon> 救助进展清晰可查</li>
       </ul>
     </div>
 

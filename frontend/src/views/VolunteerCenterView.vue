@@ -105,50 +105,53 @@ onMounted(() => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main">
-      <div class="content-hero-copy volunteer-hero-copy-full">
-        <h1>志愿者中心</h1>
-      </div>
+      <section class="directory-hero volunteer-directory-hero">
+        <div>
+          <span class="hero-chip">志愿者中心</span>
+          <h1>把一份热心，送到真正需要的地方</h1>
+          <p>
+            按地点、时间和招募状态筛一筛，找到适合参与的志愿任务。
+          </p>
+        </div>
+        <div class="directory-hero-card">
+          <strong>{{ filteredRecruitments.length }}</strong>
+          <span>当前开放招募</span>
+        </div>
+      </section>
 
-      <section class="filter-panel volunteer-filter-panel">
-        <el-form label-position="top" class="console-filter-form">
-          <div class="console-filter-grid console-filter-grid-5">
-            <el-form-item label="招募标题" class="console-filter-span-2">
-              <el-input v-model="searchForm.title" placeholder="输入招募标题关键词" clearable />
-            </el-form-item>
-            <el-form-item label="省份">
-              <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
-                <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="城市">
-              <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province">
-                <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="状态">
-              <el-select v-model="searchForm.status" placeholder="状态" clearable>
-                <el-option label="招募中" value="PUBLISHED" />
-                <el-option label="草稿" value="DRAFT" />
-                <el-option label="已关闭" value="CLOSED" />
-              </el-select>
-            </el-form-item>
+      <section class="filter-panel pet-directory-filter-panel volunteer-directory-filter-panel">
+        <div class="pet-filter-row volunteer-filter-row-primary">
+          <el-input
+            v-model="searchForm.title"
+            placeholder="招募标题"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+          <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
+            <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province">
+            <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="searchForm.status" placeholder="状态" clearable>
+            <el-option label="招募中" value="PUBLISHED" />
+            <el-option label="草稿" value="DRAFT" />
+            <el-option label="已关闭" value="CLOSED" />
+          </el-select>
+        </div>
+        <div class="pet-filter-row volunteer-filter-row-secondary">
+          <el-date-picker
+            v-model="searchForm.timeRange"
+            type="daterange"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            class="full-width-control volunteer-filter-date"
+          />
+          <div class="pet-filter-action volunteer-filter-action">
+            <el-button class="warm-btn" :icon="Search" @click="handleSearch">搜索</el-button>
           </div>
-          <div class="console-filter-grid console-filter-grid-actions">
-            <el-form-item label="招募开始时间" class="console-filter-span-2">
-              <el-date-picker
-                v-model="searchForm.timeRange"
-                type="daterange"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                start-placeholder="开始时间"
-                end-placeholder="结束时间"
-                class="full-width-control"
-              />
-            </el-form-item>
-            <div class="console-filter-actions">
-              <el-button class="warm-btn" :icon="Search" @click="handleSearch">搜索</el-button>
-            </div>
-          </div>
-        </el-form>
+        </div>
       </section>
 
       <section class="volunteer-grid" v-loading="loading">
@@ -179,7 +182,11 @@ onMounted(() => {
             </div>
           </div>
         </article>
-        <el-empty v-if="!loading && filteredRecruitments.length === 0" description="当前还没有开放中的志愿招募" />
+        <el-empty
+          v-if="!loading && filteredRecruitments.length === 0"
+          class="grid-empty"
+          description="暂时没有开放招募"
+        />
       </section>
     </main>
 

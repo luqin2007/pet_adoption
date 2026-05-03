@@ -86,7 +86,7 @@ async function handleImageChange(event) {
   event.target.value = ''
   const images = files.filter(isSupportedImage)
   if (images.length !== files.length) {
-    ElMessage.warning('救助任务仅支持上传图片')
+    ElMessage.warning('救助任务只能上传图片')
   }
   if (!images.length || uploadingImages.value) {
     return
@@ -167,7 +167,7 @@ async function submitForm() {
       detailAddress: form.detailAddress.trim(),
     })
     ElMessage.success('救助任务已提交')
-    router.push(result?.id ? `/tasks/${result.id}` : '/services')
+    router.push(result?.id ? `/tasks/${result.id}` : '/console')
   } catch (error) {
     ElMessage.warning(error?.message || '提交救助任务失败')
   } finally {
@@ -218,7 +218,7 @@ onBeforeUnmount(() => {
             <el-input v-model="form.detailAddress" placeholder="例如：公园西门、桥下通道" clearable />
           </el-form-item>
           <el-form-item label="情况描述" prop="description" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="5" placeholder="描述动物数量、伤情、是否可接近、现场风险等" />
+            <el-input v-model="form.description" type="textarea" :rows="5" placeholder="写下动物数量、伤情、能否接近和现场风险" />
           </el-form-item>
           <el-form-item label="现场图片" class="action-form-span-2">
             <input ref="fileInputRef" class="profile-avatar-input" type="file" accept="image/*" multiple @change="handleImageChange" />

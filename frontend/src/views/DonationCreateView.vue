@@ -117,7 +117,7 @@ async function submitForm() {
       ],
     })
     ElMessage.success('物资捐赠已提交')
-    router.push('/services')
+    router.push('/console')
   } catch (error) {
     ElMessage.warning(error?.message || '提交物资捐赠失败')
   } finally {
@@ -139,7 +139,7 @@ onMounted(() => {
         <div>
           <span class="hero-chip">物资捐赠</span>
           <h1>登记可捐赠的救助物资</h1>
-          <p>记录食品、药品、转运用品等捐赠信息，方便工作人员确认交付方式并纳入库存。</p>
+          <p>捐赠食品、药品或转运用品时，先留下交付方式。</p>
         </div>
         <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回首页</el-button>
       </section>

@@ -18,7 +18,7 @@ const taskId = computed(() => String(route.params.id || ''))
 const pageTitle = computed(() => task.value?.summary || '救助任务详情')
 
 function goBack() {
-  router.push('/services')
+  router.push('/console')
 }
 
 function statusText(status) {
@@ -93,9 +93,9 @@ onMounted(() => {
     <main class="subpage-main rescue-detail-page" v-loading="loading">
       <section v-if="task" class="rescue-detail-hero">
         <div>
-          <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回服务台</el-button>
+          <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回个人中心</el-button>
           <h1>{{ pageTitle }}</h1>
-          <p>{{ task.description || '救助任务已创建，等待工作人员进一步跟进。' }}</p>
+          <p>{{ task.description || '救助任务已创建，我们会继续跟进。' }}</p>
           <div class="rescue-detail-meta">
             <span><Icon icon="mdi:calendar-range" />{{ formatDate(task.createTime) }}</span>
             <span><Icon icon="mdi:map-marker-radius-outline" />{{ formatLocation(task.location) }}</span>
@@ -124,7 +124,7 @@ onMounted(() => {
 
       <section v-else-if="!loading" class="pet-profile-empty">
         <el-empty description="未找到对应的救助任务">
-          <el-button class="warm-btn" @click="goBack">返回服务台</el-button>
+          <el-button class="warm-btn" @click="goBack">返回个人中心</el-button>
         </el-empty>
       </section>
     </main>

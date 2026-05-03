@@ -138,7 +138,7 @@ async function submitReset() {
              <Icon icon="mdi:check-circle-outline" style="font-size: 4rem; color: #10b981; margin-bottom: 1rem;" />
              <h2 style="font-size: 1.5rem; color: #1f2937; margin-bottom: 1rem;">密码修改成功</h2>
              <p style="color: #6b7280; margin-bottom: 2rem;">
-               您的密码已经成功重置。请使用新密码重新登录。<br/>(5秒后自动跳转至登录页面)
+               密码已重置，请使用新密码登录。<br/>(5 秒后跳转到登录页)
              </p>
              <el-button type="warning" @click="goLogin" style="width: 100%;">
                 立即登录

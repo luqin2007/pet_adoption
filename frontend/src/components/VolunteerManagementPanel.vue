@@ -1077,7 +1077,7 @@ onMounted(async () => {
     <template #header>
       <div class="profile-card-header">
         <strong>志愿者管理</strong>
-        <span>按你的身份展示招募、申请、激励和活动排班</span>
+        <span>招募、申请、激励和排班都在这里</span>
       </div>
     </template>
 
@@ -1297,7 +1297,7 @@ onMounted(async () => {
         <div class="volunteer-activity-block">
           <div class="volunteer-block-head">
             <strong>志愿活动排班</strong>
-            <span>工作人员安排排班，志愿者确认并参与</span>
+            <span>排班安排与确认</span>
           </div>
           <el-form label-position="top" class="console-filter-form">
             <div class="console-filter-grid console-filter-grid-4">
@@ -1372,7 +1372,7 @@ onMounted(async () => {
         <div class="volunteer-activity-block">
           <div class="volunteer-block-head">
             <strong>活动报告</strong>
-            <span>志愿者提交活动报告，工作人员审核</span>
+            <span>活动报告与审核</span>
           </div>
 
           <el-form label-position="top" class="console-filter-form">
@@ -1495,7 +1495,7 @@ onMounted(async () => {
           type="textarea"
           :autosize="{ minRows: 4, maxRows: 7 }"
           :disabled="recruitmentStatusForm.autoReason"
-          :placeholder="recruitmentStatusForm.autoReason ? '系统将自动记录关闭时间' : '当前尚未到招募结束时间，请填写关闭原因'"
+          :placeholder="recruitmentStatusForm.autoReason ? '关闭时间会自动保存' : '招募未结束，请填写原因'"
         />
       </el-form-item>
     </el-form>

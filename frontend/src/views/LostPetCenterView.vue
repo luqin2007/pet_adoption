@@ -2,12 +2,14 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import { Search } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
 import { getLostPets } from '../api/lost'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
+const router = useRouter()
 const loading = ref(false)
 const lostPets = ref([])
 const total = ref(0)
@@ -89,6 +91,13 @@ function changePage(nextPage) {
   loadLostPets()
 }
 
+function openLostPetDetail(id) {
+  if (!id) {
+    return
+  }
+  router.push(`/lost/${id}`)
+}
+
 function formatDate(value) {
   if (!value) {
     return '时间待补充'
@@ -140,7 +149,16 @@ onMounted(async () => {
       </section>
 
       <section class="lost-grid" v-loading="loading">
-        <article v-for="item in visibleRecords" :key="item.id" class="lost-card">
+        <article
+          v-for="item in visibleRecords"
+          :key="item.id"
+          class="lost-card"
+          tabindex="0"
+          role="button"
+          @click="openLostPetDetail(item.id)"
+          @keyup.enter="openLostPetDetail(item.id)"
+          @keyup.space="openLostPetDetail(item.id)"
+        >
           <div class="lost-cover">
             <img v-if="item.petCover" :src="item.petCover" :alt="item.name" loading="lazy" />
             <div v-else class="lost-cover-placeholder">暂无图片</div>
@@ -161,13 +179,13 @@ onMounted(async () => {
               <span v-if="item.features"><Icon icon="mdi:star-four-points-outline" />{{ item.features }}</span>
               <span><Icon icon="mdi:phone-outline" />{{ item.ownerName }} · {{ item.contactPhone }}</span>
             </div>
-
-            <div class="lost-actions">
-              <el-button text type="warning">查看线索</el-button>
-            </div>
           </div>
         </article>
-        <el-empty v-if="!loading && visibleRecords.length === 0" description="当前没有符合条件的丢失宠物记录" />
+        <el-empty
+          v-if="!loading && visibleRecords.length === 0"
+          class="grid-empty"
+          description="没有找到相关走失记录"
+        />
       </section>
 
       <div class="user-admin-pagination">

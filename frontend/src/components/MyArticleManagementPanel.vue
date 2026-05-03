@@ -64,11 +64,11 @@ const canUseCurrentMode = computed(() => {
 const pageTitle = computed(() => (isManageMode.value ? '文章管理' : '我的文章'))
 const pageHint = computed(() => {
   if (isManageMode.value) {
-    return '工作人员可在这里统一查看已发布内容，并按业务需要下线文章或活动。'
+    return '查看已发布内容，必要时下线文章或活动。'
   }
   return isWorker.value
-    ? '你可以创建和管理自己的救助故事、活动推广与科普知识。'
-    : '你可以创建和管理自己的救助故事，其他类型仅工作人员可发布。'
+    ? '管理你的救助故事、活动消息和养护知识。'
+    : '管理你的救助故事。'
 })
 const articleTypeOptions = computed(() => (isManageMode.value || isWorker.value ? ARTICLE_TYPE_OPTIONS : ARTICLE_TYPE_OPTIONS.filter((item) => item.value === 'STORY')))
 
@@ -291,7 +291,7 @@ onMounted(() => {
         <el-table-column label="更新时间" min-width="175">
           <template #default="{ row }">{{ formatDate(row.updateTime) }}</template>
         </el-table-column>
-        <el-table-column label="数据" width="170">
+        <el-table-column label="互动" width="170">
           <template #default="{ row }">
             <div class="article-metrics-cell">
               <span>浏览 {{ row.viewCount || 0 }}</span>
@@ -333,7 +333,7 @@ onMounted(() => {
     </section>
 
     <section v-else class="pet-admin-section">
-      <el-empty description="当前账号没有文章管理权限" />
+      <el-empty description="没有文章管理权限" />
     </section>
   </el-card>
 </template>
