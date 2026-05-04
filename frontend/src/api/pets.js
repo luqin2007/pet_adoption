@@ -78,6 +78,13 @@ export function updatePetStatus(id, payload) {
   })
 }
 
+export function getPetStatusRecords(id, query = {}) {
+  return request(`/pets/${id}/status`, {
+    method: 'GET',
+    query,
+  })
+}
+
 export function addPetLocation(id, payload) {
   return request(`/pets/${id}/location`, {
     method: 'POST',

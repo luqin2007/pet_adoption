@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshRight, Search } from '@element-plus/icons-vue'
-import { deleteArticle, getArticles, updateArticleStatus } from '../api/publicity'
+import { deleteArticle, getArticles, updateArticleStatus } from '../api/article'
 import { useUserStore } from '../stores/user'
 import { useRouter } from 'vue-router'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
@@ -233,42 +233,33 @@ onMounted(() => {
     </template>
 
     <section v-if="canUseCurrentMode" class="pet-admin-section article-admin-shell">
-      <div class="console-filter-form article-console-filter-form">
-        <div class="console-filter-grid article-filter-grid article-filter-grid-primary">
-          <el-form-item label="标题">
-            <el-input v-model="searchForm.title" clearable placeholder="按标题搜索" @keyup.enter="page.page = 1; loadArticles()" />
-          </el-form-item>
-          <el-form-item label="文章类型">
-            <el-select v-model="searchForm.type" clearable placeholder="全部类型">
-              <el-option v-for="item in articleTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="文章状态">
-            <el-select v-model="searchForm.status" clearable placeholder="全部状态">
-              <el-option v-for="item in ARTICLE_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
+      <section class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
+        <div class="pet-filter-row article-filter-row-inline">
+          <el-input v-model="searchForm.title" clearable placeholder="标题" @keyup.enter="page.page = 1; loadArticles()" />
+          <el-select v-model="searchForm.type" clearable placeholder="文章类型">
+            <el-option v-for="item in articleTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+          <el-select v-model="searchForm.status" clearable placeholder="文章状态">
+            <el-option v-for="item in ARTICLE_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </div>
 
-        <div class="article-filter-grid-secondary">
-          <el-form-item label="发布时间" class="article-time-field">
-            <el-date-picker
-              v-model="searchForm.timeRange"
-              type="datetimerange"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              range-separator="至"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-              class="full-width-control"
-            />
-          </el-form-item>
-          <div class="article-filter-actions article-filter-actions-left">
-            <el-button class="soft-btn" :icon="RefreshRight" @click="resetSearch">重置</el-button>
+        <div class="pet-filter-row article-filter-row-secondary">
+          <el-date-picker
+            v-model="searchForm.timeRange"
+            type="datetimerange"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            class="article-filter-date full-width-control"
+          />
+          <div class="pet-filter-action article-filter-action">
             <el-button v-if="!isManageMode" class="soft-btn" :icon="Plus" @click="goCreateArticle">发表文章</el-button>
-            <el-button class="soft-btn article-search-btn" :icon="Search" :loading="loading" @click="page.page = 1; loadArticles()">搜索</el-button>
+            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="page.page = 1; loadArticles()">搜索</el-button>
           </div>
         </div>
-      </div>
+      </section>
 
       <el-table :data="rows" v-loading="loading" class="user-admin-table">
         <el-table-column prop="title" label="标题" min-width="260" show-overflow-tooltip />
@@ -300,7 +291,7 @@ onMounted(() => {
             </div>
           </template>
         </el-table-column>
-        <el-table-column :width="actionCollapsed ? 52 : 230" fixed="right">
+        <el-table-column width="40" class-name="action-col">
           <template #header>
             <TableActionColumnHeader
               :title="isManageMode ? '处理' : '操作'"

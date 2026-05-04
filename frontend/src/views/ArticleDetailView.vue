@@ -5,7 +5,7 @@ import { ArrowLeft } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getArticleById } from '../api/publicity'
+import { getArticleById } from '../api/article'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const route = useRoute()

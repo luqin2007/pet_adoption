@@ -69,11 +69,11 @@ function openAction(path) {
       </p>
       <div class="hero-buttons">
         <el-button class="warm-btn" type="warning" size="large" @click="handleNavigate('adoption')">
-          查看领养专区
+          领养专区
           <el-icon><ArrowRight /></el-icon>
         </el-button>
         <el-button class="soft-btn" size="large" @click="handleNavigate('news')">
-          查看近期活动
+          近期活动
         </el-button>
       </div>
       <ul class="hero-list">

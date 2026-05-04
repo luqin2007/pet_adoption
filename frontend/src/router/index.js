@@ -26,6 +26,7 @@ import RescueTaskDetailView from '../views/RescueTaskDetailView.vue'
 import VolunteerCenterView from '../views/VolunteerCenterView.vue'
 import VolunteerRecruitmentDetailView from '../views/VolunteerRecruitmentDetailView.vue'
 import FirstRegistrationCreateView from '../views/FirstRegistrationCreateView.vue'
+import AuditHistoryView from '../views/AuditHistoryView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -196,6 +197,14 @@ const router = createRouter({
       path: '/console',
       name: 'profile-center',
       component: ProfileCenterView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/console/audit-history',
+      name: 'audit-history',
+      component: AuditHistoryView,
       meta: {
         requiresAuth: true,
       },

@@ -201,7 +201,13 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
             cover = fileService.getCoverUrl(lostPet.getId(), LOST_PET);
         }
 
-        return LostPetResponse.create(lostPet, location, owner, pet, cover, pets);
+        List<PetMediaResponse> files = fileService.getBaseMapper()
+                .queryByParent(LOST_PET, lostPet.getId())
+                .list().stream()
+                .map(file -> PetMediaResponse.create(file, LOST_PET))
+                .toList();
+
+        return LostPetResponse.create(lostPet, location, owner, pet, cover, pets, files);
     }
 
     /**
@@ -239,8 +245,10 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
                 pets.values().stream().map(Pet::getId).collect(Collectors.toSet()));
         Set<Long> lostPetIds = result.getRecords().stream().map(LostPet::getId).collect(Collectors.toSet());
         Map<Long, String> lostPetCovers = fileService.getCoverUrls(LOST_PET, lostPetIds);
+        Map<Long, List<PetMediaResponse>> files = fileService.getBaseMapper().queryByParents(LOST_PET, lostPetIds)
+                .groupList(MediaFile::getParentId, file -> PetMediaResponse.create(file, LOST_PET));
         return convertDto(result, lostPet ->
-                LostPetResponse.createBatch(lostPet, locations, owners, pets, petCovers, lostPetCovers));
+                LostPetResponse.createBatch(lostPet, locations, owners, pets, petCovers, lostPetCovers, files));
     }
 
     /**

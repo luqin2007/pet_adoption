@@ -4,14 +4,15 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Connection, Delete, Lock, Message, RefreshRight, Search, SwitchButton, Upload, User } from '@element-plus/icons-vue'
 import { getLostPets, updateLostPet, updateLostPetStatus } from '../api/lost'
-import { createPet, deletePetById, getPets, updatePetStatus, uploadPetMedia } from '../api/pets'
+import { createPet, deletePetById, getPets, updatePetStatus, uploadPetMedia, getPetStatusRecords } from '../api/pets'
 import { resolveCatalogValue, splitCatalogValue, useInformationCatalog } from '../composables/useInformationCatalog'
 import { deleteUserAvatar, getUserById, getUsers, removeUserById, updateUserById, uploadUserAvatar } from '../api/user'
-import { deleteRescueTask, getRescueTasks, updateRescueTask, updateRescueTaskStatus, getFirstVisitRegistrations } from '../api/services'
+import { deleteRescueTask, getRescueTasks, updateRescueTask, updateRescueTaskStatus, getFirstVisitRegistrations, getRescueTaskRecords } from '../api/services'
 import { useUserStore } from '../stores/user'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
 import MyArticleManagementPanel from '../components/MyArticleManagementPanel.vue'
 import TableActionColumnHeader from '../components/TableActionColumnHeader.vue'
+import AuditRecordList from '../components/AuditRecordList.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -64,6 +65,10 @@ const taskTotal = ref(0)
 const firstRegRows = ref([])
 const firstRegTotal = ref(0)
 const firstRegKeyword = ref('')
+const petAuditRecords = ref([])
+const petAuditLoading = ref(false)
+const taskAuditRecords = ref([])
+const taskAuditLoading = ref(false)
 const firstRegPage = reactive({ page: 1, size: 10 })
 const userPage = reactive({
   page: 1,
@@ -278,6 +283,12 @@ const lostPetStatusOptions = [
   { label: '已找到', value: 'CLAIMED' },
   { label: '已关闭', value: 'CLOSED' },
 ]
+
+const petStatusLabelMap = Object.fromEntries(petStatusOptions.map(o => [o.value, o.label]))
+const taskStatusLabelMap = Object.fromEntries([
+  ...rescueTaskStatusOptions,
+  { label: '待审核', value: 'CREATED' },
+])
 
 const visibleUsers = computed(() => {
   const text = userKeyword.value.trim().toLowerCase()
@@ -1018,6 +1029,17 @@ function openPetDialog(row) {
     reason: '',
   })
   petDialogVisible.value = true
+  loadPetAuditRecords(row.id)
+}
+
+async function loadPetAuditRecords(petId) {
+  petAuditLoading.value = true
+  petAuditRecords.value = []
+  try {
+    const res = await getPetStatusRecords(petId, { page: 1, size: 5 })
+    petAuditRecords.value = res?.records || res?.data || []
+  } catch { /* ignore */ }
+  finally { petAuditLoading.value = false }
 }
 
 async function savePetInfo() {
@@ -1257,6 +1279,17 @@ function openTaskReviewDialog(row) {
     reason: '',
   })
   taskReviewDialogVisible.value = true
+  loadTaskAuditRecords(row.id)
+}
+
+async function loadTaskAuditRecords(taskId) {
+  taskAuditLoading.value = true
+  taskAuditRecords.value = []
+  try {
+    const res = await getRescueTaskRecords(taskId)
+    taskAuditRecords.value = Array.isArray(res) ? res : res?.records || res?.data || []
+  } catch { /* ignore */ }
+  finally { taskAuditLoading.value = false }
 }
 
 async function saveTaskInfo() {
@@ -1568,10 +1601,14 @@ watch(
             </div>
           </template>
 
-          <div class="user-admin-toolbar">
-            <el-input v-model="userKeyword" clearable placeholder="按用户名、邮箱、联系方式或角色搜索" />
-            <el-button :loading="loadingUsers" @click="loadUsers">刷新</el-button>
-          </div>
+          <section class="filter-panel pet-directory-filter-panel">
+            <div class="pet-filter-row pet-filter-row-primary">
+              <el-input v-model="userKeyword" clearable placeholder="按用户名、邮箱、联系方式或角色搜索" />
+              <div class="pet-filter-action">
+                <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingUsers" @click="loadUsers">刷新</el-button>
+              </div>
+            </div>
+          </section>
 
           <el-table :data="visibleUsers" v-loading="loadingUsers" class="user-admin-table">
             <el-table-column prop="username" label="用户名" min-width="130" />
@@ -1593,7 +1630,7 @@ watch(
                 </el-tooltip>
               </template>
             </el-table-column>
-              <el-table-column width="170" fixed="right">
+              <el-table-column width="40" class-name="action-col">
                 <template #header>
                   <TableActionColumnHeader title="操作" :collapsed="userActionCollapsed" @toggle="userActionCollapsed = !userActionCollapsed" />
                 </template>
@@ -1635,68 +1672,47 @@ watch(
           </template>
 
           <section class="pet-admin-section">
-            <el-form label-position="top" class="console-filter-form">
-              <div class="console-filter-grid console-filter-grid-5">
-                <el-form-item label="名称">
-                  <el-input v-model="petSearchForm.name" clearable placeholder="宠物名称关键词" />
-                </el-form-item>
-                <el-form-item label="类型">
-                  <el-select v-model="petSearchForm.type" clearable filterable placeholder="宠物类型" @change="handlePetSearchTypeChange">
-                    <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="品种">
-                  <el-select v-model="petSearchForm.breed" clearable filterable placeholder="宠物品种" :disabled="!petSearchForm.type">
-                    <el-option v-for="item in petSearchBreedOptions" :key="item" :label="item" :value="item" />
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="性别">
-                  <el-select v-model="petSearchForm.sex" clearable placeholder="宠物性别">
-                    <el-option label="未知" value="未知" />
-                    <el-option label="公" value="公" />
-                    <el-option label="母" value="母" />
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="状态">
-                  <el-select v-model="petSearchForm.status" clearable placeholder="宠物状态">
-                    <el-option v-for="item in petStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
-                </el-form-item>
+            <section class="filter-panel pet-directory-filter-panel">
+              <div class="pet-filter-row pet-filter-row-primary">
+                <el-input v-model="petSearchForm.name" clearable placeholder="名称" />
+                <el-select v-model="petSearchForm.type" clearable filterable placeholder="类型" @change="handlePetSearchTypeChange">
+                  <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
+                </el-select>
+                <el-select v-model="petSearchForm.breed" clearable filterable placeholder="品种" :disabled="!petSearchForm.type">
+                  <el-option v-for="item in petSearchBreedOptions" :key="item" :label="item" :value="item" />
+                </el-select>
+                <el-select v-model="petSearchForm.sex" clearable placeholder="性别">
+                  <el-option label="未知" value="未知" />
+                  <el-option label="公" value="公" />
+                  <el-option label="母" value="母" />
+                </el-select>
+                <el-select v-model="petSearchForm.status" clearable placeholder="状态">
+                  <el-option v-for="item in petStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
               </div>
-
-              <div class="console-filter-grid console-filter-grid-5">
-                <el-form-item label="最小年龄（月）">
-                  <el-input-number v-model="petSearchForm.age0" :min="0" :controls="false" class="full-width-control" />
-                </el-form-item>
-                <el-form-item label="最大年龄（月）">
-                  <el-input-number v-model="petSearchForm.age1" :min="0" :controls="false" class="full-width-control" />
-                </el-form-item>
-                <el-form-item label="省份">
+              <div class="pet-filter-row pet-filter-row-secondary">
+                <div class="pet-age-range">
+                  <el-input-number v-model="petSearchForm.age0" :min="0" :controls="false" placeholder="最小月龄" />
+                  <span>至</span>
+                  <el-input-number v-model="petSearchForm.age1" :min="0" :controls="false" placeholder="最大月龄" />
+                </div>
+                <div class="pet-cascader-group pet-cascader-group-3">
                   <el-select v-model="petSearchForm.province" clearable filterable placeholder="省份" @change="handlePetSearchProvinceChange">
                     <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
                   </el-select>
-                </el-form-item>
-                <el-form-item label="城市">
                   <el-select v-model="petSearchForm.city" clearable filterable placeholder="城市" :disabled="!petSearchForm.province" @change="handlePetSearchCityChange">
                     <el-option v-for="item in petSearchCityOptions" :key="item" :label="item" :value="item" />
                   </el-select>
-                </el-form-item>
-                <el-form-item label="区县">
                   <el-select v-model="petSearchForm.district" clearable filterable placeholder="区县" :disabled="!petSearchForm.city">
                     <el-option v-for="item in petSearchDistrictOptions" :key="item" :label="item" :value="item" />
                   </el-select>
-                </el-form-item>
-              </div>
-
-              <div class="console-filter-grid console-filter-grid-actions">
-                <el-form-item label="详细地点" class="console-filter-span-2">
-                  <el-input v-model="petSearchForm.address" clearable placeholder="例如：地铁口、东门、桥下" />
-                </el-form-item>
-                <div class="console-filter-actions">
+                </div>
+                <el-input v-model="petSearchForm.address" clearable placeholder="详细地点" />
+                <div class="pet-filter-action">
                   <el-button class="warm-btn" :icon="Search" :loading="loadingPets" @click="searchPets">搜索</el-button>
                 </div>
               </div>
-            </el-form>
+            </section>
             <el-table :data="visiblePets" v-loading="loadingPets" class="user-admin-table">
               <el-table-column label="宠物" min-width="180">
                 <template #default="{ row }">
@@ -1718,7 +1734,7 @@ watch(
                 <template #default="{ row }">{{ petLocationText(row) }}</template>
               </el-table-column>
               <el-table-column prop="health" label="健康" min-width="140" />
-                <el-table-column width="240" fixed="right">
+                <el-table-column width="40" class-name="action-col">
                   <template #header>
                     <TableActionColumnHeader title="操作" :collapsed="petActionCollapsed" @toggle="petActionCollapsed = !petActionCollapsed" />
                   </template>
@@ -1755,56 +1771,37 @@ watch(
           </template>
 
           <section class="pet-admin-section">
-            <el-form label-position="top" class="console-filter-form">
-              <div class="console-filter-grid console-filter-grid-5">
-                <el-form-item label="名称">
-                  <el-input v-model="lostPetSearchForm.name" clearable placeholder="宠物名称关键词" />
-                </el-form-item>
-                <el-form-item label="类型">
-                  <el-select v-model="lostPetSearchForm.type" clearable filterable placeholder="宠物类型" @change="handleLostPetSearchTypeChange">
-                    <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="品种">
-                  <el-select v-model="lostPetSearchForm.breed" clearable filterable placeholder="宠物品种" :disabled="!lostPetSearchForm.type">
-                    <el-option v-for="item in lostPetSearchBreedOptions" :key="item" :label="item" :value="item" />
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="状态">
-                  <el-select v-model="lostPetSearchForm.status" clearable placeholder="报备状态">
-                    <el-option v-for="item in lostPetStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="省份">
+            <section class="filter-panel pet-directory-filter-panel">
+              <div class="pet-filter-row lost-filter-grid-top">
+                <el-input v-model="lostPetSearchForm.name" clearable placeholder="名称" />
+                <el-select v-model="lostPetSearchForm.type" clearable filterable placeholder="类型" @change="handleLostPetSearchTypeChange">
+                  <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
+                </el-select>
+                <el-select v-model="lostPetSearchForm.breed" clearable filterable placeholder="品种" :disabled="!lostPetSearchForm.type">
+                  <el-option v-for="item in lostPetSearchBreedOptions" :key="item" :label="item" :value="item" />
+                </el-select>
+                <el-select v-model="lostPetSearchForm.status" clearable placeholder="状态">
+                  <el-option v-for="item in lostPetStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+                </el-select>
+              </div>
+              <div class="pet-filter-row lost-filter-grid-bottom">
+                <div class="pet-cascader-group pet-cascader-group-2">
                   <el-select v-model="lostPetSearchForm.province" clearable filterable placeholder="省份" @change="handleLostPetSearchProvinceChange">
                     <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
                   </el-select>
-                </el-form-item>
-              </div>
-
-              <div class="console-filter-grid console-filter-grid-4">
-                <el-form-item label="城市">
                   <el-select v-model="lostPetSearchForm.city" clearable filterable placeholder="城市" :disabled="!lostPetSearchForm.province">
                     <el-option v-for="item in lostPetSearchCityOptions" :key="item" :label="item" :value="item" />
                   </el-select>
-                </el-form-item>
-                <el-form-item label="走失日期">
-                  <el-date-picker
-                    v-model="lostPetSearchForm.lostDate"
-                    type="date"
-                    value-format="YYYY-MM-DD"
-                    placeholder="选择日期"
-                  />
-                </el-form-item>
-                <el-form-item label="详细地点">
-                  <el-input v-model="lostPetSearchForm.address" clearable placeholder="例如：公园西门、商场停车场" />
-                </el-form-item>
+                </div>
+                <div class="pet-inline-group">
+                  <el-date-picker v-model="lostPetSearchForm.lostDate" type="date" value-format="YYYY-MM-DD" placeholder="走失日期" />
+                  <el-input v-model="lostPetSearchForm.address" clearable placeholder="详细地点" />
+                </div>
+                <div class="pet-filter-action">
+                  <el-button class="warm-btn" :icon="Search" :loading="loadingLostPets" @click="searchLostPets">搜索</el-button>
+                </div>
               </div>
-
-              <div class="console-filter-actions">
-                <el-button class="warm-btn" :icon="Search" :loading="loadingLostPets" @click="searchLostPets">搜索</el-button>
-              </div>
-            </el-form>
+            </section>
 
             <el-table :data="visibleLostPets" v-loading="loadingLostPets" class="user-admin-table">
               <el-table-column label="宠物" min-width="220">
@@ -1835,7 +1832,7 @@ watch(
               <el-table-column label="匹配结果" min-width="180">
                 <template #default="{ row }">{{ row.petName || '暂未匹配到流浪宠物档案' }}</template>
               </el-table-column>
-                <el-table-column width="200" fixed="right">
+                <el-table-column width="40" class-name="action-col">
                   <template #header>
                     <TableActionColumnHeader title="操作" :collapsed="lostPetActionCollapsed" @toggle="lostPetActionCollapsed = !lostPetActionCollapsed" />
                   </template>
@@ -1870,10 +1867,14 @@ watch(
           </template>
 
           <section class="pet-admin-section">
-            <div class="user-admin-toolbar">
-              <el-input v-model="taskKeyword" clearable placeholder="按标题、类型、位置或状态搜索" />
-              <el-button :icon="RefreshRight" :loading="loadingTasks" @click="loadTasks">刷新</el-button>
-            </div>
+            <section class="filter-panel pet-directory-filter-panel">
+              <div class="pet-filter-row pet-filter-row-primary">
+                <el-input v-model="taskKeyword" clearable placeholder="按标题、类型、位置或状态搜索" />
+                <div class="pet-filter-action">
+                  <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingTasks" @click="loadTasks">刷新</el-button>
+                </div>
+              </div>
+            </section>
             <el-table :data="visibleTasks" v-loading="loadingTasks" class="user-admin-table">
               <el-table-column label="任务" min-width="220">
                 <template #default="{ row }">
@@ -1892,7 +1893,7 @@ watch(
                 <template #default="{ row }">{{ rescueTaskLocationText(row) }}</template>
               </el-table-column>
               <el-table-column prop="description" label="描述" min-width="220" show-overflow-tooltip />
-                <el-table-column width="210" fixed="right">
+                <el-table-column width="40" class-name="action-col">
                   <template #header>
                     <TableActionColumnHeader title="操作" :collapsed="taskActionCollapsed" @toggle="taskActionCollapsed = !taskActionCollapsed" />
                   </template>
@@ -1928,15 +1929,19 @@ watch(
             </div>
           </template>
           <section class="pet-admin-section">
-            <div class="user-admin-toolbar">
-              <el-input
-                v-model="firstRegKeyword"
-                clearable
-                placeholder="按宠物名称搜索"
-                @keyup.enter="loadFirstRegistrations"
-              />
-              <el-button :icon="RefreshRight" :loading="loadingFirstReg" @click="loadFirstRegistrations">刷新</el-button>
-            </div>
+            <section class="filter-panel pet-directory-filter-panel">
+              <div class="pet-filter-row pet-filter-row-primary">
+                <el-input
+                  v-model="firstRegKeyword"
+                  clearable
+                  placeholder="按宠物名称搜索"
+                  @keyup.enter="loadFirstRegistrations"
+                />
+                <div class="pet-filter-action">
+                  <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingFirstReg" @click="loadFirstRegistrations">刷新</el-button>
+                </div>
+              </div>
+            </section>
             <el-table :data="firstRegRows" v-loading="loadingFirstReg" class="user-admin-table">
               <el-table-column label="宠物名称" prop="name" min-width="120" />
               <el-table-column label="年龄" width="80">
@@ -2098,6 +2103,7 @@ watch(
           />
         </el-form-item>
       </el-form>
+      <AuditRecordList :records="petAuditRecords" :loading="petAuditLoading" type="pet" :target-id="petEditForm.id" :status-labels="petStatusLabelMap" />
       <template #footer>
         <el-button @click="petDialogVisible = false">取消</el-button>
         <el-button type="warning" :loading="savingPet" @click="savePetInfo">保存审核</el-button>
@@ -2242,6 +2248,7 @@ watch(
           />
         </el-form-item>
       </el-form>
+      <AuditRecordList :records="taskAuditRecords" :loading="taskAuditLoading" type="task" :target-id="taskReviewForm.id" :status-labels="taskStatusLabelMap" />
       <template #footer>
         <el-button @click="taskReviewDialogVisible = false">取消</el-button>
         <el-button type="warning" :loading="savingTask" @click="saveTaskReview">保存审核</el-button>

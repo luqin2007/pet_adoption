@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
-import { ArrowRight, RefreshRight } from '@element-plus/icons-vue'
+import { ArrowRight, Plus, RefreshRight } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
@@ -199,9 +199,9 @@ onMounted(async () => {
             按类型、年龄和位置筛一筛，找到想见面的毛孩子。
           </p>
         </div>
-        <div class="directory-hero-card">
-          <strong>{{ filteredPets.length }}</strong>
-          <span>当前可浏览的领养档案</span>
+        <div class="directory-hero-side">
+          <span class="directory-hero-count">{{ filteredPets.length }} 份领养档案</span>
+          <el-button class="warm-btn directory-hero-action" :icon="Plus" @click="router.push('/pets/new')">发现宠物</el-button>
         </div>
       </section>
 
@@ -237,15 +237,17 @@ onMounted(async () => {
         </div>
 
         <div class="pet-filter-row pet-filter-row-secondary">
-          <el-select v-model="filters.province" placeholder="省" clearable filterable @change="handleFilterProvinceChange">
-            <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-          <el-select v-model="filters.city" placeholder="市" clearable filterable :disabled="!filters.province" @change="handleFilterCityChange">
-            <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-          <el-select v-model="filters.district" placeholder="县 / 县级市" clearable filterable :disabled="!filters.city">
-            <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
-          </el-select>
+          <div class="pet-cascader-group pet-cascader-group-3">
+            <el-select v-model="filters.province" placeholder="省" clearable filterable @change="handleFilterProvinceChange">
+              <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-select v-model="filters.city" placeholder="市" clearable filterable :disabled="!filters.province" @change="handleFilterCityChange">
+              <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-select v-model="filters.district" placeholder="县 / 县级市" clearable filterable :disabled="!filters.city">
+              <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+          </div>
           <el-input v-model="filters.address" placeholder="地址" clearable />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="RefreshRight" @click="loadPets">刷新列表</el-button>

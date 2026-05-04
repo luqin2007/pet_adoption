@@ -8,7 +8,7 @@ import FeaturedArticlesSection from '../components/FeaturedArticlesSection.vue'
 import HeroSection from '../components/HeroSection.vue'
 import StatsOverview from '../components/StatsOverview.vue'
 import { getPets } from '../api/pets'
-import { getArticles } from '../api/publicity'
+import { getArticles } from '../api/article'
 import { getRescueTaskCount } from '../api/services'
 import { getRecruitments } from '../api/volunteer'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
@@ -72,7 +72,7 @@ async function loadHomeData() {
       getPets({ size: 9, status: ['SHELTERED', 'HEALTH'] }),
       getRescueTaskCount(),
       getRecruitments({ size: 1, status: ['PUBLISHED'] }),
-      getArticles({ size: 3, type: 'ACTIVITY' }),
+      getArticles({ size: 8, type: 'ACTIVITY' }),
       getArticles({ size: 3 }),
     ])
 

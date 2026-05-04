@@ -24,6 +24,10 @@ import {
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { useUserStore } from '../stores/user'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import AuditRecordList from './AuditRecordList.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const props = defineProps({
   section: {
@@ -78,6 +82,7 @@ const applicationReviewDialogVisible = ref(false)
 const rewardDialogVisible = ref(false)
 const shiftDialogVisible = ref(false)
 const shiftStatusDialogVisible = ref(false)
+const shiftAuditRecords = ref([])
 const recordDialogVisible = ref(false)
 const recordReviewDialogVisible = ref(false)
 
@@ -150,6 +155,8 @@ const shiftStatusOptions = [
   { label: '已取消', value: 'CANCELLED' },
   { label: '缺勤', value: 'ABSENT' },
 ]
+
+const shiftStatusLabelMap = Object.fromEntries(shiftStatusOptions.map(o => [o.value, o.label]))
 
 const taskTypeOptions = [
   { label: '救助任务', value: 'RESCUE' },
@@ -860,6 +867,7 @@ function openShiftStatusDialog(row) {
   shiftStatusForm.id = row.id
   shiftStatusForm.status = row.status || ''
   shiftStatusForm.reason = ''
+  shiftAuditRecords.value = Array.isArray(row.statusRecords) ? row.statusRecords : []
   shiftStatusDialogVisible.value = true
 }
 
@@ -1085,44 +1093,36 @@ onMounted(async () => {
       <el-segmented v-if="!props.hideTabs" v-model="activeSection" :options="sections" block class="volunteer-admin-tabs" />
 
       <section v-if="activeSection === 'recruitments'" class="pet-admin-section">
-        <el-form label-position="top" class="console-filter-form">
-          <div class="console-filter-grid console-filter-grid-5">
-            <el-form-item label="招募标题" class="console-filter-span-2">
-              <el-input v-model="recruitmentSearch.title" clearable placeholder="输入招募标题关键词" />
-            </el-form-item>
-            <el-form-item label="省份">
+        <section class="filter-panel pet-directory-filter-panel">
+          <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
+            <el-input v-model="recruitmentSearch.title" clearable placeholder="招募标题" />
+            <div class="pet-cascader-group pet-cascader-group-2">
               <el-select v-model="recruitmentSearch.province" clearable filterable placeholder="省份" @change="handleRecruitmentSearchProvinceChange">
                 <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
               </el-select>
-            </el-form-item>
-            <el-form-item label="城市">
               <el-select v-model="recruitmentSearch.city" clearable filterable placeholder="城市" :disabled="!recruitmentSearch.province">
                 <el-option v-for="item in recruitmentCityOptions" :key="item" :label="item" :value="item" />
               </el-select>
-            </el-form-item>
-            <el-form-item label="状态">
-              <el-select v-model="recruitmentSearch.status" clearable placeholder="状态">
-                <el-option v-for="item in recruitmentStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
+            </div>
+            <el-select v-model="recruitmentSearch.status" clearable placeholder="状态">
+              <el-option v-for="item in recruitmentStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
           </div>
-          <div class="console-filter-grid console-filter-grid-actions">
-            <el-form-item label="招募开始时间" class="console-filter-span-2">
-              <el-date-picker
-                v-model="recruitmentSearch.timeRange"
-                type="daterange"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                start-placeholder="开始时间"
-                end-placeholder="结束时间"
-                class="full-width-control"
-              />
-            </el-form-item>
-            <div class="console-filter-actions">
+          <div class="pet-filter-row pet-filter-row-secondary volunteer-filter-row-secondary">
+            <el-date-picker
+              v-model="recruitmentSearch.timeRange"
+              type="daterange"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              class="full-width-control"
+            />
+            <div class="pet-filter-action">
               <el-button class="soft-btn" :icon="Plus" @click="openRecruitmentDialog()">新增招募</el-button>
               <el-button class="warm-btn" :icon="Search" :loading="recruitmentLoading" @click="searchRecruitments">搜索</el-button>
             </div>
           </div>
-        </el-form>
+        </section>
 
         <el-table :data="recruitmentRows" v-loading="recruitmentLoading" class="user-admin-table">
           <el-table-column prop="title" label="招募标题" min-width="220" />
@@ -1140,7 +1140,7 @@ onMounted(async () => {
           <el-table-column label="报名" width="100">
             <template #default="{ row }">{{ row.appliedCount || 0 }}/{{ row.headcount || 0 }}</template>
           </el-table-column>
-          <el-table-column :width="recruitmentActionCollapsed ? 52 : 220" fixed="right">
+          <el-table-column width="40" class-name="action-col">
             <template #header>
               <TableActionColumnHeader title="操作" :collapsed="recruitmentActionCollapsed" @toggle="recruitmentActionCollapsed = !recruitmentActionCollapsed" />
             </template>
@@ -1161,28 +1161,24 @@ onMounted(async () => {
       </section>
 
       <section v-else-if="activeSection === 'applications'" class="pet-admin-section">
-        <el-form label-position="top" class="console-filter-form">
-          <div class="console-filter-grid console-filter-grid-4">
-            <el-form-item label="状态">
-              <el-select v-model="applicationSearch.status" clearable placeholder="申请状态">
-                <el-option v-for="item in applicationStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="省份">
+        <section class="filter-panel pet-directory-filter-panel">
+          <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
+            <el-select v-model="applicationSearch.status" clearable placeholder="申请状态">
+              <el-option v-for="item in applicationStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <div class="pet-cascader-group pet-cascader-group-2">
               <el-select v-model="applicationSearch.province" clearable filterable placeholder="省份" @change="handleApplicationProvinceChange">
                 <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
               </el-select>
-            </el-form-item>
-            <el-form-item label="城市">
               <el-select v-model="applicationSearch.city" clearable filterable placeholder="城市" :disabled="!applicationSearch.province">
                 <el-option v-for="item in applicationCityOptions" :key="item" :label="item" :value="item" />
               </el-select>
-            </el-form-item>
-            <div class="console-filter-actions volunteer-inline-actions">
+            </div>
+            <div class="pet-filter-action volunteer-inline-actions">
               <el-button class="warm-btn" :icon="Search" :loading="applicationLoading" @click="searchApplications">搜索</el-button>
             </div>
           </div>
-        </el-form>
+        </section>
 
         <el-table :data="applicationRows" v-loading="applicationLoading" class="user-admin-table">
           <el-table-column prop="recruitmentTitle" label="招募计划" min-width="220" />
@@ -1205,7 +1201,7 @@ onMounted(async () => {
           <el-table-column label="审核意见" min-width="200" show-overflow-tooltip>
             <template #default="{ row }">{{ row.reviewComment || '暂无' }}</template>
           </el-table-column>
-          <el-table-column :width="applicationActionCollapsed ? 52 : 120" fixed="right">
+          <el-table-column width="40" class-name="action-col">
             <template #header>
               <TableActionColumnHeader title="操作" :collapsed="applicationActionCollapsed" @toggle="applicationActionCollapsed = !applicationActionCollapsed" />
             </template>
@@ -1226,34 +1222,28 @@ onMounted(async () => {
       </section>
 
       <section v-else-if="activeSection === 'rewards'" class="pet-admin-section">
-        <el-form label-position="top" class="console-filter-form">
-          <div class="console-filter-grid console-filter-grid-4">
-            <el-form-item label="激励状态">
-              <el-select v-model="rewardSearch.status" clearable placeholder="状态">
-                <el-option v-for="item in rewardStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="激励类型">
-              <el-select v-model="rewardSearch.type" clearable placeholder="类型">
-                <el-option v-for="item in rewardTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="统计周期">
-              <el-date-picker
-                v-model="rewardSearch.timeRange"
-                type="daterange"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                start-placeholder="开始时间"
-                end-placeholder="结束时间"
-                class="full-width-control"
-              />
-            </el-form-item>
-            <div class="console-filter-actions volunteer-inline-actions">
+        <section class="filter-panel pet-directory-filter-panel">
+          <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
+            <el-select v-model="rewardSearch.status" clearable placeholder="激励状态">
+              <el-option v-for="item in rewardStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <el-select v-model="rewardSearch.type" clearable placeholder="激励类型">
+              <el-option v-for="item in rewardTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <el-date-picker
+              v-model="rewardSearch.timeRange"
+              type="daterange"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              class="full-width-control"
+            />
+            <div class="pet-filter-action">
               <el-button v-if="isWorker" class="soft-btn" :icon="Plus" @click="openRewardDialog">新增激励</el-button>
               <el-button class="warm-btn" :icon="Search" :loading="rewardLoading" @click="searchRewards">搜索</el-button>
             </div>
           </div>
-        </el-form>
+        </section>
 
         <el-table :data="rewardRows" v-loading="rewardLoading" class="user-admin-table">
           <el-table-column label="志愿者" min-width="160">
@@ -1273,7 +1263,7 @@ onMounted(async () => {
               <el-tag type="warning" effect="plain">{{ rewardStatusText(row.status) }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column :width="rewardActionCollapsed ? 52 : 120" fixed="right">
+          <el-table-column width="40" class-name="action-col">
             <template #header>
               <TableActionColumnHeader title="操作" :collapsed="rewardActionCollapsed" @toggle="rewardActionCollapsed = !rewardActionCollapsed" />
             </template>
@@ -1299,55 +1289,49 @@ onMounted(async () => {
             <strong>志愿活动排班</strong>
             <span>排班安排与确认</span>
           </div>
-          <el-form label-position="top" class="console-filter-form">
-            <div class="console-filter-grid console-filter-grid-4">
-              <el-form-item label="排班状态">
-                <el-select v-model="shiftSearch.status" clearable placeholder="状态">
-                  <el-option v-for="item in shiftStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="任务类型">
-                <el-select v-model="shiftSearch.taskType" clearable placeholder="类型">
-                  <el-option v-for="item in taskTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="开始时间">
-                <el-date-picker
-                  v-model="shiftSearch.timeRange"
-                  type="daterange"
-                  value-format="YYYY-MM-DD HH:mm:ss"
-                  start-placeholder="开始时间"
-                  end-placeholder="结束时间"
-                  class="full-width-control"
-                />
-              </el-form-item>
-              <div class="console-filter-actions volunteer-inline-actions">
+          <section class="filter-panel pet-directory-filter-panel">
+            <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
+              <el-select v-model="shiftSearch.status" clearable placeholder="排班状态">
+                <el-option v-for="item in shiftStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+              <el-select v-model="shiftSearch.taskType" clearable placeholder="任务类型">
+                <el-option v-for="item in taskTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+              <el-date-picker
+                v-model="shiftSearch.timeRange"
+                type="daterange"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                class="full-width-control"
+              />
+              <div class="pet-filter-action">
                 <el-button v-if="isWorker" class="soft-btn" :icon="Plus" @click="openShiftDialog()">安排排班</el-button>
                 <el-button class="warm-btn" :icon="Search" :loading="shiftLoading" @click="searchShifts">搜索</el-button>
               </div>
             </div>
-          </el-form>
+          </section>
 
           <el-table :data="shiftRows" v-loading="shiftLoading" class="user-admin-table">
-            <el-table-column prop="title" label="活动标题" min-width="180" />
-            <el-table-column label="志愿者" min-width="150">
+            <el-table-column prop="title" label="活动标题" min-width="140" show-overflow-tooltip />
+            <el-table-column label="志愿者" min-width="100">
               <template #default="{ row }">{{ row.volunteerName || '待指派' }}</template>
             </el-table-column>
-            <el-table-column label="类型" width="120">
+            <el-table-column label="类型" width="100">
               <template #default="{ row }">{{ taskTypeText(row.taskType) }}</template>
             </el-table-column>
-            <el-table-column label="时间" min-width="180">
+            <el-table-column label="时间" min-width="150">
               <template #default="{ row }">{{ formatDate(row.startTime, true) }} - {{ formatDate(row.endTime, true) }}</template>
             </el-table-column>
-            <el-table-column label="状态" width="110">
+            <el-table-column label="状态" width="100">
               <template #default="{ row }">
                 <el-tag type="warning" effect="plain">{{ shiftStatusText(row.status) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="地点" min-width="220">
+            <el-table-column label="地点" min-width="160" show-overflow-tooltip>
               <template #default="{ row }">{{ locationText(row) }}</template>
             </el-table-column>
-              <el-table-column :width="shiftActionCollapsed ? 52 : 220" fixed="right">
+              <el-table-column width="40" class-name="action-col">
                 <template #header>
                   <TableActionColumnHeader title="操作" :collapsed="shiftActionCollapsed" @toggle="shiftActionCollapsed = !shiftActionCollapsed" />
                 </template>
@@ -1375,44 +1359,40 @@ onMounted(async () => {
             <span>活动报告与审核</span>
           </div>
 
-          <el-form label-position="top" class="console-filter-form">
-            <div class="console-filter-grid console-filter-grid-4">
-              <el-form-item label="报告状态">
-                <el-select v-model="recordSearch.status" clearable placeholder="状态">
-                  <el-option v-for="item in recordStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-              </el-form-item>
-              <el-form-item label="服务开始时间">
-                <el-date-picker
-                  v-model="recordSearch.timeRange"
-                  type="daterange"
-                  value-format="YYYY-MM-DD HH:mm:ss"
-                  start-placeholder="开始时间"
-                  end-placeholder="结束时间"
-                  class="full-width-control"
-                />
-              </el-form-item>
-              <div class="console-filter-actions volunteer-inline-actions">
+          <section class="filter-panel pet-directory-filter-panel">
+            <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
+              <el-select v-model="recordSearch.status" clearable placeholder="报告状态">
+                <el-option v-for="item in recordStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+              <el-date-picker
+                v-model="recordSearch.timeRange"
+                type="daterange"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                class="full-width-control"
+              />
+              <div class="pet-filter-action">
                 <el-button class="warm-btn" :icon="Search" :loading="recordLoading" @click="searchRecords">搜索</el-button>
               </div>
             </div>
-          </el-form>
+          </section>
 
           <el-table :data="recordRows" v-loading="recordLoading" class="user-admin-table">
-            <el-table-column prop="shiftTitle" label="排班标题" min-width="180" />
-            <el-table-column label="志愿者" min-width="140">
+            <el-table-column prop="shiftTitle" label="排班标题" min-width="140" show-overflow-tooltip />
+            <el-table-column label="志愿者" min-width="100">
               <template #default="{ row }">{{ row.volunteerName || '未命名' }}</template>
             </el-table-column>
-            <el-table-column prop="summary" label="服务摘要" min-width="220" show-overflow-tooltip />
-            <el-table-column label="状态" width="110">
+            <el-table-column prop="summary" label="服务摘要" min-width="160" show-overflow-tooltip />
+            <el-table-column label="状态" width="100">
               <template #default="{ row }">
                 <el-tag type="warning" effect="plain">{{ recordStatusText(row.status) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="审核意见" min-width="180" show-overflow-tooltip>
+            <el-table-column label="审核意见" min-width="140" show-overflow-tooltip>
               <template #default="{ row }">{{ row.reviewComment || '暂无' }}</template>
             </el-table-column>
-              <el-table-column :width="recordActionCollapsed ? 52 : 120" fixed="right">
+              <el-table-column width="40" class-name="action-col">
                 <template #header>
                   <TableActionColumnHeader title="操作" :collapsed="recordActionCollapsed" @toggle="recordActionCollapsed = !recordActionCollapsed" />
                 </template>
@@ -1644,6 +1624,7 @@ onMounted(async () => {
         <el-input v-model="shiftStatusForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="例如：志愿者缺勤、活动结束、临时取消" />
       </el-form-item>
     </el-form>
+    <AuditRecordList :records="shiftAuditRecords" type="shift" :target-id="shiftStatusForm.id" :status-labels="shiftStatusLabelMap" />
     <template #footer>
       <el-button @click="shiftStatusDialogVisible = false">取消</el-button>
       <el-button type="warning" :loading="savingShiftStatus" @click="saveShiftStatus">保存</el-button>

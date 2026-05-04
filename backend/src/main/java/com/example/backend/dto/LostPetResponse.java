@@ -1,20 +1,20 @@
 package com.example.backend.dto;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import com.example.backend.entity.Location;
 import com.example.backend.entity.LostPet;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.LostPetStatus;
+import static com.example.backend.entity.property.ParentType.USER;
 import com.example.backend.entity.query.LostPetLocation;
 import com.example.backend.util.FileUtils;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import static com.example.backend.entity.property.ParentType.USER;
 
 /**
  * 走失宠物报备响应
@@ -50,6 +50,7 @@ public class LostPetResponse implements IResponse {
     private String petName;
     private String petCover;
     private List<PetResponse> pets;
+    private List<PetMediaResponse> files;
 
     /**
      * User: id, username, avatar<br>
@@ -57,7 +58,8 @@ public class LostPetResponse implements IResponse {
      */
     public static LostPetResponse create(LostPet lostPet, Location location, User owner,
                                          Pet pet, String coverUrl,
-                                         List<PetResponse> pets) {
+                                         List<PetResponse> pets,
+                                         List<PetMediaResponse> files) {
         return new LostPetResponse(
                 lostPet.getId(),
                 lostPet.getName(),
@@ -79,7 +81,8 @@ public class LostPetResponse implements IResponse {
                 lostPet.getPetId(),
                 pet == null ? null : pet.getName(),
                 coverUrl,
-                pets);
+                pets,
+                files);
     }
 
     /**
@@ -96,7 +99,8 @@ public class LostPetResponse implements IResponse {
                                               Map<Long, User> owners,
                                               Map<Long, Pet> pets,
                                               Map<Long, String> petCovers,
-                                              Map<Long, String> lostPetCovers) {
+                                              Map<Long, String> lostPetCovers,
+                                              Map<Long, List<PetMediaResponse>> files) {
         Long petId = lostPet.getPetId();
         String coverUrl = petId == null ? null : petCovers.get(petId);
         if (coverUrl == null) {
@@ -107,6 +111,7 @@ public class LostPetResponse implements IResponse {
                 owners.get(lostPet.getOwnerId()),
                 petId == null ? null : pets.get(petId),
                 coverUrl,
-                List.of());
+                List.of(),
+                files.getOrDefault(petId, List.of()));
     }
 }

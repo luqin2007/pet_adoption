@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 import { ArrowRight } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
@@ -16,8 +17,25 @@ const props = defineProps({
 
 const router = useRouter()
 
+const visibleActivities = computed(() => {
+  const count = props.activities.length
+  if (count >= 8) return props.activities.slice(0, 8)
+  if (count >= 4) return props.activities.slice(0, 4)
+  return props.activities
+})
+
+const isSparse = computed(() => props.activities.length < 4)
+
 function goToArticles() {
-  router.push('/articles')
+  router.push('/articles?type=ACTIVITY')
+}
+
+function goToArticle(item) {
+  if (item?.id) {
+    router.push(`/articles/${item.id}`)
+    return
+  }
+  goToArticles()
 }
 </script>
 
@@ -30,8 +48,8 @@ function goToArticles() {
         <el-icon><ArrowRight /></el-icon>
       </el-button>
     </div>
-    <div class="activity-row">
-      <article v-for="item in props.activities" :key="item.title">
+    <div class="activity-row" :class="{ 'activity-row-sparse': isSparse }">
+      <article v-for="item in visibleActivities" :key="item.title" class="clickable-card" @click="goToArticle(item)">
         <el-card class="activity-card" shadow="hover">
           <div class="activity-cover">
             <img v-if="item.cover" :src="item.cover" :alt="item.title" loading="lazy" />
@@ -51,10 +69,6 @@ function goToArticles() {
                 {{ item.location }}
               </span>
             </div>
-            <el-button text type="warning" class="card-link" @click="goToArticles">
-              查看活动详情
-              <el-icon><ArrowRight /></el-icon>
-            </el-button>
           </div>
         </el-card>
       </article>

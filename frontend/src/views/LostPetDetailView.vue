@@ -1,7 +1,7 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
-import { ArrowLeft } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, Close, PictureFilled } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
@@ -12,8 +12,12 @@ const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const record = ref(null)
+const previewVisible = ref(false)
+const previewIndex = ref(0)
+const previewThumbsVisible = ref(true)
 
 const lostPetId = computed(() => String(route.params.id || ''))
+const mediaItems = computed(() => Array.isArray(record.value?.files) ? record.value.files : [])
 const statusText = computed(() => mapStatusText(record.value?.status))
 const statusTone = computed(() => mapStatusTone(record.value?.status))
 const basicItems = computed(() => [
@@ -22,6 +26,39 @@ const basicItems = computed(() => [
   { label: '性别', value: record.value?.sex || '待补充' },
   { label: '年龄', value: formatAge(record.value?.age) },
 ])
+
+function isImage(media) {
+  return media?.type === 'IMAGE' || media?.assetUrl?.match(/\.(png|jpe?g|webp|gif|bmp|avif)(\?|$)/i)
+}
+
+function openPreview(item) {
+  const idx = mediaItems.value.findIndex((m) => m.id === item.id)
+  previewIndex.value = idx >= 0 ? idx : 0
+  previewVisible.value = true
+}
+
+function closePreview() {
+  previewVisible.value = false
+  const video = document.querySelector('.image-viewer-video')
+  if (video) video.pause()
+}
+
+function previewPrev() {
+  if (mediaItems.value.length <= 1) return
+  previewIndex.value = (previewIndex.value - 1 + mediaItems.value.length) % mediaItems.value.length
+}
+
+function previewNext() {
+  if (mediaItems.value.length <= 1) return
+  previewIndex.value = (previewIndex.value + 1) % mediaItems.value.length
+}
+
+function handlePreviewKeydown(e) {
+  if (!previewVisible.value) return
+  if (e.key === 'ArrowLeft') previewPrev()
+  else if (e.key === 'ArrowRight') previewNext()
+  else if (e.key === 'Escape') closePreview()
+}
 
 function mapStatusText(status) {
   const map = {
@@ -102,6 +139,11 @@ watch(
 
 onMounted(() => {
   loadLostPet()
+  document.addEventListener('keydown', handlePreviewKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handlePreviewKeydown)
 })
 </script>
 
@@ -157,6 +199,17 @@ onMounted(() => {
           <h2>丢失位置</h2>
           <p>{{ formatLocation(record.location) }}</p>
         </div>
+
+        <div v-if="mediaItems.length" class="lost-detail-section lost-detail-section-wide">
+          <h2>相关图片/视频</h2>
+          <div class="lost-media-strip">
+            <div v-for="item in mediaItems" :key="item.id" class="lost-media-strip-item" @click="openPreview(item)">
+              <img v-if="isImage(item)" :src="item.assetUrl" :alt="item.name" loading="lazy" />
+              <video v-else :src="item.assetUrl" preload="metadata" />
+              <span v-if="item.name" class="lost-media-strip-label">{{ item.name }}</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section v-else-if="!loading" class="pet-profile-empty">
@@ -165,6 +218,38 @@ onMounted(() => {
         </el-empty>
       </section>
     </main>
+
+    <Transition name="viewer-fade">
+      <div v-if="previewVisible" class="image-viewer-overlay" :class="{ 'image-viewer-thumbs-hidden': !previewThumbsVisible || mediaItems.length <= 1 }" @click.self="closePreview">
+        <button class="image-viewer-close" @click="closePreview"><el-icon><Close /></el-icon></button>
+        <button v-if="mediaItems.length > 1" class="image-viewer-arrow image-viewer-prev" @click.stop="previewPrev"><el-icon><ArrowLeft /></el-icon></button>
+        <button v-if="mediaItems.length > 1" class="image-viewer-arrow image-viewer-next" @click.stop="previewNext"><el-icon><ArrowRight /></el-icon></button>
+
+        <div class="image-viewer-main">
+          <img v-if="isImage(mediaItems[previewIndex])" :src="mediaItems[previewIndex]?.assetUrl" :alt="mediaItems[previewIndex]?.name" />
+          <video v-else :src="mediaItems[previewIndex]?.assetUrl" controls autoplay class="image-viewer-video" />
+        </div>
+
+        <Transition name="thumb-slide">
+          <div v-if="previewThumbsVisible && mediaItems.length > 1" class="image-viewer-thumbs">
+            <div
+              v-for="(thumb, idx) in mediaItems"
+              :key="thumb.id"
+              class="image-viewer-thumb-item"
+              :class="{ 'is-active': idx === previewIndex }"
+              @click.stop="previewIndex = idx"
+            >
+              <img v-if="isImage(thumb)" :src="thumb.assetUrl" :alt="thumb.name" />
+              <video v-else :src="thumb.assetUrl" />
+            </div>
+          </div>
+        </Transition>
+
+        <button class="image-viewer-thumb-toggle" @click.stop="previewThumbsVisible = !previewThumbsVisible">
+          <el-icon><PictureFilled /></el-icon>
+        </button>
+      </div>
+    </Transition>
 
     <AppFooter />
   </div>

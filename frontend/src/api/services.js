@@ -52,6 +52,12 @@ export function updateRescueTaskStatus(id, payload) {
   })
 }
 
+export function getRescueTaskRecords(id) {
+  return request(`/tasks/${id}/status`, {
+    method: 'GET',
+  })
+}
+
 export function uploadRescueTaskMedia(id, file) {
   const formData = new FormData()
   formData.append('file', file)

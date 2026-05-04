@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Calendar, Location, Search, UserFilled } from '@element-plus/icons-vue'
+import { Calendar, Location, Suitcase, Search, UserFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
@@ -113,9 +113,9 @@ onMounted(() => {
             按地点、时间和招募状态筛一筛，找到适合参与的志愿任务。
           </p>
         </div>
-        <div class="directory-hero-card">
-          <strong>{{ filteredRecruitments.length }}</strong>
-          <span>当前开放招募</span>
+        <div class="directory-hero-side">
+          <span class="directory-hero-count">{{ filteredRecruitments.length }} 个当前开放招募</span>
+          <el-button class="warm-btn directory-hero-action" :icon="Suitcase" @click="router.push('/tasks/new')">申请救助</el-button>
         </div>
       </section>
 
@@ -127,12 +127,14 @@ onMounted(() => {
             clearable
             @keyup.enter="handleSearch"
           />
-          <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
-            <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-          <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province">
-            <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
-          </el-select>
+          <div class="pet-cascader-group pet-cascader-group-2">
+            <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
+              <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province">
+              <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+          </div>
           <el-select v-model="searchForm.status" placeholder="状态" clearable>
             <el-option label="招募中" value="PUBLISHED" />
             <el-option label="草稿" value="DRAFT" />

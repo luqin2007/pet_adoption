@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { ArrowRight, Calendar, LocationInformation } from '@element-plus/icons-vue'
+import { Calendar, LocationInformation } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -63,7 +63,7 @@ function coverStyle(cover) {
       </el-button>
     </div>
     <div class="pet-grid" :class="{ 'is-partial-row': hasPartialSingleRow, 'has-fade': hasSecondRow }">
-      <article v-for="pet in visiblePets" :key="pet.id || pet.name">
+      <article v-for="pet in visiblePets" :key="pet.id || pet.name" class="clickable-card" @click="goToPetProfile(pet)">
         <el-card class="pet-card" shadow="hover">
           <div class="pet-cover" :style="coverStyle(pet.cover)">
             <img v-if="isImageCover(pet.cover)" :src="pet.cover" :alt="pet.name" />
@@ -76,10 +76,6 @@ function coverStyle(cover) {
               <span><el-icon><Calendar /></el-icon>{{ pet.age }}</span>
               <span><el-icon><LocationInformation /></el-icon>{{ pet.city }}</span>
             </div>
-            <el-button text type="warning" class="card-link" @click="goToPetProfile(pet)">
-              查看宠物档案
-              <el-icon><ArrowRight /></el-icon>
-            </el-button>
           </div>
         </el-card>
       </article>

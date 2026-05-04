@@ -1,11 +1,12 @@
 package com.example.backend.dto;
 
+import java.net.URLDecoder;
+
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.util.StringUtils;
-import lombok.Data;
 
-import java.net.URLDecoder;
+import lombok.Data;
 
 @Data
 public class PageParams implements IParam {
@@ -21,7 +22,7 @@ public class PageParams implements IParam {
     public <T> Page<T> createPage() {
         Page<T> page = Page.of(this.page, size, true);
         @SuppressWarnings("deprecation")
-        String rSort = sort == null ? null : URLDecoder.decode(sort).trim();
+        String rSort = sort == null ? "" : URLDecoder.decode(sort).trim();
         if (StringUtils.hasText(rSort)) {
             boolean asc = StringUtils.hasText(this.order)
                     ? this.order.trim().equalsIgnoreCase("asc")

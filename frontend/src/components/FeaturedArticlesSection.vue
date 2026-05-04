@@ -39,7 +39,7 @@ function goToArticle(article) {
       </el-button>
     </div>
     <div class="article-row">
-      <article v-for="article in props.articles" :key="article.title">
+      <article v-for="article in props.articles" :key="article.title" class="clickable-card" @click="goToArticle(article)">
         <el-card class="article-card" shadow="hover">
           <div class="article-cover">
             <img v-if="article.cover" :src="article.cover" :alt="article.title" loading="lazy" />
@@ -57,10 +57,6 @@ function goToArticle(article) {
                 <Icon :icon="article.icon" />
                 {{ article.reading }}
               </span>
-              <el-button text type="warning" class="card-link" @click="goToArticle(article)">
-                阅读全文
-                <el-icon><ArrowRight /></el-icon>
-              </el-button>
             </div>
             <div class="article-source">
               <Icon icon="mdi:image-outline" />

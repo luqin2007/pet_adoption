@@ -2,12 +2,13 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import { Search } from '@element-plus/icons-vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getArticles } from '../api/publicity'
+import { getArticles } from '../api/article'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
+const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const articles = ref([])
@@ -100,6 +101,10 @@ function formatDate(value) {
 }
 
 onMounted(() => {
+  const queryType = route.query.type
+  if (queryType && tabOptions.some((t) => t.value === queryType)) {
+    activeType.value = queryType
+  }
   loadArticles()
 })
 </script>
