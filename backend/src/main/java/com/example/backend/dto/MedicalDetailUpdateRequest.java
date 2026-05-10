@@ -11,8 +11,6 @@ public class MedicalDetailUpdateRequest implements IRequest {
     @NotNull(message = "request.medical.detail.doctor")
     private Long doctorId;
     @NotNull(message = "request.medical.detail.complete")
-    private Boolean isCompleted;
-    @NotBlank(message = "request.medical.detail.summary")
     private String summary;
 
     private String physicalExam;
@@ -26,7 +24,6 @@ public class MedicalDetailUpdateRequest implements IRequest {
 
     public void applyTo(MedicalDetail detail) {
         detail.setDoctorId(doctorId);
-        detail.setIsCompleted(isCompleted);
         detail.setSummary(summary);
         detail.setPhysicalExam(physicalExam);
         detail.setDiagnosis(diagnosis);
