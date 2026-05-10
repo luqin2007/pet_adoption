@@ -59,18 +59,18 @@ async function loadCategories() {
 
 async function resolveCategoryId() {
   if (form.categoryId) {
-    return Number(form.categoryId)
+    return form.categoryId
   }
   const name = form.categoryName.trim() || '其他物资'
   const matched = categories.value.find((item) => item.name === name)
   if (matched?.id) {
-    return Number(matched.id)
+    return String(matched.id)
   }
   const created = await createCategory({
     name,
     description: `${name}捐赠分类`,
   })
-  return Number(created?.id)
+  return created?.id ? String(created.id) : undefined
 }
 
 async function submitForm() {

@@ -105,9 +105,9 @@ const savingRecordReview = ref(false)
 
 const isWorker = computed(() => (Number(userStore.profile.role || 0) & ROLE.WORKER) === ROLE.WORKER)
 const isVolunteer = computed(() => (Number(userStore.profile.role || 0) & ROLE.VOLUNTEER) === ROLE.VOLUNTEER)
-const loginUserId = computed(() => Number(userStore.profile.id || 0))
-const activityVolunteerId = computed(() => Number(route.query.volunteer || 0))
-const activityShiftId = computed(() => Number(route.query.shift || 0))
+const loginUserId = computed(() => String(userStore.profile.id || ''))
+const activityVolunteerId = computed(() => String(route.query.volunteer || ''))
+const activityShiftId = computed(() => String(route.query.shift || ''))
 
 const sections = computed(() => {
   const items = [{ label: '招募申请', value: 'applications' }]
@@ -744,7 +744,7 @@ async function saveReward() {
   savingReward.value = true
   try {
     await createVolunteerReward({
-      volunteerId: Number(rewardForm.volunteerId),
+      volunteerId: rewardForm.volunteerId,
       periodStart: rewardForm.periodRange?.[0],
       periodEnd: rewardForm.periodRange?.[1],
       serviceCount: rewardForm.serviceCount ? Number(rewardForm.serviceCount) : undefined,
@@ -859,7 +859,7 @@ async function saveShift() {
   try {
     if (shiftForm.id) {
       await updateVolunteerShift(shiftForm.id, {
-        volunteerId: Number(shiftForm.volunteerId),
+        volunteerId: shiftForm.volunteerId,
         province: shiftForm.province,
         city: shiftForm.city,
         district: shiftForm.district,
@@ -870,9 +870,9 @@ async function saveShift() {
       ElMessage.success('排班已更新')
     } else {
       await createVolunteerShift({
-        volunteerId: Number(shiftForm.volunteerId),
+        volunteerId: shiftForm.volunteerId,
         taskType: shiftForm.taskType,
-        taskId: shiftForm.taskId ? Number(shiftForm.taskId) : undefined,
+        taskId: shiftForm.taskId || undefined,
         title: shiftForm.title.trim(),
         content: shiftForm.content.trim() || undefined,
         province: shiftForm.province,
@@ -1062,11 +1062,11 @@ async function loadVolunteerOptions() {
 }
 
 function canWriteRecord(row) {
-  return isVolunteer.value && Number(row.volunteerId) === loginUserId.value && row.status === 'COMPLETED' && !row.recordId
+  return isVolunteer.value && String(row.volunteerId || '') === loginUserId.value && row.status === 'COMPLETED' && !row.recordId
 }
 
 function canConfirmShift(row) {
-  return isVolunteer.value && Number(row.volunteerId) === loginUserId.value && row.status === 'ASSIGNED'
+  return isVolunteer.value && String(row.volunteerId || '') === loginUserId.value && row.status === 'ASSIGNED'
 }
 
 async function loadBySection(section) {

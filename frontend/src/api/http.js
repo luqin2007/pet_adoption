@@ -32,7 +32,7 @@ function readSession() {
       accessToken: '',
       refreshToken: '',
       profile: {
-        id: 0,
+        id: '',
         username: '',
         email: '',
         avatar: '',
@@ -47,7 +47,7 @@ function readSession() {
         accessToken: '',
         refreshToken: '',
         profile: {
-          id: 0,
+          id: '',
           username: '',
           email: '',
           avatar: '',
@@ -71,7 +71,7 @@ function readSession() {
       accessToken: '',
       refreshToken: '',
       profile: {
-        id: 0,
+        id: '',
         username: '',
         email: '',
         avatar: '',

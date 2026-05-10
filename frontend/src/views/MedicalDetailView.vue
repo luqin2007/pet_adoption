@@ -36,13 +36,13 @@ const addingDiagnosis = ref(false)
 const addingTreatment = ref(false)
 const discardingPlanId = ref('')
 
-const loginUserId = computed(() => Number(userStore.profile?.id || 0))
+const loginUserId = computed(() => String(userStore.profile?.id || ''))
 const isDoctor = computed(() => hasRole(loginRole.value, ROLE.DOCTOR))
 const canEdit = computed(() => {
   if (!detail.value) return false
   if (!isDoctor.value) return false
   if (detail.value.isCompleted || detail.value.isDiscard) return false
-  return Number(detail.value.doctorId) === loginUserId.value
+  return String(detail.value.doctorId || '') === loginUserId.value
 })
 const canManageMedicalEntries = computed(() => {
   if (!detail.value) return false

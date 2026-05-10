@@ -69,8 +69,8 @@
         <el-radio-button
           v-for="doctor in doctorOptions"
           :key="doctor.id"
-          :label="Number(doctor.id)"
-          :disabled="Number(doctor.id) === loginUserId"
+          :label="String(doctor.id || '')"
+          :disabled="String(doctor.id || '') === loginUserId"
         >
           <span class="medical-transfer-doctor">
             <el-avatar :size="30" :src="doctor.avatar">
@@ -119,7 +119,7 @@ const petId = computed(() => route.query.pet || '')
 const petName = computed(() => route.query.name || '')
 const page = reactive({ page: 1, size: 10 })
 const loginRole = computed(() => Number(userStore.profile?.role || 0))
-const loginUserId = computed(() => Number(userStore.profile?.id || 0))
+const loginUserId = computed(() => String(userStore.profile?.id || ''))
 const isDoctor = computed(() => hasRole(loginRole.value, ROLE.DOCTOR))
 
 const displayedRecords = computed(() => {
@@ -158,7 +158,7 @@ function changePage(p) {
 }
 
 function isOwnedByLoginDoctor(row) {
-  return isDoctor.value && Number(row?.doctorId || 0) === loginUserId.value
+  return isDoctor.value && String(row?.doctorId || '') === loginUserId.value
 }
 
 function canCompleteDetail(row) {

@@ -54,7 +54,7 @@ const searchForm = reactive({
 
 const isWorker = computed(() => (Number(userStore.profile.role || 0) & ROLE.WORKER) === ROLE.WORKER)
 const isVolunteer = computed(() => (Number(userStore.profile.role || 0) & ROLE.VOLUNTEER) === ROLE.VOLUNTEER)
-const loginUserId = computed(() => Number(userStore.profile.id || 0))
+const loginUserId = computed(() => String(userStore.profile.id || ''))
 const isManageMode = computed(() => props.mode === 'manage')
 const canUseCurrentMode = computed(() => {
   if (isManageMode.value) {
