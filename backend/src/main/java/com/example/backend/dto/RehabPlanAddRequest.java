@@ -28,9 +28,6 @@ public class RehabPlanAddRequest implements IRequest {
     @NotBlank(message = "request.medical.rehab.task.frequency")
     private String frequency;
 
-    @NotNull(message = "request.medical.exam.text_type")
-    private String type;
-
     @NotNull(message = "request.start_time")
     private Date startTime;
 
