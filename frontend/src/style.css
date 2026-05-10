@@ -1274,7 +1274,8 @@ main {
 }
 
 .full-width-control,
-.full-width-control.el-input-number {
+.full-width-control.el-input-number,
+.full-width-control.el-date-editor {
   width: 100%;
 }
 
