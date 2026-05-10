@@ -229,6 +229,56 @@ export function addExamination(uuid, payload) {
   })
 }
 
+export function getVaccineOptions() {
+  return request('/medical/vaccine/options', {
+    method: 'GET',
+  })
+}
+
+export function getAllVaccines() {
+  return request('/medical/vaccine', {
+    method: 'GET',
+  })
+}
+
+export function getVaccines(petId) {
+  return request(`/medical/vaccine/pet/${petId}`, {
+    method: 'GET',
+  })
+}
+
+export function addVaccine(petId, payload) {
+  return request(`/medical/vaccine/pet/${petId}`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function getDewormerOptions() {
+  return request('/medical/deworm/options', {
+    method: 'GET',
+  })
+}
+
+export function getAllDeworms() {
+  return request('/medical/deworm', {
+    method: 'GET',
+  })
+}
+
+export function getDeworms(petId) {
+  return request(`/medical/deworm/pet/${petId}`, {
+    method: 'GET',
+  })
+}
+
+export function addDeworm(petId, payload) {
+  return request(`/medical/deworm/pet/${petId}`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
 export function getFirstVisitRegistrations(query = {}) {
   return request('/medical/first', {
     method: 'GET',

@@ -642,6 +642,33 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         return VaccineResponse.create(record, vaccine, item, pet, cover, login);
     }
 
+    public List<VaccineOptionResponse> getVaccineOptions() {
+        List<Vaccine> vaccines = vaccineMapper.lambdaQuery().asc(Vaccine::getCreateTime).list();
+        Map<Long, Item> items = itemMapper.groupById(vaccines.stream().map(Vaccine::getItemId),
+                Item::getId, Item::getName);
+        return vaccines.stream()
+                .map(vaccine -> VaccineOptionResponse.create(vaccine, items.get(vaccine.getItemId())))
+                .toList();
+    }
+
+    public List<VaccineResponse> getAllVaccines() {
+        List<VaccineRecord> vaccines = vaccineRecordMapper.lambdaQuery().desc(VaccineRecord::getCreateTime).list();
+        Map<Long, Vaccine> vaccineMap = vaccineMapper.groupById(vaccines.stream().map(VaccineRecord::getVaccineId));
+        Map<Long, Item> itemMap = itemMapper.groupById(
+                vaccineMap.values().stream().map(Vaccine::getItemId),
+                Item::getId, Item::getName);
+        Set<Long> petIds = vaccines.stream().map(VaccineRecord::getPetId).collect(Collectors.toSet());
+        Map<Long, Pet> pets = petService.groupById(petIds,
+                Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
+        Map<Long, User> doctorMap = userService.groupById(
+                vaccines.stream().map(VaccineRecord::getDoctorId),
+                User::getId, User::getUsername, User::getAvatar);
+        return vaccines.stream()
+                .map(record -> VaccineResponse.createBatch(record, pets, covers, vaccineMap, itemMap, doctorMap))
+                .toList();
+    }
+
     /**
      * 获取疫苗接种记录
      */
@@ -707,6 +734,33 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
 
         String cover = fileService.getCoverUrl(petId, PET);
         return DewormResponse.create(record, dewormer, dewormerItem, pet, cover, login);
+    }
+
+    public List<DewormerOptionResponse> getDewormerOptions() {
+        List<Dewormer> dewormers = dewormerMapper.lambdaQuery().asc(Dewormer::getCreateTime).list();
+        Map<Long, Item> items = itemMapper.groupById(dewormers.stream().map(Dewormer::getItemId),
+                Item::getId, Item::getName);
+        return dewormers.stream()
+                .map(dewormer -> DewormerOptionResponse.create(dewormer, items.get(dewormer.getItemId())))
+                .toList();
+    }
+
+    public List<DewormResponse> getAllDeworms() {
+        List<DewormRecord> deworms = dewormRecordMapper.lambdaQuery().desc(DewormRecord::getCreateTime).list();
+        Map<Long, Dewormer> dewormerMap = dewormerMapper.groupById(deworms.stream().map(DewormRecord::getDewormerId));
+        Map<Long, Item> itemMap = itemMapper.groupById(
+                dewormerMap.values().stream().map(Dewormer::getItemId),
+                Item::getId, Item::getName);
+        Set<Long> petIds = deworms.stream().map(DewormRecord::getPetId).collect(Collectors.toSet());
+        Map<Long, Pet> pets = petService.groupById(petIds,
+                Pet::getId, Pet::getName, Pet::getSex, Pet::getType, Pet::getBreed, Pet::getAge);
+        Map<Long, String> covers = fileService.getCoverUrls(PET, petIds);
+        Map<Long, User> doctorMap = userService.groupById(
+                deworms.stream().map(DewormRecord::getDoctorId),
+                User::getId, User::getUsername, User::getAvatar);
+        return deworms.stream()
+                .map(record -> DewormResponse.createBatch(record, pets, covers, dewormerMap, itemMap, doctorMap))
+                .toList();
     }
 
     /**

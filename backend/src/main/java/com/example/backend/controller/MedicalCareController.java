@@ -225,6 +225,18 @@ public class MedicalCareController {
         return Result.success(response);
     }
 
+    @GetMapping("/vaccine/options")
+    public Result<List<VaccineOptionResponse>> getVaccineOptions() {
+        List<VaccineOptionResponse> response = medicalService.getVaccineOptions();
+        return Result.success(response);
+    }
+
+    @GetMapping("/vaccine")
+    public Result<List<VaccineResponse>> getAllVaccines() {
+        List<VaccineResponse> response = medicalService.getAllVaccines();
+        return Result.success(response);
+    }
+
     @GetMapping("/vaccine/pet/{id}")
     public Result<List<VaccineResponse>> getVaccines(@PathVariable("id") Long petId) {
         List<VaccineResponse> response = medicalService.getVaccines(petId);
@@ -241,6 +253,18 @@ public class MedicalCareController {
     public Result<DewormResponse> addDeworm(@PathVariable("id") Long petId,
                                             @Valid @RequestBody DewormAddRequest request) {
         DewormResponse response = medicalService.addDeworm(petId, request);
+        return Result.success(response);
+    }
+
+    @GetMapping("/deworm/options")
+    public Result<List<DewormerOptionResponse>> getDewormerOptions() {
+        List<DewormerOptionResponse> response = medicalService.getDewormerOptions();
+        return Result.success(response);
+    }
+
+    @GetMapping("/deworm")
+    public Result<List<DewormResponse>> getAllDeworms() {
+        List<DewormResponse> response = medicalService.getAllDeworms();
         return Result.success(response);
     }
 

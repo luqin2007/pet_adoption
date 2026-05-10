@@ -38,6 +38,7 @@ import LostPetsPanel from '../components/LostPetsPanel.vue'
 import TasksPanel from '../components/TasksPanel.vue'
 import MedicalFirstPanel from '../components/MedicalFirstPanel.vue'
 import MedicalRecordPanel from '../components/MedicalRecordPanel.vue'
+import MedicalPreventivePanel from '../components/MedicalPreventivePanel.vue'
 import FirstRegistrationDetailPanel from '../components/FirstRegistrationDetailPanel.vue'
 import MedicalRecordDetailPanel from '../components/MedicalRecordDetailPanel.vue'
 import FirstRegistrationDetailView from '../views/FirstRegistrationDetailView.vue'
@@ -238,6 +239,8 @@ const router = createRouter({
         { path: 'medical/records', name: 'console-medical-records', component: MedicalRecordPanel, meta: { guard: 'canViewMedical' } },
         { path: 'medical/records/:id', name: 'console-medical-record-detail', component: MedicalRecordDetailPanel, meta: { guard: 'canViewMedical' } },
         { path: 'medical/detail-list', name: 'console-medical-detail-list', component: MedicalDetailListPanel, meta: { guard: 'canManageMedical' } },
+        { path: 'medical/vaccines', name: 'console-medical-vaccines', component: MedicalPreventivePanel, props: { type: 'vaccine' }, meta: { guard: 'canManageMedical' } },
+        { path: 'medical/deworms', name: 'console-medical-deworms', component: MedicalPreventivePanel, props: { type: 'deworm' }, meta: { guard: 'canManageMedical' } },
       ],
     },
     {
