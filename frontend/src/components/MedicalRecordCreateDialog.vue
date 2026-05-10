@@ -130,6 +130,8 @@ async function submitForm() {
         <el-button class="soft-btn" @click="visible = false">取消</el-button>
         <el-button class="warm-btn" :loading="submitting" @click="submitForm">创建记录</el-button>
       </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -142,5 +144,3 @@ async function submitForm() {
   width: 100%;
 }
 </style>
-  </el-dialog>
-</template>

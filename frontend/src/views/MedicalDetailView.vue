@@ -114,9 +114,9 @@ onMounted(() => { loadDetail() })
   <div class="subpage-shell">
     <AppHeader :nav-items="navItems" />
 
-    <main class="subpage-main" v-loading="loading">
-      <section v-if="detail" class="action-form-panel detail-page-panel">
-        <header class="detail-header">
+    <main class="subpage-main action-form-page" v-loading="loading">
+      <section v-if="detail" class="action-form-panel">
+        <header class="form-section-header detail-header">
           <div>
             <h2 class="detail-pet-name">{{ detail.name || '未命名' }}</h2>
             <p class="detail-pet-breed">{{ detail.type || '宠物' }} · {{ detail.breed || detail.sex || '' }}</p>
@@ -128,98 +128,76 @@ onMounted(() => { loadDetail() })
           </div>
         </header>
 
-        <template v-if="editing">
+        <div class="soap-so-row">
+          <!-- S Subjective -->
           <div class="soap-section">
-            <h3>S — 主观</h3>
-            <el-form-item label="摘要" class="edit-form-item">
-              <el-input v-model="editForm.summary" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="输入摘要" />
-            </el-form-item>
-          </div>
-
-          <div class="soap-section">
-            <h3>O — 客观</h3>
-            <el-form-item label="体格检查" class="edit-form-item">
-              <el-input v-model="editForm.physicalExam" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" placeholder="输入体格检查" />
-            </el-form-item>
-          </div>
-
-          <div class="soap-section">
-            <h3>A — 评估</h3>
-            <el-form-item label="诊断" class="edit-form-item">
-              <el-input v-model="editForm.diagnosis" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="输入诊断" />
-            </el-form-item>
-            <el-form-item label="鉴别诊断" class="edit-form-item">
-              <el-input v-model="editForm.differential" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="输入鉴别诊断" />
-            </el-form-item>
-          </div>
-
-          <div class="soap-section">
-            <h3>P — 计划</h3>
-            <el-form-item label="检查计划" class="edit-form-item">
-              <el-input v-model="editForm.exam" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="输入检查计划" />
-            </el-form-item>
-            <el-form-item label="治疗方案" class="edit-form-item">
-              <el-input v-model="editForm.treatment" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="输入治疗方案" />
-            </el-form-item>
-            <el-form-item label="医嘱" class="edit-form-item">
-              <el-input v-model="editForm.advice" type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" placeholder="输入医嘱" />
-            </el-form-item>
-          </div>
-
-          <div class="detail-bottom-actions">
-            <el-button class="soft-btn" @click="editing = false">取消编辑</el-button>
-            <el-button class="warm-btn" :loading="saving" @click="saveEdit">保存</el-button>
-          </div>
-        </template>
-
-        <template v-else>
-          <div class="soap-so-row">
-            <div class="soap-section">
-              <h3>S — 主观</h3>
+            <div v-if="editing" class="soap-edit">
+              <el-form-item label="摘要"><el-input v-model="editForm.summary" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
+            </div>
+            <div v-else>
               <div class="detail-info-row"><span class="detail-label">摘要</span><span class="detail-value">{{ detail.summary || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">主诉</span><span class="detail-value">{{ detail.description || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">现病史</span><span class="detail-value">{{ detail.history || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">既往史</span><span class="detail-value">{{ detail.pastHistory || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">生活习惯</span><span class="detail-value">{{ detail.lifeHabit || '' }}</span></div>
             </div>
+          </div>
 
-            <div class="soap-section">
-              <h3>O — 客观</h3>
-              <div class="detail-info-row"><span class="detail-label">体重</span><span class="detail-value">{{ detail.weight != null ? detail.weight + ' kg' : '' }}</span></div>
-              <div class="detail-info-row"><span class="detail-label">体温</span><span class="detail-value">{{ detail.temperature != null ? detail.temperature + ' ℃' : '' }}</span></div>
-              <div class="detail-info-row"><span class="detail-label">心率</span><span class="detail-value">{{ detail.heartRate != null ? detail.heartRate + ' 次/分' : '' }}</span></div>
-              <div class="detail-info-row"><span class="detail-label">呼吸频率</span><span class="detail-value">{{ detail.respiratoryRate != null ? detail.respiratoryRate + ' 次/分' : '' }}</span></div>
+          <!-- O Objective -->
+          <div class="soap-section">
+            <div v-if="editing" class="soap-edit">
+              <el-form-item label="体格检查"><el-input v-model="editForm.physicalExam" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
+            </div>
+            <div v-else>
+              <div class="detail-info-row"><span class="detail-label">体重</span><span class="detail-value">{{ detail.weight ?? '' }} kg</span></div>
+              <div class="detail-info-row"><span class="detail-label">体温</span><span class="detail-value">{{ detail.temperature ?? '' }} ℃</span></div>
+              <div class="detail-info-row"><span class="detail-label">心率</span><span class="detail-value">{{ detail.heartRate ?? '' }} 次/分</span></div>
+              <div class="detail-info-row"><span class="detail-label">呼吸频率</span><span class="detail-value">{{ detail.respiratoryRate ?? '' }} 次/分</span></div>
               <div class="detail-info-row"><span class="detail-label">体格检查</span><span class="detail-value">{{ detail.physicalExam || '' }}</span></div>
             </div>
           </div>
+        </div>
 
-          <div v-if="detail.objectiveDiagnoses?.length" class="soap-section">
-            <div class="collapse-trigger" @click="diagnosisExpanded = !diagnosisExpanded">
-              <span>检查结果</span>
-              <el-icon :class="{ 'is-rotated': diagnosisExpanded }"><ArrowDown /></el-icon>
-            </div>
-            <div v-show="diagnosisExpanded" class="diagnosis-list">
-              <div v-for="(item, index) in displayedDiagnoses" :key="index" class="detail-info-row">
-                <span class="detail-label">{{ item.name || '项目' }}</span>
-                <span class="detail-value">{{ item.result || item.value || '' }}</span>
-              </div>
-              <el-button v-if="hasMoreDiagnoses && !showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = true">
-                展开全部 ({{ detail.objectiveDiagnoses.length - 3 }} 项)
-              </el-button>
-              <el-button v-if="showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = false">
-                收起
-              </el-button>
-            </div>
+        <!-- 检查结果 (Objective Diagnoses) -->
+        <div v-if="detail.objectiveDiagnoses?.length" class="soap-section">
+          <div class="collapse-trigger" @click="diagnosisExpanded = !diagnosisExpanded">
+            <span>检查结果</span>
+            <el-icon :class="{ 'is-rotated': diagnosisExpanded }"><ArrowDown /></el-icon>
           </div>
+          <div v-show="diagnosisExpanded" class="diagnosis-list">
+            <div v-for="(item, index) in displayedDiagnoses" :key="index" class="detail-info-row">
+              <span class="detail-label">{{ item.name || '项目' }}</span>
+              <span class="detail-value">{{ item.result || item.value || '' }}</span>
+            </div>
+            <el-button v-if="hasMoreDiagnoses && !showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = true">
+              展开全部 ({{ detail.objectiveDiagnoses.length - 3 }} 项)
+            </el-button>
+            <el-button v-if="showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = false">
+              收起
+            </el-button>
+          </div>
+        </div>
 
-          <div class="soap-section">
-            <h3>A — 评估</h3>
+        <!-- A Assessment -->
+        <div class="soap-section">
+          <div v-if="editing" class="soap-edit">
+            <el-form-item label="诊断"><el-input v-model="editForm.diagnosis" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
+            <el-form-item label="鉴别诊断"><el-input v-model="editForm.differential" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
+          </div>
+          <div v-else>
             <div class="detail-info-row"><span class="detail-label">诊断</span><span class="detail-value">{{ detail.diagnosis || '' }}</span></div>
             <div class="detail-info-row"><span class="detail-label">鉴别诊断</span><span class="detail-value">{{ detail.differential || '' }}</span></div>
           </div>
+        </div>
 
-          <div class="soap-section">
-            <h3>P — 计划</h3>
+        <!-- P Plan -->
+        <div class="soap-section">
+          <div v-if="editing" class="soap-edit">
+            <el-form-item label="检查计划"><el-input v-model="editForm.exam" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
+            <el-form-item label="治疗方案"><el-input v-model="editForm.treatment" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
+            <el-form-item label="医嘱"><el-input v-model="editForm.advice" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
+          </div>
+          <div v-else>
             <div class="detail-info-row"><span class="detail-label">检查计划</span><span class="detail-value">{{ detail.exam || '' }}</span></div>
             <div class="detail-info-row"><span class="detail-label">治疗方案</span><span class="detail-value">{{ detail.treatment || '' }}</span></div>
             <div class="detail-info-row"><span class="detail-label">医嘱</span><span class="detail-value">{{ detail.advice || '' }}</span></div>
@@ -230,12 +208,17 @@ onMounted(() => { loadDetail() })
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="detail-bottom-actions">
-            <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回</el-button>
-            <el-button v-if="canEdit" class="warm-btn" :icon="Check" @click="startEdit">编辑</el-button>
-          </div>
-        </template>
+        <div v-if="editing" class="action-form-actions">
+          <el-button class="soft-btn" @click="editing = false">取消编辑</el-button>
+          <el-button class="warm-btn" :loading="saving" @click="saveEdit">保存</el-button>
+        </div>
+
+        <div v-if="!editing" class="detail-bottom-actions">
+          <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回</el-button>
+          <el-button v-if="canEdit" class="warm-btn" :icon="Check" @click="startEdit">编辑</el-button>
+        </div>
       </section>
 
       <el-empty v-else-if="!loading" description="病历不存在" />
@@ -247,7 +230,7 @@ onMounted(() => { loadDetail() })
 
 <style scoped>
 .detail-header {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .detail-pet-name {
@@ -267,11 +250,6 @@ onMounted(() => { loadDetail() })
   display: flex;
   gap: 8px;
   margin-top: 10px;
-}
-
-.detail-page-panel {
-  max-width: 900px;
-  margin: 0 auto;
 }
 
 .detail-bottom-actions {
@@ -311,27 +289,30 @@ onMounted(() => { loadDetail() })
   margin: 0 0 12px;
 }
 
-.edit-form-item {
-  width: 100%;
+.soap-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.edit-form-item :deep(.el-form-item__label) {
+.soap-edit :deep(.el-form-item__label) {
   font-size: 13px;
   color: var(--el-text-color-regular);
   font-weight: 500;
+  padding-bottom: 4px;
 }
 
-.edit-form-item :deep(.el-textarea__inner) {
+.soap-edit :deep(.el-textarea__inner) {
   font-size: 14px;
   line-height: 1.7;
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px 12px;
   resize: vertical;
   background: #fcfcfc;
   transition: border-color 200ms ease, background 200ms ease;
 }
 
-.edit-form-item :deep(.el-textarea__inner):focus {
+.soap-edit :deep(.el-textarea__inner):focus {
   background: #fff;
 }
 
@@ -341,10 +322,6 @@ onMounted(() => { loadDetail() })
   padding: 6px 0;
   font-size: 14px;
   line-height: 1.6;
-}
-
-.detail-info-row:first-child {
-  padding-top: 0;
 }
 
 .detail-label {
@@ -357,7 +334,6 @@ onMounted(() => { loadDetail() })
 .detail-value {
   color: var(--el-text-color-primary);
   white-space: pre-wrap;
-  min-height: 1px;
 }
 
 .collapse-trigger {
