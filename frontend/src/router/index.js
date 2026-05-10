@@ -26,7 +26,6 @@ import RescueTaskDetailView from '../views/RescueTaskDetailView.vue'
 import VolunteerCenterView from '../views/VolunteerCenterView.vue'
 import VolunteerRecruitmentDetailView from '../views/VolunteerRecruitmentDetailView.vue'
 import FirstRegistrationCreateView from '../views/FirstRegistrationCreateView.vue'
-import MedicalRecordCreateView from '../views/MedicalRecordCreateView.vue'
 import MedicalDetailView from '../views/MedicalDetailView.vue'
 import MedicalDetailCreateView from '../views/MedicalDetailCreateView.vue'
 import AuditHistoryView from '../views/AuditHistoryView.vue'
@@ -40,6 +39,7 @@ import MedicalFirstPanel from '../components/MedicalFirstPanel.vue'
 import MedicalRecordPanel from '../components/MedicalRecordPanel.vue'
 import FirstRegistrationDetailPanel from '../components/FirstRegistrationDetailPanel.vue'
 import MedicalRecordDetailPanel from '../components/MedicalRecordDetailPanel.vue'
+import FirstRegistrationDetailView from '../views/FirstRegistrationDetailView.vue'
 import MyArticleManagementPanel from '../components/MyArticleManagementPanel.vue'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
 import VolunteerApplicationDetailPanel from '../components/VolunteerApplicationDetailPanel.vue'
@@ -189,12 +189,6 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/medical/record/new',
-      name: 'medical-record-create',
-      component: MedicalRecordCreateView,
-      meta: { requiresAuth: true },
-    },
-    {
       path: '/medical/detail/new',
       name: 'medical-detail-create',
       component: MedicalDetailCreateView,
@@ -204,6 +198,12 @@ const router = createRouter({
       path: '/medical/detail/:id',
       name: 'medical-detail',
       component: MedicalDetailView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/medical/first/:id',
+      name: 'first-registration-detail',
+      component: FirstRegistrationDetailView,
       meta: { requiresAuth: true },
     },
     // --- Console routes (nested with shared layout) ---

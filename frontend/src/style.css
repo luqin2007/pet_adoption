@@ -1591,6 +1591,29 @@ main {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.console-detail-list-row {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.console-detail-list-row div {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.console-detail-list-row dt {
+  flex-shrink: 0;
+}
+
+.console-detail-list-row dd {
+  margin: 0;
+  color: #5d3927;
+  font-weight: 600;
+  font-size: 14px;
+}
+
 .console-detail-list dt {
   color: var(--muted);
   font-size: 12px;
@@ -3695,6 +3718,91 @@ main {
 .pet-profile-location-item span {
   flex: 0 0 auto;
   white-space: nowrap;
+}
+
+.pet-profile-section {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+.pet-profile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 253, 249, 0.94);
+  box-shadow: 0 8px 24px rgba(151, 96, 56, 0.06);
+  flex-wrap: wrap;
+}
+
+.pet-profile-name {
+  margin: 0;
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  font-size: clamp(26px, 3vw, 36px);
+  color: #5d3927;
+  line-height: 1.2;
+}
+
+.pet-profile-breed {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pet-profile-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pet-profile-pet-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 244, 232, 0.85);
+  color: #6c4834;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.pet-profile-pet-button:hover {
+  background: rgba(255, 235, 215, 0.95);
+  border-color: var(--accent);
+}
+
+.pet-profile-meta {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+
+.pet-profile-meta-item {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.pet-profile-meta-label {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.pet-profile-meta-value {
+  color: var(--el-text-color-primary);
+  font-weight: 600;
 }
 
 .location-add-form {

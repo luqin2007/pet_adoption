@@ -51,6 +51,16 @@
             {{ row.createTime ? new Date(row.createTime).toLocaleString('zh-CN') : '—' }}
           </template>
         </el-table-column>
+        <el-table-column width="40" class-name="action-col">
+          <template #header><TableActionColumnHeader title="操作" :collapsed="actionCollapsed" @toggle="actionCollapsed = !actionCollapsed" /></template>
+          <template #default="{ row }">
+            <div class="table-action-cell">
+              <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
+                <el-button v-if="canManageMedical" text type="primary" @click="goTreatment(row)">就诊</el-button>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
       </el-table>
       <div class="user-admin-pagination">
         <el-pagination
@@ -63,16 +73,38 @@
       </div>
     </section>
   </el-card>
+
+  <MedicalRecordCreateDialog
+    v-model="createDialogVisible"
+    :pet-id="createDialogPetId"
+    :pet-name="createDialogPetName"
+    :pet-age="createDialogPetAge"
+    @created="onRecordCreated"
+  />
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
-import { getFirstVisitRegistrations } from '../api/services'
+import { getFirstVisitRegistrations, getMedicalRecords, getMedicalDetails } from '../api/services'
+import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { ROLE, hasRole } from '../utils/roles'
+import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import MedicalRecordCreateDialog from './MedicalRecordCreateDialog.vue'
 
 const router = useRouter()
+const { canManageMedical, loginRole } = useConsoleGuards()
+
+const isDoctor = computed(() => hasRole(loginRole.value, ROLE.DOCTOR))
+
+const actionCollapsed = ref(false)
+const createDialogVisible = ref(false)
+const createDialogPetId = ref('')
+const createDialogPetName = ref('')
+const createDialogPetAge = ref(null)
+
 const loadingFirstReg = ref(false)
 const firstRegRows = ref([])
 const firstRegTotal = ref(0)
@@ -108,8 +140,70 @@ function changeFirstRegPage(page) {
   loadFirstRegistrations()
 }
 
+function openCreateDialog(row) {
+  createDialogPetId.value = row.petId || ''
+  createDialogPetName.value = row.name || ''
+  createDialogPetAge.value = row.age ?? null
+  createDialogVisible.value = true
+}
+
+function onRecordCreated() {
+  loadFirstRegistrations()
+}
+
 function goFirstRegistrationDetail(row) {
-  if (row?.id) router.push(`/console/medical/first/${row.id}`)
+  if (row?.id) router.push(`/medical/first/${row.id}`)
+}
+
+async function goTreatment(row) {
+  const petId = row.petId
+  if (!petId) {
+    ElMessage.warning('无法找到宠物信息')
+    return
+  }
+
+  try {
+    const res = await getMedicalRecords({ pet: petId, page: 1, size: 1, sort: 'create_time', order: 'desc' })
+    const latestRecord = res?.records?.[0]
+
+    if (!latestRecord) {
+      openCreateDialog(row)
+      return
+    }
+
+    const { status, id: recordId } = latestRecord
+
+    if (status === 'COMPLETED' || status === 'CANCELED') {
+      openCreateDialog(row)
+      return
+    }
+
+    if (status === 'WAITING' && isDoctor.value) {
+      router.push(`/medical/detail/new?recordId=${recordId}`)
+      return
+    }
+
+    if (status === 'PROCESSING' && isDoctor.value) {
+      const detailRes = await getMedicalDetails({ record: [recordId], page: 1, size: 1 })
+      const detail = detailRes?.records?.[0]
+      if (detail?.id) {
+        router.push(`/medical/detail/${detail.id}`)
+      } else {
+        router.push(`/medical/detail/new?recordId=${recordId}`)
+      }
+      return
+    }
+
+    const detailRes = await getMedicalDetails({ record: [recordId], page: 1, size: 1 })
+    const detail = detailRes?.records?.[0]
+    if (detail?.id) {
+      router.push(`/medical/detail/${detail.id}`)
+    } else {
+      ElMessage.info('该就诊记录暂无病历详情')
+    }
+  } catch (error) {
+    ElMessage.warning(error?.message || '获取就诊信息失败')
+  }
 }
 
 onMounted(() => {

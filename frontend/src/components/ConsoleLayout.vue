@@ -159,7 +159,7 @@ watch(
               <el-icon><Connection /></el-icon>
               <span>医疗护理</span>
             </template>
-            <el-menu-item index="/console/medical/first">初诊登记</el-menu-item>
+            <el-menu-item v-if="canManageMedical" index="/console/medical/first">初诊登记</el-menu-item>
             <el-menu-item index="/console/medical/records">就诊记录</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="api-coverage">

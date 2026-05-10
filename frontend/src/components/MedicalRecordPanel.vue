@@ -55,6 +55,7 @@
                 <el-button v-if="canEditRecord(row)" text type="warning" @click="openEditDialog(row)">编辑</el-button>
                 <el-button v-if="canCancelRecord(row)" text type="danger" @click="cancelRecord(row)">取消</el-button>
                 <el-button v-if="canViewMedicalDetail(row)" text type="primary" @click="goMedicalDetail(row)">病历</el-button>
+                <el-button text type="primary" @click="goFirstRegistration(row)">初诊</el-button>
               </div>
             </div>
           </template>
@@ -98,6 +99,14 @@
         <el-button type="warning" :loading="saving" @click="saveEdit">保存</el-button>
       </div>
     </el-dialog>
+
+    <MedicalRecordCreateDialog
+      v-model="createDialogVisible"
+      :pet-id="createDialogPetId"
+      :pet-name="createDialogPetName"
+      :pet-age="createDialogPetAge"
+      @created="onRecordCreated"
+    />
   </el-card>
 </template>
 
@@ -106,10 +115,11 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search } from '@element-plus/icons-vue'
-import { getMedicalRecords, updateMedicalRecord, getMedicalDetails } from '../api/services'
+import { getMedicalRecords, updateMedicalRecord, getMedicalDetails, getFirstVisitRegistrations } from '../api/services'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import MedicalRecordCreateDialog from './MedicalRecordCreateDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -131,6 +141,11 @@ const page = reactive({ page: 1, size: 10 })
 const editFormRef = ref()
 
 const detailIdMap = ref({})
+
+const createDialogVisible = ref(false)
+const createDialogPetId = ref('')
+const createDialogPetName = ref('')
+const createDialogPetAge = ref(null)
 
 const editForm = reactive({
   id: '', type: '', status: '', startTime: '', endTime: '', price: '', cost: '', ownerPhone: '',
@@ -186,7 +201,34 @@ function goMedicalRecordDetail(row) {
   if (row?.id) router.push(`/console/medical/records/${row.id}`)
 }
 
-function goCreateRecord() { router.push(`/medical/record/new?petId=${petId.value}`) }
+async function goFirstRegistration(row) {
+  if (!row.petId) {
+    ElMessage.warning('无法找到宠物信息')
+    return
+  }
+  try {
+    const res = await getFirstVisitRegistrations({ pet: row.petId, page: 1, size: 1 })
+    const record = res?.records?.[0]
+    if (record?.id) {
+      router.push(`/medical/first/${record.id}`)
+    } else {
+      ElMessage.info('该宠物暂无初诊登记')
+    }
+  } catch (error) {
+    ElMessage.warning(error?.message || '查找初诊登记失败')
+  }
+}
+
+function goCreateRecord() {
+  createDialogPetId.value = petId.value
+  createDialogPetName.value = petName.value
+  createDialogPetAge.value = null
+  createDialogVisible.value = true
+}
+
+function onRecordCreated() {
+  loadRecords()
+}
 
 const editRules = {
   type: [{ required: true, message: '请选择就诊类型', trigger: 'change' }],
