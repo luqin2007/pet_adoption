@@ -74,10 +74,10 @@
           </el-select>
         </el-form-item>
         <el-form-item label="开始时间">
-          <el-date-picker v-model="editForm.startTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="选择开始时间" class="full-width-control" />
+          <el-date-picker v-model="editForm.startTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss.SSS" placeholder="选择开始时间" class="full-width-control" />
         </el-form-item>
         <el-form-item label="结束时间">
-          <el-date-picker v-model="editForm.endTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="选择结束时间" class="full-width-control" />
+          <el-date-picker v-model="editForm.endTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss.SSS" placeholder="选择结束时间" class="full-width-control" />
         </el-form-item>
         <el-form-item label="预计费用">
           <el-input v-model="editForm.price" placeholder="预计费用" />
