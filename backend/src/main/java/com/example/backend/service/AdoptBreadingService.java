@@ -19,8 +19,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.example.backend.entity.property.AdoptBreadingStatus.AGREEMENT_DRAFT;
-import static com.example.backend.entity.property.AdoptBreadingStatus.AGREEMENT_SIGNED;
+import static com.example.backend.entity.property.AdoptBreadingStatus.*;
 import static com.example.backend.entity.property.AgreementType.PAPER;
 import static com.example.backend.entity.property.ParentType.AGREEMENT;
 
@@ -90,9 +89,12 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public AdoptResponse updateAdoptStatus(Long adoptId, String status) {
         // 校验
         User login = requireLoginUser();
-        requirePermission(login.isWorker());
         Adopt adopt = requireById(adoptId);
         AdoptBreadingStatus target = AdoptBreadingStatus.get(status);
+        if (target == CANCEL)
+            requirePermission(login.isWorker() || login.is(adopt.getApplicantId()));
+        else
+            requirePermission(login.isWorker());
         AdoptBreadingStatus oldStatus = adopt.getStatus();
         require(oldStatus.isChangeable(), "exception.invalidate.adopt.status_abnormal");
         // 签订状态仅能通过 signAgreement 方法实现
