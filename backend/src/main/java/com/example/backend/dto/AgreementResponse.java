@@ -1,6 +1,7 @@
 package com.example.backend.dto;
 
 import com.example.backend.entity.Agreement;
+import com.example.backend.entity.property.AgreementType;
 import com.example.backend.entity.property.ParentType;
 import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ public class AgreementResponse implements IResponse {
     private Long id;
     private Long parentId;
     private ParentType parentType;
+    private AgreementType type;
     private String content;
     private String sign;
     private Date signTime;
@@ -31,6 +33,7 @@ public class AgreementResponse implements IResponse {
                 agreement.getId(),
                 agreement.getParentId(),
                 agreement.getParentType(),
+                agreement.getType(),
                 agreement.getContent(),
                 FileUtils.generateAssetUrl(AGREEMENT, agreement.getId(), agreement.getSign()),
                 agreement.getSignTime(),

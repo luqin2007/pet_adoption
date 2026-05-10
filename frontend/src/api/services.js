@@ -86,6 +86,12 @@ export function getAdoptApplications(query = {}) {
   })
 }
 
+export function getAdoptApplication(id) {
+  return request(`/adopt/adopt/${id}`, {
+    method: 'GET',
+  })
+}
+
 export function createAdoptApplication(payload) {
   return request('/adopt/adopt', {
     method: 'POST',
@@ -93,10 +99,87 @@ export function createAdoptApplication(payload) {
   })
 }
 
+export function updateAdoptStatus(id, status) {
+  return request(`/adopt/adopt/${id}/${encodeURIComponent(status)}`, {
+    method: 'PATCH',
+  })
+}
+
 export function getBreadingApplications(query = {}) {
   return request('/adopt/breading', {
     method: 'GET',
     query,
+  })
+}
+
+export function beginAgreement() {
+  return request('/adopt/agreement', {
+    method: 'PUT',
+  })
+}
+
+export function uploadAgreementWhenAdd(uuid, file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request(`/adopt/agreement/upload/${uuid}`, {
+    method: 'POST',
+    body: formData,
+  })
+}
+
+export function deleteAgreementWhenAdd(uuid, filename) {
+  return request(`/adopt/agreement/upload/${uuid}/${encodeURIComponent(filename)}`, {
+    method: 'DELETE',
+  })
+}
+
+export function addAgreement(payload) {
+  return request('/adopt/agreement', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function getAgreements(query = {}) {
+  return request('/adopt/agreement', {
+    method: 'GET',
+    query,
+  })
+}
+
+export function getAgreement(id) {
+  return request(`/adopt/agreement/${id}`, {
+    method: 'GET',
+  })
+}
+
+export function updateAgreement(id, payload) {
+  return request(`/adopt/agreement/${id}`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function uploadAgreement(id, { file, page }) {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('page', String(page))
+  return request(`/adopt/agreement/${id}/files`, {
+    method: 'POST',
+    body: formData,
+  })
+}
+
+export function deleteAgreementFile(id, fileId) {
+  return request(`/adopt/agreement/${id}/files/${fileId}`, {
+    method: 'DELETE',
+  })
+}
+
+export function reorderAgreementFiles(id, fileOrder) {
+  return request(`/adopt/agreement/${id}/files/order`, {
+    method: 'PUT',
+    body: { fileOrder },
   })
 }
 

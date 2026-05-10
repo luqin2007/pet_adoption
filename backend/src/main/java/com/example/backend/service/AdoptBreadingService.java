@@ -70,7 +70,9 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 获取领养申请
      */
     public AdoptResponse getAdopt(Long adoptId) {
+        User login = requireLoginUser();
         Adopt adopt = requireById(adoptId);
+        requirePermission(login.isWorker() || login.is(adopt.getApplicantId()));
         return adoptBreadingFacade.buildAdoptResponse(adopt);
     }
 
@@ -78,6 +80,10 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询领养申请
      */
     public Page<AdoptResponse> getAdopts(AdoptQueryParams paramRequest, PageParams pageRequest) {
+        User login = requireLoginUser();
+        if (!login.isWorker()) {
+            paramRequest.setUser(Set.of(login.getId()));
+        }
         Page<Adopt> result = getBaseMapper().queryByRequest(paramRequest).page(pageRequest);
         return adoptBreadingFacade.buildAdoptPage(result);
     }
@@ -428,6 +434,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 获取协议
      */
     public AgreementResponse getAgreement(Long agreementId) {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
         return adoptBreadingFacade.buildAgreementResponse(agreement);
     }
@@ -436,6 +444,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询协议列表
      */
     public Page<AgreementResponse> getAgreements(AgreementQueryParams queryRequest, PageParams pageRequest) {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
         Page<Agreement> result = agreementMapper.queryByRequest(queryRequest).page(pageRequest);
         return adoptBreadingFacade.buildAgreementPage(result);
     }
