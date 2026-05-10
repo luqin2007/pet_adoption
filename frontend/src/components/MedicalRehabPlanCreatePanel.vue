@@ -27,20 +27,18 @@
             <el-input v-model="form.frequency" placeholder="例如：每日 2 次，每次 15 分钟" />
           </el-form-item>
         </section>
-        <section class="medical-edit-section">
-          <el-form-item label="宠物年龄（月）">
-            <el-input-number v-model="form.age" :min="0" :max="360" class="full-width-control" />
-          </el-form-item>
-        </section>
-        <section class="medical-edit-section">
-          <el-form-item label="开始时间">
-            <el-date-picker v-model="form.startTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss.SSS" class="full-width-control" />
-          </el-form-item>
-        </section>
-        <section class="medical-edit-section">
-          <el-form-item label="预计结束时间">
-            <el-date-picker v-model="form.endTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss.SSS" class="full-width-control" />
-          </el-form-item>
+        <section class="medical-edit-section medical-edit-section-wide">
+          <div class="rehab-plan-time-row">
+            <el-form-item label="宠物年龄（月）">
+              <el-input-number v-model="form.age" :min="0" :max="360" class="full-width-control" />
+            </el-form-item>
+            <el-form-item label="开始时间">
+              <el-date-picker v-model="form.startTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss.SSS" class="full-width-control" />
+            </el-form-item>
+            <el-form-item label="预计结束时间">
+              <el-date-picker v-model="form.endTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss.SSS" class="full-width-control" />
+            </el-form-item>
+          </div>
         </section>
         <section class="medical-edit-section medical-edit-section-wide">
           <el-form-item label="康复内容">
@@ -251,6 +249,12 @@ onMounted(() => {
   margin-top: 18px;
 }
 
+.rehab-plan-time-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.7fr) minmax(220px, 1fr) minmax(220px, 1fr);
+  gap: 12px;
+}
+
 .rehab-order-head {
   display: flex;
   align-items: center;
@@ -283,8 +287,15 @@ onMounted(() => {
 }
 
 @media (max-width: 980px) {
+  .rehab-plan-time-row,
   .rehab-order-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .rehab-plan-time-row {
+    grid-template-columns: 1fr;
   }
 }
 </style>
