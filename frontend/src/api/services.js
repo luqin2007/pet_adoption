@@ -161,6 +161,18 @@ export function updateMedicalDetail(id, payload) {
   })
 }
 
+export function completeMedicalDetail(id) {
+  return request(`/medical/detail/${id}`, {
+    method: 'PATCH',
+  })
+}
+
+export function discardMedicalDetail(id) {
+  return request(`/medical/detail/${id}`, {
+    method: 'DELETE',
+  })
+}
+
 export function getFirstVisitRegistrations(query = {}) {
   return request('/medical/first', {
     method: 'GET',

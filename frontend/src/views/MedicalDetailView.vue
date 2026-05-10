@@ -141,27 +141,70 @@ onMounted(() => { loadDetail() })
           </div>
         </header>
 
-        <div class="soap-so-row">
-          <!-- S Subjective -->
-          <div class="soap-section">
-            <div v-if="editing" class="soap-edit">
-              <el-form-item label="摘要"><el-input v-model="editForm.summary" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
+        <el-form v-if="editing" class="medical-detail-edit-form" label-position="top">
+          <section class="medical-edit-section medical-edit-section-wide">
+            <div class="medical-edit-section-title">
+              <span>S</span>
+              <strong>主观信息</strong>
             </div>
-            <div v-else>
+            <el-form-item label="摘要">
+              <el-input v-model="editForm.summary" type="textarea" :autosize="{ minRows: 2 }" placeholder="简要概括本次就诊情况" />
+            </el-form-item>
+          </section>
+
+          <section class="medical-edit-section">
+            <div class="medical-edit-section-title">
+              <span>O</span>
+              <strong>客观检查</strong>
+            </div>
+            <el-form-item label="体格检查">
+              <el-input v-model="editForm.physicalExam" type="textarea" :autosize="{ minRows: 3 }" placeholder="记录体格检查观察结果" />
+            </el-form-item>
+          </section>
+
+          <section class="medical-edit-section">
+            <div class="medical-edit-section-title">
+              <span>A</span>
+              <strong>评估诊断</strong>
+            </div>
+            <el-form-item label="诊断">
+              <el-input v-model="editForm.diagnosis" type="textarea" :autosize="{ minRows: 3 }" placeholder="填写诊断结论" />
+            </el-form-item>
+            <el-form-item label="鉴别诊断">
+              <el-input v-model="editForm.differential" type="textarea" :autosize="{ minRows: 2 }" placeholder="填写需要排除或观察的情况" />
+            </el-form-item>
+          </section>
+
+          <section class="medical-edit-section medical-edit-section-wide">
+            <div class="medical-edit-section-title">
+              <span>P</span>
+              <strong>治疗计划</strong>
+            </div>
+            <div class="medical-edit-grid">
+              <el-form-item label="检查计划">
+                <el-input v-model="editForm.exam" type="textarea" :autosize="{ minRows: 3 }" placeholder="填写后续检查安排" />
+              </el-form-item>
+              <el-form-item label="治疗方案">
+                <el-input v-model="editForm.treatment" type="textarea" :autosize="{ minRows: 3 }" placeholder="填写治疗方案" />
+              </el-form-item>
+              <el-form-item label="医嘱">
+                <el-input v-model="editForm.advice" type="textarea" :autosize="{ minRows: 3 }" placeholder="填写护理、复诊或用药建议" />
+              </el-form-item>
+            </div>
+          </section>
+        </el-form>
+
+        <template v-else>
+          <div class="soap-so-row">
+            <div class="soap-section">
               <div class="detail-info-row"><span class="detail-label">摘要</span><span class="detail-value">{{ detailSummary || '—' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">主诉</span><span class="detail-value">{{ detail.description || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">现病史</span><span class="detail-value">{{ detail.history || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">既往史</span><span class="detail-value">{{ detail.pastHistory || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">生活习惯</span><span class="detail-value">{{ detail.lifeHabit || '' }}</span></div>
             </div>
-          </div>
 
-          <!-- O Objective -->
-          <div class="soap-section">
-            <div v-if="editing" class="soap-edit">
-              <el-form-item label="体格检查"><el-input v-model="editForm.physicalExam" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
-            </div>
-            <div v-else>
+            <div class="soap-section">
               <div class="detail-info-row"><span class="detail-label">体重</span><span class="detail-value">{{ detail.weight ?? '' }} kg</span></div>
               <div class="detail-info-row"><span class="detail-label">体温</span><span class="detail-value">{{ detail.temperature ?? '' }} ℃</span></div>
               <div class="detail-info-row"><span class="detail-label">心率</span><span class="detail-value">{{ detail.heartRate ?? '' }} 次/分</span></div>
@@ -169,59 +212,43 @@ onMounted(() => { loadDetail() })
               <div class="detail-info-row"><span class="detail-label">体格检查</span><span class="detail-value">{{ detail.physicalExam || '' }}</span></div>
             </div>
           </div>
-        </div>
 
-        <!-- 检查结果 (Objective Diagnoses) -->
-        <div v-if="detail.objectiveDiagnoses?.length" class="soap-section">
-          <div class="collapse-trigger" @click="diagnosisExpanded = !diagnosisExpanded">
-            <span>检查结果</span>
-            <el-icon :class="{ 'is-rotated': diagnosisExpanded }"><ArrowDown /></el-icon>
-          </div>
-          <div v-show="diagnosisExpanded" class="diagnosis-list">
-            <div v-for="(item, index) in displayedDiagnoses" :key="index" class="detail-info-row">
-              <span class="detail-label">{{ item.name || '项目' }}</span>
-              <span class="detail-value">{{ item.result || item.value || '' }}</span>
+          <div v-if="detail.objectiveDiagnoses?.length" class="soap-section">
+            <div class="collapse-trigger" @click="diagnosisExpanded = !diagnosisExpanded">
+              <span>检查结果</span>
+              <el-icon :class="{ 'is-rotated': diagnosisExpanded }"><ArrowDown /></el-icon>
             </div>
-            <el-button v-if="hasMoreDiagnoses && !showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = true">
-              展开全部 ({{ detail.objectiveDiagnoses.length - 3 }} 项)
-            </el-button>
-            <el-button v-if="showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = false">
-              收起
-            </el-button>
+            <div v-show="diagnosisExpanded" class="diagnosis-list">
+              <div v-for="(item, index) in displayedDiagnoses" :key="index" class="detail-info-row">
+                <span class="detail-label">{{ item.name || '项目' }}</span>
+                <span class="detail-value">{{ item.result || item.value || '' }}</span>
+              </div>
+              <el-button v-if="hasMoreDiagnoses && !showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = true">
+                展开全部 ({{ detail.objectiveDiagnoses.length - 3 }} 项)
+              </el-button>
+              <el-button v-if="showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = false">
+                收起
+              </el-button>
+            </div>
           </div>
-        </div>
 
-        <!-- A Assessment -->
-        <div class="soap-section">
-          <div v-if="editing" class="soap-edit">
-            <el-form-item label="诊断"><el-input v-model="editForm.diagnosis" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
-            <el-form-item label="鉴别诊断"><el-input v-model="editForm.differential" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
-          </div>
-          <div v-else>
+          <div class="soap-section">
             <div class="detail-info-row"><span class="detail-label">诊断</span><span class="detail-value">{{ detail.diagnosis || '' }}</span></div>
             <div class="detail-info-row"><span class="detail-label">鉴别诊断</span><span class="detail-value">{{ detail.differential || '' }}</span></div>
           </div>
-        </div>
 
-        <!-- P Plan -->
-        <div class="soap-section">
-          <div v-if="editing" class="soap-edit">
-            <el-form-item label="检查计划"><el-input v-model="editForm.exam" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
-            <el-form-item label="治疗方案"><el-input v-model="editForm.treatment" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
-            <el-form-item label="医嘱"><el-input v-model="editForm.advice" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
-          </div>
-          <div v-else>
+          <div class="soap-section">
             <div class="detail-info-row"><span class="detail-label">检查计划</span><span class="detail-value">{{ detail.exam || '' }}</span></div>
             <div class="detail-info-row"><span class="detail-label">治疗方案</span><span class="detail-value">{{ detail.treatment || '' }}</span></div>
             <div class="detail-info-row"><span class="detail-label">医嘱</span><span class="detail-value">{{ detail.advice || '' }}</span></div>
-            <div v-if="detail.treatments?.length" class="diagnosis-list" style="margin-top: 12px;">
+            <div v-if="detail.treatments?.length" class="diagnosis-list">
               <div v-for="(item, index) in detail.treatments" :key="index" class="detail-info-row">
                 <span class="detail-label">{{ item.name || '治疗项' }}</span>
                 <span class="detail-value">{{ item.description || item.detail || '' }}</span>
               </div>
             </div>
           </div>
-        </div>
+        </template>
 
         <div v-if="editing" class="action-form-actions">
           <el-button class="soft-btn" @click="editing = false">取消编辑</el-button>
@@ -302,31 +329,85 @@ onMounted(() => { loadDetail() })
   margin: 0 0 12px;
 }
 
-.soap-edit {
+.medical-detail-edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.medical-edit-section {
+  min-width: 0;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 248, 240, 0.72);
+  padding: 14px;
+}
+
+.medical-edit-section-wide {
+  grid-column: 1 / -1;
+}
+
+.medical-edit-section-title {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.medical-edit-section-title span {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: var(--primary);
+  font-weight: 800;
+}
+
+.medical-edit-section-title strong {
+  color: #5d3927;
+  font-size: 15px;
+}
+
+.medical-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
-.soap-edit :deep(.el-form-item__label) {
-  font-size: 13px;
-  color: var(--el-text-color-regular);
-  font-weight: 500;
-  padding-bottom: 4px;
+.medical-detail-edit-form :deep(.el-form-item) {
+  margin-bottom: 0;
 }
 
-.soap-edit :deep(.el-textarea__inner) {
+.medical-detail-edit-form :deep(.el-form-item__label) {
+  color: #6a4a36;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  padding-bottom: 6px;
+}
+
+.medical-detail-edit-form :deep(.el-textarea__inner) {
+  border-color: rgba(243, 223, 204, 0.95);
+  border-radius: 12px;
+  background: rgba(255, 253, 249, 0.95);
+  color: var(--text);
   font-size: 14px;
   line-height: 1.7;
-  border-radius: 8px;
   padding: 10px 12px;
   resize: vertical;
-  background: #fcfcfc;
-  transition: border-color 200ms ease, background 200ms ease;
+  transition: border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
 }
 
-.soap-edit :deep(.el-textarea__inner):focus {
+.medical-detail-edit-form :deep(.el-textarea__inner):focus {
+  border-color: rgba(231, 122, 59, 0.58);
   background: #fff;
+  box-shadow: 0 0 0 3px rgba(231, 122, 59, 0.1);
 }
 
 .detail-info-row {
@@ -371,5 +452,13 @@ onMounted(() => { loadDetail() })
 .diagnosis-list {
   margin-top: 10px;
   padding-left: 4px;
+}
+
+@media (max-width: 860px) {
+  .medical-detail-edit-form,
+  .medical-edit-grid,
+  .soap-so-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
