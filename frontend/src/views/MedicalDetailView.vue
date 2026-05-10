@@ -197,7 +197,7 @@ onMounted(() => { loadDetail() })
         <template v-else>
           <div class="soap-so-row">
             <div class="soap-section">
-              <div class="detail-info-row"><span class="detail-label">摘要</span><span class="detail-value">{{ detailSummary || '—' }}</span></div>
+              <div class="detail-info-row"><span class="detail-label">摘要</span><span class="detail-value">{{ detailSummary || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">主诉</span><span class="detail-value">{{ detail.description || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">现病史</span><span class="detail-value">{{ detail.history || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">既往史</span><span class="detail-value">{{ detail.pastHistory || '' }}</span></div>

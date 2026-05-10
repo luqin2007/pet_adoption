@@ -22,10 +22,10 @@
           </template>
         </el-table-column>
         <el-table-column label="宠物" width="120">
-          <template #default="{ row }">{{ row.petName || '—' }}</template>
+          <template #default="{ row }">{{ row.petName || '' }}</template>
         </el-table-column>
         <el-table-column label="医生" width="100">
-          <template #default="{ row }">{{ row.username || '—' }}</template>
+          <template #default="{ row }">{{ row.username || '' }}</template>
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
@@ -45,7 +45,6 @@
                 <el-button v-if="canCompleteDetail(row)" text type="success" :loading="actingId === row.id" @click="completeDetail(row)">完成</el-button>
                 <el-button v-if="canDiscardDetail(row)" text type="danger" :loading="actingId === row.id" @click="discardDetail(row)">废弃</el-button>
                 <el-button v-if="canTransferDetail(row)" text type="primary" @click="openTransferDialog(row)">移交</el-button>
-                <span v-if="!hasVisibleActions(row)" class="table-action-empty">—</span>
               </div>
             </div>
           </template>
@@ -140,7 +139,7 @@ const filteredTotal = computed(() => {
 })
 
 function formatDate(value) {
-  if (!value) return '—'
+  if (!value) return ''
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return String(value)
   return date.toLocaleString('zh-CN')
@@ -341,10 +340,6 @@ onMounted(() => loadRecords())
   align-items: center;
   gap: 10px;
   min-width: 0;
-}
-
-.table-action-empty {
-  color: var(--muted);
 }
 
 @media (max-width: 640px) {
