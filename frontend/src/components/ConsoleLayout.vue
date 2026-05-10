@@ -18,6 +18,7 @@ const activeMenu = computed(() => {
   if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
   if (route.path.startsWith('/console/medical/first/')) return '/console/medical/first'
   if (route.path.startsWith('/console/medical/records/')) return '/console/medical/records'
+  if (route.path.startsWith('/console/medical/detail-list')) return '/console/medical/detail-list'
   return route.path
 })
 const canViewMedical = computed(() => canManageMedical.value || hasOwnedMedicalRecords.value)
@@ -161,7 +162,7 @@ watch(
             </template>
             <el-menu-item v-if="canManageMedical" index="/console/medical/first">初诊登记</el-menu-item>
             <el-menu-item index="/console/medical/records">就诊记录</el-menu-item>
-            <el-menu-item v-if="isLoginAdmin || hasRole(loginRole, ROLE.DOCTOR)" index="/medical/detail/list">病历</el-menu-item>
+            <el-menu-item v-if="isLoginAdmin || hasRole(loginRole, ROLE.DOCTOR)" index="/console/medical/detail-list">病历</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="api-coverage">
             <el-icon><Connection /></el-icon>

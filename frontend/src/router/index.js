@@ -40,7 +40,7 @@ import MedicalRecordPanel from '../components/MedicalRecordPanel.vue'
 import FirstRegistrationDetailPanel from '../components/FirstRegistrationDetailPanel.vue'
 import MedicalRecordDetailPanel from '../components/MedicalRecordDetailPanel.vue'
 import FirstRegistrationDetailView from '../views/FirstRegistrationDetailView.vue'
-import MedicalDetailListView from '../views/MedicalDetailListView.vue'
+import MedicalDetailListPanel from '../components/MedicalDetailListPanel.vue'
 import MyArticleManagementPanel from '../components/MyArticleManagementPanel.vue'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
 import VolunteerApplicationDetailPanel from '../components/VolunteerApplicationDetailPanel.vue'
@@ -207,12 +207,6 @@ const router = createRouter({
       component: FirstRegistrationDetailView,
       meta: { requiresAuth: true },
     },
-    {
-      path: '/medical/detail/list',
-      name: 'medical-detail-list',
-      component: MedicalDetailListView,
-      meta: { requiresAuth: true },
-    },
     // --- Console routes (nested with shared layout) ---
     {
       path: '/console',
@@ -236,6 +230,7 @@ const router = createRouter({
         { path: 'medical/first/:id', name: 'console-medical-first-detail', component: FirstRegistrationDetailPanel, meta: { guard: 'canViewMedical' } },
         { path: 'medical/records', name: 'console-medical-records', component: MedicalRecordPanel, meta: { guard: 'canViewMedical' } },
         { path: 'medical/records/:id', name: 'console-medical-record-detail', component: MedicalRecordDetailPanel, meta: { guard: 'canViewMedical' } },
+        { path: 'medical/detail-list', name: 'console-medical-detail-list', component: MedicalDetailListPanel, meta: { guard: 'canManageMedical' } },
       ],
     },
     {

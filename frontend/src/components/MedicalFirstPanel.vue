@@ -157,7 +157,7 @@ function goFirstRegistrationDetail(row) {
 }
 
 function goCaseList(row) {
-  if (row?.petId) router.push(`/medical/detail/list?pet=${row.petId}&name=${encodeURIComponent(row.name || '')}`)
+  if (row?.petId) router.push(`/console/medical/detail-list?pet=${row.petId}&name=${encodeURIComponent(row.name || '')}`)
 }
 
 async function goTreatment(row) {
