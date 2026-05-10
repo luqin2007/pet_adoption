@@ -39,6 +39,9 @@ import TasksPanel from '../components/TasksPanel.vue'
 import MedicalFirstPanel from '../components/MedicalFirstPanel.vue'
 import MedicalRecordPanel from '../components/MedicalRecordPanel.vue'
 import MedicalPreventivePanel from '../components/MedicalPreventivePanel.vue'
+import MedicalRehabPlanPanel from '../components/MedicalRehabPlanPanel.vue'
+import MedicalRehabPlanDetailPanel from '../components/MedicalRehabPlanDetailPanel.vue'
+import MedicalRehabPlanCreatePanel from '../components/MedicalRehabPlanCreatePanel.vue'
 import FirstRegistrationDetailPanel from '../components/FirstRegistrationDetailPanel.vue'
 import MedicalRecordDetailPanel from '../components/MedicalRecordDetailPanel.vue'
 import FirstRegistrationDetailView from '../views/FirstRegistrationDetailView.vue'
@@ -241,6 +244,9 @@ const router = createRouter({
         { path: 'medical/detail-list', name: 'console-medical-detail-list', component: MedicalDetailListPanel, meta: { guard: 'canManageMedical' } },
         { path: 'medical/vaccines', name: 'console-medical-vaccines', component: MedicalPreventivePanel, props: { type: 'vaccine' }, meta: { guard: 'canManageMedical' } },
         { path: 'medical/deworms', name: 'console-medical-deworms', component: MedicalPreventivePanel, props: { type: 'deworm' }, meta: { guard: 'canManageMedical' } },
+        { path: 'medical/rehab', name: 'console-medical-rehab', component: MedicalRehabPlanPanel, meta: { guard: 'canManageRehab' } },
+        { path: 'medical/rehab/new', name: 'console-medical-rehab-create', component: MedicalRehabPlanCreatePanel, meta: { guard: 'canManageRehabDoctor' } },
+        { path: 'medical/rehab/:id', name: 'console-medical-rehab-detail', component: MedicalRehabPlanDetailPanel, meta: { guard: 'canManageRehab' } },
       ],
     },
     {
@@ -282,6 +288,8 @@ router.beforeEach(async (to) => {
     let allowed = false
     if (guard === 'canManageUsers') allowed = isAdmin || isWorker
     else if (guard === 'canManageMedical') allowed = isAdmin || isWorker || isDoctor
+    else if (guard === 'canManageRehab') allowed = isDoctor || isVolunteer
+    else if (guard === 'canManageRehabDoctor') allowed = isDoctor
     else if (guard === 'canViewMedical') {
       allowed = isAdmin || isWorker || isDoctor
       if (!allowed && userStore.profile?.id) {

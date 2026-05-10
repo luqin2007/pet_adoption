@@ -14,7 +14,7 @@ public class RehabPlanQueryParams implements IParam, IValidatedRequest {
 
     @Override
     public void validate(Errors errors) {
-        //noinspection unchecked
+        // 空条件用于后台康复计划总览；指定条件时仍保持 pet 与 doctor 互斥。
         validateOne(errors, RehabPlanQueryParams::getPet, RehabPlanQueryParams::getDoctor);
     }
 }

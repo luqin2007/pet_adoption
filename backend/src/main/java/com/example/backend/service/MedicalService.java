@@ -845,7 +845,9 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         RehabPlan plan = request.create(login.getId(), petId);
         rehabPlanMapper.insert(plan);
         List<Order> orders = request.createOrders(login.getId(), plan.getId());
-        orderMapper.insert(orders);
+        if (!orders.isEmpty()) {
+            orderMapper.insert(orders);
+        }
         RehabPlanStatus status = request.createStatus(plan);
         rehabPlanStatusMapper.insert(status);
 
@@ -908,6 +910,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         User login = requireLoginUser();
         requirePermission(login.isDoctor());
         RehabPlan plan = rehabPlanMapper.requireById(planId);
+        requirePermission(login.is(plan.getDoctorId()));
 
         // 更新
         RehabPlanStatus status = request.create(planId, login.getId());

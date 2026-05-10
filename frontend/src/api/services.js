@@ -279,6 +279,53 @@ export function addDeworm(petId, payload) {
   })
 }
 
+export function createRehabPlan(petId, payload) {
+  return request(`/medical/rehab/pet/${petId}`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function getRehabPlan(id) {
+  return request(`/medical/rehab/${id}`, {
+    method: 'GET',
+  })
+}
+
+export function getRehabPlans(query = {}) {
+  return request('/medical/rehab', {
+    method: 'GET',
+    query,
+  })
+}
+
+export function updateRehabPlanStatus(id, payload) {
+  return request(`/medical/rehab/${id}/status`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function getRehabRecords(id) {
+  return request(`/medical/rehab/${id}/record`, {
+    method: 'GET',
+  })
+}
+
+export function addRehabRecord(id, payload) {
+  const formData = new FormData()
+  formData.append('step', payload.step || '')
+  formData.append('reaction', payload.reaction || '')
+  formData.append('note', payload.note || '')
+  ;(payload.files || []).forEach((file) => {
+    formData.append('files', file)
+  })
+  return request(`/medical/rehab/${id}/record`, {
+    method: 'POST',
+    body: formData,
+  })
+}
+
 export function getFirstVisitRegistrations(query = {}) {
   return request('/medical/first', {
     method: 'GET',

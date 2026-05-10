@@ -11,7 +11,7 @@ import { medicalRecordOwnerExists } from '../api/services'
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
-const { loginRole, isLoginAdmin, canManageUsers, canManageMedical, canManageArticles } = useConsoleGuards()
+const { loginRole, isLoginAdmin, canManageUsers, canManageMedical, canManageRehab, canManageArticles } = useConsoleGuards()
 const hasOwnedMedicalRecords = ref(false)
 
 const activeMenu = computed(() => {
@@ -19,9 +19,10 @@ const activeMenu = computed(() => {
   if (route.path.startsWith('/console/medical/first/')) return '/console/medical/first'
   if (route.path.startsWith('/console/medical/records/')) return '/console/medical/records'
   if (route.path.startsWith('/console/medical/detail-list')) return '/console/medical/detail-list'
+  if (route.path.startsWith('/console/medical/rehab')) return '/console/medical/rehab'
   return route.path
 })
-const canViewMedical = computed(() => canManageMedical.value || hasOwnedMedicalRecords.value)
+const canViewMedical = computed(() => canManageMedical.value || canManageRehab.value || hasOwnedMedicalRecords.value)
 
 function handleMenuSelect(index) {
   if (index === 'api-coverage') {
@@ -165,6 +166,7 @@ watch(
             <el-menu-item v-if="isLoginAdmin || hasRole(loginRole, ROLE.DOCTOR)" index="/console/medical/detail-list">病历</el-menu-item>
             <el-menu-item v-if="canManageMedical" index="/console/medical/vaccines">疫苗接种</el-menu-item>
             <el-menu-item v-if="canManageMedical" index="/console/medical/deworms">驱虫管理</el-menu-item>
+            <el-menu-item v-if="canManageRehab" index="/console/medical/rehab">康复计划</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="api-coverage">
             <el-icon><Connection /></el-icon>

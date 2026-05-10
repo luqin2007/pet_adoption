@@ -58,6 +58,7 @@
               <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
                 <el-button v-if="canManageMedical" text type="primary" @click="goTreatment(row)">就诊</el-button>
                 <el-button v-if="isDoctor" text type="success" @click="goCaseList(row)">病历</el-button>
+                <el-button v-if="isDoctor" text type="warning" @click="goRehab(row)">康复</el-button>
               </div>
             </div>
           </template>
@@ -89,7 +90,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
-import { getFirstVisitRegistrations, getMedicalRecords, getMedicalDetails } from '../api/services'
+import { getFirstVisitRegistrations, getMedicalRecords, getMedicalDetails, getRehabPlans } from '../api/services'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
@@ -208,6 +209,33 @@ async function goTreatment(row) {
     }
   } catch (error) {
     ElMessage.warning(error?.message || '获取就诊信息失败')
+  }
+}
+
+async function goRehab(row) {
+  const petId = row.petId
+  if (!petId) {
+    ElMessage.warning('无法找到宠物信息')
+    return
+  }
+
+  try {
+    const res = await getRehabPlans({ pet: [petId], page: 1, size: 1, sort: 'create_time', order: 'desc' })
+    const latestPlan = res?.records?.[0]
+    if (latestPlan?.id) {
+      router.push(`/console/medical/rehab/${latestPlan.id}`)
+      return
+    }
+    router.push({
+      path: '/console/medical/rehab/new',
+      query: {
+        pet: petId,
+        name: row.name || '',
+        age: row.age ?? 0,
+      },
+    })
+  } catch (error) {
+    ElMessage.warning(error?.message || '查找康复计划失败')
   }
 }
 
