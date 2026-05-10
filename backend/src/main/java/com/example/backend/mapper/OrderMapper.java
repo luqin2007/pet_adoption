@@ -24,6 +24,16 @@ public interface OrderMapper extends IBaseMapper<Order> {
                 .in(Order::getParentId, planIds);
     }
 
+    /**
+     * 查询指定康复计划下的所有处方<br>
+     * - 索引：(parentType, parentId)
+     */
+    default MPLambdaQuery<Order> queryByRehabPlans(Set<Long> planIds) {
+        return lambdaQuery()
+                .eq(Order::getParentType, ParentType.REHAB_PLAN)
+                .in(Order::getParentId, planIds);
+    }
+
     @Override
     default String getMissingMessage() {
         return "exception.not_found.order";

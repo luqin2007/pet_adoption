@@ -854,7 +854,10 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         // 返回
         String cover = fileService.getCoverUrl(petId, PET);
         return RehabPlanResponse.create(plan, login, pet, cover,
-                List.of(RehabPlanStatusResponse.create(status, login)));
+                List.of(RehabPlanStatusResponse.create(status, login)),
+                orders.stream()
+                        .map(order -> OrderResponse.create(order, login, itemMapper.requireById(order.getItemId(), Item::getId, Item::getName)))
+                        .toList());
     }
 
     /**
@@ -871,9 +874,10 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Map<Long, User> users = userService.groupById(
                 plans.stream().map(RehabPlanStatus::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
+        Map<Long, List<OrderResponse>> orders = getRehabOrders(Set.of(planId));
         return RehabPlanResponse.create(plan, doctor, pet, cover, plans.stream()
                 .map(record -> RehabPlanStatusResponse.createBatch(record, users))
-                .toList());
+                .toList(), orders.get(planId));
     }
 
     /**
@@ -897,8 +901,9 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Map<Long, List<RehabPlanStatusResponse>> statusRecords = statusRecordMap.stream()
                 .map(record -> RehabPlanStatusResponse.createBatch(record, users))
                 .collect(Collectors.groupingBy(RehabPlanStatusResponse::getPlanId));
+        Map<Long, List<OrderResponse>> orders = getRehabOrders(planIds);
         return convertDto(plans,
-                plan -> RehabPlanResponse.createBatch(plan, users, pets, covers, statusRecords));
+                plan -> RehabPlanResponse.createBatch(plan, users, pets, covers, statusRecords, orders));
     }
 
     /**
@@ -928,9 +933,24 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         Map<Long, User> users = userService.groupById(
                 statusRecords.stream().map(RehabPlanStatus::getUserId),
                 User::getId, User::getUsername, User::getAvatar);
+        Map<Long, List<OrderResponse>> orders = getRehabOrders(Set.of(planId));
         return RehabPlanResponse.create(plan, user, pet, cover, statusRecords.stream()
                 .map(record -> RehabPlanStatusResponse.createBatch(record, users))
-                .toList());
+                .toList(), orders.get(planId));
+    }
+
+    private Map<Long, List<OrderResponse>> getRehabOrders(Set<Long> planIds) {
+        if (planIds.isEmpty()) return Map.of();
+        List<Order> orders = orderMapper.queryByRehabPlans(planIds).list();
+        Map<Long, User> users = userService.groupById(
+                orders.stream().map(Order::getAllowerId),
+                User::getId, User::getUsername, User::getAvatar);
+        Map<Long, Item> items = itemMapper.groupById(
+                orders.stream().map(Order::getItemId),
+                Item::getId, Item::getName);
+        return orders.stream()
+                .map(order -> OrderResponse.createBatch(order, users, items))
+                .collect(Collectors.groupingBy(OrderResponse::getParentId));
     }
 
     /**

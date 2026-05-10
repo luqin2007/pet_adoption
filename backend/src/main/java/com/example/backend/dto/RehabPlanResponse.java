@@ -26,6 +26,7 @@ public class RehabPlanResponse implements IResponse {
     private Date createTime;
     private Integer petAge;
     private List<RehabPlanStatusResponse> statusRecords;
+    private List<OrderResponse> orders;
 
     // user
     private Long doctorId;
@@ -45,7 +46,8 @@ public class RehabPlanResponse implements IResponse {
      * Pet: id, name, sex, type, breed
      */
     public static RehabPlanResponse create(RehabPlan plan, User doctor, Pet pet, String cover,
-                                           List<RehabPlanStatusResponse> statusRecords) {
+                                           List<RehabPlanStatusResponse> statusRecords,
+                                           List<OrderResponse> orders) {
         return new RehabPlanResponse(
                 plan.getId(),
                 plan.getTitle(),
@@ -57,6 +59,7 @@ public class RehabPlanResponse implements IResponse {
                 plan.getCreateTime(),
                 pet.getAge(),
                 statusRecords,
+                orders,
                 plan.getDoctorId(),
                 doctor.getUsername(),
                 FileUtils.generateAssetUrl(ParentType.USER, doctor.getId(), doctor.getAvatar()),
@@ -75,15 +78,17 @@ public class RehabPlanResponse implements IResponse {
      * doctors: plan.doctorId<br>
      * pets: plan.petId<br>
      * covers: plan.petId<br>
-     * statusRecords: plan.id
+     * statusRecords: plan.id<br>
+     * orders: plan.id
      */
     public static RehabPlanResponse createBatch(RehabPlan plan,
                                                 Map<Long, User> doctors,
                                                 Map<Long, Pet> pets,
                                                 Map<Long, String> covers,
-                                                Map<Long, List<RehabPlanStatusResponse>> statusRecords) {
+                                                Map<Long, List<RehabPlanStatusResponse>> statusRecords,
+                                                Map<Long, List<OrderResponse>> orders) {
         return create(plan, doctors.get(plan.getDoctorId()),
                 pets.get(plan.getPetId()), covers.get(plan.getPetId()),
-                statusRecords.get(plan.getId()));
+                statusRecords.get(plan.getId()), orders.get(plan.getId()));
     }
 }

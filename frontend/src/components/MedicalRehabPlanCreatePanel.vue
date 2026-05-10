@@ -33,14 +33,6 @@
           </el-form-item>
         </section>
         <section class="medical-edit-section">
-          <el-form-item label="计划类型">
-            <el-select v-model="form.type" class="full-width-control">
-              <el-option label="物理康复" value="PHYSICAL" />
-              <el-option label="其他康复" value="OTHER" />
-            </el-select>
-          </el-form-item>
-        </section>
-        <section class="medical-edit-section">
           <el-form-item label="开始时间">
             <el-date-picker v-model="form.startTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss.SSS" class="full-width-control" />
           </el-form-item>
@@ -54,6 +46,38 @@
           <el-form-item label="康复内容">
             <el-input v-model="form.content" type="textarea" :rows="6" placeholder="填写康复目标、执行方式、注意事项和观察重点" />
           </el-form-item>
+        </section>
+        <section class="medical-edit-section medical-edit-section-wide">
+          <div class="rehab-order-head">
+            <strong>处方列表</strong>
+            <el-button text type="success" :icon="Plus" @click="addOrder">添加处方</el-button>
+          </div>
+          <div v-if="form.orders.length" class="rehab-order-list">
+            <div v-for="(order, index) in form.orders" :key="order.key" class="rehab-order-row">
+              <el-select
+                v-model="order.itemId"
+                filterable
+                remote
+                :remote-method="searchItems"
+                :loading="loadingItems"
+                placeholder="搜索物资或药品"
+                @change="syncOrderItem(order)"
+              >
+                <el-option v-for="item in itemOptions" :key="item.id" :label="item.name" :value="item.id">
+                  <span>{{ item.name }}</span>
+                  <span class="rehab-order-option">{{ item.unit || '' }}</span>
+                </el-option>
+              </el-select>
+              <el-select v-model="order.type" placeholder="类型">
+                <el-option v-for="item in orderTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+              <el-input v-model="order.count" placeholder="数量" />
+              <el-input v-model="order.unit" placeholder="单位" />
+              <el-input v-model="order.price" placeholder="价格" />
+              <el-button text type="danger" :icon="Delete" @click="removeOrder(index)">删除</el-button>
+            </div>
+          </div>
+          <el-empty v-else description="暂无处方" />
         </section>
       </el-form>
 
@@ -69,22 +93,31 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
-import { createRehabPlan } from '../api/services'
+import { ArrowLeft, Delete, Plus } from '@element-plus/icons-vue'
+import { createRehabPlan, getItems } from '../api/services'
 
 const route = useRoute()
 const router = useRouter()
 const saving = ref(false)
+const loadingItems = ref(false)
 const petName = ref('')
+const itemOptions = ref([])
 const form = reactive({
   age: 0,
   title: '',
   content: '',
   frequency: '',
-  type: 'PHYSICAL',
   startTime: '',
   endTime: '',
+  orders: [],
 })
+
+const orderTypeOptions = [
+  { label: '药品', value: 'MEDICINE' },
+  { label: '手术', value: 'SURGERY' },
+  { label: '检查', value: 'EXAMINATION' },
+  { label: '其他', value: 'OTHER' },
+]
 
 function nowValue() {
   const date = new Date()
@@ -101,7 +134,55 @@ function validateForm() {
   if (!form.frequency.trim()) return '请输入执行频率'
   if (!form.content.trim()) return '请输入康复内容'
   if (!form.startTime || !form.endTime) return '请选择计划时间'
+  const invalidOrder = form.orders.some((order) => !order.itemId || !order.count || !order.unit || !order.price)
+  if (invalidOrder) return '请完整填写处方信息'
   return ''
+}
+
+function addOrder() {
+  form.orders.push({
+    key: `${Date.now()}-${Math.random()}`,
+    itemId: '',
+    type: 'MEDICINE',
+    count: '1',
+    unit: '',
+    price: '0',
+  })
+}
+
+function removeOrder(index) {
+  form.orders.splice(index, 1)
+}
+
+function syncOrderItem(order) {
+  const item = itemOptions.value.find((option) => String(option.id) === String(order.itemId))
+  if (item?.unit && !order.unit) {
+    order.unit = item.unit
+  }
+}
+
+async function searchItems(keyword) {
+  const text = String(keyword || '').trim()
+  if (!text) return
+  loadingItems.value = true
+  try {
+    const result = await getItems({ keyword: text, page: 1, size: 20 })
+    itemOptions.value = Array.isArray(result?.records) ? result.records.filter((item) => !item.discard) : []
+  } catch (error) {
+    ElMessage.warning(error?.message || '搜索物资失败')
+  } finally {
+    loadingItems.value = false
+  }
+}
+
+function buildOrders() {
+  return form.orders.map((order) => ({
+    itemId: order.itemId,
+    type: order.type,
+    count: String(order.count),
+    unit: String(order.unit).trim(),
+    price: String(order.price),
+  }))
 }
 
 async function submitPlan() {
@@ -117,10 +198,9 @@ async function submitPlan() {
       title: form.title.trim(),
       content: form.content.trim(),
       frequency: form.frequency.trim(),
-      type: form.type,
       startTime: form.startTime,
       endTime: form.endTime,
-      orders: [],
+      orders: buildOrders(),
     })
     ElMessage.success('康复计划已创建')
     router.push(`/console/medical/rehab/${result.id}`)
@@ -135,6 +215,7 @@ onMounted(() => {
   petName.value = String(route.query.name || '')
   form.age = Number(route.query.age || 0)
   form.startTime = nowValue()
+  searchItems('药')
 })
 </script>
 
@@ -168,5 +249,42 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 18px;
+}
+
+.rehab-order-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rehab-order-head strong {
+  color: #5d3927;
+  font-size: 15px;
+}
+
+.rehab-order-list {
+  display: grid;
+  gap: 10px;
+}
+
+.rehab-order-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) 120px 90px 90px 90px auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.rehab-order-option {
+  float: right;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 980px) {
+  .rehab-order-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>

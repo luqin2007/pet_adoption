@@ -48,6 +48,14 @@
         </section>
 
         <section class="console-detail-section console-detail-section-wide">
+          <h3>处方列表</h3>
+          <div v-if="plan.orders?.length" class="medical-mini-links rehab-order-links">
+            <span v-for="order in plan.orders" :key="order.id">{{ order.itemName || '物资' }} {{ order.count }}{{ order.unit }} · {{ orderTypeText(order.type) }}</span>
+          </div>
+          <el-empty v-else description="暂无处方" />
+        </section>
+
+        <section class="console-detail-section console-detail-section-wide">
           <div class="medical-subsection-head">
             <strong>康复记录</strong>
             <el-button v-if="canAddRecord" text type="success" :icon="Plus" @click="openRecordDialog">添加记录</el-button>
@@ -176,6 +184,11 @@ function statusTagType(value) {
   if (value === 'COMPLETED') return 'success'
   if (value === 'DISCARD') return 'info'
   return 'warning'
+}
+
+function orderTypeText(value) {
+  const map = { MEDICINE: '药品', SURGERY: '手术', EXAMINATION: '检查', OTHER: '其他' }
+  return map[value] || value || ''
 }
 
 function formatDate(value) {
@@ -346,6 +359,10 @@ onMounted(async () => {
   padding: 4px 9px;
   font-size: 12px;
   text-decoration: none;
+}
+
+.rehab-order-links {
+  margin-top: 0;
 }
 
 @media (max-width: 760px) {
