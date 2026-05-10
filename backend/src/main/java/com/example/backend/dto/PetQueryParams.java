@@ -23,6 +23,7 @@ public class PetQueryParams implements IParam, IValidatedRequest {
     private Set<String> status;
     private String name; // like name, description
     private Boolean isDiscard;
+    private Boolean mine;
 
     // Location
     private String province;

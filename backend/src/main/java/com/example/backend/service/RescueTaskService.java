@@ -212,6 +212,7 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
 
         // 状态变更
         task.setStatus(record.getStatusTo());
+        task.setApproveId(login.getId());
         updateById(task);
         rescueTaskRecordMapper.insert(record);
 
@@ -233,8 +234,12 @@ public class RescueTaskService extends BaseService<RescueTaskMapper, RescueTask>
     /**
      * 获取救助任务信息列表
      */
-    public Page<RescueTaskResponse> getRescueTasks(PageParams page) {
-        Page<RescueTask> result = page(page.createPage());
+    public Page<RescueTaskResponse> getRescueTasks(RescueTaskQueryParams query, PageParams page) {
+        User login = requireLoginUser();
+        if (!login.isWorker()) {
+            query.setUser(Set.of(login.getId()));
+        }
+        Page<RescueTask> result = baseMapper.queryByRequest(query).page(page);
         Set<Long> taskIds = result.getRecords().stream().map(RescueTask::getId).collect(Collectors.toSet());
         if (taskIds.isEmpty()) {
             return convertDto(result, RescueTaskResponse::fromEntity);

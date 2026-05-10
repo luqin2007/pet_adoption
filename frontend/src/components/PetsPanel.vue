@@ -1,0 +1,411 @@
+<template>
+  <div>
+    <el-card class="profile-card pet-admin-card">
+      <template #header>
+        <div class="profile-card-header">
+          <strong>流浪宠物</strong>
+          <span>筛选和维护在库宠物档案</span>
+        </div>
+      </template>
+      <section class="pet-admin-section">
+        <section class="filter-panel pet-directory-filter-panel">
+          <div class="pet-filter-row pet-filter-row-primary pet-filter-cols-4">
+            <el-input v-model="petSearchForm.name" clearable placeholder="名称" />
+            <el-select v-model="petSearchForm.type" clearable filterable placeholder="类型" @change="handlePetSearchTypeChange">
+              <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-select v-model="petSearchForm.breed" clearable filterable placeholder="品种" :disabled="!petSearchForm.type">
+              <el-option v-for="item in petSearchBreedOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-select v-model="petSearchForm.sex" clearable placeholder="性别">
+              <el-option label="未知" value="未知" /><el-option label="公" value="公" /><el-option label="母" value="母" />
+            </el-select>
+          </div>
+          <div class="pet-filter-row pet-filter-row-secondary pet-filter-cols-status-age">
+            <el-select v-model="petSearchForm.status" clearable placeholder="状态">
+              <el-option v-for="item in petStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <div class="pet-age-range">
+              <el-input-number v-model="petSearchForm.age0" :min="0" :controls="false" placeholder="最小月龄" />
+              <span>至</span>
+              <el-input-number v-model="petSearchForm.age1" :min="0" :controls="false" placeholder="最大月龄" />
+            </div>
+          </div>
+          <div class="pet-filter-row pet-filter-row-secondary pet-filter-cols-loc">
+            <el-select v-model="petSearchForm.province" clearable filterable placeholder="省份" @change="handlePetSearchProvinceChange">
+              <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-select v-model="petSearchForm.city" clearable filterable placeholder="城市" :disabled="!petSearchForm.province" @change="handlePetSearchCityChange">
+              <el-option v-for="item in petSearchCityOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-select v-model="petSearchForm.district" clearable filterable placeholder="区县" :disabled="!petSearchForm.city">
+              <el-option v-for="item in petSearchDistrictOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-input v-model="petSearchForm.address" clearable placeholder="详细地点" />
+          </div>
+          <div class="pet-filter-row pet-filter-search-row">
+            <div class="pet-filter-action">
+              <el-button class="warm-btn" :icon="Search" :loading="loadingPets" @click="searchPets">搜索</el-button>
+            </div>
+          </div>
+        </section>
+        <el-table :data="visiblePets" v-loading="loadingPets" class="user-admin-table">
+          <el-table-column label="宠物" min-width="180">
+            <template #default="{ row }">
+              <div class="pet-admin-pet">
+                <button class="pet-admin-cover-button" type="button" @click="goPetProfile(row)">
+                  <img :src="row.cover || 'https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=320'" :alt="row.name" />
+                </button>
+                <div>
+                  <button class="pet-admin-name-button" type="button" @click="goPetProfile(row)">{{ row.name || '未命名' }}</button>
+                  <span>{{ row.type || '宠物' }} · {{ row.sex || '未知' }} · {{ row.age ?? 0 }} 月</span>
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="状态" width="120">
+            <template #default="{ row }"><el-tag type="warning" effect="plain">{{ petStatusText(row.status) }}</el-tag></template>
+          </el-table-column>
+          <el-table-column label="位置" min-width="220">
+            <template #default="{ row }">{{ petLocationText(row) }}</template>
+          </el-table-column>
+          <el-table-column prop="health" label="健康" min-width="140" />
+          <el-table-column width="40" class-name="action-col">
+            <template #header><TableActionColumnHeader title="操作" :collapsed="petActionCollapsed" @toggle="petActionCollapsed = !petActionCollapsed" /></template>
+            <template #default="{ row }">
+              <div class="table-action-cell">
+                <div class="table-action-panel" :class="{ 'is-collapsed': petActionCollapsed }">
+                  <el-button v-if="canManageUsers" text type="primary" @click="openPetDialog(row)">审核</el-button>
+                  <el-button v-if="canEditPet(row)" text type="warning" @click="openPetEditor(row)">编辑</el-button>
+                  <el-button v-if="canEditPet(row)" text type="danger" @click="removePet(row)">删除</el-button>
+                  <el-button v-if="canManageMedical && !petFirstRegIds.has(row.id)" text type="success" @click="goCreateFirstReg(row)">初诊</el-button>
+                  <el-button v-if="petFirstRegIds.has(row.id) && canManageMedical" text type="primary" @click="goMedicalRecord(row)">就诊</el-button>
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="user-admin-pagination">
+          <el-pagination layout="prev, pager, next, total" :current-page="petPage.page" :page-size="petPage.size" :total="petTotal" @current-change="changePetPage" />
+        </div>
+      </section>
+    </el-card>
+
+    <el-dialog v-model="petCreateDialogVisible" title="记录流浪宠物" width="760px">
+      <el-form ref="petFormRef" :model="petForm" :rules="petRules" label-position="top" class="pet-admin-form">
+        <el-form-item label="宠物名称"><el-input v-model="petForm.name" placeholder="可留空，由救助站后续命名" /></el-form-item>
+        <el-form-item label="年龄（月）"><el-input-number v-model="petForm.age" :min="0" /></el-form-item>
+        <el-form-item label="性别" prop="sex">
+          <el-select v-model="petForm.sex"><el-option label="未知" value="未知" /><el-option label="公" value="公" /><el-option label="母" value="母" /></el-select>
+        </el-form-item>
+        <el-form-item label="类型" prop="type">
+          <div class="catalog-field">
+            <el-select v-model="petForm.type" placeholder="选择类型" filterable clearable @change="handlePetFormTypeChange">
+              <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-input v-model="petForm.typeInput" placeholder="输入新类型" clearable @input="handlePetFormTypeChange" />
+          </div>
+        </el-form-item>
+        <el-form-item label="品种">
+          <div class="catalog-field">
+            <el-select v-model="petForm.breed" placeholder="选择品种" filterable clearable :disabled="!resolvePetType(petForm)">
+              <el-option v-for="item in petFormBreedOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-input v-model="petForm.breedInput" placeholder="输入新品种" clearable />
+          </div>
+        </el-form-item>
+        <el-form-item label="健康状况"><el-input v-model="petForm.health" placeholder="未体检、恢复中、已体检等" /></el-form-item>
+        <el-form-item label="省份" prop="province">
+          <el-select v-model="petForm.province" placeholder="选择省份" filterable clearable @change="handlePetFormProvinceChange">
+            <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="城市" prop="city">
+          <el-select v-model="petForm.city" placeholder="选择城市" filterable clearable :disabled="!petForm.province" @change="handlePetFormCityChange">
+            <el-option v-for="item in petFormCityOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="区县" prop="district">
+          <el-select v-model="petForm.district" placeholder="选择区县 / 县级市" filterable clearable :disabled="!petForm.city">
+            <el-option v-for="item in petFormDistrictOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="详细位置" prop="detailAddress"><el-input v-model="petForm.detailAddress" /></el-form-item>
+        <el-form-item label="情况描述" class="pet-admin-span-2"><el-input v-model="petForm.description" type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" /></el-form-item>
+        <el-form-item label="图片/视频" class="pet-admin-span-2">
+          <input ref="petMediaInputRef" class="profile-avatar-input" type="file" accept="image/*,video/*" multiple @change="uploadPetFiles" />
+          <el-button :icon="Upload" :disabled="!petForm.id" :loading="uploadingPetMedia" @click="choosePetMedia">上传图片/视频</el-button>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="petCreateDialogVisible = false">完成</el-button>
+        <el-button @click="resetPetForm">清空</el-button>
+        <el-button type="warning" :loading="savingPet" @click="submitPetInfo">提交记录</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="petDialogVisible" title="审核宠物档案" width="520px">
+      <el-form ref="petEditFormRef" :model="petEditForm" :rules="petEditRules" label-position="top" class="pet-review-form">
+        <el-form-item label="审核/状态" prop="status">
+          <el-select v-model="petEditForm.status" placeholder="请选择审核状态">
+            <el-option v-for="item in petStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态原因" prop="reason">
+          <el-input v-model="petEditForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="例如：资料审核通过，已完成收容" />
+        </el-form-item>
+      </el-form>
+      <div class="dialog-footer">
+        <el-button @click="petDialogVisible = false">取消</el-button>
+        <el-button type="warning" :loading="savingPet" @click="savePetInfo">保存审核</el-button>
+      </div>
+      <AuditRecordList :records="petAuditRecords" :loading="petAuditLoading" type="pet" :target-id="petEditForm.id" :status-labels="petStatusLabelMap" />
+    </el-dialog>
+  </div>
+</template>
+
+<script setup>
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { Search, Upload } from '@element-plus/icons-vue'
+import { createPet, deletePetById, getPets, updatePetStatus, uploadPetMedia, getPetStatusRecords } from '../api/pets'
+import { getFirstVisitRegistrations } from '../api/services'
+import { resolveCatalogValue, splitCatalogValue, useInformationCatalog } from '../composables/useInformationCatalog'
+import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { useUserStore } from '../stores/user'
+import { petStatusOptions, petStatusLabelMap, petStatusText, petLocationText } from '../utils/roles'
+import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import AuditRecordList from './AuditRecordList.vue'
+
+const router = useRouter()
+const userStore = useUserStore()
+const { canManageUsers, canManageMedical } = useConsoleGuards()
+const { ensureInformationCatalog, ensureCityOptions, ensureDistrictOptions, provinceOptions, typeOptions, getCityOptions, getDistrictOptions, getBreedOptions } = useInformationCatalog()
+
+// --- State ---
+const petFormRef = ref()
+const petEditFormRef = ref()
+const petMediaInputRef = ref()
+const loadingPets = ref(false)
+const savingPet = ref(false)
+const uploadingPetMedia = ref(false)
+const petActionCollapsed = ref(false)
+const petCreateDialogVisible = ref(false)
+const petDialogVisible = ref(false)
+const petRows = ref([])
+const petTotal = ref(0)
+const petPage = reactive({ page: 1, size: 10 })
+const petAuditRecords = ref([])
+const petAuditLoading = ref(false)
+const petFirstRegIds = ref(new Set())
+
+const petSearchForm = reactive({
+  name: '', age0: undefined, age1: undefined, sex: '', type: '', breed: '', status: '',
+  province: '', city: '', district: '', address: '',
+})
+
+const petForm = reactive({
+  id: '', name: '', age: 0, sex: '未知', type: '', typeInput: '猫', breed: '', breedInput: '',
+  health: '', description: '', province: '', city: '', district: '', detailAddress: '',
+})
+
+const petEditForm = reactive({
+  id: '', name: '', age: 0, sex: '', type: '', typeInput: '', breed: '', breedInput: '',
+  health: '', description: '', status: '', reason: '',
+})
+
+// Computed catalog options
+const petFormCityOptions = computed(() => getCityOptions(petForm.province))
+const petFormDistrictOptions = computed(() => getDistrictOptions(petForm.province, petForm.city))
+const petFormBreedOptions = computed(() => getBreedOptions(resolveCatalogValue(petForm.type, petForm.typeInput)))
+const petSearchCityOptions = computed(() => getCityOptions(petSearchForm.province))
+const petSearchDistrictOptions = computed(() => getDistrictOptions(petSearchForm.province, petSearchForm.city))
+const petSearchBreedOptions = computed(() => getBreedOptions(petSearchForm.type))
+
+const visiblePets = computed(() => petRows.value)
+const currentUserId = computed(() => String(userStore.profile?.id || ''))
+
+// --- Helpers ---
+function resolvePetType(form) { return resolveCatalogValue(form.type, form.typeInput) }
+function resolvePetBreed(form) { return resolveCatalogValue(form.breed, form.breedInput) }
+function applyCatalogValue(form, field, customField, value, options = []) {
+  const { selected, custom } = splitCatalogValue(value, options)
+  form[field] = selected
+  form[customField] = custom
+}
+
+function validateRequiredValue(value, message, callback) {
+  if (String(value || '').trim()) { callback(); return }
+  callback(new Error(message))
+}
+
+function isOwnPet(row) {
+  return currentUserId.value && String(row?.discoverId || '') === currentUserId.value
+}
+
+function canEditPet(row) {
+  return canManageUsers.value || (isOwnPet(row) && ['WAITING', 'AGAINST'].includes(String(row?.status || '')))
+}
+
+// --- Validation rules ---
+const petRules = {
+  sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
+  type: [{ validator: (_rule, _value, callback) => validateRequiredValue(resolvePetType(petForm), '请输入宠物类型', callback), trigger: ['blur', 'change'] }],
+  province: [{ required: true, message: '请选择省份', trigger: 'change' }],
+  city: [{ required: true, message: '请选择城市', trigger: 'change' }],
+  district: [{ required: true, message: '请选择区县', trigger: 'change' }],
+  detailAddress: [{ required: true, message: '请输入发现位置', trigger: 'blur' }],
+}
+const petEditRules = {
+  status: [{ required: true, message: '请选择审核状态', trigger: 'change' }],
+  reason: [{ required: true, message: '更改状态时请输入原因', trigger: 'blur' }],
+}
+
+// --- Functions ---
+function resetPetForm() {
+  Object.assign(petForm, { id: '', name: '', age: 0, sex: '未知', type: '', typeInput: '猫', breed: '', breedInput: '', health: '', description: '', province: '', city: '', district: '', detailAddress: '' })
+}
+
+function openPetCreateDialog() {
+  resetPetForm()
+  applyCatalogValue(petForm, 'type', 'typeInput', '猫', typeOptions.value)
+  petCreateDialogVisible.value = true
+}
+
+function handlePetFormTypeChange() { petForm.breed = ''; petForm.breedInput = '' }
+function handlePetFormProvinceChange() { petForm.city = ''; petForm.district = ''; if (petForm.province) ensureCityOptions(petForm.province) }
+function handlePetFormCityChange() { petForm.district = ''; if (petForm.province && petForm.city) ensureDistrictOptions(petForm.province, petForm.city) }
+function handlePetSearchTypeChange() { petSearchForm.breed = '' }
+function handlePetSearchProvinceChange() { petSearchForm.city = ''; petSearchForm.district = ''; if (petSearchForm.province) ensureCityOptions(petSearchForm.province) }
+function handlePetSearchCityChange() { petSearchForm.district = ''; if (petSearchForm.province && petSearchForm.city) ensureDistrictOptions(petSearchForm.province, petSearchForm.city) }
+
+function buildPetSearchQuery() {
+  return {
+    page: petPage.page, size: petPage.size, sort: 'update_time', order: 'desc',
+    mine: canManageUsers.value ? undefined : true,
+    user: canManageUsers.value ? undefined : [currentUserId.value],
+    name: petSearchForm.name.trim() || undefined, age0: petSearchForm.age0 ?? undefined, age1: petSearchForm.age1 ?? undefined,
+    sex: petSearchForm.sex || undefined, type: petSearchForm.type ? [petSearchForm.type] : undefined,
+    breed: petSearchForm.breed ? [petSearchForm.breed] : undefined, status: petSearchForm.status ? [petSearchForm.status] : undefined,
+    province: petSearchForm.province || undefined, city: petSearchForm.city || undefined, district: petSearchForm.district || undefined,
+    address: petSearchForm.address.trim() || undefined,
+  }
+}
+
+async function loadPets() {
+  if (!canManageUsers.value && !currentUserId.value) return
+  loadingPets.value = true
+  try {
+    const result = await getPets(buildPetSearchQuery())
+    petRows.value = Array.isArray(result?.records) ? result.records : []
+    petTotal.value = Number(result?.total || petRows.value.length)
+    loadPetFirstRegIds()
+  } catch (error) { ElMessage.warning(error?.message || '加载宠物列表失败') }
+  finally { loadingPets.value = false }
+}
+
+async function loadPetFirstRegIds() {
+  if (!canManageUsers.value && !canManageMedical.value) {
+    petFirstRegIds.value = new Set()
+    return
+  }
+  const ids = new Set()
+  const petIds = petRows.value.map((r) => r.id).filter(Boolean)
+  for (const petId of petIds) {
+    try {
+      const res = await getFirstVisitRegistrations({ pet: petId, page: 1, size: 1 })
+      if (res?.records?.length) ids.add(petId)
+    } catch { /* ignore */ }
+  }
+  petFirstRegIds.value = ids
+}
+
+function goPetProfile(row) { router.push(`/pets/${row.id}`) }
+function openPetEditor(row) { router.push(`/pets/${row.id}/edit`) }
+
+function openPetDialog(row) {
+  Object.assign(petEditForm, { id: String(row.id || ''), name: row.name || '', age: Number(row.age || 0), sex: row.sex || '', type: '', typeInput: '', breed: '', breedInput: '', health: row.health || '', description: row.description || '', status: row.status || 'WAITING', reason: '' })
+  petDialogVisible.value = true
+  loadPetAuditRecords(row.id)
+}
+
+async function loadPetAuditRecords(petId) {
+  petAuditLoading.value = true; petAuditRecords.value = []
+  try { const res = await getPetStatusRecords(petId, { page: 1, size: 5 }); petAuditRecords.value = res?.records || res?.data || [] }
+  catch { /* ignore */ } finally { petAuditLoading.value = false }
+}
+
+async function savePetInfo() {
+  if (!petEditFormRef.value || savingPet.value) return
+  savingPet.value = true
+  try {
+    await petEditFormRef.value.validate()
+    await updatePetStatus(petEditForm.id, { status: petEditForm.status, reason: petEditForm.reason.trim() })
+    ElMessage.success('宠物审核状态已保存')
+    petDialogVisible.value = false
+    await loadPets()
+  } catch (error) { ElMessage.warning(error?.message || '保存审核状态失败') }
+  finally { savingPet.value = false }
+}
+
+async function removePet(row) {
+  try {
+    await ElMessageBox.confirm(`确认删除「${row.name || row.id}」的宠物档案？`, '删除宠物档案', { type: 'warning', confirmButtonText: '删除', cancelButtonText: '取消' })
+    await deletePetById(row.id); ElMessage.success('宠物档案已删除'); await loadPets()
+  } catch (error) { if (error !== 'cancel' && error !== 'close') ElMessage.warning(error?.message || '删除宠物档案失败') }
+}
+
+function changePetPage(page) { petPage.page = page; loadPets() }
+function searchPets() { petPage.page = 1; loadPets() }
+
+async function submitPetInfo() {
+  if (!petFormRef.value || savingPet.value) return
+  savingPet.value = true
+  try {
+    await petFormRef.value.validate()
+    const result = await createPet({ name: petForm.name.trim(), age: Number(petForm.age || 0), sex: petForm.sex, type: resolvePetType(petForm), breed: resolvePetBreed(petForm), health: petForm.health.trim(), description: petForm.description.trim(), province: petForm.province.trim(), city: petForm.city.trim(), district: petForm.district.trim(), detailAddress: petForm.detailAddress.trim() })
+    petForm.id = String(result?.id || '')
+    ElMessage.success('流浪宠物信息已提交，可继续上传图片/视频')
+    await loadPets()
+  } catch (error) { ElMessage.warning(error?.message || '提交宠物信息失败') }
+  finally { savingPet.value = false }
+}
+
+function choosePetMedia() {
+  if (!petForm.id) { ElMessage.warning('请先提交宠物基础信息'); return }
+  petMediaInputRef.value?.click()
+}
+
+async function uploadPetFiles(event) {
+  const files = Array.from(event.target.files || [])
+  event.target.value = ''
+  if (!files.length || !petForm.id) return
+  uploadingPetMedia.value = true
+  try {
+    for (let index = 0; index < files.length; index += 1) { await uploadPetMedia(petForm.id, { file: files[index], isCover: index === 0 }) }
+    ElMessage.success('宠物图片/视频已上传'); await loadPets()
+  } catch (error) { ElMessage.warning(error?.message || '上传媒体失败') }
+  finally { uploadingPetMedia.value = false }
+}
+
+function goCreateFirstReg(row) { router.push(`/medical/first-registration/new?petId=${row.id}`) }
+function goMedicalRecord(row) { router.push(`/console/medical/records?pet=${row.id}&name=${encodeURIComponent(row.name || '')}`) }
+
+onMounted(async () => { await ensureInformationCatalog(); loadPets() })
+</script>
+
+<style scoped>
+.pet-directory-filter-panel .pet-filter-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.pet-directory-filter-panel .pet-filter-cols-status-age {
+  grid-template-columns: 1fr 2fr;
+}
+.pet-directory-filter-panel .pet-filter-cols-loc {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.pet-directory-filter-panel .pet-filter-search-row {
+  justify-content: flex-end;
+}
+</style>

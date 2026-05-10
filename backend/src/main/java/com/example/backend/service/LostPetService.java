@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 
 import static com.example.backend.entity.property.ParentType.LOST_PET;
 import static com.example.backend.entity.property.ParentType.PET;
+import static com.example.backend.entity.property.LostPetStatus.SEARCHING;
 
 /**
  * 走失宠物报备与智能匹配服务
@@ -109,7 +110,8 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
     public LostPetResponse updateLostPet(Long lostPetId, LostPetUpdateRequest request) {
         User login = requireLoginUser();
         LostPet lostPet = requireById(lostPetId);
-        requirePermission(login.is(lostPet.getOwnerId()) || login.isWorker());
+        boolean editableOwner = login.is(lostPet.getOwnerId()) && lostPet.getStatus() == SEARCHING;
+        requirePermission(editableOwner || login.isWorker());
 
         request.applyTo(lostPet);
         updateById(lostPet);
@@ -129,10 +131,13 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
     @Transactional
     public LostPetResponse updateLostPetStatus(Long lostPetId, LostPetStatusUpdateRequest request) {
         User login = requireLoginUser();
-        requirePermission(login.isWorker());
         LostPet lostPet = requireById(lostPetId);
-
         LostPetStatus status = LostPetStatus.get(request.getStatus());
+        boolean ownerClose = login.is(lostPet.getOwnerId())
+                && lostPet.getStatus() == SEARCHING
+                && status == LostPetStatus.CLOSED;
+        requirePermission(login.isWorker() || ownerClose);
+
         lostPet.setStatus(status);
         lostPet.setUpdateTime(new Date());
         if (request.getReason() != null && !request.getReason().isBlank()) {

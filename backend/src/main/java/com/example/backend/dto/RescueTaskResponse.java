@@ -14,6 +14,7 @@ public class RescueTaskResponse implements IResponse {
 
     private Long id;
     private Long previousId;
+    private Long userId;
     private String summary;
     private String description;
     private RescueTaskStatus status;
@@ -31,6 +32,7 @@ public class RescueTaskResponse implements IResponse {
         RescueTaskResponse response = new RescueTaskResponse();
         response.setId(entity.getId());
         response.setPreviousId(entity.getPreviousId());
+        response.setUserId(entity.getUserId());
         response.setSummary(entity.getSummary());
         response.setDescription(entity.getDescription());
         response.setStatus(entity.getStatus());

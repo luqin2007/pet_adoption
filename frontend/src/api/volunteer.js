@@ -48,6 +48,12 @@ export function getVolunteerApplications(query = {}) {
   })
 }
 
+export function getVolunteerApplicationById(id) {
+  return request(`/volunteers/applications/${id}`, {
+    method: 'GET',
+  })
+}
+
 export function updateVolunteerApplicationStatus(id, payload) {
   return request(`/volunteers/applications/${id}`, {
     method: 'PATCH',

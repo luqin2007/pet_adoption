@@ -9,6 +9,8 @@ import com.example.backend.util.FileUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +31,8 @@ public class MedicalDetailResponse implements IResponse {
     private String lifeHabit;
 
     // ---- O 客观检查
-    private Double weight;
-    private Double temperature;
+    private BigDecimal weight;
+    private BigDecimal temperature;
     private Integer heartRate;
     private Integer respiratoryRate;
     private String physicalExam;

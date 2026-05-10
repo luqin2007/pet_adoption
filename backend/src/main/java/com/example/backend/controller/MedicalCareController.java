@@ -99,15 +99,20 @@ public class MedicalCareController {
         return Result.success(response);
     }
 
-    @GetMapping("/record/{id}")
-    public Result<MedicalRecordResponse> getMedicalRecord(@PathVariable("id") Long recordId) {
-        MedicalRecordResponse response = medicalService.getMedicalRecord(recordId);
-        return Result.success(response);
-    }
-
     @GetMapping("/record")
     public Result<Page<MedicalRecordResponse>> getMedicalRecords(@Valid MedicalRecordQueryParams query, PageParams page) {
         Page<MedicalRecordResponse> response = medicalService.getMedicalRecords(query, page);
+        return Result.success(response);
+    }
+
+    @GetMapping("/record/owner-exists")
+    public Result<Boolean> existsMedicalRecordByOwnerId(@RequestParam("ownerId") Long ownerId) {
+        return Result.success(medicalService.existsMedicalRecordByOwnerId(ownerId));
+    }
+
+    @GetMapping("/record/{id}")
+    public Result<MedicalRecordResponse> getMedicalRecord(@PathVariable("id") Long recordId) {
+        MedicalRecordResponse response = medicalService.getMedicalRecord(recordId);
         return Result.success(response);
     }
 

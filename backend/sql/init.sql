@@ -446,6 +446,7 @@ CREATE TABLE `allergy_history` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '过敏史',
   `registration_id` bigint NOT NULL COMMENT '初诊登记 id',
   `source` varchar(255) NOT NULL COMMENT '过敏源',
+  `reaction` varchar(255) NOT NULL COMMENT '过敏源',
   `discovery_time` datetime NOT NULL COMMENT '发现时间',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),

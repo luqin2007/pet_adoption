@@ -251,3 +251,23 @@ ON DUPLICATE KEY UPDATE
                      `update_time` = VALUES(`update_time`);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- 初诊登记演示数据
+SET FOREIGN_KEY_CHECKS = 0;
+
+INSERT INTO `first_registration` (`id`, `registrar_id`, `pet_id`, `name`, `age`, `weight`, `temperature`, `create_time`) VALUES
+    (3000000000000008001, 3000000000000000001, 3000000000000001001, '橘子', 8, 3.50, 38.50, '2026-05-01 09:30:00'),
+    (3000000000000008002, 3000000000000000001, 3000000000000001002, '糯米', 14, 8.20, 38.80, '2026-05-01 10:15:00'),
+    (3000000000000008003, 3000000000000000001, 3000000000000001003, '小煤球', 4, 0.80, 38.20, '2026-05-02 14:20:00'),
+    (3000000000000008004, 3000000000000000001, 3000000000000001005, '雪糕', 10, 2.90, 39.10, '2026-05-03 08:45:00'),
+    (3000000000000008005, 3000000000000000001, 3000000000000001008, '阿福', 30, 22.00, 38.60, '2026-05-03 11:00:00')
+ON DUPLICATE KEY UPDATE
+    `registrar_id` = VALUES(`registrar_id`),
+    `pet_id` = VALUES(`pet_id`),
+    `name` = VALUES(`name`),
+    `age` = VALUES(`age`),
+    `weight` = VALUES(`weight`),
+    `temperature` = VALUES(`temperature`),
+    `create_time` = VALUES(`create_time`);
+
+SET FOREIGN_KEY_CHECKS = 1;

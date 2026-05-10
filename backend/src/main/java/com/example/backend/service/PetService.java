@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.backend.entity.property.ParentType.PET;
+import static com.example.backend.entity.property.PetStatus.AGAINST;
+import static com.example.backend.entity.property.PetStatus.WAITING;
 
 /**
  * 宠物管理
@@ -78,6 +80,11 @@ public class PetService extends BaseService<PetMapper, Pet> {
      */
     public Page<PetResponse> getPets(PetQueryParams paramRequest, PageParams pageRequest) {
         Optional<User> login = getLoginUser();
+        if (Boolean.TRUE.equals(paramRequest.getMine())) {
+            User user = requireLoginUser();
+            login = Optional.of(user);
+            paramRequest.setUser(Set.of(user.getId()));
+        }
         if (login.isEmpty() || !login.get().isWorker())
             paramRequest.setIsDiscard(Boolean.FALSE);
 
@@ -142,7 +149,10 @@ public class PetService extends BaseService<PetMapper, Pet> {
     @Transactional
     public void deletePet(Long petId) {
         User login = requireLoginUser();
-        requirePermission(login.isWorker());
+        Pet pet = requireById(petId, Pet::getId, Pet::getDiscoverId, Pet::getStatus);
+        boolean editableOwner = Objects.equals(pet.getDiscoverId(), login.getId())
+                && (pet.getStatus() == WAITING || pet.getStatus() == AGAINST);
+        requirePermission(login.isWorker() || editableOwner);
         getBaseMapper().discardPetById(petId).update();
     }
 

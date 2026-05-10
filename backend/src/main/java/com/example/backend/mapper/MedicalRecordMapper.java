@@ -18,6 +18,10 @@ public interface MedicalRecordMapper extends IBaseMapper<MedicalRecord> {
         return lambdaQuery().eq(MedicalRecord::getPetId, petId);
     }
 
+    default MPLambdaQuery<MedicalRecord> queryByOwnerId(Long ownerId) {
+        return lambdaQuery().eq(MedicalRecord::getOwnerId, ownerId);
+    }
+
     /**
      * 索引：<br>
      * - (petId, status, createTime)<br>
@@ -27,6 +31,7 @@ public interface MedicalRecordMapper extends IBaseMapper<MedicalRecord> {
         return lambdaQuery()
                 .eq(MedicalRecord::getPetId, params.getPet())
                 .eq(MedicalRecord::getDoctorId, params.getDoctor())
+                .eq(MedicalRecord::getOwnerId, params.getOwnerId())
                 .eq(MedicalRecord::getStatus, MedicalRecordStatus::get, params.getStatus())
                 .in(MedicalRecord::getCreateTime, params.getTime0(), params.getTime1());
     }

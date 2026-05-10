@@ -107,6 +107,60 @@ export function getMedicalRecords(query = {}) {
   })
 }
 
+export function getMedicalRecord(id) {
+  return request(`/medical/record/${id}`, {
+    method: 'GET',
+  })
+}
+
+export function medicalRecordOwnerExists(ownerId) {
+  return request('/medical/record/owner-exists', {
+    method: 'GET',
+    query: { ownerId },
+  })
+}
+
+export function addMedicalRecord(petId, payload) {
+  return request(`/medical/record/pet/${petId}`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function updateMedicalRecord(id, payload) {
+  return request(`/medical/record/${id}`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function getMedicalDetails(query = {}) {
+  return request('/medical/detail', {
+    method: 'GET',
+    query,
+  })
+}
+
+export function getMedicalDetail(id) {
+  return request(`/medical/detail/${id}`, {
+    method: 'GET',
+  })
+}
+
+export function addMedicalDetail(payload) {
+  return request('/medical/detail', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function updateMedicalDetail(id, payload) {
+  return request(`/medical/detail/${id}`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
 export function getFirstVisitRegistrations(query = {}) {
   return request('/medical/first', {
     method: 'GET',

@@ -85,7 +85,15 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取初诊登记
      */
     public Page<FirstRegistrationItemResponse> getFirstVisitRegistrations(FirstRegistrationQueryParams params, PageParams request) {
-        Page<FirstRegistration> response = firstRegistrationMapper.selectByRequest(params).page(request);
+        User login = requireLoginUser();
+        if (!login.isWorker() && !login.isDoctor()) {
+            params.setOwnerId(login.getId());
+        }
+        Set<Long> ownerPetIds = getMedicalOwnerPetIds(params.getOwnerId());
+        if (params.getOwnerId() != null && ownerPetIds.isEmpty()) {
+            return convertDto(emptyFirstRegistrationPage(request), registration -> null);
+        }
+        Page<FirstRegistration> response = firstRegistrationMapper.selectByRequest(params, ownerPetIds).page(request);
         Map<Long, Pet> pets = petService.groupById(
                 response.getRecords().stream().map(FirstRegistration::getPetId),
                 Pet::getId, Pet::getSex, Pet::getType, Pet::getBreed);
@@ -101,6 +109,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     public FirstRegistrationResponse getFirstVisitRegistration(Long registrationId) {
         FirstRegistration registration = firstRegistrationMapper.requireById(registrationId);
+        requireMedicalPetPermission(registration.getPetId());
         List<ImmunityHistory> immunityHistories = immunityHistoryMapper.queryByRegistration(registrationId).list();
         List<AllergyHistory> allergyHistories = allergyHistoryMapper.queryByRegistration(registrationId).list();
         Pet pet = petService.selectById(registration.getPetId(),
@@ -167,6 +176,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      */
     public MedicalRecordResponse getMedicalRecord(Long recordId) {
         MedicalRecord record = medicalRecordMapper.requireById(recordId);
+        requireMedicalRecordPermission(record);
         return buildMedicalRecordResponse(record);
     }
 
@@ -185,6 +195,10 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
      * 获取就诊记录列表
      */
     public Page<MedicalRecordResponse> getMedicalRecords(MedicalRecordQueryParams queryRequest, PageParams pageParams) {
+        User login = requireLoginUser();
+        if (!login.isWorker() && !login.isDoctor()) {
+            queryRequest.setOwnerId(login.getId());
+        }
         Page<MedicalRecord> result = medicalRecordMapper.queryByRequest(queryRequest).page(pageParams);
         Set<Long> petIds = result.getRecords().stream()
                 .map(MedicalRecord::getPetId)
@@ -196,6 +210,41 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 result.getRecords().stream().flatMap(record -> Stream.of(record.getDoctorId(), record.getOwnerId())),
                 User::getId, User::getUsername, User::getAvatar);
         return convertDto(result, record -> MedicalRecordResponse.createBatch(record, pets, covers, users));
+    }
+
+    public boolean existsMedicalRecordByOwnerId(Long ownerId) {
+        if (ownerId == null) return false;
+        User login = requireLoginUser();
+        requirePermission(login.isWorker() || login.isDoctor() || login.is(ownerId));
+        return medicalRecordMapper.queryByOwnerId(ownerId).exists();
+    }
+
+    private Set<Long> getMedicalOwnerPetIds(Long ownerId) {
+        if (ownerId == null) return null;
+        return medicalRecordMapper.queryByOwnerId(ownerId)
+                .list(MedicalRecord::getPetId)
+                .collect(Collectors.toSet());
+    }
+
+    private Page<FirstRegistration> emptyFirstRegistrationPage(PageParams params) {
+        Page<FirstRegistration> page = params.createPage();
+        page.setRecords(List.of());
+        page.setTotal(0);
+        return page;
+    }
+
+    private void requireMedicalPetPermission(Long petId) {
+        User login = requireLoginUser();
+        if (login.isWorker() || login.isDoctor()) return;
+        requirePermission(medicalRecordMapper.queryByOwnerId(login.getId())
+                .eq(MedicalRecord::getPetId, petId)
+                .exists());
+    }
+
+    private void requireMedicalRecordPermission(MedicalRecord record) {
+        User login = requireLoginUser();
+        if (login.isWorker() || login.isDoctor()) return;
+        requirePermission(login.is(record.getOwnerId()));
     }
 
     /**

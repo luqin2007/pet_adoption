@@ -152,7 +152,7 @@ function goBack() {
           </el-form-item>
           
           <el-form-item label="体温 (℃)" prop="temperature">
-            <el-input-number v-model="form.temperature" :min="30" :max="45" :precision="1" :step="0.1" style="width: 100%" />
+            <el-input-number v-model="form.temperature" :min="0" :precision="1" :step="0.1" style="width: 100%" />
           </el-form-item>
 
           <el-form-item label="情况描述" prop="description" class="action-form-span-2">

@@ -41,8 +41,8 @@ public class RescueTaskController {
      * 获取所有信息
      */
     @GetMapping({"", "/"})
-    public Result<Page<RescueTaskResponse>> getRescueTasks(PageParams pageParams) {
-        Page<RescueTaskResponse> response = rescueTaskService.getRescueTasks(pageParams);
+    public Result<Page<RescueTaskResponse>> getRescueTasks(@Valid RescueTaskQueryParams params, PageParams pageParams) {
+        Page<RescueTaskResponse> response = rescueTaskService.getRescueTasks(params, pageParams);
         return Result.success(response);
     }
 

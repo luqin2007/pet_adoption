@@ -11,13 +11,15 @@ public class MedicalRecordQueryParams implements IParam, IValidatedRequest {
 
     private Long pet;
     private Long doctor;
+    private Long ownerId;
     private String status;
     private Date time0, time1;
 
     @Override
     public void validate(Errors errors) {
         //noinspection unchecked
-        validateOne(errors, MedicalRecordQueryParams::getPet, MedicalRecordQueryParams::getDoctor);
+        validateOne(errors, MedicalRecordQueryParams::getPet, MedicalRecordQueryParams::getDoctor,
+                MedicalRecordQueryParams::getOwnerId);
         validateTime(errors, MedicalRecordQueryParams::getTime0, MedicalRecordQueryParams::getTime1);
         validateEnum(errors, MedicalRecordQueryParams::getStatus, MedicalRecordStatus.class, "request.medical.record.status");
     }

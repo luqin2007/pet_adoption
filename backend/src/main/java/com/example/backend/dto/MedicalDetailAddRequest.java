@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -32,11 +33,11 @@ public class MedicalDetailAddRequest implements IRequest {
 
     @NotNull(message = "request.medical.weight")
     @Min(value = 0, message = "request.medical.weight")
-    private Double weight;
+    private BigDecimal weight;
 
     @NotNull(message = "request.medical.temperature")
     @Min(value = 0, message = "request.medical.temperature")
-    private Double temperature;
+    private BigDecimal temperature;
 
     @NotNull(message = "request.medical.detail.heart")
     @Min(value = 0, message = "request.medical.detail.heart")

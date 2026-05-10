@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -93,13 +94,13 @@ public class MedicalDetail implements IId {
      * 宠物体重 kg
      * *非空 decimal(6,2)*
      */
-    private Double weight;
+    private BigDecimal weight;
 
     /**
      * 宠物体温 ℃
      * *非空 decimal(3,2)*
      */
-    private Double temperature;
+    private BigDecimal temperature;
 
     /**
      * 心率

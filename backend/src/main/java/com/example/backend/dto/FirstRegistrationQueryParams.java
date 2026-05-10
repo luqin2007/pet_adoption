@@ -11,6 +11,7 @@ public class FirstRegistrationQueryParams implements IParam, IValidatedRequest {
     // 筛选
     private Long registrar;
     private Long pet;
+    private Long ownerId;
     private Date date0;
     private Date date1;
 
@@ -24,6 +25,7 @@ public class FirstRegistrationQueryParams implements IParam, IValidatedRequest {
         validateOne(errors,
                 FirstRegistrationQueryParams::getRegistrar,
                 FirstRegistrationQueryParams::getPet,
+                FirstRegistrationQueryParams::getOwnerId,
                 FirstRegistrationQueryParams::getName);
     }
 }

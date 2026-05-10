@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
+import { ROLE, hasRole } from '../utils/roles'
 import ArticleDetailView from '../views/ArticleDetailView.vue'
 import ArticleHubView from '../views/ArticleHubView.vue'
 import ArticleEditorView from '../views/ArticleEditorView.vue'
@@ -20,13 +21,29 @@ import PetMediaUploadView from '../views/PetMediaUploadView.vue'
 import PetAdoptCreateView from '../views/PetAdoptCreateView.vue'
 import PetClaimCreateView from '../views/PetClaimCreateView.vue'
 import PetProfileView from '../views/PetProfileView.vue'
-import ProfileCenterView from '../views/ProfileCenterView.vue'
 import RescueTaskCreateView from '../views/RescueTaskCreateView.vue'
 import RescueTaskDetailView from '../views/RescueTaskDetailView.vue'
 import VolunteerCenterView from '../views/VolunteerCenterView.vue'
 import VolunteerRecruitmentDetailView from '../views/VolunteerRecruitmentDetailView.vue'
 import FirstRegistrationCreateView from '../views/FirstRegistrationCreateView.vue'
+import MedicalRecordCreateView from '../views/MedicalRecordCreateView.vue'
+import MedicalDetailView from '../views/MedicalDetailView.vue'
+import MedicalDetailCreateView from '../views/MedicalDetailCreateView.vue'
 import AuditHistoryView from '../views/AuditHistoryView.vue'
+import ConsoleLayout from '../components/ConsoleLayout.vue'
+import ProfilePanel from '../components/ProfilePanel.vue'
+import UsersPanel from '../components/UsersPanel.vue'
+import PetsPanel from '../components/PetsPanel.vue'
+import LostPetsPanel from '../components/LostPetsPanel.vue'
+import TasksPanel from '../components/TasksPanel.vue'
+import MedicalFirstPanel from '../components/MedicalFirstPanel.vue'
+import MedicalRecordPanel from '../components/MedicalRecordPanel.vue'
+import FirstRegistrationDetailPanel from '../components/FirstRegistrationDetailPanel.vue'
+import MedicalRecordDetailPanel from '../components/MedicalRecordDetailPanel.vue'
+import MyArticleManagementPanel from '../components/MyArticleManagementPanel.vue'
+import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
+import VolunteerApplicationDetailPanel from '../components/VolunteerApplicationDetailPanel.vue'
+import { medicalRecordOwnerExists } from '../api/services'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -61,9 +78,7 @@ const router = createRouter({
       path: '/pets/new',
       name: 'pet-create',
       component: PetCreateView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/pets/:id',
@@ -74,33 +89,25 @@ const router = createRouter({
       path: '/pets/:id/edit',
       name: 'pet-edit',
       component: PetEditView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/pets/:id/media',
       name: 'pet-media-upload',
       component: PetMediaUploadView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/pets/:id/adopt',
       name: 'pet-adopt-create',
       component: PetAdoptCreateView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/pets/:id/claim',
       name: 'pet-claim-create',
       component: PetClaimCreateView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/articles',
@@ -116,17 +123,13 @@ const router = createRouter({
       path: '/console/articles/new',
       name: 'article-create',
       component: ArticleEditorView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/console/articles/:id/edit',
       name: 'article-edit',
       component: ArticleEditorView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/volunteers',
@@ -147,9 +150,7 @@ const router = createRouter({
       path: '/lost/new',
       name: 'lost-create',
       component: LostPetCreateView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/lost/:id',
@@ -160,25 +161,19 @@ const router = createRouter({
       path: '/tasks/new',
       name: 'rescue-task-create',
       component: RescueTaskCreateView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/tasks/:id',
       name: 'rescue-task-detail',
       component: RescueTaskDetailView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/donations/new',
       name: 'donation-create',
       component: DonationCreateView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/breading/new',
@@ -194,33 +189,64 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/medical/record/new',
+      name: 'medical-record-create',
+      component: MedicalRecordCreateView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/medical/detail/new',
+      name: 'medical-detail-create',
+      component: MedicalDetailCreateView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/medical/detail/:id',
+      name: 'medical-detail',
+      component: MedicalDetailView,
+      meta: { requiresAuth: true },
+    },
+    // --- Console routes (nested with shared layout) ---
+    {
       path: '/console',
-      name: 'profile-center',
-      component: ProfileCenterView,
-      meta: {
-        requiresAuth: true,
-      },
+      component: ConsoleLayout,
+      meta: { requiresAuth: true },
+      children: [
+        { path: '', redirect: '/console/profile' },
+        { path: 'profile', name: 'console-profile', component: ProfilePanel },
+        { path: 'users', name: 'console-users', component: UsersPanel, meta: { guard: 'canManageUsers' } },
+        { path: 'pets', name: 'console-pets', component: PetsPanel },
+        { path: 'lost-pets', name: 'console-lost-pets', component: LostPetsPanel },
+        { path: 'tasks', name: 'console-tasks', component: TasksPanel },
+        { path: 'articles/mine', name: 'console-article-mine', component: MyArticleManagementPanel, props: { mode: 'mine' } },
+        { path: 'articles/manage', name: 'console-article-manage', component: MyArticleManagementPanel, props: { mode: 'manage' }, meta: { guard: 'canManageUsers' } },
+        { path: 'volunteer/recruitments', name: 'console-volunteer-recruitments', component: VolunteerManagementPanel, props: { section: 'recruitments', hideTabs: true }, meta: { guard: 'canManageUsers' } },
+        { path: 'volunteer/applications', name: 'console-volunteer-applications', component: VolunteerManagementPanel, props: { section: 'applications', hideTabs: true } },
+        { path: 'volunteer/applications/:id', name: 'console-volunteer-application-detail', component: VolunteerApplicationDetailPanel },
+        { path: 'volunteer/rewards', name: 'console-volunteer-rewards', component: VolunteerManagementPanel, props: { section: 'rewards', hideTabs: true }, meta: { guard: 'canManageUsersOrVolunteer' } },
+        { path: 'volunteer/activities', name: 'console-volunteer-activities', component: VolunteerManagementPanel, props: { section: 'activities', hideTabs: true }, meta: { guard: 'canManageUsersOrVolunteer' } },
+        { path: 'medical/first', name: 'console-medical-first', component: MedicalFirstPanel, meta: { guard: 'canViewMedical' } },
+        { path: 'medical/first/:id', name: 'console-medical-first-detail', component: FirstRegistrationDetailPanel, meta: { guard: 'canViewMedical' } },
+        { path: 'medical/records', name: 'console-medical-records', component: MedicalRecordPanel, meta: { guard: 'canViewMedical' } },
+        { path: 'medical/records/:id', name: 'console-medical-record-detail', component: MedicalRecordDetailPanel, meta: { guard: 'canViewMedical' } },
+      ],
     },
     {
       path: '/console/audit-history',
       name: 'audit-history',
       component: AuditHistoryView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
     {
       path: '/api-coverage',
       name: 'api-coverage',
       component: ApiCoverageView,
-      meta: {
-        requiresAuth: true,
-      },
+      meta: { requiresAuth: true },
     },
   ],
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const userStore = useUserStore()
 
   if (to.meta.requiresAuth && !userStore.isLoggedIn) {
@@ -229,6 +255,36 @@ router.beforeEach((to) => {
       query: {
         redirect: to.fullPath || '/console',
       },
+    }
+  }
+
+  // Role-based guard for console routes
+  if (to.meta.guard) {
+    const role = Number(userStore.profile?.role || 0)
+    const isAdmin = hasRole(role, ROLE.ADMIN)
+    const isWorker = hasRole(role, ROLE.WORKER)
+    const isDoctor = hasRole(role, ROLE.DOCTOR)
+    const isVolunteer = hasRole(role, ROLE.VOLUNTEER)
+
+    const guard = to.meta.guard
+    let allowed = false
+    if (guard === 'canManageUsers') allowed = isAdmin || isWorker
+    else if (guard === 'canManageMedical') allowed = isAdmin || isWorker || isDoctor
+    else if (guard === 'canViewMedical') {
+      allowed = isAdmin || isWorker || isDoctor
+      if (!allowed && userStore.profile?.id) {
+        try {
+          allowed = Boolean(await medicalRecordOwnerExists(userStore.profile.id))
+        } catch {
+          allowed = false
+        }
+      }
+    }
+    else if (guard === 'canManageArticles') allowed = isWorker || isVolunteer
+    else if (guard === 'canManageUsersOrVolunteer') allowed = isAdmin || isWorker || isVolunteer
+
+    if (!allowed) {
+      return { path: '/console/profile' }
     }
   }
 

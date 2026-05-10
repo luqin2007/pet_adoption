@@ -1,0 +1,177 @@
+<script setup>
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ArrowLeft, Connection, Message, SwitchButton, User } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { useUserStore } from '../stores/user'
+import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { ROLE, hasRole } from '../utils/roles'
+import { medicalRecordOwnerExists } from '../api/services'
+
+const router = useRouter()
+const route = useRoute()
+const userStore = useUserStore()
+const { loginRole, isLoginAdmin, canManageUsers, canManageMedical, canManageArticles } = useConsoleGuards()
+const hasOwnedMedicalRecords = ref(false)
+
+const activeMenu = computed(() => {
+  if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
+  if (route.path.startsWith('/console/medical/first/')) return '/console/medical/first'
+  if (route.path.startsWith('/console/medical/records/')) return '/console/medical/records'
+  return route.path
+})
+const canViewMedical = computed(() => canManageMedical.value || hasOwnedMedicalRecords.value)
+
+function handleMenuSelect(index) {
+  if (index === 'api-coverage') {
+    router.push('/api-coverage')
+  } else {
+    router.push(index)
+  }
+}
+
+function goHome() {
+  router.push('/')
+}
+
+async function handleLogout() {
+  try {
+    await ElMessageBox.confirm('确认退出登录？', '退出确认', {
+      type: 'warning',
+      confirmButtonText: '退出',
+      cancelButtonText: '取消',
+    })
+  } catch {
+    return
+  }
+
+  try {
+    await userStore.logout()
+    ElMessage.success('已退出登录')
+  } catch (error) {
+    const message = error?.message ? String(error.message) : '退出登录失败，已清除本地登录状态'
+    ElMessage.warning(message)
+  } finally {
+    router.replace('/login')
+  }
+}
+
+const TAB_REDIRECTS = {
+  'medical-first': '/console/medical/first',
+  'articles': null,
+  'article-mine': '/console/articles/mine',
+  'article-manage': '/console/articles/manage',
+  'lost-pets': '/console/lost-pets',
+  'volunteer': null,
+}
+
+onMounted(() => {
+  const tab = route.query.tab
+  if (tab) {
+    if (tab === 'articles') {
+      router.replace(canManageUsers.value ? '/console/articles/manage' : '/console/articles/mine')
+    } else if (tab === 'volunteer') {
+      router.replace(isLoginAdmin.value || hasRole(loginRole.value, ROLE.WORKER) ? '/console/volunteer/recruitments' : '/console/volunteer/applications')
+    } else if (TAB_REDIRECTS[tab]) {
+      router.replace(TAB_REDIRECTS[tab])
+    }
+  }
+})
+
+watch(
+  () => userStore.profile?.id,
+  async (id) => {
+    if (canManageMedical.value || !id) {
+      hasOwnedMedicalRecords.value = false
+      return
+    }
+    try {
+      hasOwnedMedicalRecords.value = Boolean(await medicalRecordOwnerExists(id))
+    } catch {
+      hasOwnedMedicalRecords.value = false
+    }
+  },
+  { immediate: true },
+)
+</script>
+
+<template>
+  <div class="console-page">
+    <header class="console-topbar">
+      <div>
+        <h1>后台管理</h1>
+      </div>
+      <div class="console-topbar-actions">
+        <el-button text type="warning" @click="goHome">
+          <el-icon><ArrowLeft /></el-icon>
+          返回首页
+        </el-button>
+        <el-button text type="danger" @click="handleLogout">
+          <el-icon><SwitchButton /></el-icon>
+          退出登录
+        </el-button>
+      </div>
+    </header>
+
+    <div class="console-layout">
+      <aside class="console-sidebar">
+        <el-menu class="console-menu" :default-active="activeMenu" @select="handleMenuSelect">
+          <el-menu-item index="/console/profile">
+            <el-icon><User /></el-icon>
+            <span>个人信息</span>
+          </el-menu-item>
+          <el-menu-item v-if="canManageUsers" index="/console/users">
+            <el-icon><User /></el-icon>
+            <span>用户管理</span>
+          </el-menu-item>
+          <el-menu-item index="/console/pets">
+            <el-icon><Connection /></el-icon>
+            <span>流浪宠物</span>
+          </el-menu-item>
+          <el-menu-item index="/console/lost-pets">
+            <el-icon><Connection /></el-icon>
+            <span>丢失宠物</span>
+          </el-menu-item>
+          <el-menu-item index="/console/tasks">
+            <el-icon><Connection /></el-icon>
+            <span>救助任务</span>
+          </el-menu-item>
+          <el-sub-menu v-if="canManageArticles" index="/console/articles">
+            <template #title>
+              <el-icon><Message /></el-icon>
+              <span>公益文章</span>
+            </template>
+            <el-menu-item index="/console/articles/mine">我的文章</el-menu-item>
+            <el-menu-item v-if="canManageUsers" index="/console/articles/manage">文章管理</el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="/console/volunteer">
+            <template #title>
+              <el-icon><Connection /></el-icon>
+              <span>志愿者</span>
+            </template>
+            <el-menu-item v-if="canManageUsers" index="/console/volunteer/recruitments">招募计划</el-menu-item>
+            <el-menu-item index="/console/volunteer/applications">招募申请</el-menu-item>
+            <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/rewards">志愿者激励</el-menu-item>
+            <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/activities">志愿活动</el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu v-if="canViewMedical" index="/console/medical">
+            <template #title>
+              <el-icon><Connection /></el-icon>
+              <span>医疗护理</span>
+            </template>
+            <el-menu-item index="/console/medical/first">初诊登记</el-menu-item>
+            <el-menu-item index="/console/medical/records">就诊记录</el-menu-item>
+          </el-sub-menu>
+          <el-menu-item index="api-coverage">
+            <el-icon><Connection /></el-icon>
+            <span>接口覆盖台</span>
+          </el-menu-item>
+        </el-menu>
+      </aside>
+
+      <section class="console-content">
+        <router-view />
+      </section>
+    </div>
+  </div>
+</template>

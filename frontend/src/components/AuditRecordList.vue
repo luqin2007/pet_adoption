@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Clock } from '@element-plus/icons-vue'
 
@@ -12,20 +12,21 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const showAll = ref(false)
-
-const displayRecords = computed(() => {
-  if (showAll.value || props.records.length <= 5) return props.records
-  return props.records.slice(0, 5)
-})
-const hasMore = computed(() => !showAll.value && props.records.length > 5)
 
 function labelOf(value) {
   if (!value) return '-'
   return props.statusLabels[value] || value
 }
 
-function viewMore() {
+function formatTime(value) {
+  if (!value) return ''
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return String(value)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
+function viewAll() {
   const routeMap = {
     pet: { name: 'audit-history', query: { type: 'pet', id: props.targetId } },
     task: { name: 'audit-history', query: { type: 'task', id: props.targetId } },
@@ -38,11 +39,11 @@ function viewMore() {
 
 <template>
   <div v-if="records.length || loading" class="audit-record-list">
-    <div class="audit-record-title">审核记录</div>
+    <div class="audit-record-title" @click="viewAll">审核记录</div>
     <div v-if="loading" class="audit-record-loading">加载中...</div>
     <div v-else-if="!records.length" class="audit-record-empty">暂无审核记录</div>
     <div v-else class="audit-record-items">
-      <div v-for="record in displayRecords" :key="record.id" class="audit-record-item">
+      <div v-for="record in records.slice(0, 5)" :key="record.id" class="audit-record-item">
         <div class="audit-record-left">
           <el-avatar v-if="record.username" :size="24" :src="record.avatar" class="audit-record-avatar">
             {{ record.username?.charAt(0) }}
@@ -59,12 +60,9 @@ function viewMore() {
             <el-tag size="small" effect="plain" class="audit-record-tag">{{ labelOf(record.to || record.statusTo) }}</el-tag>
           </div>
           <div v-if="record.reason || record.comment || record.description" class="audit-record-reason">{{ record.reason || record.comment || record.description }}</div>
-          <div class="audit-record-time">{{ record.createTime }}</div>
+          <div class="audit-record-time">{{ formatTime(record.createTime) }}</div>
         </div>
       </div>
-    </div>
-    <div v-if="hasMore" class="audit-record-more">
-      <el-button link type="primary" size="small" @click="viewMore">更多 &rarr;</el-button>
     </div>
   </div>
 </template>
@@ -78,8 +76,12 @@ function viewMore() {
 .audit-record-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--el-text-color-secondary);
+  color: var(--el-color-primary);
   margin-bottom: 8px;
+  cursor: pointer;
+}
+.audit-record-title:hover {
+  text-decoration: underline;
 }
 .audit-record-loading,
 .audit-record-empty {
@@ -163,9 +165,6 @@ function viewMore() {
   font-size: 11px;
   color: var(--el-text-color-placeholder);
   margin-top: 2px;
-}
-.audit-record-more {
-  text-align: center;
-  margin-top: 4px;
+  text-align: right;
 }
 </style>

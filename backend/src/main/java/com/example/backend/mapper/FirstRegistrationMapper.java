@@ -5,6 +5,8 @@ import com.example.backend.entity.FirstRegistration;
 import com.example.backend.util.MPLambdaQuery;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.Set;
+
 /**
  * 索引<br>
  * - (petId, createTime)<br>
@@ -27,8 +29,13 @@ public interface FirstRegistrationMapper extends IBaseMapper<FirstRegistration> 
      * - 索引：(registrarId, createTime)
      */
     default MPLambdaQuery<FirstRegistration> selectByRequest(FirstRegistrationQueryParams params) {
+        return selectByRequest(params, null);
+    }
+
+    default MPLambdaQuery<FirstRegistration> selectByRequest(FirstRegistrationQueryParams params, Set<Long> petIds) {
         return lambdaQuery()
                 .eq(FirstRegistration::getPetId, params.getPet())
+                .in(FirstRegistration::getPetId, petIds)
                 .eq(FirstRegistration::getRegistrarId, params.getRegistrar())
                 .in(FirstRegistration::getCreateTime, params.getDate0(), params.getDate1())
                 .like(FirstRegistration::getName, params.getName());

@@ -47,12 +47,6 @@ export function updateLostPetStatus(id, payload) {
   })
 }
 
-export function deleteLostPet(id) {
-  return request(`/lost/pets/${id}`, {
-    method: 'DELETE',
-  })
-}
-
 export function uploadLostPetMedia(id, file, name = '') {
   const formData = new FormData()
   formData.append('file', file)

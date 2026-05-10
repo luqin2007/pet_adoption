@@ -25,9 +25,10 @@ import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { useUserStore } from '../stores/user'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import AuditRecordList from './AuditRecordList.vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 const props = defineProps({
   section: {
@@ -105,6 +106,8 @@ const savingRecordReview = ref(false)
 const isWorker = computed(() => (Number(userStore.profile.role || 0) & ROLE.WORKER) === ROLE.WORKER)
 const isVolunteer = computed(() => (Number(userStore.profile.role || 0) & ROLE.VOLUNTEER) === ROLE.VOLUNTEER)
 const loginUserId = computed(() => Number(userStore.profile.id || 0))
+const activityVolunteerId = computed(() => Number(route.query.volunteer || 0))
+const activityShiftId = computed(() => Number(route.query.shift || 0))
 
 const sections = computed(() => {
   const items = [{ label: '招募申请', value: 'applications' }]
@@ -406,6 +409,35 @@ function recordStatusText(value) {
 
 function locationText(row) {
   return [row.province, row.city, row.district, row.serviceAddress || row.address || row.detailAddress].filter(Boolean).join(' · ') || '位置待补充'
+}
+
+function goRecruitmentDetail(id) {
+  if (id) router.push(`/volunteers/recruitments/${id}`)
+}
+
+function goApplicationDetail(row) {
+  if (row?.id) router.push(`/console/volunteer/applications/${row.id}`)
+}
+
+function goVolunteerActivity(row) {
+  if (!row?.volunteerId) return
+  router.push({ path: '/console/volunteer/activities', query: { volunteer: row.volunteerId } })
+}
+
+function goShiftPage(row) {
+  if (row?.taskType === 'RESCUE' && row?.taskSourceId) {
+    router.push(`/tasks/${row.taskSourceId}`)
+    return
+  }
+  if (row?.id) {
+    router.push({ path: '/console/volunteer/activities', query: { shift: row.id, volunteer: row.volunteerId || undefined } })
+  }
+}
+
+function goRecordShift(row) {
+  if (row?.shiftId) {
+    router.push({ path: '/console/volunteer/activities', query: { shift: row.shiftId, volunteer: row.volunteerId || undefined } })
+  }
 }
 
 function handleRecruitmentSearchProvinceChange() {
@@ -747,6 +779,7 @@ function buildShiftQuery() {
   return {
     page: shiftPage.page,
     size: shiftPage.size,
+    volunteer: activityVolunteerId.value || undefined,
     status: shiftSearch.status ? [shiftSearch.status] : undefined,
     taskType: shiftSearch.taskType ? [shiftSearch.taskType] : undefined,
     time0: time0 || undefined,
@@ -910,6 +943,8 @@ function buildRecordQuery() {
   return {
     page: recordPage.page,
     size: recordPage.size,
+    volunteer: activityVolunteerId.value || undefined,
+    shift: activityShiftId.value || undefined,
     status: recordSearch.status ? [recordSearch.status] : undefined,
     time0: time0 || undefined,
     time1: time1 || undefined,
@@ -1074,6 +1109,17 @@ watch(
   { immediate: false },
 )
 
+watch(
+  () => [route.query.volunteer, route.query.shift],
+  () => {
+    if (activeSection.value === 'activities') {
+      shiftPage.page = 1
+      recordPage.page = 1
+      loadBySection('activities')
+    }
+  },
+)
+
 onMounted(async () => {
   await ensureInformationCatalog()
   await loadBySection(activeSection.value)
@@ -1125,7 +1171,11 @@ onMounted(async () => {
         </section>
 
         <el-table :data="recruitmentRows" v-loading="recruitmentLoading" class="user-admin-table">
-          <el-table-column prop="title" label="招募标题" min-width="220" />
+          <el-table-column label="招募标题" min-width="220" show-overflow-tooltip>
+            <template #default="{ row }">
+              <button class="table-primary-link" type="button" @click="goRecruitmentDetail(row.id)">{{ row.title || '未命名招募' }}</button>
+            </template>
+          </el-table-column>
           <el-table-column label="地点" min-width="220">
             <template #default="{ row }">{{ locationText(row) }}</template>
           </el-table-column>
@@ -1181,7 +1231,11 @@ onMounted(async () => {
         </section>
 
         <el-table :data="applicationRows" v-loading="applicationLoading" class="user-admin-table">
-          <el-table-column prop="recruitmentTitle" label="招募计划" min-width="220" />
+          <el-table-column label="招募计划" min-width="220" show-overflow-tooltip>
+            <template #default="{ row }">
+              <button class="table-primary-link" type="button" @click="goApplicationDetail(row)">{{ row.recruitmentTitle || '未命名招募' }}</button>
+            </template>
+          </el-table-column>
           <el-table-column label="申请人" min-width="160">
             <template #default="{ row }">
               <div class="volunteer-person-cell">
@@ -1209,7 +1263,6 @@ onMounted(async () => {
               <div class="table-action-cell">
                 <div class="table-action-panel" :class="{ 'is-collapsed': applicationActionCollapsed }">
                   <el-button v-if="isWorker" text type="primary" @click="openApplicationReviewDialog(row)">审核</el-button>
-                  <span v-else class="volunteer-static-action table-action-cell-text">查看状态</span>
                 </div>
               </div>
             </template>
@@ -1247,7 +1300,9 @@ onMounted(async () => {
 
         <el-table :data="rewardRows" v-loading="rewardLoading" class="user-admin-table">
           <el-table-column label="志愿者" min-width="160">
-            <template #default="{ row }">{{ row.volunteerName || '未命名' }}</template>
+            <template #default="{ row }">
+              <button class="table-primary-link" type="button" @click="goVolunteerActivity(row)">{{ row.volunteerName || '未命名' }}</button>
+            </template>
           </el-table-column>
           <el-table-column label="统计周期" min-width="200">
             <template #default="{ row }">{{ formatDate(row.periodStart) }} - {{ formatDate(row.periodEnd) }}</template>
@@ -1313,7 +1368,11 @@ onMounted(async () => {
           </section>
 
           <el-table :data="shiftRows" v-loading="shiftLoading" class="user-admin-table">
-            <el-table-column prop="title" label="活动标题" min-width="140" show-overflow-tooltip />
+            <el-table-column label="活动标题" min-width="140" show-overflow-tooltip>
+              <template #default="{ row }">
+                <button class="table-primary-link" type="button" @click="goShiftPage(row)">{{ row.title || '未命名活动' }}</button>
+              </template>
+            </el-table-column>
             <el-table-column label="志愿者" min-width="100">
               <template #default="{ row }">{{ row.volunteerName || '待指派' }}</template>
             </el-table-column>
@@ -1379,7 +1438,11 @@ onMounted(async () => {
           </section>
 
           <el-table :data="recordRows" v-loading="recordLoading" class="user-admin-table">
-            <el-table-column prop="shiftTitle" label="排班标题" min-width="140" show-overflow-tooltip />
+            <el-table-column label="排班标题" min-width="140" show-overflow-tooltip>
+              <template #default="{ row }">
+                <button class="table-primary-link" type="button" @click="goRecordShift(row)">{{ row.shiftTitle || '未命名排班' }}</button>
+              </template>
+            </el-table-column>
             <el-table-column label="志愿者" min-width="100">
               <template #default="{ row }">{{ row.volunteerName || '未命名' }}</template>
             </el-table-column>
@@ -1624,11 +1687,11 @@ onMounted(async () => {
         <el-input v-model="shiftStatusForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="例如：志愿者缺勤、活动结束、临时取消" />
       </el-form-item>
     </el-form>
-    <AuditRecordList :records="shiftAuditRecords" type="shift" :target-id="shiftStatusForm.id" :status-labels="shiftStatusLabelMap" />
-    <template #footer>
+    <div class="dialog-footer">
       <el-button @click="shiftStatusDialogVisible = false">取消</el-button>
       <el-button type="warning" :loading="savingShiftStatus" @click="saveShiftStatus">保存</el-button>
-    </template>
+    </div>
+    <AuditRecordList :records="shiftAuditRecords" type="shift" :target-id="shiftStatusForm.id" :status-labels="shiftStatusLabelMap" />
   </el-dialog>
 
   <el-dialog v-model="recordDialogVisible" title="提交活动报告" width="720px">

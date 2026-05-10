@@ -149,7 +149,7 @@ async function submitApplication() {
   submitting.value = true
   try {
     await createVolunteerApplication({
-      recruitmentId: Number(recruitmentId.value),
+      recruitmentId: recruitmentId.value,
       realName: form.realName.trim(),
       phone: form.phone.trim(),
       sex: form.sex,

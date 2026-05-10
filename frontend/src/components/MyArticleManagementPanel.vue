@@ -48,7 +48,8 @@ const searchForm = reactive({
   title: '',
   type: '',
   status: '',
-  timeRange: [],
+  time0: '',
+  time1: '',
 })
 
 const isWorker = computed(() => (Number(userStore.profile.role || 0) & ROLE.WORKER) === ROLE.WORKER)
@@ -80,8 +81,8 @@ function buildQuery() {
     title: searchForm.title.trim() || undefined,
     type: searchForm.type || undefined,
     status: searchForm.status ? [searchForm.status] : undefined,
-    time0: searchForm.timeRange?.[0] || undefined,
-    time1: searchForm.timeRange?.[1] || undefined,
+    time0: searchForm.time0 || undefined,
+    time1: searchForm.time1 || undefined,
   }
 }
 
@@ -109,7 +110,8 @@ function resetSearch() {
   searchForm.title = ''
   searchForm.type = ''
   searchForm.status = ''
-  searchForm.timeRange = []
+  searchForm.time0 = ''
+  searchForm.time1 = ''
   page.page = 1
   loadArticles()
 }
@@ -125,6 +127,15 @@ function goCreateArticle() {
 
 function goEditArticle(row) {
   router.push(`/console/articles/${row.id}/edit`)
+}
+
+function goArticlePage(row) {
+  if (!row?.id) return
+  if (!isManageMode.value && row.status === 'DRAFT') {
+    goEditArticle(row)
+    return
+  }
+  router.push(`/articles/${row.id}`)
 }
 
 function typeText(type) {
@@ -234,7 +245,7 @@ onMounted(() => {
 
     <section v-if="canUseCurrentMode" class="pet-admin-section article-admin-shell">
       <section class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
-        <div class="pet-filter-row article-filter-row-inline">
+        <div class="pet-filter-row article-filter-row-inline article-filter-cols-3">
           <el-input v-model="searchForm.title" clearable placeholder="标题" @keyup.enter="page.page = 1; loadArticles()" />
           <el-select v-model="searchForm.type" clearable placeholder="文章类型">
             <el-option v-for="item in articleTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -244,16 +255,9 @@ onMounted(() => {
           </el-select>
         </div>
 
-        <div class="pet-filter-row article-filter-row-secondary">
-          <el-date-picker
-            v-model="searchForm.timeRange"
-            type="datetimerange"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            range-separator="至"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            class="article-filter-date full-width-control"
-          />
+        <div class="pet-filter-row article-filter-row-secondary article-filter-cols-row2">
+          <el-date-picker v-model="searchForm.time0" type="date" value-format="YYYY-MM-DD" placeholder="开始日期" class="full-width-control" />
+          <el-date-picker v-model="searchForm.time1" type="date" value-format="YYYY-MM-DD" placeholder="结束日期" class="full-width-control" />
           <div class="pet-filter-action article-filter-action">
             <el-button v-if="!isManageMode" class="soft-btn" :icon="Plus" @click="goCreateArticle">发表文章</el-button>
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="page.page = 1; loadArticles()">搜索</el-button>
@@ -262,7 +266,11 @@ onMounted(() => {
       </section>
 
       <el-table :data="rows" v-loading="loading" class="user-admin-table">
-        <el-table-column prop="title" label="标题" min-width="260" show-overflow-tooltip />
+        <el-table-column label="标题" min-width="260" show-overflow-tooltip>
+          <template #default="{ row }">
+            <button class="table-primary-link" type="button" @click="goArticlePage(row)">{{ row.title || '未命名文章' }}</button>
+          </template>
+        </el-table-column>
         <el-table-column v-if="isManageMode" label="作者" min-width="140">
           <template #default="{ row }">{{ row.authorName || '—' }}</template>
         </el-table-column>
@@ -328,3 +336,12 @@ onMounted(() => {
     </section>
   </el-card>
 </template>
+
+<style scoped>
+.article-directory-filter-panel .article-filter-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.article-directory-filter-panel .article-filter-cols-row2 {
+  grid-template-columns: 1fr 1fr auto;
+}
+</style>
