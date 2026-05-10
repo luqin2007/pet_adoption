@@ -1585,7 +1585,6 @@ main {
 .console-detail-list div {
   display: grid;
   gap: 4px;
-  min-width: 0;
 }
 
 .console-detail-list-inline {
