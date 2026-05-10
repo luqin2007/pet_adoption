@@ -218,7 +218,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     public Page<UserResponse> getAllUsers(PageParams page) {
         // 权限校验
         User login = requireLoginUser();
-        requirePermission(login.isWorker());
+        requirePermission(login.isWorker() || login.isDoctor());
         // 数据转换
         Page<User> result = page(page.createPage());
         return convertDto(result, UserResponse::create);
