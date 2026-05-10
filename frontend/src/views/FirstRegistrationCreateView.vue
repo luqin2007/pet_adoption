@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, computed } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Check, Plus, Delete } from '@element-plus/icons-vue'
@@ -8,6 +8,32 @@ import AppHeader from '../components/AppHeader.vue'
 import { getPetById } from '../api/pets'
 import { createFirstVisitRegistration } from '../api/services'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
+
+const LS_IMMUNITY_KEY = 'pet_first_reg_immunity_history'
+const LS_ALLERGY_KEY = 'pet_first_reg_allergy_history'
+
+function loadLocalHistory(key) {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+function saveLocalHistory(key, records) {
+  try {
+    const existing = loadLocalHistory(key)
+    const merged = [...existing]
+    for (const r of records) {
+      const exists = merged.some((m) => JSON.stringify(m) === JSON.stringify(r))
+      if (!exists) merged.push(r)
+    }
+    localStorage.setItem(key, JSON.stringify(merged))
+  } catch {
+    // ignore
+  }
+}
 
 const router = useRouter()
 const route = useRoute()
@@ -25,6 +51,9 @@ const form = reactive({
   allergies: [],
 })
 
+const immunityHistory = ref(loadLocalHistory(LS_IMMUNITY_KEY))
+const allergyHistory = ref(loadLocalHistory(LS_ALLERGY_KEY))
+
 onMounted(async () => {
   const petId = route.query.petId
   if (!petId) {
@@ -34,15 +63,10 @@ onMounted(async () => {
   }
   form.petId = petId
 
-  // 自动获取宠物名并填充
   try {
     const pet = await getPetById(petId)
-    if (pet && pet.name) {
-      form.name = pet.name
-    }
-    if (pet && pet.age) {
-      form.age = pet.age
-    }
+    if (pet && pet.name) form.name = pet.name
+    if (pet && pet.age) form.age = pet.age
   } catch (error) {
     console.error('获取宠物信息失败:', error)
   }
@@ -55,8 +79,21 @@ const rules = {
   temperature: [{ required: true, message: '请输入体温', trigger: 'blur' }],
 }
 
-const vaccineOptions = ['狂犬病', '猫三联', '犬五联', '猫五联', '猫八联', '犬八联', '猫瘟', '猫杯状病毒', '猫疱疹病毒', '其它']
-const allergyOptions = ['青霉素', '磺胺类', '庆大霉素', '阿司匹林', '布洛芬', '花粉', '猫毛', '犬毛', '其它']
+function selectImmunity(row, val) {
+  const match = immunityHistory.value.find((h) => h.medicine === val)
+  if (match) {
+    row.illness = match.illness || ''
+    row.count = match.count || 1
+    row.total = match.total || 3
+  }
+}
+
+function selectAllergy(row, val) {
+  const match = allergyHistory.value.find((h) => h.source === val)
+  if (match) {
+    row.reaction = match.reaction || ''
+  }
+}
 
 function addImmunity() {
   form.immunities.push({ medicine: '', illness: '', count: 1, total: 3, immunityTime: '' })
@@ -76,7 +113,7 @@ function removeAllergy(index) {
 
 async function submitForm() {
   if (!formRef.value || submitting.value) return
-  
+
   try {
     await formRef.value.validate()
   } catch {
@@ -85,6 +122,24 @@ async function submitForm() {
 
   submitting.value = true
   try {
+    const immunities = form.immunities
+      .filter((i) => i.medicine)
+      .map((i) => ({
+        medicine: i.medicine,
+        illness: i.illness || i.medicine,
+        count: i.count,
+        total: i.total,
+        immunityTime: i.immunityTime || undefined,
+      }))
+
+    const allergies = form.allergies
+      .filter((a) => a.source)
+      .map((a) => ({
+        source: a.source,
+        reaction: a.reaction || '未知',
+        discoveryTime: a.discoveryTime || undefined,
+      }))
+
     const payload = {
       petId: form.petId,
       name: form.name.trim(),
@@ -92,25 +147,15 @@ async function submitForm() {
       weight: Number(form.weight),
       temperature: Number(form.temperature),
       description: form.description.trim() || undefined,
-      immunities: form.immunities
-        .filter(i => i.medicine)
-        .map(i => ({ 
-          medicine: i.medicine, 
-          illness: i.illness || i.medicine, 
-          count: i.count, 
-          total: i.total, 
-          immunityTime: i.immunityTime || undefined 
-        })),
-      allergies: form.allergies
-        .filter(a => a.source)
-        .map(a => ({ 
-          source: a.source, 
-          reaction: a.reaction || '未知', 
-          discoveryTime: a.discoveryTime || undefined 
-        })),
+      immunities,
+      allergies,
     }
 
     await createFirstVisitRegistration(payload)
+
+    saveLocalHistory(LS_IMMUNITY_KEY, immunities.map(({ medicine, illness, count, total }) => ({ medicine, illness, count, total })))
+    saveLocalHistory(LS_ALLERGY_KEY, allergies.map(({ source, reaction }) => ({ source, reaction })))
+
     ElMessage.success('初诊档案已建立')
     router.push('/console?tab=medical-first')
   } catch (err) {
@@ -136,26 +181,24 @@ function goBack() {
         </header>
 
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
-          <!-- 核心体征 -->
           <div class="form-group-title action-form-span-2">基础生命体征</div>
-          
+
           <el-form-item label="宠物名称" prop="name">
             <el-input v-model="form.name" placeholder="例如：西湖小橘" clearable />
           </el-form-item>
-          
+
           <el-form-item label="年龄 (月)" prop="age">
             <el-input-number v-model="form.age" :min="0" :max="360" style="width: 100%" />
           </el-form-item>
-          
+
           <el-form-item label="体重 (kg)" prop="weight">
             <el-input-number v-model="form.weight" :min="0" :precision="2" :step="0.1" style="width: 100%" />
           </el-form-item>
-          
+
           <el-form-item label="体温 (℃)" prop="temperature">
             <el-input-number v-model="form.temperature" :min="0" :precision="1" :step="0.1" style="width: 100%" />
           </el-form-item>
 
-          <!-- 免疫史 -->
           <div class="form-group-title action-form-span-2">
             <span>免疫史</span>
             <el-button type="primary" link :icon="Plus" @click="addImmunity">添加记录</el-button>
@@ -163,22 +206,28 @@ function goBack() {
 
           <div v-if="form.immunities.length" class="dynamic-form-list action-form-span-2">
             <div v-for="(item, index) in form.immunities" :key="index" class="dynamic-form-item">
-              <el-form-item label="疫苗名称">
-                <el-select v-model="item.medicine" filterable allow-create placeholder="选择或输入">
-                  <el-option v-for="opt in vaccineOptions" :key="opt" :label="opt" :value="opt" />
+              <el-form-item label="疫苗名称" class="field-vaccine">
+                <el-select
+                  v-model="item.medicine"
+                  filterable
+                  allow-create
+                  placeholder="选择或输入"
+                  @change="(val) => selectImmunity(item, val)"
+                >
+                  <el-option v-for="opt in immunityHistory" :key="opt.medicine" :label="opt.medicine" :value="opt.medicine" />
                 </el-select>
               </el-form-item>
-              <el-form-item label="预防疾病">
+              <el-form-item label="预防疾病" class="field-illness">
                 <el-input v-model="item.illness" placeholder="例如：猫瘟" />
               </el-form-item>
-              <el-form-item label="接种进度">
+              <el-form-item label="接种进度" class="field-progress">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <el-input-number v-model="item.count" :min="1" :max="item.total" style="width: 100px;" controls-position="right" />
+                  <el-input-number v-model="item.count" :min="1" :max="item.total" style="width: 80px;" controls-position="right" />
                   <span>/</span>
-                  <el-input-number v-model="item.total" :min="1" style="width: 100px;" controls-position="right" />
+                  <el-input-number v-model="item.total" :min="1" style="width: 80px;" controls-position="right" />
                 </div>
               </el-form-item>
-              <el-form-item label="接种日期">
+              <el-form-item label="接种日期" class="field-date">
                 <el-date-picker v-model="item.immunityTime" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width: 100%" />
               </el-form-item>
               <div class="item-actions">
@@ -188,7 +237,6 @@ function goBack() {
           </div>
           <div v-else class="empty-list-tip action-form-span-2">还没有免疫记录</div>
 
-          <!-- 过敏史 -->
           <div class="form-group-title action-form-span-2">
             <span>过敏史</span>
             <el-button type="primary" link :icon="Plus" @click="addAllergy">添加记录</el-button>
@@ -196,15 +244,21 @@ function goBack() {
 
           <div v-if="form.allergies.length" class="dynamic-form-list action-form-span-2">
             <div v-for="(item, index) in form.allergies" :key="index" class="dynamic-form-item">
-              <el-form-item label="过敏原">
-                <el-select v-model="item.source" filterable allow-create placeholder="选择或输入">
-                  <el-option v-for="opt in allergyOptions" :key="opt" :label="opt" :value="opt" />
+              <el-form-item label="过敏原" class="field-allergen">
+                <el-select
+                  v-model="item.source"
+                  filterable
+                  allow-create
+                  placeholder="选择或输入"
+                  @change="(val) => selectAllergy(item, val)"
+                >
+                  <el-option v-for="opt in allergyHistory" :key="opt.source" :label="opt.source" :value="opt.source" />
                 </el-select>
               </el-form-item>
-              <el-form-item label="发现时间">
+              <el-form-item label="发现时间" class="field-date">
                 <el-date-picker v-model="item.discoveryTime" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width: 100%" />
               </el-form-item>
-              <el-form-item label="反应症状" class="item-grow">
+              <el-form-item label="反应症状" class="field-reaction">
                 <el-input v-model="item.reaction" placeholder="描述过敏现象" />
               </el-form-item>
               <div class="item-actions">
@@ -277,12 +331,16 @@ function goBack() {
   margin-bottom: 0;
 }
 
-.item-grow {
-  flex: 1;
-}
+.field-vaccine { flex: 0 0 160px; min-width: 0; }
+.field-allergen { flex: 0 0 160px; min-width: 0; }
+.field-illness { flex: 0 0 140px; min-width: 0; }
+.field-progress { flex: 0 0 180px; min-width: 0; }
+.field-date { flex: 0 0 160px; min-width: 0; }
+.field-reaction { flex: 1 1 140px; min-width: 0; }
 
 .item-actions {
   padding-bottom: 2px;
+  flex-shrink: 0;
 }
 
 .empty-list-tip {
@@ -299,6 +357,14 @@ function goBack() {
   .dynamic-form-item {
     flex-direction: column;
     align-items: stretch;
+  }
+  .field-vaccine,
+  .field-allergen,
+  .field-illness,
+  .field-progress,
+  .field-date,
+  .field-reaction {
+    flex: 1 1 auto;
   }
 }
 </style>
