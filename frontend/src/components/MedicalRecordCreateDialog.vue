@@ -108,19 +108,21 @@ async function submitForm() {
       <el-form-item label="宠物名称">
         <el-input v-model="form.petName" disabled />
       </el-form-item>
-      <el-form-item label="年龄 (月)" prop="petAge">
-        <el-input-number v-model="form.petAge" :min="0" style="width: 100%" />
-      </el-form-item>
-      <el-form-item label="就诊类型" prop="type">
-        <el-select v-model="form.type" placeholder="请选择" style="width: 100%">
-          <el-option v-for="item in recordTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="预计费用">
-        <el-input v-model="form.price" placeholder="可选" />
-      </el-form-item>
       <el-form-item label="领养人电话">
         <el-input v-model="form.ownerPhone" placeholder="可选" />
+      </el-form-item>
+      <div class="record-create-row">
+        <el-form-item label="年龄 (月)" prop="petAge" class="record-create-half">
+          <el-input-number v-model="form.petAge" :min="0" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="就诊类型" prop="type" class="record-create-half">
+          <el-select v-model="form.type" placeholder="请选择" style="width: 100%">
+            <el-option v-for="item in recordTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+      </div>
+      <el-form-item label="预计费用">
+        <el-input v-model="form.price" placeholder="可选" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -128,6 +130,17 @@ async function submitForm() {
         <el-button class="soft-btn" @click="visible = false">取消</el-button>
         <el-button class="warm-btn" :loading="submitting" @click="submitForm">创建记录</el-button>
       </div>
-    </template>
+</template>
+
+<style scoped>
+.record-create-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.record-create-half {
+  width: 100%;
+}
+</style>
   </el-dialog>
 </template>
