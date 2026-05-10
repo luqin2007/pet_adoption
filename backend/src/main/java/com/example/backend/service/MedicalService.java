@@ -358,6 +358,21 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         return buildMedicalDetailResponse(detail);
     }
 
+    /**
+     * 废弃病历
+     */
+    @Transactional
+    public MedicalDetailResponse discardMedicalDetail(Long detailId) {
+        // 权限校验
+        User login = requireLoginUser();
+        requirePermission(login.isDoctor());
+        MedicalDetail detail = requireDetailOpen(detailId);
+
+        detail.setIsDiscard(true);
+        updateById(detail);
+        return buildMedicalDetailResponse(detail);
+    }
+
     private MedicalDetailResponse buildMedicalDetailResponse(MedicalDetail detail) {
         Long detailId = detail.getId();
         MedicalRecord record = medicalRecordMapper.requireById(detail.getRecordId(), MedicalRecord::getPetId, MedicalRecord::getPetAge);

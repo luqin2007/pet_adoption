@@ -7,6 +7,7 @@ import com.example.backend.dto.MedicalDetailQueryParams;
 import com.example.backend.service.MedicalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -144,6 +145,12 @@ public class MedicalCareController {
     @PatchMapping("/detail/{id}")
     public Result<MedicalDetailResponse> completeMedicalDetail(@PathVariable("id") Long detailId) {
         MedicalDetailResponse response = medicalService.completeMedicalDetail(detailId);
+        return Result.success(response);
+    }
+
+    @DeleteMapping("/detail/{id}")
+    public Result<MedicalDetailResponse> discardMedicalDetail(@PathVariable("id") Long detailId) {
+        MedicalDetailResponse response = medicalService.discardMedicalDetail(detailId);
         return Result.success(response);
     }
 
