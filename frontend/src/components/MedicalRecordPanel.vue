@@ -21,14 +21,9 @@
       <el-table :data="recordRows" v-loading="loadingRecords" class="user-admin-table">
         <el-table-column label="宠物" min-width="120">
           <template #default="{ row }">
-            <div class="pet-admin-pet">
-              <button class="pet-admin-cover-button" type="button" @click="goMedicalRecordDetail(row)">
-                <img :src="row.cover || 'https://images.pexels.com/photos/1170986/pexels-photo-1170986.jpeg?auto=compress&cs=tinysrgb&w=320'" :alt="row.petName" />
-              </button>
-              <div>
-                <button class="pet-admin-name-button" type="button" @click="goMedicalRecordDetail(row)">{{ row.petName || '未命名' }}</button>
-                <span>{{ row.petType || '宠物' }} · {{ row.petSex || '未知' }}</span>
-              </div>
+            <div>
+              <button class="pet-admin-name-button" type="button" @click="goMedicalRecordDetail(row)">{{ row.petName || '未命名' }}</button>
+              <span style="display:block;font-size:12px;color:var(--muted)">{{ row.petType || '宠物' }} · {{ row.petSex || '未知' }}</span>
             </div>
           </template>
         </el-table-column>

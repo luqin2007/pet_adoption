@@ -2,12 +2,13 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Check } from '@element-plus/icons-vue'
+import { ArrowLeft, Check, ArrowDown } from '@element-plus/icons-vue'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
 import { getMedicalDetail, updateMedicalDetail } from '../api/services'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useUserStore } from '../stores/user'
+import { ROLE, hasRole } from '../utils/roles'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const route = useRoute()
@@ -20,17 +21,50 @@ const loading = ref(false)
 const editing = ref(false)
 const saving = ref(false)
 const detail = ref(null)
+const diagnosisExpanded = ref(false)
+const showAllDiagnoses = ref(false)
 
 const loginUserId = computed(() => Number(userStore.profile?.id || 0))
+const isDoctor = computed(() => hasRole(loginRole.value, ROLE.DOCTOR))
 const canEdit = computed(() => {
   if (!detail.value) return false
-  const isDoctor = (loginRole.value & 4) === 4
-  return isDoctor && Number(detail.value.doctorId) === loginUserId.value
+  if (!isDoctor.value) return false
+  if (detail.value.isCompleted || detail.value.isDiscard) return false
+  return Number(detail.value.doctorId) === loginUserId.value
+})
+
+const displayedDiagnoses = computed(() => {
+  const list = detail.value?.objectiveDiagnoses || []
+  if (showAllDiagnoses.value || list.length <= 3) return list
+  return list.slice(0, 3)
+})
+
+const hasMoreDiagnoses = computed(() => {
+  return (detail.value?.objectiveDiagnoses?.length || 0) > 3
 })
 
 const editForm = reactive({
   summary: '', physicalExam: '', diagnosis: '', differential: '', exam: '', treatment: '', advice: '',
 })
+
+function formatDate(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString('zh-CN')
+}
+
+function statusText() {
+  if (detail.value?.isDiscard) return '已废弃'
+  if (detail.value?.isCompleted) return '已完成'
+  return '进行中'
+}
+
+function statusTagType() {
+  if (detail.value?.isDiscard) return 'info'
+  if (detail.value?.isCompleted) return 'success'
+  return 'warning'
+}
 
 async function loadDetail() {
   if (!detailId.value) return
@@ -38,6 +72,7 @@ async function loadDetail() {
   try {
     const res = await getMedicalDetail(detailId.value)
     detail.value = res || null
+    diagnosisExpanded.value = (detail.value?.objectiveDiagnoses?.length || 0) <= 3
   } catch (error) { ElMessage.warning(error?.message || '加载病历失败') }
   finally { loading.value = false }
 }
@@ -81,24 +116,22 @@ onMounted(() => { loadDetail() })
 
     <main class="subpage-main action-form-page" v-loading="loading">
       <section v-if="detail" class="action-form-panel">
-        <header class="form-section-header">
-          <h2>病历详情</h2>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回</el-button>
-            <el-button v-if="canEdit && !editing" class="warm-btn" :icon="Check" @click="startEdit">编辑</el-button>
+        <header class="form-section-header detail-header">
+          <div>
+            <h2 class="detail-pet-name">{{ detail.name || '未命名' }}</h2>
+            <p class="detail-pet-breed">{{ detail.type || '宠物' }} · {{ detail.breed || detail.sex || '' }}</p>
+            <div class="detail-tags">
+              <el-tag size="small" effect="plain">{{ detail.username || '—' }}</el-tag>
+              <el-tag size="small" effect="plain">{{ formatDate(detail.createTime) }}</el-tag>
+              <el-tag size="small" effect="plain" :type="statusTagType()">{{ statusText() }}</el-tag>
+            </div>
           </div>
         </header>
-
-        <div class="detail-meta-row">
-          <div class="detail-meta-item"><span class="detail-label">宠物</span><span class="detail-value">{{ detail.name || '—' }} · {{ detail.type || '' }} · {{ detail.sex || '' }}</span></div>
-          <div class="detail-meta-item"><span class="detail-label">兽医</span><span class="detail-value">{{ detail.username || '—' }}</span></div>
-          <div class="detail-meta-item"><span class="detail-label">创建时间</span><span class="detail-value">{{ detail.createTime ? new Date(detail.createTime).toLocaleString('zh-CN') : '—' }}</span></div>
-          <div class="detail-meta-item"><span class="detail-label">状态</span><span class="detail-value">{{ detail.isCompleted ? '已完成' : '进行中' }}</span></div>
-        </div>
 
         <div class="soap-so-row">
           <!-- S Subjective -->
           <div class="soap-section">
+            <h3>S — 主观</h3>
             <div v-if="editing" class="soap-edit">
               <el-form-item label="摘要"><el-input v-model="editForm.summary" /></el-form-item>
             </div>
@@ -113,6 +146,7 @@ onMounted(() => { loadDetail() })
 
           <!-- O Objective -->
           <div class="soap-section">
+            <h3>O — 客观</h3>
             <div v-if="editing" class="soap-edit">
               <el-form-item label="体格检查"><el-input v-model="editForm.physicalExam" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
             </div>
@@ -126,8 +160,29 @@ onMounted(() => { loadDetail() })
           </div>
         </div>
 
+        <!-- 检查结果 (Objective Diagnoses) -->
+        <div v-if="detail.objectiveDiagnoses?.length" class="soap-section">
+          <div class="collapse-trigger" @click="diagnosisExpanded = !diagnosisExpanded">
+            <span>检查结果</span>
+            <el-icon :class="{ 'is-rotated': diagnosisExpanded }"><ArrowDown /></el-icon>
+          </div>
+          <div v-show="diagnosisExpanded" class="diagnosis-list">
+            <div v-for="(item, index) in displayedDiagnoses" :key="index" class="detail-info-row">
+              <span class="detail-label">{{ item.name || '项目' }}</span>
+              <span class="detail-value">{{ item.result || item.value || '—' }}</span>
+            </div>
+            <el-button v-if="hasMoreDiagnoses && !showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = true">
+              展开全部 ({{ detail.objectiveDiagnoses.length - 3 }} 项)
+            </el-button>
+            <el-button v-if="showAllDiagnoses" link type="primary" size="small" @click="showAllDiagnoses = false">
+              收起
+            </el-button>
+          </div>
+        </div>
+
         <!-- A Assessment -->
         <div class="soap-section">
+          <h3>A — 评估</h3>
           <div v-if="editing" class="soap-edit">
             <el-form-item label="诊断"><el-input v-model="editForm.diagnosis" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
             <el-form-item label="鉴别诊断"><el-input v-model="editForm.differential" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
@@ -140,6 +195,7 @@ onMounted(() => { loadDetail() })
 
         <!-- P Plan -->
         <div class="soap-section">
+          <h3>P — 计划</h3>
           <div v-if="editing" class="soap-edit">
             <el-form-item label="检查计划"><el-input v-model="editForm.exam" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
             <el-form-item label="治疗方案"><el-input v-model="editForm.treatment" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
@@ -149,12 +205,23 @@ onMounted(() => { loadDetail() })
             <div class="detail-info-row"><span class="detail-label">检查计划</span><span class="detail-value">{{ detail.exam || '—' }}</span></div>
             <div class="detail-info-row"><span class="detail-label">治疗方案</span><span class="detail-value">{{ detail.treatment || '—' }}</span></div>
             <div class="detail-info-row"><span class="detail-label">医嘱</span><span class="detail-value">{{ detail.advice || '—' }}</span></div>
+            <div v-if="detail.treatments?.length" class="diagnosis-list" style="margin-top: 12px;">
+              <div v-for="(item, index) in detail.treatments" :key="index" class="detail-info-row">
+                <span class="detail-label">{{ item.name || '治疗项' }}</span>
+                <span class="detail-value">{{ item.description || item.detail || '—' }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
         <div v-if="editing" class="action-form-actions">
           <el-button class="soft-btn" @click="editing = false">取消编辑</el-button>
           <el-button class="warm-btn" :loading="saving" @click="saveEdit">保存</el-button>
+        </div>
+
+        <div v-if="!editing" class="detail-bottom-actions">
+          <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回</el-button>
+          <el-button v-if="canEdit" class="warm-btn" :icon="Check" @click="startEdit">编辑</el-button>
         </div>
       </section>
 
@@ -166,17 +233,38 @@ onMounted(() => { loadDetail() })
 </template>
 
 <style scoped>
-.detail-meta-row {
-  display: flex;
-  gap: 24px;
-  padding: 8px 0;
+.detail-header {
+  margin-bottom: 20px;
 }
-.detail-meta-item {
-  display: flex;
-  gap: 6px;
-  font-size: 14px;
-  line-height: 1.6;
+
+.detail-pet-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
 }
+
+.detail-pet-breed {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.detail-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.detail-bottom-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid var(--el-border-color-lighter);
+}
+
 .soap-so-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -185,27 +273,32 @@ onMounted(() => { loadDetail() })
   padding-top: 16px;
   border-top: 1px solid var(--el-border-color-lighter);
 }
+
 .soap-so-row .soap-section {
   margin-top: 0;
   padding-top: 0;
   border-top: none;
 }
+
 .soap-section {
   margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--el-border-color-lighter);
 }
+
 .soap-section h3 {
   font-size: 15px;
   font-weight: 600;
   color: var(--el-color-warning);
   margin: 0 0 12px;
 }
+
 .soap-edit {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+
 .detail-info-row {
   display: flex;
   gap: 12px;
@@ -213,14 +306,40 @@ onMounted(() => { loadDetail() })
   font-size: 14px;
   line-height: 1.6;
 }
+
 .detail-label {
   flex-shrink: 0;
   width: 72px;
   color: var(--el-text-color-secondary);
   font-weight: 500;
 }
+
 .detail-value {
   color: var(--el-text-color-primary);
   white-space: pre-wrap;
+}
+
+.collapse-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-color-warning);
+  user-select: none;
+}
+
+.collapse-trigger .el-icon {
+  transition: transform 200ms ease;
+}
+
+.collapse-trigger .el-icon.is-rotated {
+  transform: rotate(180deg);
+}
+
+.diagnosis-list {
+  margin-top: 10px;
+  padding-left: 4px;
 }
 </style>

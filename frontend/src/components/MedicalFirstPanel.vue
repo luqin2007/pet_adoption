@@ -57,6 +57,7 @@
             <div class="table-action-cell">
               <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
                 <el-button v-if="canManageMedical" text type="primary" @click="goTreatment(row)">就诊</el-button>
+                <el-button v-if="isDoctor" text type="success" @click="goCaseList(row)">病历</el-button>
               </div>
             </div>
           </template>
@@ -153,6 +154,10 @@ function onRecordCreated() {
 
 function goFirstRegistrationDetail(row) {
   if (row?.id) router.push(`/medical/first/${row.id}`)
+}
+
+function goCaseList(row) {
+  if (row?.petId) router.push(`/medical/detail/list?pet=${row.petId}&name=${encodeURIComponent(row.name || '')}`)
 }
 
 async function goTreatment(row) {

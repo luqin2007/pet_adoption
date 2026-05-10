@@ -161,6 +161,7 @@ watch(
             </template>
             <el-menu-item v-if="canManageMedical" index="/console/medical/first">初诊登记</el-menu-item>
             <el-menu-item index="/console/medical/records">就诊记录</el-menu-item>
+            <el-menu-item v-if="isLoginAdmin || hasRole(loginRole, ROLE.DOCTOR)" index="/medical/detail/list">病历</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="api-coverage">
             <el-icon><Connection /></el-icon>
