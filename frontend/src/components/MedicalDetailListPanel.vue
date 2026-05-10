@@ -22,7 +22,7 @@
           </template>
         </el-table-column>
         <el-table-column label="宠物" width="120">
-          <template #default="{ row }">{{ row.name || '—' }}</template>
+          <template #default="{ row }">{{ row.petName || '—' }}</template>
         </el-table-column>
         <el-table-column label="医生" width="100">
           <template #default="{ row }">{{ row.username || '—' }}</template>

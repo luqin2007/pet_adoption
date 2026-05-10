@@ -14,6 +14,7 @@ const { loginRole } = useConsoleGuards()
 const loading = ref(false)
 const record = ref(null)
 const detailId = ref('')
+const detailSummary = ref('')
 const recordId = computed(() => String(route.params.id || ''))
 const isDoctor = computed(() => hasRole(loginRole.value, ROLE.DOCTOR))
 
@@ -76,13 +77,17 @@ function goMedicalDetail() {
 async function loadDetailId() {
   if (!recordId.value || record.value?.status === 'WAITING') {
     detailId.value = ''
+    detailSummary.value = ''
     return
   }
   try {
     const res = await getMedicalDetails({ record: [recordId.value], page: 1, size: 1 })
-    detailId.value = res?.records?.[0]?.id || ''
+    const item = res?.records?.[0] || null
+    detailId.value = item?.id || ''
+    detailSummary.value = item?.summary || ''
   } catch {
     detailId.value = ''
+    detailSummary.value = ''
   }
 }
 
@@ -161,7 +166,7 @@ onMounted(() => {
               <dt>关联病历</dt>
               <dd>
                 <button v-if="detailId || (isDoctor && record.status !== 'WAITING')" class="table-primary-link" type="button" @click="goMedicalDetail">
-                  {{ detailId ? '查看病历详情' : '创建病历' }}
+                  {{ detailId ? (detailSummary || '查看病历详情') : '创建病历' }}
                 </button>
                 <span v-else>暂无可查看病历</span>
               </dd>

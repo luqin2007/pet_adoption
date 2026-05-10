@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 import { ArrowLeft, Check, ArrowDown } from '@element-plus/icons-vue'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getMedicalDetail, updateMedicalDetail } from '../api/services'
+import { getMedicalDetail, getMedicalDetails, updateMedicalDetail } from '../api/services'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
@@ -43,6 +43,8 @@ const hasMoreDiagnoses = computed(() => {
   return (detail.value?.objectiveDiagnoses?.length || 0) > 3
 })
 
+const detailSummary = computed(() => detail.value?.summary || '')
+
 const editForm = reactive({
   summary: '', physicalExam: '', diagnosis: '', differential: '', exam: '', treatment: '', advice: '',
 })
@@ -71,10 +73,21 @@ async function loadDetail() {
   loading.value = true
   try {
     const res = await getMedicalDetail(detailId.value)
-    detail.value = res || null
+    detail.value = await withDetailSummary(res)
     diagnosisExpanded.value = (detail.value?.objectiveDiagnoses?.length || 0) <= 3
   } catch (error) { ElMessage.warning(error?.message || '加载病历失败') }
   finally { loading.value = false }
+}
+
+async function withDetailSummary(value) {
+  if (!value || value.summary || !value.recordId) return value || null
+  try {
+    const res = await getMedicalDetails({ record: [value.recordId], page: 1, size: 20 })
+    const item = (res?.records || []).find((record) => String(record.id) === String(value.id))
+    return { ...value, summary: item?.summary || '' }
+  } catch {
+    return value
+  }
 }
 
 function startEdit() {
@@ -98,7 +111,7 @@ async function saveEdit() {
       treatment: editForm.treatment || undefined, advice: editForm.advice || undefined,
     }
     const res = await updateMedicalDetail(detailId.value, payload)
-    detail.value = res || detail.value
+    detail.value = await withDetailSummary(res || detail.value)
     editing.value = false
     ElMessage.success('病历已更新')
   } catch (error) { ElMessage.warning(error?.message || '保存失败') }
@@ -135,7 +148,7 @@ onMounted(() => { loadDetail() })
               <el-form-item label="摘要"><el-input v-model="editForm.summary" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
             </div>
             <div v-else>
-              <div class="detail-info-row"><span class="detail-label">摘要</span><span class="detail-value">{{ detail.summary || '' }}</span></div>
+              <div class="detail-info-row"><span class="detail-label">摘要</span><span class="detail-value">{{ detailSummary || '—' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">主诉</span><span class="detail-value">{{ detail.description || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">现病史</span><span class="detail-value">{{ detail.history || '' }}</span></div>
               <div class="detail-info-row"><span class="detail-label">既往史</span><span class="detail-value">{{ detail.pastHistory || '' }}</span></div>
