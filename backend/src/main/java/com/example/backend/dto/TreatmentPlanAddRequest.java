@@ -35,6 +35,7 @@ public class TreatmentPlanAddRequest implements IRequest {
     }
 
     public List<Order> createOrders(Long allowerId, Long planId) {
+        if (orders == null || orders.isEmpty()) return List.of();
         return orders.stream()
                 .map(request -> request.create(allowerId, planId, ParentType.TREATMENT_PLAN))
                 .toList();

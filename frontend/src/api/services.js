@@ -173,6 +173,62 @@ export function discardMedicalDetail(id) {
   })
 }
 
+export function addDiagnosis(detailId, payload) {
+  return request(`/medical/detail/${detailId}/diagnosis`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function addTreatmentPlan(detailId, payload) {
+  return request(`/medical/detail/${detailId}/plan`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function discardTreatmentPlan(ids) {
+  return request('/medical/plan', {
+    method: 'DELETE',
+    body: { ids },
+  })
+}
+
+export function getMedicalExaminations(detailId) {
+  return request(`/medical/details/${detailId}/exam`, {
+    method: 'GET',
+  })
+}
+
+export function beginExamination(detailId) {
+  return request(`/medical/details/${detailId}/exam`, {
+    method: 'PUT',
+  })
+}
+
+export function uploadExamination(uuid, file, name = '') {
+  const formData = new FormData()
+  if (name) formData.append('name', name)
+  formData.append('file', file)
+  return request(`/medical/exam/${uuid}/doc`, {
+    method: 'PUT',
+    body: formData,
+  })
+}
+
+export function deleteExaminationUpload(uuid, filename) {
+  return request(`/medical/exam/${uuid}/doc/${encodeURIComponent(filename)}`, {
+    method: 'DELETE',
+  })
+}
+
+export function addExamination(uuid, payload) {
+  return request(`/medical/exam/${uuid}`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
 export function getFirstVisitRegistrations(query = {}) {
   return request('/medical/first', {
     method: 'GET',

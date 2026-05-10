@@ -476,7 +476,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         TreatmentPlan plan = request.create(login.getId(), detailId);
         treatmentPlanMapper.insert(plan);
         List<Order> orders = request.createOrders(login.getId(), plan.getId());
-        orderMapper.insert(orders);
+        if (!orders.isEmpty()) orderMapper.insert(orders);
 
         Map<Long, User> users = userService.groupById(
                 orders.stream().map(Order::getAllowerId),
@@ -512,6 +512,21 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
             throw ServiceException.invalidate("exception.invalidate.medical_record.closed_or_discarded");
 
         treatmentPlanMapper.discardByIds(planIds).update();
+    }
+
+    /**
+     * 获取检查结果
+     */
+    public List<ExaminationResponse> getExaminations(Long detailId) {
+        requireById(detailId);
+        List<Examination> examinations = examinationMapper.queryByDetail(detailId).list();
+        Set<Long> examinationIds = examinations.stream().map(Examination::getId).collect(Collectors.toSet());
+        Map<Long, List<ExaminationFileResponse>> files = examinationFileMapper
+                .queryByExaminations(examinationIds)
+                .groupList(ExaminationFile::getExaminationId, ExaminationFileResponse::create);
+        return examinations.stream()
+                .map(examination -> ExaminationResponse.createBatch(examination, files))
+                .toList();
     }
 
     /**

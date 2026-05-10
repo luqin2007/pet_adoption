@@ -28,6 +28,7 @@ import VolunteerRecruitmentDetailView from '../views/VolunteerRecruitmentDetailV
 import FirstRegistrationCreateView from '../views/FirstRegistrationCreateView.vue'
 import MedicalDetailView from '../views/MedicalDetailView.vue'
 import MedicalDetailCreateView from '../views/MedicalDetailCreateView.vue'
+import MedicalExaminationsView from '../views/MedicalExaminationsView.vue'
 import AuditHistoryView from '../views/AuditHistoryView.vue'
 import ConsoleLayout from '../components/ConsoleLayout.vue'
 import ProfilePanel from '../components/ProfilePanel.vue'
@@ -199,6 +200,12 @@ const router = createRouter({
       path: '/medical/detail/:id',
       name: 'medical-detail',
       component: MedicalDetailView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/medical/detail/:id/exams',
+      name: 'medical-examinations',
+      component: MedicalExaminationsView,
       meta: { requiresAuth: true },
     },
     {

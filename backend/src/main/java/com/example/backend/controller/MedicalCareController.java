@@ -180,6 +180,12 @@ public class MedicalCareController {
         return Result.success();
     }
 
+    @GetMapping("/details/{id}/exam")
+    public Result<List<ExaminationResponse>> getExaminations(@PathVariable("id") Long detailId) {
+        List<ExaminationResponse> response = medicalService.getExaminations(detailId);
+        return Result.success(response);
+    }
+
     @PutMapping("/details/{id}/exam")
     public Result<String> beginExamination(@PathVariable("id") Long detailId) {
         String uuid = medicalService.beginExamination(detailId);

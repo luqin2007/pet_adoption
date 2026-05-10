@@ -15,6 +15,7 @@ public class ExaminationResponse implements IResponse {
 
     private Long id;
     private Long detailId;
+    private String name;
     private String text;
     private ExamType examType;
     private List<ExaminationFileResponse> files;
@@ -25,6 +26,7 @@ public class ExaminationResponse implements IResponse {
         return new ExaminationResponse(
                 examination.getId(),
                 examination.getDetailId(),
+                examination.getName(),
                 examination.getText(),
                 examination.getExamType(),
                 files,
