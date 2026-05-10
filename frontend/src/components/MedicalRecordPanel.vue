@@ -78,10 +78,10 @@
             <el-option v-for="item in recordStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="开始时间">
+        <el-form-item label="开始时间" style="grid-column:1/-1">
           <el-date-picker v-model="editForm.startTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="选择开始时间" class="full-width-control" />
         </el-form-item>
-        <el-form-item label="结束时间">
+        <el-form-item label="结束时间" style="grid-column:1/-1">
           <el-date-picker v-model="editForm.endTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="选择结束时间" class="full-width-control" />
         </el-form-item>
         <el-form-item label="预计费用">
