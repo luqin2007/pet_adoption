@@ -370,12 +370,14 @@ onMounted(() => { loadDetail() })
     <el-dialog v-model="diagnosisDialogVisible" title="添加检查诊断" width="680px" :close-on-click-modal="false">
       <el-form label-position="top">
         <el-form-item label="检查记录">
-          <el-checkbox-group v-model="diagnosisForm.examinations" class="medical-check-list">
-            <el-checkbox v-for="exam in examinations" :key="exam.id" :label="exam.id">
-              {{ examTitle(exam) }} · {{ formatDate(exam.checkTime) }}
-            </el-checkbox>
-          </el-checkbox-group>
-          <el-empty v-if="!examinations.length" description="暂无检查记录" />
+          <div class="medical-check-field">
+            <el-checkbox-group v-if="examinations.length" v-model="diagnosisForm.examinations" class="medical-check-list">
+              <el-checkbox v-for="exam in examinations" :key="exam.id" :label="exam.id">
+                {{ examTitle(exam) }} · {{ formatDate(exam.checkTime) }}
+              </el-checkbox>
+            </el-checkbox-group>
+            <el-empty v-else description="暂无检查记录" />
+          </div>
         </el-form-item>
         <el-form-item label="诊断结果">
           <el-input v-model="diagnosisForm.result" type="textarea" :autosize="{ minRows: 4 }" placeholder="填写检查诊断结果" />
@@ -627,6 +629,26 @@ onMounted(() => { loadDetail() })
   display: grid;
   gap: 8px;
   width: 100%;
+}
+
+.medical-check-field {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 150px;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 12px;
+  background: rgba(255, 248, 240, 0.48);
+}
+
+.medical-check-field .medical-check-list {
+  align-self: flex-start;
+  padding: 12px;
+}
+
+.medical-check-field :deep(.el-empty) {
+  padding: 16px 0;
 }
 
 .medical-plan-head {
