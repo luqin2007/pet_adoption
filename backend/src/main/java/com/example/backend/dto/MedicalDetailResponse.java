@@ -23,6 +23,7 @@ public class MedicalDetailResponse implements IResponse {
     private Long recordId;
     private Date createTime;
     private Boolean isCompleted;
+    private String summary;
 
     // ---- S 主观信息
     private String description;
@@ -79,6 +80,7 @@ public class MedicalDetailResponse implements IResponse {
                 detail.getRecordId(),
                 detail.getCreateTime(),
                 detail.getIsCompleted(),
+                detail.getSummary(),
                 detail.getDescription(),
                 detail.getHistory(),
                 detail.getPastHistory(),
