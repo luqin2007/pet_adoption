@@ -45,7 +45,7 @@ async function loadData() {
       getPetById(petId.value),
       getLostPets({
         size: 20,
-        owner: userStore.profile.id ? [Number(userStore.profile.id)] : undefined,
+        owner: userStore.profile.id ? [userStore.profile.id] : undefined,
         status: ['SEARCHING'],
       }),
     ])
@@ -70,8 +70,8 @@ async function submitForm() {
   submitting.value = true
   try {
     await createLostPetClaim({
-      lostPetId: Number(form.lostPetId),
-      petId: Number(petId.value),
+      lostPetId: form.lostPetId,
+      petId: petId.value,
       applicantPhone: form.applicantPhone.trim(),
       reason: form.reason.trim(),
     })

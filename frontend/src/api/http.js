@@ -10,6 +10,13 @@ function isSuccessCode(code) {
   return code === 0 || code === 200 || code === '0' || code === '200'
 }
 
+function parseJsonPreservingLongs(text) {
+  if (!text) {
+    return null
+  }
+  return JSON.parse(text.replace(/(:|\[|,)\s*(-?\d{16,})(?=\s*[,}\]])/g, '$1"$2"'))
+}
+
 export class ApiError extends Error {
   constructor(message, code = 500, status = 200) {
     super(message)
@@ -221,7 +228,7 @@ async function refreshAccessToken() {
 
     let result
     try {
-      result = await response.json()
+      result = parseJsonPreservingLongs(await response.text())
     } catch {
       clearSession()
       return false
@@ -282,7 +289,7 @@ export async function request(path, options = {}) {
   if (!response.ok) {
     let message = `请求失败（HTTP ${response.status}）`
     try {
-      const errorPayload = await response.json()
+      const errorPayload = parseJsonPreservingLongs(await response.text())
       if (errorPayload?.message) {
         message = String(errorPayload.message)
       } else if (typeof errorPayload === 'string' && errorPayload) {
@@ -303,7 +310,7 @@ export async function request(path, options = {}) {
 
   let result
   try {
-    result = await response.json()
+    result = parseJsonPreservingLongs(await response.text())
   } catch {
     throw new ApiError('服务响应不是有效 JSON', 500, response.status)
   }

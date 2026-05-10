@@ -92,7 +92,7 @@ async function submitForm() {
   submitting.value = true
   try {
     await createAdoptApplication({
-      petId: Number(petId.value),
+      petId: petId.value,
       applicantPhone: form.applicantPhone.trim(),
       province: form.province,
       city: form.city,
