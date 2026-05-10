@@ -20,6 +20,7 @@ const activeMenu = computed(() => {
   if (route.path.startsWith('/console/medical/records/')) return '/console/medical/records'
   if (route.path.startsWith('/console/medical/detail-list')) return '/console/medical/detail-list'
   if (route.path.startsWith('/console/medical/rehab')) return '/console/medical/rehab'
+  if (route.path.startsWith('/console/medical/health')) return '/console/medical/health'
   return route.path
 })
 const canViewMedical = computed(() => canManageMedical.value || canManageRehab.value || hasOwnedMedicalRecords.value)
@@ -167,6 +168,7 @@ watch(
             <el-menu-item v-if="canManageMedical" index="/console/medical/vaccines">疫苗接种</el-menu-item>
             <el-menu-item v-if="canManageMedical" index="/console/medical/deworms">驱虫管理</el-menu-item>
             <el-menu-item v-if="canManageRehab" index="/console/medical/rehab">康复计划</el-menu-item>
+            <el-menu-item v-if="canManageMedical" index="/console/medical/health">健康评估</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="api-coverage">
             <el-icon><Connection /></el-icon>

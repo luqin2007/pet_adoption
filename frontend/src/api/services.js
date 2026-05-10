@@ -326,6 +326,33 @@ export function addRehabRecord(id, payload) {
   })
 }
 
+export function addHealthAssessment(petId, payload) {
+  return request(`/medical/health/pet/${petId}`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function getHealthAssessment(id) {
+  return request(`/medical/health/${id}`, {
+    method: 'GET',
+  })
+}
+
+export function getHealthAssessments(query = {}) {
+  return request('/medical/health', {
+    method: 'GET',
+    query,
+  })
+}
+
+export function getPetHealthAssessments(petId, query = {}) {
+  return request(`/medical/health/pet/${petId}`, {
+    method: 'GET',
+    query,
+  })
+}
+
 export function getFirstVisitRegistrations(query = {}) {
   return request('/medical/first', {
     method: 'GET',

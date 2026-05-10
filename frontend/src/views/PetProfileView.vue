@@ -6,6 +6,7 @@ import { ArrowLeft, EditPen, LocationInformation, Plus } from '@element-plus/ico
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
+import { getPetHealthAssessments } from '../api/services'
 import { addPetLocation, getPetById } from '../api/pets'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
@@ -27,6 +28,7 @@ const locationForm = ref({
   district: '',
   detailAddress: '',
 })
+const latestHealthAssessment = ref(null)
 
 const locationRules = {
   province: [{ required: true, message: '请选择省份', trigger: 'change' }],
@@ -143,6 +145,12 @@ function openBasicEditor() {
   router.push(`/pets/${petId.value}/edit`)
 }
 
+function openHealthAssessment() {
+  if (latestHealthAssessment.value?.id) {
+    router.push(`/medical/health/${latestHealthAssessment.value.id}`)
+  }
+}
+
 function openAdoptFlow() {
   router.push(`/pets/${petId.value}/adopt`)
 }
@@ -219,10 +227,23 @@ async function loadPet() {
   loading.value = true
   try {
     pet.value = await getPetById(petId.value)
+    await loadLatestHealthAssessment()
   } catch {
     pet.value = null
+    latestHealthAssessment.value = null
   } finally {
     loading.value = false
+  }
+}
+
+async function loadLatestHealthAssessment() {
+  latestHealthAssessment.value = null
+  if (!petId.value) return
+  try {
+    const result = await getPetHealthAssessments(petId.value, { page: 1, size: 1, sort: 'create_time', order: 'desc' })
+    latestHealthAssessment.value = result?.records?.[0] || null
+  } catch {
+    latestHealthAssessment.value = null
   }
 }
 
@@ -283,6 +304,7 @@ onMounted(() => {
         <section class="pet-profile-panel">
           <div class="pet-profile-panel-head">
             <h2>健康状况</h2>
+            <el-button v-if="latestHealthAssessment" class="soft-btn" size="small" @click="openHealthAssessment">健康评估</el-button>
           </div>
           <div class="pet-profile-health-status">
             <Icon icon="mdi:shield-heart-outline" />

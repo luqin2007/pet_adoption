@@ -82,6 +82,7 @@
                   <el-button v-if="petFirstRegIds.has(row.id) && canManageMedical" text type="primary" @click="goMedicalRecord(row)">就诊</el-button>
                   <el-button v-if="canManageMedical" text type="success" @click="openVaccineDialog(row)">疫苗</el-button>
                   <el-button v-if="canManageMedical" text type="primary" @click="openDewormDialog(row)">驱虫</el-button>
+                  <el-button v-if="isDoctor" text type="warning" @click="openAssessmentDialog(row)">评估</el-button>
                 </div>
               </div>
             </template>
@@ -216,6 +217,36 @@
         <el-button class="warm-btn" :loading="savingMedicalRecord" @click="submitDeworm">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="assessmentDialogVisible" title="添加健康评估" width="680px" :close-on-click-modal="false">
+      <el-form label-position="top" class="pet-review-form pet-health-assessment-form">
+        <el-form-item label="宠物">
+          <el-input :model-value="medicalTargetPet?.name || '未命名'" disabled />
+        </el-form-item>
+        <el-form-item label="月龄">
+          <el-input-number v-model="assessmentForm.age" :min="0" class="full-width-control" />
+        </el-form-item>
+        <el-form-item label="体重（kg）">
+          <el-input-number v-model="assessmentForm.weight" :min="0" :precision="2" class="full-width-control" />
+        </el-form-item>
+        <el-form-item label="体况评分">
+          <el-slider v-model="assessmentForm.scoreBcs" :min="0" :max="100" show-input />
+        </el-form-item>
+        <el-form-item label="精神状态评分">
+          <el-slider v-model="assessmentForm.scoreMental" :min="0" :max="100" show-input />
+        </el-form-item>
+        <el-form-item label="食欲评分">
+          <el-slider v-model="assessmentForm.scoreAppetite" :min="0" :max="100" show-input />
+        </el-form-item>
+        <el-form-item label="评估摘要" class="pet-admin-span-2">
+          <el-input v-model="assessmentForm.summary" type="textarea" :rows="4" placeholder="填写健康状态、护理建议和复查重点" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="assessmentDialogVisible = false">取消</el-button>
+        <el-button class="warm-btn" :loading="savingMedicalRecord" @click="submitAssessment">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -225,11 +256,11 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Search, Upload } from '@element-plus/icons-vue'
 import { createPet, deletePetById, getPets, updatePetStatus, uploadPetMedia, getPetStatusRecords } from '../api/pets'
-import { addDeworm, addVaccine, getDewormerOptions, getFirstVisitRegistrations, getVaccineOptions } from '../api/services'
+import { addDeworm, addHealthAssessment, addVaccine, getDewormerOptions, getFirstVisitRegistrations, getVaccineOptions } from '../api/services'
 import { resolveCatalogValue, splitCatalogValue, useInformationCatalog } from '../composables/useInformationCatalog'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useUserStore } from '../stores/user'
-import { petStatusOptions, petStatusLabelMap, petStatusText, petLocationText } from '../utils/roles'
+import { ROLE, hasRole, petStatusOptions, petStatusLabelMap, petStatusText, petLocationText } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import AuditRecordList from './AuditRecordList.vue'
 
@@ -250,6 +281,7 @@ const petCreateDialogVisible = ref(false)
 const petDialogVisible = ref(false)
 const vaccineDialogVisible = ref(false)
 const dewormDialogVisible = ref(false)
+const assessmentDialogVisible = ref(false)
 const petRows = ref([])
 const petTotal = ref(0)
 const petPage = reactive({ page: 1, size: 10 })
@@ -277,6 +309,7 @@ const petEditForm = reactive({
 })
 const vaccineForm = reactive({ vaccineId: '', petAge: 0, times: 1 })
 const dewormForm = reactive({ dewormerId: '', times: 1 })
+const assessmentForm = reactive({ age: 0, weight: 0, scoreBcs: 80, scoreMental: 80, scoreAppetite: 80, summary: '' })
 
 // Computed catalog options
 const petFormCityOptions = computed(() => getCityOptions(petForm.province))
@@ -288,6 +321,7 @@ const petSearchBreedOptions = computed(() => getBreedOptions(petSearchForm.type)
 
 const visiblePets = computed(() => petRows.value)
 const currentUserId = computed(() => String(userStore.profile?.id || ''))
+const isDoctor = computed(() => hasRole(userStore.profile?.role, ROLE.DOCTOR))
 
 // --- Helpers ---
 function resolvePetType(form) { return resolveCatalogValue(form.type, form.typeInput) }
@@ -486,6 +520,19 @@ async function openDewormDialog(row) {
   await ensureDewormerOptions()
 }
 
+function openAssessmentDialog(row) {
+  medicalTargetPet.value = row
+  Object.assign(assessmentForm, {
+    age: Number(row?.age || 0),
+    weight: 0,
+    scoreBcs: 80,
+    scoreMental: 80,
+    scoreAppetite: 80,
+    summary: '',
+  })
+  assessmentDialogVisible.value = true
+}
+
 async function submitVaccine() {
   if (!medicalTargetPet.value?.id || savingMedicalRecord.value) return
   if (!vaccineForm.vaccineId) { ElMessage.warning('请选择疫苗'); return }
@@ -517,6 +564,25 @@ async function submitDeworm() {
   finally { savingMedicalRecord.value = false }
 }
 
+async function submitAssessment() {
+  if (!medicalTargetPet.value?.id || savingMedicalRecord.value) return
+  if (!assessmentForm.summary.trim()) { ElMessage.warning('请填写评估摘要'); return }
+  savingMedicalRecord.value = true
+  try {
+    await addHealthAssessment(medicalTargetPet.value.id, {
+      age: Number(assessmentForm.age || 0),
+      weight: Number(assessmentForm.weight || 0),
+      scoreBcs: Number(assessmentForm.scoreBcs || 0),
+      scoreMental: Number(assessmentForm.scoreMental || 0),
+      scoreAppetite: Number(assessmentForm.scoreAppetite || 0),
+      summary: assessmentForm.summary.trim(),
+    })
+    ElMessage.success('健康评估已添加')
+    assessmentDialogVisible.value = false
+  } catch (error) { ElMessage.warning(error?.message || '添加健康评估失败') }
+  finally { savingMedicalRecord.value = false }
+}
+
 onMounted(async () => { await ensureInformationCatalog(); loadPets() })
 </script>
 
@@ -532,5 +598,9 @@ onMounted(async () => { await ensureInformationCatalog(); loadPets() })
 }
 .pet-directory-filter-panel .pet-filter-search-row {
   justify-content: flex-end;
+}
+
+.pet-health-assessment-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 </style>

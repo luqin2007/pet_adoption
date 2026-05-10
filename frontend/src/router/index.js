@@ -29,6 +29,7 @@ import FirstRegistrationCreateView from '../views/FirstRegistrationCreateView.vu
 import MedicalDetailView from '../views/MedicalDetailView.vue'
 import MedicalDetailCreateView from '../views/MedicalDetailCreateView.vue'
 import MedicalExaminationsView from '../views/MedicalExaminationsView.vue'
+import MedicalHealthAssessmentView from '../views/MedicalHealthAssessmentView.vue'
 import AuditHistoryView from '../views/AuditHistoryView.vue'
 import ConsoleLayout from '../components/ConsoleLayout.vue'
 import ProfilePanel from '../components/ProfilePanel.vue'
@@ -42,6 +43,8 @@ import MedicalPreventivePanel from '../components/MedicalPreventivePanel.vue'
 import MedicalRehabPlanPanel from '../components/MedicalRehabPlanPanel.vue'
 import MedicalRehabPlanDetailPanel from '../components/MedicalRehabPlanDetailPanel.vue'
 import MedicalRehabPlanCreatePanel from '../components/MedicalRehabPlanCreatePanel.vue'
+import MedicalHealthAssessmentPanel from '../components/MedicalHealthAssessmentPanel.vue'
+import MedicalHealthAssessmentDetailPanel from '../components/MedicalHealthAssessmentDetailPanel.vue'
 import FirstRegistrationDetailPanel from '../components/FirstRegistrationDetailPanel.vue'
 import MedicalRecordDetailPanel from '../components/MedicalRecordDetailPanel.vue'
 import FirstRegistrationDetailView from '../views/FirstRegistrationDetailView.vue'
@@ -218,6 +221,11 @@ const router = createRouter({
       component: FirstRegistrationDetailView,
       meta: { requiresAuth: true },
     },
+    {
+      path: '/medical/health/:id',
+      name: 'medical-health-detail',
+      component: MedicalHealthAssessmentView,
+    },
     // --- Console routes (nested with shared layout) ---
     {
       path: '/console',
@@ -247,6 +255,8 @@ const router = createRouter({
         { path: 'medical/rehab', name: 'console-medical-rehab', component: MedicalRehabPlanPanel, meta: { guard: 'canManageRehab' } },
         { path: 'medical/rehab/new', name: 'console-medical-rehab-create', component: MedicalRehabPlanCreatePanel, meta: { guard: 'canManageRehabDoctor' } },
         { path: 'medical/rehab/:id', name: 'console-medical-rehab-detail', component: MedicalRehabPlanDetailPanel, meta: { guard: 'canManageRehab' } },
+        { path: 'medical/health', name: 'console-medical-health', component: MedicalHealthAssessmentPanel, meta: { guard: 'canManageMedical' } },
+        { path: 'medical/health/:id', name: 'console-medical-health-detail', component: MedicalHealthAssessmentDetailPanel, meta: { guard: 'canManageMedical' } },
       ],
     },
     {
