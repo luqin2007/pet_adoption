@@ -37,16 +37,16 @@
         <el-table-column label="创建时间" min-width="160">
           <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
-        <el-table-column width="210" fixed="right">
-          <template #header>
-            <TableActionColumnHeader title="操作" :collapsed="actionCollapsed" @toggle="actionCollapsed = !actionCollapsed" />
-          </template>
+        <el-table-column width="40" class-name="action-col">
+          <template #header><TableActionColumnHeader title="操作" :collapsed="actionCollapsed" @toggle="actionCollapsed = !actionCollapsed" /></template>
           <template #default="{ row }">
-            <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
-              <el-button v-if="canCompleteDetail(row)" text type="success" :loading="actingId === row.id" @click="completeDetail(row)">完成</el-button>
-              <el-button v-if="canDiscardDetail(row)" text type="danger" :loading="actingId === row.id" @click="discardDetail(row)">废弃</el-button>
-              <el-button v-if="canTransferDetail(row)" text type="primary" @click="openTransferDialog(row)">移交</el-button>
-              <span v-if="!hasVisibleActions(row)" class="table-action-empty">—</span>
+            <div class="table-action-cell">
+              <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
+                <el-button v-if="canCompleteDetail(row)" text type="success" :loading="actingId === row.id" @click="completeDetail(row)">完成</el-button>
+                <el-button v-if="canDiscardDetail(row)" text type="danger" :loading="actingId === row.id" @click="discardDetail(row)">废弃</el-button>
+                <el-button v-if="canTransferDetail(row)" text type="primary" @click="openTransferDialog(row)">移交</el-button>
+                <span v-if="!hasVisibleActions(row)" class="table-action-empty">—</span>
+              </div>
             </div>
           </template>
         </el-table-column>
