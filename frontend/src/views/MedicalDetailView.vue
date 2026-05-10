@@ -99,7 +99,6 @@ onMounted(() => { loadDetail() })
         <div class="soap-so-row">
           <!-- S Subjective -->
           <div class="soap-section">
-            <h3>S — 主观</h3>
             <div v-if="editing" class="soap-edit">
               <el-form-item label="摘要"><el-input v-model="editForm.summary" /></el-form-item>
             </div>
@@ -114,7 +113,6 @@ onMounted(() => { loadDetail() })
 
           <!-- O Objective -->
           <div class="soap-section">
-            <h3>O — 客观</h3>
             <div v-if="editing" class="soap-edit">
               <el-form-item label="体格检查"><el-input v-model="editForm.physicalExam" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
             </div>
@@ -130,7 +128,6 @@ onMounted(() => { loadDetail() })
 
         <!-- A Assessment -->
         <div class="soap-section">
-          <h3>A — 评估</h3>
           <div v-if="editing" class="soap-edit">
             <el-form-item label="诊断"><el-input v-model="editForm.diagnosis" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
             <el-form-item label="鉴别诊断"><el-input v-model="editForm.differential" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
@@ -143,7 +140,6 @@ onMounted(() => { loadDetail() })
 
         <!-- P Plan -->
         <div class="soap-section">
-          <h3>P — 计划</h3>
           <div v-if="editing" class="soap-edit">
             <el-form-item label="检查计划"><el-input v-model="editForm.exam" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
             <el-form-item label="治疗方案"><el-input v-model="editForm.treatment" type="textarea" :autosize="{ minRows: 2 }" /></el-form-item>
