@@ -73,14 +73,7 @@
         <template v-else-if="hasAgreement">
           <div class="adoption-section-head">
             <div>
-              <h3>当前协议内容</h3>
-              <p>{{ agreementSummary }}</p>
-            </div>
-            <div class="adoption-section-tags">
-              <el-tag effect="plain">{{ agreementTypeText(currentAgreementType) }}</el-tag>
-              <el-tag :type="currentAgreement.signTime ? 'success' : 'warning'" effect="plain">
-                {{ currentAgreement.signTime ? '已签署' : '未签署' }}
-              </el-tag>
+              <h3>协议内容</h3>
             </div>
           </div>
 
@@ -97,14 +90,14 @@
               @click="openPaperPreview(index)"
             >
               <div class="adoption-paper-folder">
-                <div class="adoption-paper-tab" />
                 <img :src="file.assetUrl" :alt="`协议第 ${file.page || index + 1} 页`" loading="lazy" />
-              </div>
-              <div class="adoption-paper-meta">
-                <strong>第 {{ file.page || index + 1 }} 页</strong>
-                <span>点击全屏查看</span>
+                <span class="adoption-paper-page-banner">第 {{ file.page || index + 1 }} 页</span>
               </div>
             </button>
+          </div>
+
+          <div v-if="canSignAgreement" class="adoption-agreement-actions">
+            <el-button class="warm-btn" :icon="Upload" @click="openSignDialog">签名</el-button>
           </div>
         </template>
 
@@ -150,12 +143,8 @@
                     @click="openPaperPreview(index)"
                   >
                     <div class="adoption-paper-folder">
-                      <div class="adoption-paper-tab" />
                       <img :src="file.assetUrl" :alt="`协议第 ${file.page || index + 1} 页`" loading="lazy" />
-                    </div>
-                    <div class="adoption-paper-meta">
-                      <strong>第 {{ file.page || index + 1 }} 页</strong>
-                      <span>点击全屏查看</span>
+                      <span class="adoption-paper-page-banner">第 {{ file.page || index + 1 }} 页</span>
                     </div>
                   </button>
                 </div>
@@ -178,26 +167,51 @@
     v-model:index="paperViewerIndex"
     :items="paperViewerItems"
   />
+
+  <el-dialog v-model="signDialogVisible" title="签署协议" width="520px" @closed="clearSignFile">
+    <section class="adoption-sign-dialog">
+      <input ref="signInputRef" class="profile-avatar-input" type="file" accept="image/*" @change="handleSignFileChange" />
+      <button class="adoption-sign-uploader" type="button" @click="chooseSignFile">
+        <img v-if="signPreviewUrl" :src="signPreviewUrl" alt="签名预览" />
+        <template v-else>
+          <el-icon><Upload /></el-icon>
+          <strong>选择签名图片</strong>
+          <span>支持图片格式，用于签署当前协议</span>
+        </template>
+      </button>
+    </section>
+    <template #footer>
+      <el-button @click="signDialogVisible = false">取消</el-button>
+      <el-button class="warm-btn" :icon="Check" :disabled="!signFile" :loading="signing" @click="submitSignAgreement">提交签名</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, PictureFilled } from '@element-plus/icons-vue'
-import { getAdoptApplication, getAgreements } from '../api/services'
+import { ArrowLeft, Check, PictureFilled, Upload } from '@element-plus/icons-vue'
+import { getAdoptApplication, getAgreements, signAgreement } from '../api/services'
+import { useUserStore } from '../stores/user'
 import ProtocolMediaViewer from './ProtocolMediaViewer.vue'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const loading = ref(false)
 const agreementLoading = ref(false)
+const signing = ref(false)
 const application = ref(null)
 const agreements = ref([])
 const paperViewerVisible = ref(false)
 const paperViewerIndex = ref(0)
 const trackingPanels = ref([])
+const signDialogVisible = ref(false)
+const signInputRef = ref(null)
+const signFile = ref(null)
+const signPreviewUrl = ref('')
 
 const applicationId = computed(() => String(route.params.id || ''))
 const followTasks = computed(() => {
@@ -227,14 +241,16 @@ const paperViewerItems = computed(() => paperFiles.value.map((file, index) => ({
   name: `协议第 ${file.page || index + 1} 页`,
   type: 'IMAGE',
 })))
-const agreementSummary = computed(() => {
-  if (!currentAgreement.value) return '暂无协议内容'
-  const parts = [agreementTypeText(currentAgreementType.value), currentAgreement.value.signTime ? '已签署' : '未签署']
-  return parts.join(' · ')
-})
 const isReject = computed(() => application.value?.status === 'REJECT')
 const hasAgreement = computed(() => ['AGREEMENT_DRAFT', 'AGREEMENT_SIGNED'].includes(application.value?.status) && Boolean(currentAgreement.value))
 const isTrackingStage = computed(() => ['TRACKING', 'FINISH'].includes(application.value?.status))
+const canSignAgreement = computed(() => (
+  application.value?.status === 'AGREEMENT_DRAFT' &&
+  String(application.value?.applicantId || '') === String(userStore.profile?.id || '') &&
+  Boolean(currentAgreement.value?.id) &&
+  !currentAgreement.value?.sign &&
+  !currentAgreement.value?.signTime
+))
 const hasAgreementBody = computed(() => {
   if (!currentAgreement.value) return false
   if (currentAgreementType.value === 'ELECTRONIC') return Boolean(String(currentAgreement.value?.content || '').trim())
@@ -333,6 +349,53 @@ function openPaperPreview(index) {
   paperViewerVisible.value = true
 }
 
+function openSignDialog() {
+  if (!canSignAgreement.value) return
+  signDialogVisible.value = true
+}
+
+function chooseSignFile() {
+  signInputRef.value?.click()
+}
+
+function clearSignFile() {
+  if (signPreviewUrl.value) {
+    URL.revokeObjectURL(signPreviewUrl.value)
+  }
+  signPreviewUrl.value = ''
+  signFile.value = null
+  if (signInputRef.value) signInputRef.value.value = ''
+}
+
+function handleSignFileChange(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    ElMessage.warning('请选择图片格式的签名文件')
+    return
+  }
+  clearSignFile()
+  signFile.value = file
+  signPreviewUrl.value = URL.createObjectURL(file)
+}
+
+async function submitSignAgreement() {
+  if (!currentAgreement.value?.id || !signFile.value || signing.value) return
+  signing.value = true
+  try {
+    await signAgreement(currentAgreement.value.id, signFile.value)
+    ElMessage.success('协议已签署')
+    signDialogVisible.value = false
+    clearSignFile()
+    await loadPage()
+  } catch (error) {
+    ElMessage.warning(error?.message || '签署协议失败')
+  } finally {
+    signing.value = false
+  }
+}
+
 async function loadApplication() {
   if (!applicationId.value) return
   loading.value = true
@@ -375,6 +438,8 @@ async function loadPage() {
 }
 
 watch(() => route.params.id, loadPage, { immediate: true })
+
+onBeforeUnmount(clearSignFile)
 </script>
 
 <style scoped>
@@ -562,8 +627,6 @@ watch(() => route.params.id, loadPage, { immediate: true })
   cursor: pointer;
   padding: 0;
   text-align: left;
-  display: grid;
-  gap: 10px;
 }
 
 .adoption-paper-folder {
@@ -576,42 +639,80 @@ watch(() => route.params.id, loadPage, { immediate: true })
   overflow: hidden;
 }
 
-.adoption-paper-tab {
-  position: absolute;
-  left: 14px;
-  top: 10px;
-  width: 58px;
-  height: 16px;
-  border-radius: 8px 8px 4px 4px;
-  background: linear-gradient(180deg, rgba(231, 122, 59, 0.42) 0%, rgba(231, 122, 59, 0.18) 100%);
-}
-
 .adoption-paper-folder img {
   position: absolute;
-  inset: 34px 12px 12px;
+  inset: 12px;
   width: calc(100% - 24px);
-  height: calc(100% - 46px);
+  height: calc(100% - 24px);
   object-fit: cover;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.8);
 }
 
-.adoption-paper-meta {
-  display: grid;
-  gap: 2px;
-  padding-left: 4px;
-}
-
-.adoption-paper-meta strong {
-  color: #5d3927;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.adoption-paper-meta span {
-  color: var(--muted);
+.adoption-paper-page-banner {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 10px 0 10px 0;
+  background: rgba(93, 57, 39, 0.84);
+  color: #fff;
   font-size: 12px;
-  line-height: 1.4;
+  font-weight: 800;
+  line-height: 1.2;
+  box-shadow: 0 8px 18px rgba(46, 24, 12, 0.18);
+}
+
+.adoption-agreement-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.adoption-sign-dialog {
+  display: grid;
+  gap: 14px;
+}
+
+.adoption-sign-uploader {
+  width: 100%;
+  min-height: 220px;
+  border: 1px dashed rgba(231, 122, 59, 0.58);
+  border-radius: 16px;
+  background: rgba(255, 248, 240, 0.88);
+  color: #6c4834;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.adoption-sign-uploader:hover {
+  border-color: rgba(231, 122, 59, 0.9);
+  background: rgba(255, 244, 232, 0.98);
+}
+
+.adoption-sign-uploader img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.adoption-sign-uploader :deep(.el-icon) {
+  color: var(--primary-strong);
+  font-size: 30px;
+}
+
+.adoption-sign-uploader strong {
+  font-size: 18px;
+}
+
+.adoption-sign-uploader span {
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .adoption-follow-list {

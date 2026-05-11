@@ -190,6 +190,15 @@ export function reorderAgreementFiles(id, fileOrder) {
   })
 }
 
+export function signAgreement(id, file) {
+  const formData = new FormData()
+  formData.append('sign', file)
+  return request(`/adopt/agreement/${id}/sign`, {
+    method: 'PATCH',
+    body: formData,
+  })
+}
+
 export function getMedicalRecords(query = {}) {
   return request('/medical/record', {
     method: 'GET',

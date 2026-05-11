@@ -394,17 +394,21 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public AgreementResponse signAgreement(Long agreementId, MultipartFile sign) {
         User login = requireLoginUser();
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requirePermission(login.isWorker());
         if (agreement.getSign() != null)
             throw ServiceException.conflict("exception.conflict.agreement.signed");
         // 状态检查
         Long parentId = agreement.getParentId();
-        if (agreement.getParentType() == ParentType.ADOPT)
-            requireEqual(AGREEMENT_DRAFT, selectById(parentId, Adopt::getStatus).getStatus(), "exception.invalidate.adopt.status_abnormal");
-        else if (agreement.getParentType() == ParentType.BREADING)
-            requireEqual(AGREEMENT_DRAFT, breadingMapper.selectById(parentId, Breading::getStatus).getStatus(), "exception.invalidate.breading.status_abnormal");
-        else
+        if (agreement.getParentType() == ParentType.ADOPT) {
+            Adopt adopt = requireById(parentId, Adopt::getStatus, Adopt::getApplicantId);
+            requirePermission(login.isWorker() || login.is(adopt.getApplicantId()));
+            requireEqual(AGREEMENT_DRAFT, adopt.getStatus(), "exception.invalidate.adopt.status_abnormal");
+        } else if (agreement.getParentType() == ParentType.BREADING) {
+            Breading breading = breadingMapper.requireById(parentId, Breading::getStatus, Breading::getApplicantId);
+            requirePermission(login.isWorker() || login.is(breading.getApplicantId()));
+            requireEqual(AGREEMENT_DRAFT, breading.getStatus(), "exception.invalidate.breading.status_abnormal");
+        } else {
             throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+        }
 
         agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN));
 
