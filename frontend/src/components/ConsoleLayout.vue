@@ -17,6 +17,7 @@ const hasOwnedMedicalRecords = ref(false)
 const activeMenu = computed(() => {
   if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
   if (route.path.startsWith('/console/adoption/agreements')) return '/console/adoption/agreements'
+  if (route.path.startsWith('/console/adoption/breading')) return '/console/adoption/breading'
   if (route.path.startsWith('/console/adoption/adopts')) return '/console/adoption/adopts'
   if (route.path.startsWith('/console/medical/first/')) return '/console/medical/first'
   if (route.path.startsWith('/console/medical/records/')) return '/console/medical/records'
@@ -154,6 +155,7 @@ watch(
               <el-icon><Connection /></el-icon>
               <span>领养寄养</span>
             </template>
+            <el-menu-item index="/console/adoption/breading">寄养管理</el-menu-item>
             <el-menu-item index="/console/adoption/adopts">领养管理</el-menu-item>
             <el-menu-item v-if="canManageUsers" index="/console/adoption/agreements">协议管理</el-menu-item>
           </el-sub-menu>

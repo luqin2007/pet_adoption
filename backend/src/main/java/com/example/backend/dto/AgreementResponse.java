@@ -18,6 +18,7 @@ import static com.example.backend.entity.property.ParentType.AGREEMENT;
 public class AgreementResponse implements IResponse {
 
     private Long id;
+    private String petName;
     private Long parentId;
     private ParentType parentType;
     private AgreementType type;
@@ -28,9 +29,10 @@ public class AgreementResponse implements IResponse {
     private Date createTime;
     private Date updateTime;
 
-    public static AgreementResponse create(Agreement agreement, List<AgreementFileResponse> files) {
+    public static AgreementResponse create(Agreement agreement, String petName, List<AgreementFileResponse> files) {
         return new AgreementResponse(
                 agreement.getId(),
+                petName,
                 agreement.getParentId(),
                 agreement.getParentType(),
                 agreement.getType(),
@@ -46,7 +48,7 @@ public class AgreementResponse implements IResponse {
     /**
      * files: Agreement.id
      */
-    public static AgreementResponse createBatch(Agreement agreement, Map<Long, List<AgreementFileResponse>> files) {
-        return create(agreement, files.getOrDefault(agreement.getId(), List.of()));
+    public static AgreementResponse createBatch(Agreement agreement, String petName, Map<Long, List<AgreementFileResponse>> files) {
+        return create(agreement, petName, files.getOrDefault(agreement.getId(), List.of()));
     }
 }

@@ -25,12 +25,15 @@
       </section>
 
       <el-table :data="rows" v-loading="loading" class="user-admin-table">
-        <el-table-column label="协议" min-width="180" show-overflow-tooltip>
+        <el-table-column label="宠物" min-width="180" show-overflow-tooltip>
           <template #default="{ row }">
             <button class="table-primary-link" type="button" @click="openAgreementDialog(row)">
-              {{ parentTypeText(row.parentType) }} #{{ row.parentId }}
+              {{ row.petName || parentTypeText(row.parentType) }}
             </button>
           </template>
+        </el-table-column>
+        <el-table-column label="服务" width="110">
+          <template #default="{ row }">{{ parentTypeText(row.parentType) }}</template>
         </el-table-column>
         <el-table-column label="类型" width="110">
           <template #default="{ row }">{{ agreementTypeText(row) }}</template>
@@ -172,7 +175,9 @@ const fileInputRef = ref(null)
 const page = reactive({ page: 1, size: 10 })
 
 const activeType = computed(() => inferAgreementType(activeAgreement.value))
-const activeTitle = computed(() => activeAgreement.value ? `${parentTypeText(activeAgreement.value.parentType)}协议 #${activeAgreement.value.parentId}` : '协议')
+const activeTitle = computed(() => activeAgreement.value
+  ? `${activeAgreement.value.petName || parentTypeText(activeAgreement.value.parentType)} · ${parentTypeText(activeAgreement.value.parentType)}`
+  : '协议')
 const isActiveSigned = computed(() => Boolean(activeAgreement.value?.signTime))
 const paperFiles = computed(() => {
   const files = Array.isArray(activeAgreement.value?.files) ? activeAgreement.value.files : []

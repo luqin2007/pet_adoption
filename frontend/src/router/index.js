@@ -53,6 +53,7 @@ import MyArticleManagementPanel from '../components/MyArticleManagementPanel.vue
 import AdoptionManagementPanel from '../components/AdoptionManagementPanel.vue'
 import AdoptionApplicationDetailPanel from '../components/AdoptionApplicationDetailPanel.vue'
 import AdoptionFollowTaskCreatePanel from '../components/AdoptionFollowTaskCreatePanel.vue'
+import BreadingManagementPanel from '../components/BreadingManagementPanel.vue'
 import AgreementDraftPanel from '../components/AgreementDraftPanel.vue'
 import AgreementManagementPanel from '../components/AgreementManagementPanel.vue'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
@@ -246,6 +247,7 @@ const router = createRouter({
         { path: 'articles/mine', name: 'console-article-mine', component: MyArticleManagementPanel, props: { mode: 'mine' } },
         { path: 'articles/manage', name: 'console-article-manage', component: MyArticleManagementPanel, props: { mode: 'manage' }, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/adopts', name: 'console-adoption-adopts', component: AdoptionManagementPanel },
+        { path: 'adoption/breading', name: 'console-adoption-breading', component: BreadingManagementPanel },
         { path: 'adoption/adopts/:id', name: 'console-adoption-adopt-detail', component: AdoptionApplicationDetailPanel },
         { path: 'adoption/adopts/:id/follow', name: 'console-adoption-follow-create', component: AdoptionFollowTaskCreatePanel, meta: { guard: 'canManageAdoptFollow' } },
         { path: 'adoption/agreements', name: 'console-adoption-agreements', component: AgreementManagementPanel, meta: { guard: 'canManageUsers' } },

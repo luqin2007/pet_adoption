@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
+import com.example.backend.entity.property.ParentType;
+import com.example.backend.mapper.AdoptMapper;
 import com.example.backend.mapper.AgreementFileMapper;
+import com.example.backend.mapper.BreadingMapper;
 import com.example.backend.mapper.FollowRecordMapper;
 import com.example.backend.mapper.FollowTaskMapper;
 import com.example.backend.service.FileService;
@@ -26,6 +29,8 @@ import static com.example.backend.entity.property.ParentType.PET;
 @RequiredArgsConstructor
 public class AdoptBreadingFacade {
 
+    private final AdoptMapper adoptMapper;
+    private final BreadingMapper breadingMapper;
     private final FollowTaskMapper followTaskMapper;
     private final FollowRecordMapper followRecordMapper;
     private final AgreementFileMapper agreementFileMapper;
@@ -105,13 +110,14 @@ public class AdoptBreadingFacade {
                 .sorted(java.util.Comparator.comparing(AgreementFile::getPage))
                 .map(AgreementFileResponse::create)
                 .toList();
-        return AgreementResponse.create(agreement, files);
+        return AgreementResponse.create(agreement, resolveAgreementPetName(agreement), files);
     }
 
     public Page<AgreementResponse> buildAgreementPage(Page<Agreement> result) {
         Set<Long> agreementIds = result.getRecords().stream()
                 .map(Agreement::getId)
                 .collect(Collectors.toSet());
+        Map<Long, String> petNames = buildAgreementPetNames(result.getRecords());
         Map<Long, List<AgreementFileResponse>> files = agreementFileMapper
                 .queryByAgreements(agreementIds)
                 .list().stream()
@@ -119,7 +125,7 @@ public class AdoptBreadingFacade {
                 .sorted(java.util.Comparator.comparing(AgreementFile::getAgreementId).thenComparing(AgreementFile::getPage))
                 .map(AgreementFileResponse::create)
                 .collect(Collectors.groupingBy(AgreementFileResponse::getAgreementId));
-        return convert(result, agreement -> AgreementResponse.createBatch(agreement, files));
+        return convert(result, agreement -> AgreementResponse.createBatch(agreement, petNames.get(agreement.getId()), files));
     }
 
     public FollowTaskResponse buildFollowTaskResponse(FollowTask task) {
@@ -156,5 +162,45 @@ public class AdoptBreadingFacade {
         Page<R> page = PageDTO.of(source.getCurrent(), source.getSize(), source.getTotal());
         page.setRecords(source.getRecords().stream().map(mapper).toList());
         return page;
+    }
+
+    private String resolveAgreementPetName(Agreement agreement) {
+        return switch (agreement.getParentType()) {
+            case ADOPT -> {
+                Adopt adopt = adoptMapper.requireById(agreement.getParentId(), Adopt::getPetId);
+                Pet pet = petService.selectById(adopt.getPetId(), Pet::getName);
+                yield pet == null ? null : pet.getName();
+            }
+            case BREADING -> breadingMapper.requireById(agreement.getParentId(), Breading::getPetName).getPetName();
+            default -> null;
+        };
+    }
+
+    private Map<Long, String> buildAgreementPetNames(List<Agreement> agreements) {
+        Map<Long, String> petNames = new java.util.HashMap<>();
+        Set<Long> adoptIds = agreements.stream()
+                .filter(agreement -> agreement.getParentType() == ParentType.ADOPT)
+                .map(Agreement::getParentId)
+                .collect(Collectors.toSet());
+        Set<Long> breadingIds = agreements.stream()
+                .filter(agreement -> agreement.getParentType() == ParentType.BREADING)
+                .map(Agreement::getParentId)
+                .collect(Collectors.toSet());
+
+        Map<Long, Long> adoptPetIds = adoptMapper.selectList(adoptIds, Adopt::getId, Adopt::getPetId).stream()
+                .collect(Collectors.toMap(Adopt::getId, Adopt::getPetId));
+        Map<Long, String> petNamesByPetId = petService.groupById(new java.util.HashSet<>(adoptPetIds.values()),
+                Pet::getId, Pet::getName)
+                .values()
+                .stream()
+                .collect(Collectors.toMap(Pet::getId, Pet::getName));
+        for (Map.Entry<Long, Long> entry : adoptPetIds.entrySet()) {
+            petNames.put(entry.getKey(), petNamesByPetId.get(entry.getValue()));
+        }
+
+        Map<Long, String> breadingNames = breadingMapper.selectList(breadingIds, Breading::getId, Breading::getPetName).stream()
+                .collect(Collectors.toMap(Breading::getId, Breading::getPetName));
+        petNames.putAll(breadingNames);
+        return petNames;
     }
 }
