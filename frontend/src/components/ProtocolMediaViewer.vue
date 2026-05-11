@@ -310,6 +310,7 @@ onBeforeUnmount(() => {
   position: absolute;
   top: 18px;
   left: 18px;
+  z-index: 3;
   width: 40px;
   height: 40px;
   border: 0;
@@ -327,6 +328,7 @@ onBeforeUnmount(() => {
   position: absolute;
   top: 18px;
   left: 70px;
+  z-index: 3;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -358,6 +360,7 @@ onBeforeUnmount(() => {
   position: absolute;
   top: 50%;
   margin-top: -24px;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -391,6 +394,7 @@ onBeforeUnmount(() => {
   position: relative;
   grid-column: 1;
   grid-row: 1;
+  z-index: 1;
   display: grid;
   place-items: center;
   min-width: 0;
@@ -444,6 +448,7 @@ onBeforeUnmount(() => {
 .protocol-viewer-thumbs {
   grid-column: 2;
   grid-row: 1 / span 2;
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 10px;
