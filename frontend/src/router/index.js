@@ -51,6 +51,7 @@ import FirstRegistrationDetailView from '../views/FirstRegistrationDetailView.vu
 import MedicalDetailListPanel from '../components/MedicalDetailListPanel.vue'
 import MyArticleManagementPanel from '../components/MyArticleManagementPanel.vue'
 import AdoptionManagementPanel from '../components/AdoptionManagementPanel.vue'
+import AdoptionFollowTaskCreatePanel from '../components/AdoptionFollowTaskCreatePanel.vue'
 import AgreementDraftPanel from '../components/AgreementDraftPanel.vue'
 import AgreementManagementPanel from '../components/AgreementManagementPanel.vue'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
@@ -244,6 +245,7 @@ const router = createRouter({
         { path: 'articles/mine', name: 'console-article-mine', component: MyArticleManagementPanel, props: { mode: 'mine' } },
         { path: 'articles/manage', name: 'console-article-manage', component: MyArticleManagementPanel, props: { mode: 'manage' }, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/adopts', name: 'console-adoption-adopts', component: AdoptionManagementPanel },
+        { path: 'adoption/adopts/:id/follow', name: 'console-adoption-follow-create', component: AdoptionFollowTaskCreatePanel, meta: { guard: 'canManageAdoptFollow' } },
         { path: 'adoption/agreements', name: 'console-adoption-agreements', component: AgreementManagementPanel, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-paper', name: 'console-adoption-agreement-paper-create', component: AgreementDraftPanel, props: { type: 'PAPER' }, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-electronic', name: 'console-adoption-agreement-electronic-create', component: AgreementDraftPanel, props: { type: 'ELECTRONIC' }, meta: { guard: 'canManageUsers' } },
@@ -305,6 +307,7 @@ router.beforeEach(async (to) => {
     let allowed = false
     if (guard === 'canManageUsers') allowed = isAdmin || isWorker
     else if (guard === 'canManageMedical') allowed = isAdmin || isWorker || isDoctor
+    else if (guard === 'canManageAdoptFollow') allowed = isWorker
     else if (guard === 'canManageRehab') allowed = isDoctor || isVolunteer
     else if (guard === 'canManageRehabDoctor') allowed = isDoctor
     else if (guard === 'canViewMedical') {

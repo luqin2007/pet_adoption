@@ -59,6 +59,7 @@
                 <el-button v-if="canReview(row)" text type="primary" @click="openReviewDialog(row)">审核</el-button>
                 <el-button v-if="canCancel(row)" text type="danger" @click="cancelAdopt(row)">取消</el-button>
                 <el-button v-if="canCreateAgreement(row)" text type="success" @click="openAgreementChoice(row)">协议</el-button>
+                <el-button v-if="canCreateFollowTask(row)" text type="warning" @click="goFollowTask(row)">回访</el-button>
               </div>
             </div>
           </template>
@@ -152,6 +153,7 @@ const page = reactive({ page: 1, size: 10 })
 const loginRole = computed(() => Number(userStore.profile?.role || 0))
 const loginUserId = computed(() => String(userStore.profile?.id || ''))
 const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole(loginRole.value, ROLE.ADMIN))
+const isWorkerRole = computed(() => hasRole(loginRole.value, ROLE.WORKER))
 
 const statusOptions = [
   { label: '已提交', value: 'CREATE' },
@@ -236,6 +238,10 @@ function canCreateAgreement(row) {
   return isWorker.value && row?.status === 'PASS'
 }
 
+function canCreateFollowTask(row) {
+  return isWorkerRole.value && row?.status === 'TRACKING'
+}
+
 function openReviewDialog(row) {
   reviewTarget.value = row
   reviewStatus.value = 'PASS'
@@ -278,6 +284,18 @@ function openAgreementChoice(row) {
   agreementTarget.value = row
   agreementType.value = 'ELECTRONIC'
   agreementDialogVisible.value = true
+}
+
+function goFollowTask(row) {
+  if (!row?.id) return
+  router.push({
+    name: 'console-adoption-follow-create',
+    params: { id: String(row.id) },
+    query: {
+      pet: row.petName || '',
+      applicant: row.applicantName || '',
+    },
+  })
 }
 
 function goAgreementDraft() {

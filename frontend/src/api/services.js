@@ -105,6 +105,13 @@ export function updateAdoptStatus(id, status) {
   })
 }
 
+export function addFollowTask(id, payload) {
+  return request(`/adopt/follow/adopt/${id}`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
 export function getBreadingApplications(query = {}) {
   return request('/adopt/breading', {
     method: 'GET',
