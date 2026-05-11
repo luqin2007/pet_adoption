@@ -119,6 +119,12 @@ export function getBreadingApplications(query = {}) {
   })
 }
 
+export function updateBreadingStatus(id, status) {
+  return request(`/adopt/breading/${id}/${encodeURIComponent(status)}`, {
+    method: 'PATCH',
+  })
+}
+
 export function beginAgreement() {
   return request('/adopt/agreement', {
     method: 'PUT',

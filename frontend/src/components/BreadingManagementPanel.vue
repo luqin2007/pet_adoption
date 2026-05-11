@@ -3,140 +3,370 @@
     <template #header>
       <div class="profile-card-header">
         <strong>寄养管理</strong>
-        <span>提交寄养申请并查看当前入口</span>
+        <span>{{ isWorker ? '查看与审核全部寄养申请' : '查看我的寄养申请' }}</span>
       </div>
     </template>
 
     <section class="pet-admin-section">
-      <section class="action-form-panel">
-        <div class="agreement-draft-head">
-          <div>
-            <h2>提交寄养申请</h2>
-            <p>和首页入口一致，但这里放在后台管理里，方便统一入口。</p>
+      <section class="filter-panel pet-directory-filter-panel">
+        <div class="pet-filter-row adoption-filter-row">
+          <el-select v-model="statusFilter" clearable placeholder="申请状态">
+            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+          <div class="pet-filter-action">
+            <el-button class="soft-btn" :icon="Plus" @click="goCreateBreading">申请寄养</el-button>
+            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
           </div>
         </div>
-
-        <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
-          <el-form-item label="宠物名称" prop="petName">
-            <el-input v-model="form.petName" placeholder="请输入宠物名称" clearable />
-          </el-form-item>
-          <el-form-item label="年龄（月）" prop="petAge">
-            <el-input-number v-model="form.petAge" :min="0" :controls="false" />
-          </el-form-item>
-          <el-form-item label="宠物类型" prop="petType">
-            <el-select v-model="form.petType" placeholder="选择类型" filterable clearable @change="handleTypeChange">
-              <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="品种" prop="petBreed">
-            <el-select v-model="form.petBreed" placeholder="选择品种" filterable clearable :disabled="!form.petType">
-              <el-option v-for="item in breedOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="联系方式" prop="applicantPhone">
-            <el-input v-model="form.applicantPhone" placeholder="手机号或微信号" clearable />
-          </el-form-item>
-          <el-form-item label="寄养时间" prop="timeRange">
-            <el-date-picker
-              v-model="form.timeRange"
-              type="datetimerange"
-              value-format="YYYY-MM-DDTHH:mm:ss"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-            />
-          </el-form-item>
-          <el-form-item label="宠物情况说明" class="action-form-span-2">
-            <el-input v-model="form.petDescription" type="textarea" :rows="5" placeholder="写下性格、饮食习惯、健康情况和寄养原因" />
-          </el-form-item>
-        </el-form>
-
-        <div class="agreement-draft-footer">
-          <el-button class="soft-btn" @click="goBack">返回后台</el-button>
-          <el-button class="warm-btn" :icon="Check" :loading="submitting" @click="submitForm">提交申请</el-button>
-        </div>
       </section>
+
+      <el-table :data="rows" v-loading="loading" class="user-admin-table">
+        <el-table-column label="宠物" min-width="200" show-overflow-tooltip>
+          <template #default="{ row }">
+            <div class="adoption-person-cell">
+              <strong>{{ row.petName || '未命名宠物' }}</strong>
+              <span>{{ [row.petType, row.petBreed, row.petAge != null ? `${row.petAge} 月` : ''].filter(Boolean).join(' · ') }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="申请人" min-width="160">
+          <template #default="{ row }">
+            <div class="adoption-person-cell">
+              <strong>{{ row.applicantName || '未命名用户' }}</strong>
+              <span>{{ row.applicantPhone || '' }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="120">
+          <template #default="{ row }">
+            <el-tag :type="statusTagType(row.status)" effect="plain">{{ statusText(row.status) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="审核人" min-width="120">
+          <template #default="{ row }">{{ row.reviewerName || '' }}</template>
+        </el-table-column>
+        <el-table-column label="申请时间" min-width="160">
+          <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
+        </el-table-column>
+        <el-table-column width="40" class-name="action-col">
+          <template #header>
+            <TableActionColumnHeader title="操作" :collapsed="actionCollapsed" @toggle="actionCollapsed = !actionCollapsed" />
+          </template>
+          <template #default="{ row }">
+            <div class="table-action-cell">
+              <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
+                <el-button v-if="canReview(row)" text type="primary" @click="openReviewDialog(row)">审核</el-button>
+                <el-button v-if="canCancel(row)" text type="danger" @click="cancelBreading(row)">取消</el-button>
+                <el-button v-if="canCreateAgreement(row)" text type="success" @click="openAgreementChoice(row)">协议</el-button>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div class="user-admin-pagination">
+        <el-pagination
+          layout="prev, pager, next, total"
+          :current-page="page.page"
+          :page-size="page.size"
+          :total="total"
+          @current-change="changePage"
+        />
+      </div>
     </section>
   </el-card>
+
+  <el-dialog v-model="reviewDialogVisible" title="审核寄养申请" width="520px" :close-on-click-modal="false">
+    <section v-if="reviewTarget" class="adoption-review-summary">
+      <strong>{{ reviewTarget.petName || '未命名宠物' }}</strong>
+      <span>{{ reviewTarget.applicantName || '申请人' }} · {{ reviewTarget.applicantPhone || '' }}</span>
+    </section>
+    <el-form label-position="top">
+      <el-form-item label="审核结果">
+        <el-radio-group v-model="reviewStatus">
+          <el-radio-button label="PASS">通过</el-radio-button>
+          <el-radio-button label="REJECT">拒绝</el-radio-button>
+        </el-radio-group>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="reviewDialogVisible = false">取消</el-button>
+      <el-button class="warm-btn" :loading="acting" @click="submitReview">保存</el-button>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="agreementDialogVisible" title="选择协议类型" width="520px" :close-on-click-modal="false">
+    <section v-if="agreementTarget" class="adoption-review-summary">
+      <strong>{{ agreementTarget.petName || '未命名宠物' }}</strong>
+      <span>{{ agreementTarget.applicantName || '申请人' }} · 寄养协议</span>
+    </section>
+    <el-radio-group v-model="agreementType" class="agreement-type-grid">
+      <el-radio-button label="ELECTRONIC">
+        <span class="agreement-type-card">
+          <strong>电子协议</strong>
+          <small>在线起草协议正文</small>
+        </span>
+      </el-radio-button>
+      <el-radio-button label="PAPER">
+        <span class="agreement-type-card">
+          <strong>纸质协议</strong>
+          <small>上传扫描图片并排序</small>
+        </span>
+      </el-radio-button>
+    </el-radio-group>
+    <template #footer>
+      <el-button @click="agreementDialogVisible = false">取消</el-button>
+      <el-button class="warm-btn" @click="goAgreementDraft">继续</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { Check } from '@element-plus/icons-vue'
-import { createBreadingApplication } from '../api/services'
-import { useInformationCatalog } from '../composables/useInformationCatalog'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Search } from '@element-plus/icons-vue'
+import { getBreadingApplications, updateBreadingStatus } from '../api/services'
+import { useUserStore } from '../stores/user'
+import { ROLE, hasRole } from '../utils/roles'
+import TableActionColumnHeader from './TableActionColumnHeader.vue'
 
 const router = useRouter()
-const formRef = ref(null)
-const submitting = ref(false)
+const userStore = useUserStore()
 
-const form = reactive({
-  petName: '',
-  petAge: 1,
-  petType: '',
-  petBreed: '',
-  petDescription: '',
-  applicantPhone: '',
-  timeRange: [],
-})
+const loading = ref(false)
+const acting = ref(false)
+const actionCollapsed = ref(false)
+const rows = ref([])
+const total = ref(0)
+const statusFilter = ref('')
+const reviewDialogVisible = ref(false)
+const reviewTarget = ref(null)
+const reviewStatus = ref('PASS')
+const agreementDialogVisible = ref(false)
+const agreementTarget = ref(null)
+const agreementType = ref('ELECTRONIC')
+const page = reactive({ page: 1, size: 10 })
 
-const rules = {
-  petName: [{ required: true, message: '请输入宠物名称', trigger: 'blur' }],
-  petAge: [{ required: true, message: '请输入年龄', trigger: 'blur' }],
-  petType: [{ required: true, message: '请选择类型', trigger: 'change' }],
-  petBreed: [{ required: true, message: '请选择品种', trigger: 'change' }],
-  applicantPhone: [{ required: true, message: '请输入联系方式', trigger: 'blur' }],
-  timeRange: [{ required: true, message: '请选择寄养时间', trigger: 'change' }],
+const loginRole = computed(() => Number(userStore.profile?.role || 0))
+const loginUserId = computed(() => String(userStore.profile?.id || ''))
+const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole(loginRole.value, ROLE.ADMIN))
+
+const statusOptions = [
+  { label: '已提交', value: 'CREATE' },
+  { label: '审核通过', value: 'PASS' },
+  { label: '审核拒绝', value: 'REJECT' },
+  { label: '协议草拟中', value: 'AGREEMENT_DRAFT' },
+  { label: '待确认', value: 'AGREEMENT_PENDING_CONFIRM' },
+  { label: '协议已签署', value: 'AGREEMENT_SIGNED' },
+  { label: '回访中', value: 'TRACKING' },
+  { label: '流程完成', value: 'FINISH' },
+  { label: '已取消', value: 'CANCEL' },
+]
+
+const statusMap = Object.fromEntries(statusOptions.map((item) => [item.value, item.label]))
+
+function statusText(value) {
+  return statusMap[value] || value || ''
 }
 
-const { ensureInformationCatalog, typeOptions, getBreedOptions } = useInformationCatalog()
-const breedOptions = computed(() => getBreedOptions(form.petType))
-
-function goBack() {
-  router.push('/console')
+function statusTagType(value) {
+  if (value === 'PASS' || value === 'AGREEMENT_SIGNED' || value === 'FINISH') return 'success'
+  if (value === 'REJECT' || value === 'CANCEL') return 'info'
+  if (value === 'AGREEMENT_DRAFT' || value === 'TRACKING') return 'primary'
+  if (value === 'AGREEMENT_PENDING_CONFIRM') return 'warning'
+  return 'warning'
 }
 
-function handleTypeChange() {
-  form.petBreed = ''
+function formatDate(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return String(value)
+  return date.toLocaleString('zh-CN')
 }
 
-async function submitForm() {
-  if (!formRef.value || submitting.value) return
-  try {
-    await formRef.value.validate()
-  } catch {
-    return
+function buildQuery() {
+  return {
+    page: page.page,
+    size: page.size,
+    sort: 'create_time',
+    order: 'desc',
+    applicant: isWorker.value ? undefined : [loginUserId.value],
+    status: statusFilter.value ? [statusFilter.value] : undefined,
   }
+}
 
-  const [time0, time1] = form.timeRange || []
-  if (!time0 || !time1) {
-    ElMessage.warning('请选择完整的寄养时间')
-    return
-  }
-
-  submitting.value = true
+async function loadRows() {
+  if (!isWorker.value && !loginUserId.value) return
+  loading.value = true
   try {
-    await createBreadingApplication({
-      petName: form.petName.trim(),
-      petAge: Number(form.petAge || 0),
-      petType: form.petType,
-      petBreed: form.petBreed,
-      petDescription: form.petDescription.trim(),
-      applicantPhone: form.applicantPhone.trim(),
-      time0,
-      time1,
-    })
-    ElMessage.success('宠物寄养申请已提交')
-    router.push('/console')
+    const result = await getBreadingApplications(buildQuery())
+    rows.value = Array.isArray(result?.records) ? result.records : []
+    total.value = Number(result?.total || rows.value.length)
   } catch (error) {
-    ElMessage.warning(error?.message || '提交宠物寄养申请失败')
+    ElMessage.warning(error?.message || '加载寄养申请失败')
   } finally {
-    submitting.value = false
+    loading.value = false
   }
+}
+
+function searchRows() {
+  page.page = 1
+  loadRows()
+}
+
+function changePage(value) {
+  page.page = value
+  loadRows()
+}
+
+function goCreateBreading() {
+  router.push({ name: 'breading-create' })
+}
+
+function canReview(row) {
+  return isWorker.value && row?.status === 'CREATE'
+}
+
+function canCancel(row) {
+  if (!row || row.status === 'FINISH' || row.status === 'CANCEL') return false
+  return isWorker.value || String(row.applicantId || '') === loginUserId.value
+}
+
+function canCreateAgreement(row) {
+  return isWorker.value && row?.status === 'PASS'
+}
+
+function openReviewDialog(row) {
+  reviewTarget.value = row
+  reviewStatus.value = 'PASS'
+  reviewDialogVisible.value = true
+}
+
+async function submitReview() {
+  if (!reviewTarget.value || acting.value) return
+  acting.value = true
+  try {
+    await updateBreadingStatus(reviewTarget.value.id, reviewStatus.value)
+    ElMessage.success(reviewStatus.value === 'PASS' ? '寄养申请已通过' : '寄养申请已拒绝')
+    reviewDialogVisible.value = false
+    await loadRows()
+  } catch (error) {
+    ElMessage.warning(error?.message || '审核失败')
+  } finally {
+    acting.value = false
+  }
+}
+
+async function cancelBreading(row) {
+  try {
+    await ElMessageBox.confirm(`确认取消「${row.petName || '未命名宠物'}」的寄养申请？`, '取消寄养申请', {
+      type: 'warning',
+      confirmButtonText: '确认取消',
+      cancelButtonText: '返回',
+    })
+    await updateBreadingStatus(row.id, 'CANCEL')
+    ElMessage.success('寄养申请已取消')
+    await loadRows()
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      ElMessage.warning(error?.message || '取消失败')
+    }
+  }
+}
+
+function openAgreementChoice(row) {
+  agreementTarget.value = row
+  agreementType.value = 'ELECTRONIC'
+  agreementDialogVisible.value = true
+}
+
+function goAgreementDraft() {
+  if (!agreementTarget.value) return
+  const path = agreementType.value === 'PAPER'
+    ? '/console/adoption/agreements/new-paper'
+    : '/console/adoption/agreements/new-electronic'
+  router.push({
+    path,
+    query: {
+      parentId: agreementTarget.value.id,
+      parentType: 'BREADING',
+      pet: agreementTarget.value.petName || '',
+      applicant: agreementTarget.value.applicantName || '',
+    },
+  })
 }
 
 onMounted(() => {
-  ensureInformationCatalog()
+  loadRows()
 })
 </script>
+
+<style scoped>
+.adoption-filter-row {
+  grid-template-columns: minmax(180px, 240px) auto;
+}
+
+.adoption-person-cell {
+  display: grid;
+  gap: 3px;
+}
+
+.adoption-person-cell strong {
+  color: var(--text);
+}
+
+.adoption-person-cell span,
+.agreement-type-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.adoption-review-summary {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 253, 249, 0.92);
+}
+
+.adoption-review-summary span {
+  color: var(--muted);
+}
+
+.agreement-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.agreement-type-grid :deep(.el-radio-button__inner) {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: left;
+  background: rgba(255, 253, 249, 0.92);
+  box-shadow: none;
+}
+
+.agreement-type-grid :deep(.el-radio-button:first-child .el-radio-button__inner),
+.agreement-type-grid :deep(.el-radio-button:last-child .el-radio-button__inner) {
+  border-radius: 12px;
+}
+
+.agreement-type-card {
+  display: grid;
+  gap: 4px;
+}
+
+@media (max-width: 720px) {
+  .adoption-filter-row,
+  .agreement-type-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
