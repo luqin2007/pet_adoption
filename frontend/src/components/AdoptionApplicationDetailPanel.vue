@@ -173,11 +173,10 @@
     </section>
   </el-card>
 
-  <MediaViewerOverlay
+  <ProtocolMediaViewer
     v-model:visible="paperViewerVisible"
     v-model:index="paperViewerIndex"
     :items="paperViewerItems"
-    :show-thumbs="true"
   />
 </template>
 
@@ -187,7 +186,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, PictureFilled } from '@element-plus/icons-vue'
 import { getAdoptApplication, getAgreements } from '../api/services'
-import MediaViewerOverlay from './MediaViewerOverlay.vue'
+import ProtocolMediaViewer from './ProtocolMediaViewer.vue'
 
 const route = useRoute()
 const router = useRouter()
