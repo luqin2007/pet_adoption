@@ -222,7 +222,12 @@ function changePage(value) {
 }
 
 function goPet(row) {
-  if (row?.petId) router.push(`/pets/${row.petId}`)
+  if (row?.id) {
+    router.push({
+      name: 'console-adoption-adopt-detail',
+      params: { id: String(row.id) },
+    })
+  }
 }
 
 function canReview(row) {
