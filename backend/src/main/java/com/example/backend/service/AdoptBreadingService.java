@@ -110,8 +110,10 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Date now = new Date();
         adopt.setStatus(target);
         adopt.setUpdateTime(now);
-        if (target == AdoptBreadingStatus.PASS || target == AdoptBreadingStatus.REJECT)
+        if (target == AdoptBreadingStatus.PASS || target == AdoptBreadingStatus.REJECT) {
             adopt.setReviewTime(now);
+            adopt.setReviewerId(login.getId());
+        }
         updateById(adopt);
         eventPublisher.publishEvent(new AdoptStatusEvent(adopt, login));
         return adoptBreadingFacade.buildAdoptResponse(adopt);
