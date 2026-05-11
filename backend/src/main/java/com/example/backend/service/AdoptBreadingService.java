@@ -8,6 +8,7 @@ import com.example.backend.event.*;
 import com.example.backend.facade.AdoptBreadingFacade;
 import com.example.backend.mapper.*;
 import com.example.backend.util.ServiceException;
+import com.example.backend.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -95,16 +96,20 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public AdoptResponse updateAdoptStatus(Long adoptId, String status) {
         // 校验
         User login = requireLoginUser();
-        Adopt adopt = requireById(adoptId);
         AdoptBreadingStatus target = AdoptBreadingStatus.get(status);
-        if (target == CANCEL)
-            requirePermission(login.isWorker() || login.is(adopt.getApplicantId()));
-        else
+        if (target != CANCEL) {
             requirePermission(login.isWorker());
+        }
+        Adopt adopt = requireById(adoptId);
+        if (target == CANCEL) {
+            requirePermission(login.isWorker() || login.is(adopt.getApplicantId()));
+        }
         AdoptBreadingStatus oldStatus = adopt.getStatus();
         require(oldStatus.isChangeable(), "exception.invalidate.adopt.status_abnormal");
         // 签订状态仅能通过 signAgreement 方法实现
-        require(target != AGREEMENT_SIGNED, "exception.invalidate.adopt.status_abnormal");
+        require(target != AGREEMENT_DRAFT
+                && target != AGREEMENT_PENDING_CONFIRM
+                && target != AGREEMENT_SIGNED, "exception.invalidate.adopt.status_abnormal");
 
         // 更新记录
         Date now = new Date();
@@ -158,7 +163,9 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         AdoptBreadingStatus target = AdoptBreadingStatus.get(status);
         AdoptBreadingStatus oldStatus = breading.getStatus();
         require(oldStatus.isChangeable(), "exception.invalidate.breading.status_abnormal");
-        require(target != AGREEMENT_SIGNED, "exception.invalidate.breading.status_abnormal");
+        require(target != AGREEMENT_DRAFT
+                && target != AGREEMENT_PENDING_CONFIRM
+                && target != AGREEMENT_SIGNED, "exception.invalidate.breading.status_abnormal");
 
         Date now = new Date();
         breading.setStatus(target);
@@ -238,6 +245,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
+        requireAgreementDraft(agreement);
 
         // 记录旧协议内容
         recordAgreementUpdate(agreement);
@@ -257,6 +265,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
 
         // 备份协议数据
         Agreement agreement = agreementMapper.requireById(agreementId);
+        requireAgreementDraft(agreement);
         recordAgreementUpdate(agreement);
         if (agreement.getType() == AgreementType.ELECTRONIC) { // 切换协议类型
             agreement.setType(PAPER);
@@ -316,6 +325,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         requirePermission(login.isWorker());
 
         Agreement agreement = agreementMapper.requireById(agreementId);
+        requireAgreementDraft(agreement);
         requireEqual(PAPER, agreement.getType(), "exception.invalidate.agreement_type");
         AgreementFile target = agreementFileMapper.requireById(fileId);
         requireEqual(agreementId, target.getAgreementId(), "exception.not_found.agreement_file");
@@ -348,6 +358,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         requirePermission(login.isWorker());
 
         Agreement agreement = agreementMapper.requireById(agreementId);
+        requireAgreementDraft(agreement);
         requireEqual(PAPER, agreement.getType(), "exception.invalidate.agreement_type");
         List<AgreementFile> files = agreementFileMapper.queryByAgreement(agreementId).list();
         List<Long> fileOrder = request.getFileOrder();
@@ -394,35 +405,70 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public AgreementResponse signAgreement(Long agreementId, MultipartFile sign) {
         User login = requireLoginUser();
         Agreement agreement = agreementMapper.requireById(agreementId);
-        if (agreement.getSign() != null)
-            throw ServiceException.conflict("exception.conflict.agreement.signed");
-        // 状态检查
+        requireAgreementPendingOrDraft(agreement);
         Long parentId = agreement.getParentId();
         if (agreement.getParentType() == ParentType.ADOPT) {
             Adopt adopt = requireById(parentId, Adopt::getStatus, Adopt::getApplicantId);
-            requirePermission(login.isWorker() || login.is(adopt.getApplicantId()));
-            requireEqual(AGREEMENT_DRAFT, adopt.getStatus(), "exception.invalidate.adopt.status_abnormal");
+            requirePermission(login.is(adopt.getApplicantId()));
+            require(Set.of(AGREEMENT_DRAFT, AGREEMENT_PENDING_CONFIRM).contains(adopt.getStatus()),
+                    "exception.invalidate.adopt.status_abnormal");
         } else if (agreement.getParentType() == ParentType.BREADING) {
             Breading breading = breadingMapper.requireById(parentId, Breading::getStatus, Breading::getApplicantId);
-            requirePermission(login.isWorker() || login.is(breading.getApplicantId()));
-            requireEqual(AGREEMENT_DRAFT, breading.getStatus(), "exception.invalidate.breading.status_abnormal");
+            requirePermission(login.is(breading.getApplicantId()));
+            require(Set.of(AGREEMENT_DRAFT, AGREEMENT_PENDING_CONFIRM).contains(breading.getStatus()),
+                    "exception.invalidate.breading.status_abnormal");
         } else {
             throw ServiceException.system("exception.system.agreement.parent_type_invalid");
         }
 
-        agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN));
-
-        // 上传文件
+        if (agreement.getSignTime() != null) {
+            throw ServiceException.conflict("exception.conflict.agreement.signed");
+        }
+        String oldSign = agreement.getSign();
+        Date now = new Date();
         String filename = fileService.uploadImage(sign, agreementId, AGREEMENT);
-        AgreementFile file = new AgreementFile(agreementId, filename, 0);
-        agreementFileMapper.insert(file);
+        agreement.setSign(filename);
+        agreement.setSignTime(null);
+        agreement.setUpdateTime(now);
+        agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN_UPLOAD));
 
         // 更新数据
         transactionTemplate.executeWithoutResult(status -> {
-            agreementMapper.sign(agreementId, filename, new Date()).update();
+            agreementMapper.uploadSign(agreementId, filename, now).update();
             switch (agreement.getParentType()) {
-                case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
-                case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
+                case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_PENDING_CONFIRM).update();
+                case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_PENDING_CONFIRM).update();
+                default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+            }
+            if (oldSign != null && !oldSign.equals(filename)) {
+                fileService.deleteFile(oldSign, agreementId, AGREEMENT);
+            }
+        });
+        eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
+        return adoptBreadingFacade.buildAgreementResponse(agreement);
+    }
+
+    /**
+     * 确认签署协议
+     */
+    @Transactional
+    public AgreementResponse confirmAgreementSign(Long agreementId) {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
+        Agreement agreement = agreementMapper.requireById(agreementId);
+        requireAgreementStatus(agreement, AGREEMENT_PENDING_CONFIRM, "exception.invalidate.agreement.status_abnormal");
+        require(StringUtils.hasText(agreement.getSign()), "exception.invalidate.agreement.status_abnormal");
+
+        Date now = new Date();
+        agreement.setSignTime(now);
+        agreement.setUpdateTime(now);
+        agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN_CONFIRM));
+
+        transactionTemplate.executeWithoutResult(status -> {
+            agreementMapper.confirmSign(agreementId, now).update();
+            switch (agreement.getParentType()) {
+                case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_SIGNED).update();
+                case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_SIGNED).update();
                 default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
             }
         });
@@ -434,6 +480,28 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         return agreementFileMapper.queryByAgreement(agreementId).list().stream()
                 .map(AgreementFileResponse::create)
                 .toList();
+    }
+
+    private AdoptBreadingStatus requireAgreementStatus(Agreement agreement) {
+        return switch (agreement.getParentType()) {
+            case ADOPT -> requireById(agreement.getParentId(), Adopt::getStatus).getStatus();
+            case BREADING -> breadingMapper.requireById(agreement.getParentId(), Breading::getStatus).getStatus();
+            default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+        };
+    }
+
+    private void requireAgreementStatus(Agreement agreement, AdoptBreadingStatus expected, String message) {
+        requireEqual(expected, requireAgreementStatus(agreement), message);
+    }
+
+    private void requireAgreementDraft(Agreement agreement) {
+        requireAgreementStatus(agreement, AGREEMENT_DRAFT, "exception.invalidate.agreement.status_abnormal");
+    }
+
+    private void requireAgreementPendingOrDraft(Agreement agreement) {
+        AdoptBreadingStatus status = requireAgreementStatus(agreement);
+        require(status == AGREEMENT_DRAFT || status == AGREEMENT_PENDING_CONFIRM,
+                "exception.invalidate.agreement.status_abnormal");
     }
 
     /**

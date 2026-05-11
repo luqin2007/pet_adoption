@@ -48,16 +48,22 @@ class AdoptBreadingServiceUnitTest {
     }
 
     @Test
-    void workerCannotSetAdoptStatusToAgreementSignedDirectly() {
+    void workerCannotSetAdoptStatusToAgreementWorkflowDirectly() {
         login(user(1L, "worker", UserRole.WORKER.getMask()));
         Adopt adopt = adopt(10L, AdoptBreadingStatus.PASS);
         when(adoptMapper.requireById(10L)).thenReturn(adopt);
 
-        ServiceException ex = assertThrows(ServiceException.class,
-                () -> service.updateAdoptStatus(10L, AdoptBreadingStatus.AGREEMENT_SIGNED.name()));
+        for (AdoptBreadingStatus status : new AdoptBreadingStatus[]{
+                AdoptBreadingStatus.AGREEMENT_DRAFT,
+                AdoptBreadingStatus.AGREEMENT_PENDING_CONFIRM,
+                AdoptBreadingStatus.AGREEMENT_SIGNED
+        }) {
+            ServiceException ex = assertThrows(ServiceException.class,
+                    () -> service.updateAdoptStatus(10L, status.name()));
 
-        assertEquals(ServiceException.E_INVALIDATE, ex.getCode());
-        assertEquals("exception.invalidate.adopt.status_abnormal", ex.getMessage());
+            assertEquals(ServiceException.E_INVALIDATE, ex.getCode());
+            assertEquals("exception.invalidate.adopt.status_abnormal", ex.getMessage());
+        }
         verify(adoptMapper, never()).updateById(any(Adopt.class));
     }
 

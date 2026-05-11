@@ -13,6 +13,8 @@ public enum AgreementUpdateType {
     DISCARD, // 删除
     UPLOAD, // 上传图片
     UPDATE, // 更新内容
+    SIGN_UPLOAD, // 上传签名
+    SIGN_CONFIRM, // 确认签署
     SIGN; // 签订
 
     public static AgreementUpdateType get(String name) {

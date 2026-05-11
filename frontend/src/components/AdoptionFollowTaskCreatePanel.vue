@@ -151,6 +151,7 @@ const statusOptions = [
   { label: '审核通过', value: 'PASS' },
   { label: '审核拒绝', value: 'REJECT' },
   { label: '协议草拟中', value: 'AGREEMENT_DRAFT' },
+  { label: '待确认', value: 'AGREEMENT_PENDING_CONFIRM' },
   { label: '协议已签署', value: 'AGREEMENT_SIGNED' },
   { label: '回访中', value: 'TRACKING' },
   { label: '流程完成', value: 'FINISH' },
@@ -192,6 +193,7 @@ function statusTagType(value) {
   if (value === 'PASS' || value === 'AGREEMENT_SIGNED' || value === 'FINISH') return 'success'
   if (value === 'REJECT' || value === 'CANCEL') return 'info'
   if (value === 'AGREEMENT_DRAFT' || value === 'TRACKING') return 'primary'
+  if (value === 'AGREEMENT_PENDING_CONFIRM') return 'warning'
   return 'warning'
 }
 

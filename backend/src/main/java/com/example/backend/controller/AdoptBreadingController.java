@@ -32,7 +32,8 @@ import java.util.List;
  * ---- 上传协议图片（已有协议） uploadAgreement ( √ × )<br>
  * ---- 删除协议图片（已有协议） deleteAgreementFile ( √ × )<br>
  * ---- 调整协议顺序（已有协议） reorderAgreementFiles ( √ × )<br>
- * ---- 协议签订 signAgreement ( √ × )<br>
+ * ---- 上传签名 signAgreement ( √ × )<br>
+ * ---- 确认签署 confirmAgreementSign ( √ × )<br>
  * ---- 获取协议 getAgreement ( √ × )<br>
  * ---- 查找协议 getAgreements ( √ × )<br>
  * - 后续跟踪 ( √ × )<br>
@@ -205,12 +206,21 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 签署协议
+     * 上传签名
      */
     @PatchMapping("/agreement/{id}/sign")
     public Result<AgreementResponse> signAgreement(@PathVariable("id") Long agreementId,
                                                    @RequestParam("sign") MultipartFile sign) {
         AgreementResponse response = adoptBreadingService.signAgreement(agreementId, sign);
+        return Result.success(response);
+    }
+
+    /**
+     * 确认签署
+     */
+    @PatchMapping("/agreement/{id}/sign/confirm")
+    public Result<AgreementResponse> confirmAgreementSign(@PathVariable("id") Long agreementId) {
+        AgreementResponse response = adoptBreadingService.confirmAgreementSign(agreementId);
         return Result.success(response);
     }
 

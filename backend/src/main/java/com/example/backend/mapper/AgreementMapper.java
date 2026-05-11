@@ -29,12 +29,19 @@ public interface AgreementMapper extends IBaseMapper<Agreement> {
                 .set(Agreement::getUpdateTime, new Date());
     }
 
-    default MPLambdaUpdate<Agreement> sign(Long agreementId, String filename, Date now) {
+    default MPLambdaUpdate<Agreement> uploadSign(Long agreementId, String filename, Date now) {
         return lambdaUpdate()
                 .eq(Agreement::getId, agreementId)
                 .set(Agreement::getUpdateTime, now)
-                .set(Agreement::getSignTime, now)
+                .set(Agreement::getSignTime, null)
                 .set(Agreement::getSign, filename);
+    }
+
+    default MPLambdaUpdate<Agreement> confirmSign(Long agreementId, Date now) {
+        return lambdaUpdate()
+                .eq(Agreement::getId, agreementId)
+                .set(Agreement::getUpdateTime, now)
+                .set(Agreement::getSignTime, now);
     }
 
     @Override

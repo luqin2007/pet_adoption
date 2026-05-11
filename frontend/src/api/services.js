@@ -199,6 +199,12 @@ export function signAgreement(id, file) {
   })
 }
 
+export function confirmAgreementSign(id) {
+  return request(`/adopt/agreement/${id}/sign/confirm`, {
+    method: 'PATCH',
+  })
+}
+
 export function getMedicalRecords(query = {}) {
   return request('/medical/record', {
     method: 'GET',

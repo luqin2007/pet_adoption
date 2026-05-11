@@ -96,8 +96,17 @@
             </button>
           </div>
 
-          <div v-if="canSignAgreement" class="adoption-agreement-actions">
-            <el-button class="warm-btn" :icon="Upload" @click="openSignDialog">签名</el-button>
+          <div v-if="canSignAgreement || canConfirmAgreement" class="adoption-agreement-actions">
+            <el-button
+              v-if="canConfirmAgreement"
+              class="warm-btn"
+              :icon="Check"
+              :loading="confirmingSign"
+              @click="submitConfirmAgreement"
+            >
+              确认签署
+            </el-button>
+            <el-button v-if="canSignAgreement" class="warm-btn" :icon="Upload" @click="openSignDialog">{{ signButtonText }}</el-button>
           </div>
         </template>
 
@@ -192,8 +201,9 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Check, PictureFilled, Upload } from '@element-plus/icons-vue'
-import { getAdoptApplication, getAgreements, signAgreement } from '../api/services'
+import { confirmAgreementSign, getAdoptApplication, getAgreements, signAgreement } from '../api/services'
 import { useUserStore } from '../stores/user'
+import { ROLE, hasRole } from '../utils/roles'
 import ProtocolMediaViewer from './ProtocolMediaViewer.vue'
 
 const route = useRoute()
@@ -203,6 +213,7 @@ const userStore = useUserStore()
 const loading = ref(false)
 const agreementLoading = ref(false)
 const signing = ref(false)
+const confirmingSign = ref(false)
 const application = ref(null)
 const agreements = ref([])
 const paperViewerVisible = ref(false)
@@ -242,15 +253,21 @@ const paperViewerItems = computed(() => paperFiles.value.map((file, index) => ({
   type: 'IMAGE',
 })))
 const isReject = computed(() => application.value?.status === 'REJECT')
-const hasAgreement = computed(() => ['AGREEMENT_DRAFT', 'AGREEMENT_SIGNED'].includes(application.value?.status) && Boolean(currentAgreement.value))
+const hasAgreement = computed(() => ['AGREEMENT_DRAFT', 'AGREEMENT_PENDING_CONFIRM', 'AGREEMENT_SIGNED'].includes(application.value?.status) && Boolean(currentAgreement.value))
 const isTrackingStage = computed(() => ['TRACKING', 'FINISH'].includes(application.value?.status))
 const canSignAgreement = computed(() => (
-  application.value?.status === 'AGREEMENT_DRAFT' &&
+  ['AGREEMENT_DRAFT', 'AGREEMENT_PENDING_CONFIRM'].includes(application.value?.status) &&
   String(application.value?.applicantId || '') === String(userStore.profile?.id || '') &&
   Boolean(currentAgreement.value?.id) &&
-  !currentAgreement.value?.sign &&
   !currentAgreement.value?.signTime
 ))
+const canConfirmAgreement = computed(() => (
+  application.value?.status === 'AGREEMENT_PENDING_CONFIRM' &&
+  Boolean(currentAgreement.value?.sign) &&
+  Boolean(currentAgreement.value?.id) &&
+  (hasRole(Number(userStore.profile?.role || 0), ROLE.WORKER) || hasRole(Number(userStore.profile?.role || 0), ROLE.ADMIN))
+))
+const signButtonText = computed(() => (application.value?.status === 'AGREEMENT_PENDING_CONFIRM' ? '重新签名' : '签名'))
 const hasAgreementBody = computed(() => {
   if (!currentAgreement.value) return false
   if (currentAgreementType.value === 'ELECTRONIC') return Boolean(String(currentAgreement.value?.content || '').trim())
@@ -269,6 +286,7 @@ const statusOptions = [
   { label: '审核通过', value: 'PASS' },
   { label: '审核拒绝', value: 'REJECT' },
   { label: '协议草拟中', value: 'AGREEMENT_DRAFT' },
+  { label: '待确认', value: 'AGREEMENT_PENDING_CONFIRM' },
   { label: '协议已签署', value: 'AGREEMENT_SIGNED' },
   { label: '回访中', value: 'TRACKING' },
   { label: '流程完成', value: 'FINISH' },
@@ -295,6 +313,7 @@ function statusTagType(value) {
   if (value === 'PASS' || value === 'AGREEMENT_SIGNED' || value === 'FINISH') return 'success'
   if (value === 'REJECT' || value === 'CANCEL') return 'info'
   if (value === 'AGREEMENT_DRAFT' || value === 'TRACKING') return 'primary'
+  if (value === 'AGREEMENT_PENDING_CONFIRM') return 'warning'
   return 'warning'
 }
 
@@ -354,6 +373,20 @@ function openSignDialog() {
   signDialogVisible.value = true
 }
 
+async function submitConfirmAgreement() {
+  if (!currentAgreement.value?.id || confirmingSign.value) return
+  confirmingSign.value = true
+  try {
+    await confirmAgreementSign(currentAgreement.value.id)
+    ElMessage.success('协议已确认签署')
+    await loadPage()
+  } catch (error) {
+    ElMessage.warning(error?.message || '确认签署失败')
+  } finally {
+    confirmingSign.value = false
+  }
+}
+
 function chooseSignFile() {
   signInputRef.value?.click()
 }
@@ -385,7 +418,7 @@ async function submitSignAgreement() {
   signing.value = true
   try {
     await signAgreement(currentAgreement.value.id, signFile.value)
-    ElMessage.success('协议已签署')
+    ElMessage.success('签名已上传，等待工作人员确认')
     signDialogVisible.value = false
     clearSignFile()
     await loadPage()
