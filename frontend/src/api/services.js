@@ -112,6 +112,46 @@ export function addFollowTask(id, payload) {
   })
 }
 
+export function getFollowTask(id) {
+  return request(`/adopt/follow/${id}`, {
+    method: 'GET',
+  })
+}
+
+export function getFollowTasks(query = {}) {
+  return request('/adopt/follow', {
+    method: 'GET',
+    query,
+  })
+}
+
+export function addFollowRecord(id, payload) {
+  return request(`/adopt/follow/${id}/record`, {
+    method: 'POST',
+    body: payload,
+  })
+}
+
+export function getFollowRecords(idOrQuery, page) {
+  if (typeof idOrQuery === 'number' || typeof idOrQuery === 'string') {
+    return request(`/adopt/follow/${idOrQuery}/record`, {
+      method: 'GET',
+      query: page || {},
+    })
+  }
+  return request('/adopt/follow/record', {
+    method: 'GET',
+    query: idOrQuery || {},
+  })
+}
+
+export function getVisibleFollowRecords(query = {}) {
+  return request('/adopt/follow/record/visible', {
+    method: 'GET',
+    query,
+  })
+}
+
 export function getBreadingApplications(query = {}) {
   return request('/adopt/breading', {
     method: 'GET',

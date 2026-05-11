@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -151,11 +152,45 @@ public class AdoptBreadingFacade {
         return convert(result, task -> FollowTaskResponse.createBatch(task, users, records));
     }
 
+    public FollowRecordResponse buildFollowRecordResponse(FollowRecord record) {
+        Page<FollowRecord> page = PageDTO.of(1, 1, 1);
+        page.setRecords(List.of(record));
+        return buildFollowRecordPage(page).getRecords().get(0);
+    }
+
     public Page<FollowRecordResponse> buildFollowRecordPage(Page<FollowRecord> result) {
-        Map<Long, User> users = userService.groupById(
-                result.getRecords().stream().map(FollowRecord::getVolunteerId),
-                User::getId, User::getUsername, User::getAvatar);
-        return convert(result, record -> FollowRecordResponse.createBatch(record, users));
+        Set<Long> taskIds = result.getRecords().stream()
+                .map(FollowRecord::getTaskId)
+                .collect(Collectors.toSet());
+        Map<Long, FollowTask> tasks = taskIds.isEmpty() ? Map.of()
+                : followTaskMapper.selectList(taskIds,
+                FollowTask::getId, FollowTask::getAdoptId, FollowTask::getStatus, FollowTask::getPlanTime, FollowTask::getWorkerId, FollowTask::getVolunteerId)
+                .stream()
+                .collect(Collectors.toMap(FollowTask::getId, Function.identity()));
+        Set<Long> adoptIds = tasks.values().stream()
+                .map(FollowTask::getAdoptId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, Adopt> adopts = adoptIds.isEmpty() ? Map.of()
+                : adoptMapper.selectList(adoptIds, Adopt::getId, Adopt::getPetId, Adopt::getApplicantId)
+                .stream()
+                .collect(Collectors.toMap(Adopt::getId, Function.identity()));
+        Set<Long> petIds = adopts.values().stream()
+                .map(Adopt::getPetId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, Pet> pets = petIds.isEmpty() ? Map.of()
+                : petService.groupById(petIds, Pet::getId, Pet::getName);
+        Set<Long> userIds = Stream.concat(
+                        result.getRecords().stream().map(FollowRecord::getVolunteerId),
+                        Stream.concat(
+                                tasks.values().stream().map(FollowTask::getWorkerId),
+                                adopts.values().stream().map(Adopt::getApplicantId)))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, User> users = userIds.isEmpty() ? Map.of()
+                : userService.groupById(userIds, User::getId, User::getUsername, User::getAvatar);
+        return convert(result, record -> FollowRecordResponse.createBatch(record, tasks, adopts, pets, users));
     }
 
     private <T, R> Page<R> convert(Page<T> source, Function<T, R> mapper) {

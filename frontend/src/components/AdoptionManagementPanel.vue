@@ -59,7 +59,7 @@
                 <el-button v-if="canReview(row)" text type="primary" @click="openReviewDialog(row)">审核</el-button>
                 <el-button v-if="canCancel(row)" text type="danger" @click="cancelAdopt(row)">取消</el-button>
                 <el-button v-if="canCreateAgreement(row)" text type="success" @click="openAgreementChoice(row)">协议</el-button>
-                <el-button v-if="canCreateFollowTask(row)" text type="warning" @click="goFollowTask(row)">回访</el-button>
+                <el-button v-if="canCreateFollowTask(row)" text type="warning" :loading="followLoadingId === String(row.id)" @click="goFollowTask(row)">回访</el-button>
               </div>
             </div>
           </template>
@@ -128,7 +128,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
-import { getAdoptApplications, updateAdoptStatus } from '../api/services'
+import { getAdoptApplication, getAdoptApplications, updateAdoptStatus } from '../api/services'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
@@ -148,12 +148,12 @@ const reviewStatus = ref('PASS')
 const agreementDialogVisible = ref(false)
 const agreementTarget = ref(null)
 const agreementType = ref('ELECTRONIC')
+const followLoadingId = ref('')
 const page = reactive({ page: 1, size: 10 })
 
 const loginRole = computed(() => Number(userStore.profile?.role || 0))
 const loginUserId = computed(() => String(userStore.profile?.id || ''))
 const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole(loginRole.value, ROLE.ADMIN))
-const isWorkerRole = computed(() => hasRole(loginRole.value, ROLE.WORKER))
 
 const statusOptions = [
   { label: '已提交', value: 'CREATE' },
@@ -246,7 +246,7 @@ function canCreateAgreement(row) {
 }
 
 function canCreateFollowTask(row) {
-  return isWorkerRole.value && row?.status === 'TRACKING'
+  return isWorker.value && ['AGREEMENT_SIGNED', 'TRACKING'].includes(row?.status)
 }
 
 function openReviewDialog(row) {
@@ -293,16 +293,36 @@ function openAgreementChoice(row) {
   agreementDialogVisible.value = true
 }
 
-function goFollowTask(row) {
-  if (!row?.id) return
-  router.push({
-    name: 'console-adoption-follow-create',
-    params: { id: String(row.id) },
-    query: {
-      pet: row.petName || '',
-      applicant: row.applicantName || '',
-    },
-  })
+async function goFollowTask(row) {
+  if (!row?.id || followLoadingId.value) return
+  followLoadingId.value = String(row.id)
+  try {
+    const detail = await getAdoptApplication(row.id)
+    const ongoing = Array.isArray(detail?.followTasks)
+      ? [...detail.followTasks]
+          .filter((item) => item.status !== 'FINISH')
+          .sort((a, b) => new Date(b?.updateTime || b?.createTime || 0) - new Date(a?.updateTime || a?.createTime || 0))
+      : []
+    if (ongoing.length) {
+      router.push({
+        name: 'console-adoption-follow-task-detail',
+        params: { id: String(ongoing[0].id) },
+      })
+      return
+    }
+    router.push({
+      name: 'console-adoption-follow-create',
+      params: { id: String(row.id) },
+      query: {
+        pet: detail?.petName || row.petName || '',
+        applicant: detail?.applicantName || row.applicantName || '',
+      },
+    })
+  } catch (error) {
+    ElMessage.warning(error?.message || '获取回访任务失败')
+  } finally {
+    followLoadingId.value = ''
+  }
 }
 
 function goAgreementDraft() {

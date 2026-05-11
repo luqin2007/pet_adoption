@@ -307,4 +307,13 @@ public class AdoptBreadingController {
         Page<FollowRecordResponse> response = adoptBreadingService.getFollowRecords(query, page);
         return Result.success(response);
     }
+
+    /**
+     * 查询当前用户可见回访记录
+     */
+    @GetMapping("/follow/record/visible")
+    public Result<Page<FollowRecordResponse>> getVisibleFollowRecords(PageParams page) {
+        Page<FollowRecordResponse> response = adoptBreadingService.getVisibleFollowRecords(page);
+        return Result.success(response);
+    }
 }

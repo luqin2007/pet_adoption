@@ -164,11 +164,11 @@ const summaryPetName = computed(() => application.value?.petName || routePetName
 const summaryApplicantName = computed(() => application.value?.applicantName || routeApplicantName.value || '未命名申请人')
 const summarySubtitle = computed(() => {
   const parts = [summaryApplicantName.value, application.value?.applicantPhone].filter(Boolean)
-  return parts.length ? parts.join(' · ') : '为回访中的领养申请创建任务'
+  return parts.length ? parts.join(' · ') : '为领养申请创建回访任务'
 })
 const headerSubtitle = computed(() => {
   const parts = [summaryPetName.value, summaryApplicantName.value].filter(Boolean)
-  return parts.length ? parts.join(' · ') : '为回访中的领养申请创建任务'
+  return parts.length ? parts.join(' · ') : '为领养申请创建回访任务'
 })
 const petMetaText = computed(() => {
   const parts = [application.value?.petType, application.value?.petBreed].filter(Boolean)
@@ -176,7 +176,7 @@ const petMetaText = computed(() => {
 })
 const blockedReason = computed(() => {
   if (!application.value) return ''
-  if (application.value.status !== 'TRACKING') return '当前申请不是回访中，不能创建回访任务'
+  if (!['TRACKING', 'AGREEMENT_SIGNED'].includes(application.value.status)) return '当前申请未进入回访阶段，不能创建回访任务'
   return ''
 })
 const selectedVolunteer = computed(() => {
@@ -288,13 +288,20 @@ async function submitFollowTask() {
 
   saving.value = true
   try {
-    await addFollowTask(applicationId.value, {
+    const response = await addFollowTask(applicationId.value, {
       volunteerId: form.volunteerId,
       planTime: form.planTime,
       remark: form.remark.trim() || undefined,
     })
     ElMessage.success('回访任务已创建')
-    router.push('/console/adoption/adopts')
+    if (response?.id) {
+      router.push({
+        name: 'console-adoption-follow-task-detail',
+        params: { id: String(response.id) },
+      })
+    } else {
+      router.push('/console/adoption/follow-records')
+    }
   } catch (error) {
     ElMessage.warning(error?.message || '创建回访任务失败')
   } finally {

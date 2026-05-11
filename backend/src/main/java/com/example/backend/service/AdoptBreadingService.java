@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.entity.property.*;
@@ -535,11 +536,15 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         requirePermission(volunteer.isVolunteer());
         Adopt adopt = requireById(adoptId,
                 Adopt::getStatus);
-        requireEqual(AdoptBreadingStatus.TRACKING, adopt.getStatus(), "exception.invalidate.adopt.status_invalid");
+        require(Set.of(AdoptBreadingStatus.AGREEMENT_SIGNED, AdoptBreadingStatus.TRACKING).contains(adopt.getStatus()),
+                "exception.invalidate.adopt.status_invalid");
 
         // 记录
         FollowTask task = request.create(adoptId, login.getId());
         followTaskMapper.insert(task);
+        if (adopt.getStatus() == AdoptBreadingStatus.AGREEMENT_SIGNED) {
+            baseMapper.updateStatus(adoptId, AdoptBreadingStatus.TRACKING).update();
+        }
         eventPublisher.publishEvent(new FollowTaskAddEvent(task, login));
         return adoptBreadingFacade.buildFollowTaskResponse(task);
     }
@@ -599,6 +604,46 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     /**
+     * 查询当前用户可见的回访记录
+     */
+    public Page<FollowRecordResponse> getVisibleFollowRecords(PageParams pageRequest) {
+        User login = requireLoginUser();
+        if (login.isWorker()) {
+            Page<FollowRecord> result = followRecordMapper.lambdaQuery()
+                    .desc(FollowRecord::getVisitTime)
+                    .page(pageRequest);
+            return adoptBreadingFacade.buildFollowRecordPage(result);
+        }
+
+        Set<Long> taskIds = new HashSet<>();
+        taskIds.addAll(followTaskMapper.lambdaQuery()
+                .eq(FollowTask::getVolunteerId, login.getId())
+                .list(FollowTask::getId)
+                .toList());
+
+        AdoptQueryParams adoptQuery = new AdoptQueryParams();
+        adoptQuery.setUser(Set.of(login.getId()));
+        Set<Long> adoptIds = baseMapper.queryByRequest(adoptQuery)
+                .list(Adopt::getId)
+                .collect(Collectors.toSet());
+        if (!adoptIds.isEmpty()) {
+            taskIds.addAll(followTaskMapper.queryByAdopts(adoptIds)
+                    .list(FollowTask::getId)
+                    .toList());
+        }
+
+        List<FollowRecord> records = taskIds.isEmpty() ? List.of()
+                : followRecordMapper.queryByTasks(taskIds).list();
+        int page = Math.max(1, pageRequest.getPage());
+        int size = Math.max(1, pageRequest.getSize());
+        int from = Math.min(records.size(), (page - 1) * size);
+        int to = Math.min(records.size(), from + size);
+        Page<FollowRecord> result = PageDTO.of(page, size, records.size());
+        result.setRecords(from >= to ? List.of() : records.subList(from, to));
+        return adoptBreadingFacade.buildFollowRecordPage(result);
+    }
+
+    /**
      * 创建回访记录
      */
     @Transactional
@@ -615,9 +660,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         FollowRecord record = request.create(taskId, login.getId());
         followRecordMapper.insert(record);
         eventPublisher.publishEvent(new FollowRecordEvent(record, login));
-        User volunteer = userService.selectById(record.getVolunteerId(),
-                User::getId, User::getUsername, User::getAvatar);
-        return FollowRecordResponse.create(record, volunteer);
+        return adoptBreadingFacade.buildFollowRecordResponse(record);
     }
 
     /**
