@@ -28,65 +28,61 @@
           </div>
         </section>
 
-        <section class="console-detail-section follow-task-person-card">
-          <p>申请人</p>
-          <div class="follow-task-person-row">
-            <span class="user-pill-avatar follow-task-avatar">
-              <img v-if="application.applicantAvatar" :src="application.applicantAvatar" :alt="summaryApplicantName" />
-              <span v-else>{{ avatarInitial(summaryApplicantName) }}</span>
-            </span>
-            <div>
-              <strong>{{ summaryApplicantName }}</strong>
-              <span>{{ application.applicantPhone || '联系方式待补充' }}</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="console-detail-section follow-task-person-card follow-task-volunteer-card">
-          <p>负责志愿者</p>
-          <el-select
-            v-model="form.volunteerIds"
-            multiple
-            filterable
-            clearable
-            collapse-tags
-            collapse-tags-tooltip
-            :multiple-limit="3"
-            class="full-width-control"
-            placeholder="最多选择 3 位志愿者"
-            :loading="volunteerLoading"
-            :disabled="volunteerLoading || !volunteerOptions.length"
-          >
-            <el-option
-              v-for="item in volunteerOptions"
-              :key="volunteerValue(item)"
-              :label="volunteerLabel(item)"
-              :value="volunteerValue(item)"
-            >
-              <div class="follow-volunteer-option">
-                <el-avatar :size="30" :src="item.avatar">
-                  {{ avatarInitial(volunteerName(item)) }}
-                </el-avatar>
-                <div class="follow-volunteer-meta">
-                  <strong>{{ volunteerName(item) }}</strong>
-                  <span>{{ item.phone || '电话待补充' }}</span>
-                </div>
+        <div class="follow-task-side-grid">
+          <section class="console-detail-section follow-task-person-card">
+            <p>领养人</p>
+            <div class="follow-task-person-row">
+              <span class="user-pill-avatar follow-task-avatar">
+                <img v-if="application.applicantAvatar" :src="application.applicantAvatar" :alt="summaryApplicantName" />
+                <span v-else>{{ avatarInitial(summaryApplicantName) }}</span>
+              </span>
+              <div>
+                <strong>{{ summaryApplicantName }}</strong>
+                <span>{{ application.applicantPhone || '联系方式待补充' }}</span>
               </div>
-            </el-option>
-          </el-select>
-          <div v-if="selectedVolunteers.length" class="follow-volunteer-preview-list">
-            <div v-for="item in selectedVolunteers" :key="volunteerValue(item)" class="follow-volunteer-preview">
-              <el-avatar :size="36" :src="item.avatar">
-                {{ avatarInitial(volunteerName(item)) }}
+            </div>
+          </section>
+
+          <section class="console-detail-section follow-task-person-card follow-task-volunteer-card">
+            <p>负责志愿者</p>
+            <el-select
+              v-model="form.volunteerId"
+              filterable
+              clearable
+              class="full-width-control"
+              placeholder="选择志愿者"
+              :loading="volunteerLoading"
+              :disabled="volunteerLoading || !volunteerOptions.length"
+            >
+              <el-option
+                v-for="item in volunteerOptions"
+                :key="volunteerValue(item)"
+                :label="volunteerLabel(item)"
+                :value="volunteerValue(item)"
+              >
+                <div class="follow-volunteer-option">
+                  <el-avatar :size="30" :src="item.avatar">
+                    {{ avatarInitial(volunteerName(item)) }}
+                  </el-avatar>
+                  <div class="follow-volunteer-meta">
+                    <strong>{{ volunteerName(item) }}</strong>
+                    <span>{{ item.phone || '电话待补充' }}</span>
+                  </div>
+                </div>
+              </el-option>
+            </el-select>
+            <div v-if="selectedVolunteer" class="follow-volunteer-preview">
+              <el-avatar :size="36" :src="selectedVolunteer.avatar">
+                {{ avatarInitial(volunteerName(selectedVolunteer)) }}
               </el-avatar>
               <div>
-                <strong>{{ volunteerName(item) }}</strong>
-                <span>{{ item.phone || '电话待补充' }}</span>
+                <strong>{{ volunteerName(selectedVolunteer) }}</strong>
+                <span>{{ selectedVolunteer.phone || '电话待补充' }}</span>
               </div>
             </div>
-          </div>
-          <el-empty v-else-if="!volunteerLoading && !volunteerOptions.length" description="暂无可用志愿者" />
-        </section>
+            <el-empty v-else-if="!volunteerLoading && !volunteerOptions.length" description="暂无可用志愿者" />
+          </section>
+        </div>
       </div>
 
       <section class="console-detail-section console-detail-section-wide">
@@ -94,36 +90,22 @@
           <div><dt>申请状态</dt><dd>{{ statusText(application.status) }}</dd></div>
           <div><dt>审核时间</dt><dd>{{ formatDate(application.reviewTime) }}</dd></div>
           <div><dt>领养时间</dt><dd>{{ formatDate(application.adoptTime) }}</dd></div>
-          <div><dt>回访任务</dt><dd>{{ selectedVolunteers.length ? `${selectedVolunteers.length} 个` : '待选择' }}</dd></div>
+          <div class="follow-task-time-item">
+            <dt>回访时间</dt>
+            <dd>
+              <el-date-picker
+                v-model="form.planTime"
+                type="datetime"
+                value-format="YYYY-MM-DDTHH:mm:ss.SSS"
+                placeholder="选择回访时间"
+                class="full-width-control"
+              />
+            </dd>
+          </div>
         </dl>
       </section>
 
       <el-alert v-if="blockedReason" :title="blockedReason" type="warning" show-icon :closable="false" />
-
-      <div class="console-detail-grid follow-task-grid">
-        <section class="console-detail-section">
-          <h3>回访时间</h3>
-          <el-date-picker
-            v-model="form.planTime"
-            type="datetime"
-            value-format="YYYY-MM-DDTHH:mm:ss.SSS"
-            placeholder="选择回访时间"
-            class="full-width-control"
-          />
-          <p class="follow-task-note">请填写预计回访时间，方便志愿者安排后续回访。</p>
-        </section>
-
-        <section class="console-detail-section console-detail-section-wide">
-          <h3>备注</h3>
-          <el-input
-            v-model="form.remark"
-            type="textarea"
-            :autosize="{ minRows: 4, maxRows: 7 }"
-            class="full-width-control"
-            placeholder="填写回访提醒、关注重点或特殊安排"
-          />
-        </section>
-      </div>
 
       <div class="follow-task-footer">
         <el-button class="soft-btn" @click="goBack">取消</el-button>
@@ -156,9 +138,8 @@ const volunteerLoading = ref(false)
 const application = ref(null)
 const volunteerOptions = ref([])
 const form = reactive({
-  volunteerIds: [],
+  volunteerId: '',
   planTime: '',
-  remark: '',
 })
 
 const applicationId = computed(() => String(route.params.id || ''))
@@ -180,7 +161,7 @@ const statusOptions = [
 const statusMap = Object.fromEntries(statusOptions.map((item) => [item.value, item.label]))
 
 const summaryPetName = computed(() => application.value?.petName || routePetName.value || '未命名宠物')
-const summaryApplicantName = computed(() => application.value?.applicantName || routeApplicantName.value || '未命名申请人')
+const summaryApplicantName = computed(() => application.value?.applicantName || routeApplicantName.value || '未命名领养人')
 const headerSubtitle = computed(() => {
   const parts = [summaryPetName.value, summaryApplicantName.value].filter(Boolean)
   return parts.length ? parts.join(' · ') : '为领养申请创建回访任务'
@@ -190,11 +171,11 @@ const blockedReason = computed(() => {
   if (!['TRACKING', 'AGREEMENT_SIGNED'].includes(application.value.status)) return '当前申请未进入回访阶段，不能创建回访任务'
   return ''
 })
-const selectedVolunteers = computed(() => {
-  const selected = new Set((form.volunteerIds || []).map(String))
-  return volunteerOptions.value.filter((item) => selected.has(volunteerValue(item)))
+const selectedVolunteer = computed(() => {
+  const value = String(form.volunteerId || '')
+  return volunteerOptions.value.find((item) => volunteerValue(item) === value) || null
 })
-const canSubmit = computed(() => Boolean(application.value && !blockedReason.value && form.volunteerIds.length && form.planTime && !saving.value))
+const canSubmit = computed(() => Boolean(application.value && !blockedReason.value && form.volunteerId && form.planTime && !saving.value))
 
 function statusText(value) {
   return statusMap[value] || value || ''
@@ -277,7 +258,7 @@ async function loadPage() {
 
   loading.value = true
   application.value = null
-  form.volunteerIds = []
+  form.volunteerId = ''
   try {
     await loadApplication()
     await loadVolunteerOptions()
@@ -295,7 +276,7 @@ async function submitFollowTask() {
     ElMessage.warning(blockedReason.value)
     return
   }
-  if (!form.volunteerIds.length) {
+  if (!form.volunteerId) {
     ElMessage.warning('请选择志愿者')
     return
   }
@@ -307,16 +288,15 @@ async function submitFollowTask() {
 
   saving.value = true
   try {
-    const responses = await Promise.all(form.volunteerIds.map((volunteerId) => addFollowTask(applicationId.value, {
-      volunteerId,
+    const response = await addFollowTask(applicationId.value, {
+      volunteerId: form.volunteerId,
       planTime: form.planTime,
-      remark: form.remark.trim() || undefined,
-    })))
-    ElMessage.success(`已创建 ${responses.length} 个回访任务`)
-    if (responses.length === 1 && responses[0]?.id) {
+    })
+    ElMessage.success('回访任务已创建')
+    if (response?.id) {
       router.push({
         name: 'console-adoption-follow-task-detail',
-        params: { id: String(responses[0].id) },
+        params: { id: String(response.id) },
       })
     } else {
       router.push('/console/adoption/follow-records')
@@ -341,13 +321,18 @@ watch(applicationId, () => {
 
 .follow-task-hero-grid {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr 1.25fr;
+  grid-template-columns: minmax(320px, 1.1fr) minmax(300px, 0.9fr);
   gap: 16px;
 }
 
-.follow-task-pet-card,
-.follow-task-person-card {
-  min-height: 162px;
+.follow-task-side-grid {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 16px;
+}
+
+.follow-task-pet-card {
+  min-height: 338px;
 }
 
 .follow-task-pet-card {
@@ -360,8 +345,8 @@ watch(applicationId, () => {
   display: grid;
   place-items: center;
   flex: none;
-  width: 96px;
-  height: 96px;
+  width: 176px;
+  height: 304px;
   overflow: hidden;
   border-radius: 18px;
   color: #c47a3a;
@@ -400,6 +385,7 @@ watch(applicationId, () => {
 .follow-task-person-card {
   display: grid;
   gap: 12px;
+  min-height: 0;
 }
 
 .follow-task-person-card p {
@@ -432,8 +418,12 @@ watch(applicationId, () => {
 
 .follow-task-status-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(120px, 0.8fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(260px, 1.4fr);
   gap: 12px;
+}
+
+.follow-task-time-item :deep(.el-date-editor.el-input) {
+  width: 100%;
 }
 
 .follow-task-link {
@@ -458,14 +448,6 @@ watch(applicationId, () => {
 .follow-task-link:hover,
 .follow-task-link:focus-visible {
   color: var(--primary-strong);
-}
-
-.follow-task-grid .console-detail-section {
-  min-width: 0;
-}
-
-.follow-task-grid {
-  grid-template-columns: minmax(220px, 0.72fr) minmax(280px, 1.28fr);
 }
 
 .follow-volunteer-option {
@@ -496,12 +478,6 @@ watch(applicationId, () => {
   line-height: 1.6;
 }
 
-.follow-volunteer-preview-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 10px;
-}
-
 .follow-volunteer-preview {
   display: flex;
   align-items: center;
@@ -526,9 +502,17 @@ watch(applicationId, () => {
 
 @media (max-width: 980px) {
   .follow-task-hero-grid,
-  .follow-task-status-row,
-  .follow-task-grid {
+  .follow-task-status-row {
     grid-template-columns: 1fr;
+  }
+
+  .follow-task-pet-card {
+    min-height: 0;
+  }
+
+  .follow-task-pet-cover {
+    width: 96px;
+    height: 96px;
   }
 }
 </style>
