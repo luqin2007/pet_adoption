@@ -527,7 +527,6 @@ CREATE TABLE `adopt` (
   `applicant_phone` varchar(20) NOT NULL COMMENT '申请人联系方式',
   `reviewer_id` bigint COMMENT '审核人',
   `status` varchar(20) NOT NULL COMMENT '状态',
-  `requirement` text NOT NULL COMMENT '申请要求',
   `reject_reason` text COMMENT '审核拒绝原因',
   `review_time` datetime COMMENT '审核时间',
   `adopt_time` datetime COMMENT '领养时间',

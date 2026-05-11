@@ -25,10 +25,12 @@ public interface FollowTaskMapper extends IBaseMapper<FollowTask> {
     }
 
     default MPLambdaQuery<FollowTask> queryByAdopts(Set<Long> adoptIds) {
-        return lambdaQuery()
-                .eq(adoptIds.size() == 1, FollowTask::getAdoptId, adoptIds.iterator().next())
-                .in(adoptIds.size() != 1, FollowTask::getAdoptId, adoptIds)
-                .desc(FollowTask::getCreateTime);
+        MPLambdaQuery<FollowTask> query = lambdaQuery();
+        if (adoptIds.size() == 1)
+            query.eq(FollowTask::getAdoptId, adoptIds.iterator().next());
+        if (adoptIds.size() != 1)
+            query.in(FollowTask::getAdoptId, adoptIds);
+        return query.desc(FollowTask::getCreateTime);
     }
 
     default MPLambdaQuery<FollowTask> queryByRequest(FollowTaskQueryParams params) {
