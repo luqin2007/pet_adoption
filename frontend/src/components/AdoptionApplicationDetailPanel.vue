@@ -29,7 +29,7 @@
         </section>
 
         <section class="console-detail-section adoption-person-card">
-          <h3>申请人</h3>
+          <p>申请人</p>
           <div class="adoption-person-row">
             <el-avatar :size="42" :src="application.applicantAvatar">
               {{ avatarInitial(application.applicantName) }}
@@ -42,18 +42,19 @@
         </section>
 
         <section class="console-detail-section adoption-person-card">
-          <h3>申请信息</h3>
-          <dl class="console-detail-list">
-            <div><dt>申请人编号</dt><dd>{{ application.applicantId || '—' }}</dd></div>
-            <div><dt>申请时间</dt><dd>{{ formatDate(application.createTime) }}</dd></div>
-            <div><dt>审核人</dt><dd>{{ application.reviewerName || '—' }}</dd></div>
-            <div><dt>审核人头像</dt><dd>{{ application.reviewerAvatar ? '已设置' : '未设置' }}</dd></div>
-          </dl>
+          <p>审核人</p>
+          <div class="adoption-person-row">
+            <el-avatar :size="42" :src="application.reviewerAvatar">
+              {{ avatarInitial(application.applicantName) }}
+            </el-avatar>
+            <div>
+              <strong>{{ application.reviewerName || '未命名用户' }}</strong>
+            </div>
+          </div>
         </section>
       </div>
 
       <section class="console-detail-section console-detail-section-wide">
-        <h3>流程时间</h3>
         <dl class="console-detail-list console-detail-list-row adoption-status-row">
           <div><dt>申请状态</dt><dd>{{ statusText(application.status) }}</dd></div>
           <div><dt>审核时间</dt><dd>{{ formatDate(application.reviewTime) }}</dd></div>
@@ -61,7 +62,7 @@
         </dl>
       </section>
 
-      <section class="console-detail-section console-detail-section-wide adoption-status-panel">
+      <section v-if="showStatusPanel" class="console-detail-section console-detail-section-wide adoption-status-panel">
         <template v-if="isReject">
           <h3>拒绝原因</h3>
           <p class="adoption-status-note">{{ application.rejectReason || '暂无拒绝原因' }}</p>
@@ -74,18 +75,18 @@
               <p>{{ agreementSummary }}</p>
             </div>
             <div class="adoption-section-tags">
-              <el-tag effect="plain">{{ agreementTypeText(currentAgreement) }}</el-tag>
+              <el-tag effect="plain">{{ agreementTypeText(currentAgreementType) }}</el-tag>
               <el-tag :type="currentAgreement.signTime ? 'success' : 'warning'" effect="plain">
                 {{ currentAgreement.signTime ? '已签署' : '未签署' }}
               </el-tag>
             </div>
           </div>
 
-          <div v-if="currentAgreement.type === 'ELECTRONIC'" class="adoption-agreement-text-box">
+          <div v-if="currentAgreementType === 'ELECTRONIC'" class="adoption-agreement-text-box">
             <p class="adoption-agreement-text">{{ currentAgreement.content || '暂无协议正文' }}</p>
           </div>
 
-          <div v-else class="adoption-paper-grid">
+          <div v-else-if="currentAgreementType === 'PAPER'" class="adoption-paper-grid">
             <button
               v-for="(file, index) in paperFiles"
               :key="file.id"
@@ -103,13 +104,11 @@
               </div>
             </button>
           </div>
-
-          <el-empty v-if="currentAgreement.type === 'PAPER' && !paperFiles.length" description="暂无协议扫描件" />
         </template>
 
         <template v-else-if="isTrackingStage">
           <el-collapse v-model="trackingPanels" class="adoption-detail-collapse">
-            <el-collapse-item title="回访记录" name="records">
+            <el-collapse-item v-if="followTasks.length" title="回访记录" name="records">
               <div v-if="followTasks.length" class="adoption-follow-list">
                 <article v-for="item in followTasks" :key="item.id" class="adoption-follow-card">
                   <div class="adoption-follow-head">
@@ -128,20 +127,19 @@
                   </dl>
                 </article>
               </div>
-              <el-empty v-else description="暂无回访记录" />
             </el-collapse-item>
-            <el-collapse-item title="协议内容" name="agreement">
-              <div v-if="currentAgreement" class="adoption-agreement-content-collapsed">
+            <el-collapse-item v-if="hasAgreementBody" title="协议内容" name="agreement">
+              <div class="adoption-agreement-content-collapsed">
                 <div class="adoption-section-tags">
-                  <el-tag effect="plain">{{ agreementTypeText(currentAgreement) }}</el-tag>
+                  <el-tag effect="plain">{{ agreementTypeText(currentAgreementType) }}</el-tag>
                   <el-tag :type="currentAgreement.signTime ? 'success' : 'warning'" effect="plain">
                     {{ currentAgreement.signTime ? '已签署' : '未签署' }}
                   </el-tag>
                 </div>
-                <p v-if="currentAgreement.type === 'ELECTRONIC'" class="adoption-agreement-text">
+                <p v-if="currentAgreementType === 'ELECTRONIC'" class="adoption-agreement-text">
                   {{ currentAgreement.content || '暂无协议正文' }}
                 </p>
-                <div v-else class="adoption-paper-grid">
+                <div v-else-if="currentAgreementType === 'PAPER'" class="adoption-paper-grid">
                   <button
                     v-for="(file, index) in paperFiles"
                     :key="file.id"
@@ -159,9 +157,7 @@
                     </div>
                   </button>
                 </div>
-                <el-empty v-if="currentAgreement.type === 'PAPER' && !paperFiles.length" description="暂无协议扫描件" />
               </div>
-              <el-empty v-else description="暂无协议内容" />
             </el-collapse-item>
           </el-collapse>
         </template>
@@ -217,6 +213,13 @@ const paperFiles = computed(() => {
     .slice()
     .sort((a, b) => Number(a?.page || 0) - Number(b?.page || 0))
 })
+const currentAgreementType = computed(() => {
+  const explicit = String(currentAgreement.value?.type || '')
+  if (explicit === 'ELECTRONIC' || explicit === 'PAPER') return explicit
+  if (String(currentAgreement.value?.content || '').trim()) return 'ELECTRONIC'
+  if (paperFiles.value.length) return 'PAPER'
+  return ''
+})
 const paperViewerItems = computed(() => paperFiles.value.map((file, index) => ({
   id: file.id,
   assetUrl: file.assetUrl,
@@ -225,12 +228,24 @@ const paperViewerItems = computed(() => paperFiles.value.map((file, index) => ({
 })))
 const agreementSummary = computed(() => {
   if (!currentAgreement.value) return '暂无协议内容'
-  const parts = [agreementTypeText(currentAgreement.value), currentAgreement.value.signTime ? '已签署' : '未签署']
+  const parts = [agreementTypeText(currentAgreementType.value), currentAgreement.value.signTime ? '已签署' : '未签署']
   return parts.join(' · ')
 })
 const isReject = computed(() => application.value?.status === 'REJECT')
 const hasAgreement = computed(() => ['AGREEMENT_DRAFT', 'AGREEMENT_SIGNED'].includes(application.value?.status) && Boolean(currentAgreement.value))
 const isTrackingStage = computed(() => ['TRACKING', 'FINISH'].includes(application.value?.status))
+const hasAgreementBody = computed(() => {
+  if (!currentAgreement.value) return false
+  if (currentAgreementType.value === 'ELECTRONIC') return Boolean(String(currentAgreement.value?.content || '').trim())
+  if (currentAgreementType.value === 'PAPER') return paperFiles.value.length > 0
+  return Boolean(String(currentAgreement.value?.content || '').trim() || paperFiles.value.length)
+})
+const showStatusPanel = computed(() => {
+  if (isReject.value) return Boolean(String(application.value?.rejectReason || '').trim())
+  if (hasAgreement.value) return hasAgreementBody.value
+  if (isTrackingStage.value) return Boolean(followTasks.value.length || hasAgreementBody.value)
+  return false
+})
 
 const statusOptions = [
   { label: '已提交', value: 'CREATE' },
@@ -287,8 +302,12 @@ function followTaskMeta(item) {
 }
 
 function agreementTypeText(value) {
-  const type = value?.type || (value?.content ? 'ELECTRONIC' : 'PAPER')
-  return type === 'PAPER' ? '纸制协议' : '电子协议'
+  const type = typeof value === 'string'
+    ? value
+    : value?.type || (value?.content ? 'ELECTRONIC' : 'PAPER')
+  if (type === 'PAPER') return '纸制协议'
+  if (type === 'ELECTRONIC') return '电子协议'
+  return ''
 }
 
 function formatDate(value) {
