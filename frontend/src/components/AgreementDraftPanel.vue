@@ -275,6 +275,8 @@ onBeforeUnmount(() => {
 
 .agreement-paper-card {
   overflow: hidden;
+  display: grid;
+  gap: 10px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: rgba(255, 253, 249, 0.96);
@@ -299,8 +301,20 @@ onBeforeUnmount(() => {
 }
 
 .agreement-paper-actions {
-  justify-content: space-between;
-  padding: 8px 8px 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0 10px 10px;
+}
+
+.agreement-paper-actions :deep(.el-button) {
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+}
+
+.agreement-paper-actions :deep(.el-button:last-child) {
+  grid-column: 1 / -1;
 }
 
 .agreement-electronic-section {

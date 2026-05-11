@@ -31,9 +31,10 @@
         <section class="console-detail-section adoption-person-card">
           <p>申请人</p>
           <div class="adoption-person-row">
-            <el-avatar :size="42" :src="application.applicantAvatar">
-              {{ avatarInitial(application.applicantName) }}
-            </el-avatar>
+            <span class="user-pill-avatar adoption-avatar">
+              <img v-if="application.applicantAvatar" :src="application.applicantAvatar" :alt="application.applicantName || '申请人头像'" />
+              <span v-else>{{ avatarInitial(application.applicantName) }}</span>
+            </span>
             <div>
               <strong>{{ application.applicantName || '未命名用户' }}</strong>
               <span>{{ application.applicantPhone || '联系方式待补充' }}</span>
@@ -43,10 +44,11 @@
 
         <section class="console-detail-section adoption-person-card">
           <p>审核人</p>
-          <div v-if="application.reviewerName" class="adoption-person-row">
-            <el-avatar :size="42" :src="application.reviewerAvatar">
-              {{ avatarInitial(application.reviewerName) }}
-            </el-avatar>
+          <div class="adoption-person-row">
+            <span class="user-pill-avatar adoption-avatar">
+              <img v-if="application.reviewerAvatar" :src="application.reviewerAvatar" :alt="application.reviewerName || '审核人头像'" />
+              <span v-else>{{ avatarInitial(application.reviewerName) }}</span>
+            </span>
             <div>
               <strong>{{ application.reviewerName || '未命名用户' }}</strong>
             </div>
@@ -175,7 +177,7 @@
     v-model:visible="paperViewerVisible"
     v-model:index="paperViewerIndex"
     :items="paperViewerItems"
-    :show-thumbs="false"
+    :show-thumbs="true"
   />
 </template>
 
@@ -267,7 +269,7 @@ const followTaskStatusMap = {
 }
 
 function avatarInitial(value) {
-  return String(value || '申').slice(0, 1)
+  return String(value || '用户').slice(0, 1)
 }
 
 function statusText(value) {
@@ -471,6 +473,12 @@ watch(() => route.params.id, loadPage, { immediate: true })
   align-items: center;
   gap: 12px;
   min-width: 0;
+}
+
+.adoption-avatar {
+  width: 42px;
+  height: 42px;
+  font-size: 16px;
 }
 
 .adoption-person-row strong {
