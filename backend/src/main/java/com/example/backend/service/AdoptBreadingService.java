@@ -446,8 +446,6 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询协议列表
      */
     public Page<AgreementResponse> getAgreements(AgreementQueryParams queryRequest, PageParams pageRequest) {
-        User login = requireLoginUser();
-        requirePermission(login.isWorker());
         Page<Agreement> result = agreementMapper.queryByRequest(queryRequest).page(pageRequest);
         return adoptBreadingFacade.buildAgreementPage(result);
     }

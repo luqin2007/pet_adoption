@@ -43,9 +43,9 @@
 
         <section class="console-detail-section adoption-person-card">
           <p>审核人</p>
-          <div v-if="application.applicationId" class="adoption-person-row">
+          <div v-if="application.reviewerName" class="adoption-person-row">
             <el-avatar :size="42" :src="application.reviewerAvatar">
-              {{ avatarInitial(application.applicantName) }}
+              {{ avatarInitial(application.reviewerName) }}
             </el-avatar>
             <div>
               <strong>{{ application.reviewerName || '未命名用户' }}</strong>
