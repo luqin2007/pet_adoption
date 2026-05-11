@@ -23,10 +23,12 @@
       <el-table :data="rows" v-loading="loading" class="user-admin-table">
         <el-table-column label="宠物" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
-            <div class="adoption-person-cell">
-              <strong>{{ row.petName || '未命名宠物' }}</strong>
-              <span>{{ [row.petType, row.petBreed, row.petAge != null ? `${row.petAge} 月` : ''].filter(Boolean).join(' · ') }}</span>
-            </div>
+            <button class="table-primary-link adoption-pet-detail-cell" type="button" @click="goBreadingDetail(row)">
+              <div class="adoption-person-cell">
+                <strong>{{ row.petName || '未命名宠物' }}</strong>
+                <span>{{ [row.petType, row.petBreed, row.petAge != null ? `${row.petAge} 月` : ''].filter(Boolean).join(' · ') }}</span>
+              </div>
+            </button>
           </template>
         </el-table-column>
         <el-table-column label="申请人" min-width="160">
@@ -224,6 +226,14 @@ function goCreateBreading() {
   router.push({ name: 'breading-create' })
 }
 
+function goBreadingDetail(row) {
+  if (!row?.id) return
+  router.push({
+    name: 'console-adoption-breading-detail',
+    params: { id: String(row.id) },
+  })
+}
+
 function canReview(row) {
   return isWorker.value && row?.status === 'CREATE'
 }
@@ -314,6 +324,13 @@ onMounted(() => {
 
 .adoption-person-cell strong {
   color: var(--text);
+}
+
+.adoption-pet-detail-cell {
+  display: inline-flex;
+  width: 100%;
+  padding: 0;
+  text-align: left;
 }
 
 .adoption-person-cell span,

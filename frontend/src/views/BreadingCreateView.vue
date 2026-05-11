@@ -67,7 +67,7 @@ async function submitForm() {
 
   submitting.value = true
   try {
-    await createBreadingApplication({
+    const response = await createBreadingApplication({
       petName: form.petName.trim(),
       petAge: Number(form.petAge || 0),
       petType: form.petType,
@@ -78,7 +78,14 @@ async function submitForm() {
       time1,
     })
     ElMessage.success('宠物寄养申请已提交')
-    router.push('/console')
+    if (response?.id) {
+      router.push({
+        name: 'console-adoption-breading-detail',
+        params: { id: String(response.id) },
+      })
+    } else {
+      router.push({ name: 'console-adoption-breading' })
+    }
   } catch (error) {
     ElMessage.warning(error?.message || '提交宠物寄养申请失败')
   } finally {
@@ -114,12 +121,12 @@ onMounted(() => {
             <el-input-number v-model="form.petAge" :min="0" :controls="false" />
           </el-form-item>
           <el-form-item label="宠物类型" prop="petType">
-            <el-select v-model="form.petType" placeholder="选择类型" filterable clearable @change="handleTypeChange">
+            <el-select v-model="form.petType" placeholder="选择或输入类型" filterable clearable allow-create default-first-option @change="handleTypeChange">
               <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
           <el-form-item label="品种" prop="petBreed">
-            <el-select v-model="form.petBreed" placeholder="选择品种" filterable clearable :disabled="!form.petType">
+            <el-select v-model="form.petBreed" placeholder="选择或输入品种" filterable clearable allow-create default-first-option :disabled="!form.petType">
               <el-option v-for="item in breedOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
