@@ -1,9 +1,9 @@
 <template>
-  <el-card class="profile-card" v-loading="loading">
+  <el-card class="profile-card" v-loading="loading || agreementLoading">
     <template #header>
       <div class="profile-card-header">
         <strong>领养申请详情</strong>
-        <span>{{ application?.petName || '查看申请信息与回访记录' }}</span>
+        <span>{{ application?.petName || '查看申请信息、协议和回访记录' }}</span>
       </div>
     </template>
 
@@ -13,76 +13,158 @@
         <el-tag :type="statusTagType(application.status)" effect="plain">{{ statusText(application.status) }}</el-tag>
       </div>
 
-      <div class="console-detail-summary">
-        <div>
-          <span>宠物</span>
-          <button class="table-primary-link adoption-detail-link" type="button" @click="goPetProfile">
-            <strong>{{ application.petName || '未命名宠物' }}</strong>
-          </button>
-          <p>{{ petMetaText }}</p>
-        </div>
-        <div>
-          <span>申请人</span>
-          <strong>{{ application.applicantName || '未命名用户' }}</strong>
-          <p>{{ application.applicantPhone || '联系方式待补充' }}</p>
-        </div>
-        <div>
-          <span>申请时间</span>
-          <strong>{{ formatDate(application.createTime) }}</strong>
-          <p>{{ statusTimelineText }}</p>
-        </div>
-      </div>
-
-      <section class="console-detail-grid">
-        <section class="console-detail-section">
-          <h3>申请信息</h3>
-          <dl class="console-detail-list console-detail-list-inline">
-            <div><dt>申请状态</dt><dd>{{ statusText(application.status) }}</dd></div>
-            <div><dt>审核人</dt><dd>{{ application.reviewerName || '—' }}</dd></div>
-            <div><dt>审核时间</dt><dd>{{ formatDate(application.reviewTime) }}</dd></div>
-            <div><dt>领养时间</dt><dd>{{ formatDate(application.adoptTime) }}</dd></div>
-          </dl>
-          <div v-if="application.rejectReason" class="adoption-detail-note">
-            <span>拒绝原因</span>
-            <p>{{ application.rejectReason }}</p>
+      <div class="adoption-hero-grid">
+        <section class="console-detail-section adoption-pet-card">
+          <div class="adoption-pet-cover">
+            <img v-if="application.petCover" :src="application.petCover" :alt="application.petName || '宠物封面'" />
+            <el-icon v-else><PictureFilled /></el-icon>
+          </div>
+          <div class="adoption-pet-copy">
+            <span>宠物</span>
+            <button class="table-primary-link adoption-pet-link" type="button" @click="goPetProfile">
+              <strong>{{ application.petName || '未命名宠物' }}</strong>
+            </button>
+            <p>#{{ application.petId || '—' }}</p>
           </div>
         </section>
 
-        <section class="console-detail-section">
-          <h3>宠物信息</h3>
-          <dl class="console-detail-list console-detail-list-inline">
-            <div><dt>宠物编号</dt><dd>{{ application.petId || '—' }}</dd></div>
-            <div><dt>宠物头像</dt><dd>{{ application.petCover ? '已设置' : '未设置' }}</dd></div>
-            <div><dt>申请人头像</dt><dd>{{ application.applicantAvatar ? '已设置' : '未设置' }}</dd></div>
+        <section class="console-detail-section adoption-person-card">
+          <h3>申请人</h3>
+          <div class="adoption-person-row">
+            <el-avatar :size="42" :src="application.applicantAvatar">
+              {{ avatarInitial(application.applicantName) }}
+            </el-avatar>
+            <div>
+              <strong>{{ application.applicantName || '未命名用户' }}</strong>
+              <span>{{ application.applicantPhone || '联系方式待补充' }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="console-detail-section adoption-person-card">
+          <h3>申请信息</h3>
+          <dl class="console-detail-list">
+            <div><dt>申请人编号</dt><dd>{{ application.applicantId || '—' }}</dd></div>
+            <div><dt>申请时间</dt><dd>{{ formatDate(application.createTime) }}</dd></div>
+            <div><dt>审核人</dt><dd>{{ application.reviewerName || '—' }}</dd></div>
             <div><dt>审核人头像</dt><dd>{{ application.reviewerAvatar ? '已设置' : '未设置' }}</dd></div>
           </dl>
         </section>
+      </div>
 
-        <section class="console-detail-section console-detail-section-wide">
-          <div class="adoption-detail-section-head">
-            <h3>回访任务</h3>
-            <span>{{ followTasks.length }} 条记录</span>
+      <section class="console-detail-section console-detail-section-wide">
+        <h3>流程时间</h3>
+        <dl class="console-detail-list console-detail-list-row adoption-status-row">
+          <div><dt>申请状态</dt><dd>{{ statusText(application.status) }}</dd></div>
+          <div><dt>审核时间</dt><dd>{{ formatDate(application.reviewTime) }}</dd></div>
+          <div><dt>领养时间</dt><dd>{{ formatDate(application.adoptTime) }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="console-detail-section console-detail-section-wide adoption-status-panel">
+        <template v-if="isReject">
+          <h3>拒绝原因</h3>
+          <p class="adoption-status-note">{{ application.rejectReason || '暂无拒绝原因' }}</p>
+        </template>
+
+        <template v-else-if="hasAgreement">
+          <div class="adoption-section-head">
+            <div>
+              <h3>当前协议内容</h3>
+              <p>{{ agreementSummary }}</p>
+            </div>
+            <div class="adoption-section-tags">
+              <el-tag effect="plain">{{ agreementTypeText(currentAgreement) }}</el-tag>
+              <el-tag :type="currentAgreement.signTime ? 'success' : 'warning'" effect="plain">
+                {{ currentAgreement.signTime ? '已签署' : '未签署' }}
+              </el-tag>
+            </div>
           </div>
-          <div v-if="followTasks.length" class="adoption-follow-list">
-            <article v-for="item in followTasks" :key="item.id" class="adoption-follow-card">
-              <div class="adoption-follow-head">
-                <div>
-                  <strong>{{ followTaskTitle(item) }}</strong>
-                  <span>{{ followTaskMeta(item) }}</span>
-                </div>
-                <el-tag :type="followTaskTagType(item.status)" effect="plain">{{ followTaskStatusText(item.status) }}</el-tag>
+
+          <div v-if="currentAgreement.type === 'ELECTRONIC'" class="adoption-agreement-text-box">
+            <p class="adoption-agreement-text">{{ currentAgreement.content || '暂无协议正文' }}</p>
+          </div>
+
+          <div v-else class="adoption-paper-grid">
+            <button
+              v-for="(file, index) in paperFiles"
+              :key="file.id"
+              type="button"
+              class="adoption-paper-card"
+              @click="openPaperPreview(index)"
+            >
+              <div class="adoption-paper-folder">
+                <div class="adoption-paper-tab" />
+                <img :src="file.assetUrl" :alt="`协议第 ${file.page || index + 1} 页`" loading="lazy" />
               </div>
-              <p v-if="item.remark">{{ item.remark }}</p>
-              <dl class="console-detail-list console-detail-list-inline">
-                <div><dt>计划时间</dt><dd>{{ formatDate(item.planTime) }}</dd></div>
-                <div><dt>执行记录</dt><dd>{{ item.recordId ? `#${item.recordId}` : '暂无' }}</dd></div>
-                <div><dt>记录摘要</dt><dd>{{ item.summary || '暂无' }}</dd></div>
-                <div><dt>回访时间</dt><dd>{{ formatDate(item.visitTime) }}</dd></div>
-              </dl>
-            </article>
+              <div class="adoption-paper-meta">
+                <strong>第 {{ file.page || index + 1 }} 页</strong>
+                <span>点击全屏查看</span>
+              </div>
+            </button>
           </div>
-          <el-empty v-else description="暂无回访任务" />
-        </section>
+
+          <el-empty v-if="currentAgreement.type === 'PAPER' && !paperFiles.length" description="暂无协议扫描件" />
+        </template>
+
+        <template v-else-if="isTrackingStage">
+          <el-collapse v-model="trackingPanels" class="adoption-detail-collapse">
+            <el-collapse-item title="回访记录" name="records">
+              <div v-if="followTasks.length" class="adoption-follow-list">
+                <article v-for="item in followTasks" :key="item.id" class="adoption-follow-card">
+                  <div class="adoption-follow-head">
+                    <div>
+                      <strong>{{ followTaskTitle(item) }}</strong>
+                      <span>{{ followTaskMeta(item) }}</span>
+                    </div>
+                    <el-tag :type="followTaskTagType(item.status)" effect="plain">{{ followTaskStatusText(item.status) }}</el-tag>
+                  </div>
+                  <p v-if="item.remark">{{ item.remark }}</p>
+                  <dl class="console-detail-list console-detail-list-inline">
+                    <div><dt>计划时间</dt><dd>{{ formatDate(item.planTime) }}</dd></div>
+                    <div><dt>回访时间</dt><dd>{{ formatDate(item.visitTime) }}</dd></div>
+                    <div><dt>记录摘要</dt><dd>{{ item.summary || '暂无' }}</dd></div>
+                    <div><dt>执行记录</dt><dd>{{ item.recordId ? `#${item.recordId}` : '暂无' }}</dd></div>
+                  </dl>
+                </article>
+              </div>
+              <el-empty v-else description="暂无回访记录" />
+            </el-collapse-item>
+            <el-collapse-item title="协议内容" name="agreement">
+              <div v-if="currentAgreement" class="adoption-agreement-content-collapsed">
+                <div class="adoption-section-tags">
+                  <el-tag effect="plain">{{ agreementTypeText(currentAgreement) }}</el-tag>
+                  <el-tag :type="currentAgreement.signTime ? 'success' : 'warning'" effect="plain">
+                    {{ currentAgreement.signTime ? '已签署' : '未签署' }}
+                  </el-tag>
+                </div>
+                <p v-if="currentAgreement.type === 'ELECTRONIC'" class="adoption-agreement-text">
+                  {{ currentAgreement.content || '暂无协议正文' }}
+                </p>
+                <div v-else class="adoption-paper-grid">
+                  <button
+                    v-for="(file, index) in paperFiles"
+                    :key="file.id"
+                    type="button"
+                    class="adoption-paper-card"
+                    @click="openPaperPreview(index)"
+                  >
+                    <div class="adoption-paper-folder">
+                      <div class="adoption-paper-tab" />
+                      <img :src="file.assetUrl" :alt="`协议第 ${file.page || index + 1} 页`" loading="lazy" />
+                    </div>
+                    <div class="adoption-paper-meta">
+                      <strong>第 {{ file.page || index + 1 }} 页</strong>
+                      <span>点击全屏查看</span>
+                    </div>
+                  </button>
+                </div>
+                <el-empty v-if="currentAgreement.type === 'PAPER' && !paperFiles.length" description="暂无协议扫描件" />
+              </div>
+              <el-empty v-else description="暂无协议内容" />
+            </el-collapse-item>
+          </el-collapse>
+        </template>
       </section>
     </section>
 
@@ -92,30 +174,63 @@
       </el-empty>
     </section>
   </el-card>
+
+  <MediaViewerOverlay
+    v-model:visible="paperViewerVisible"
+    v-model:index="paperViewerIndex"
+    :items="paperViewerItems"
+    :show-thumbs="false"
+  />
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft } from '@element-plus/icons-vue'
-import { getAdoptApplication } from '../api/services'
+import { ArrowLeft, PictureFilled } from '@element-plus/icons-vue'
+import { getAdoptApplication, getAgreements } from '../api/services'
+import MediaViewerOverlay from './MediaViewerOverlay.vue'
 
 const route = useRoute()
 const router = useRouter()
+
 const loading = ref(false)
+const agreementLoading = ref(false)
 const application = ref(null)
+const agreements = ref([])
+const paperViewerVisible = ref(false)
+const paperViewerIndex = ref(0)
+const trackingPanels = ref([])
 
 const applicationId = computed(() => String(route.params.id || ''))
-const followTasks = computed(() => Array.isArray(application.value?.followTasks) ? application.value.followTasks : [])
-const petMetaText = computed(() => {
-  const parts = [application.value?.petType, application.value?.petBreed].filter(Boolean)
-  return parts.length ? parts.join(' · ') : '宠物信息待补充'
+const followTasks = computed(() => {
+  const list = Array.isArray(application.value?.followTasks) ? application.value.followTasks : []
+  return list.slice().sort((a, b) => new Date(b?.planTime || b?.createTime || 0) - new Date(a?.planTime || a?.createTime || 0))
 })
-const statusTimelineText = computed(() => {
-  const parts = [formatDate(application.value?.reviewTime), formatDate(application.value?.adoptTime)].filter(Boolean)
-  return parts.length ? parts.join(' · ') : '流程时间待补充'
+const currentAgreement = computed(() => {
+  if (!agreements.value.length) return null
+  return [...agreements.value].sort((a, b) => new Date(b?.updateTime || b?.createTime || 0) - new Date(a?.updateTime || a?.createTime || 0))[0] || null
 })
+const paperFiles = computed(() => {
+  const files = Array.isArray(currentAgreement.value?.files) ? currentAgreement.value.files : []
+  return files
+    .slice()
+    .sort((a, b) => Number(a?.page || 0) - Number(b?.page || 0))
+})
+const paperViewerItems = computed(() => paperFiles.value.map((file, index) => ({
+  id: file.id,
+  assetUrl: file.assetUrl,
+  name: `协议第 ${file.page || index + 1} 页`,
+  type: 'IMAGE',
+})))
+const agreementSummary = computed(() => {
+  if (!currentAgreement.value) return '暂无协议内容'
+  const parts = [agreementTypeText(currentAgreement.value), currentAgreement.value.signTime ? '已签署' : '未签署']
+  return parts.join(' · ')
+})
+const isReject = computed(() => application.value?.status === 'REJECT')
+const hasAgreement = computed(() => ['AGREEMENT_DRAFT', 'AGREEMENT_SIGNED'].includes(application.value?.status) && Boolean(currentAgreement.value))
+const isTrackingStage = computed(() => ['TRACKING', 'FINISH'].includes(application.value?.status))
 
 const statusOptions = [
   { label: '已提交', value: 'CREATE' },
@@ -127,7 +242,6 @@ const statusOptions = [
   { label: '流程完成', value: 'FINISH' },
   { label: '已取消', value: 'CANCEL' },
 ]
-
 const statusMap = Object.fromEntries(statusOptions.map((item) => [item.value, item.label]))
 const followTaskStatusMap = {
   CREATE: '待执行',
@@ -135,6 +249,10 @@ const followTaskStatusMap = {
   IN_PROGRESS: '进行中',
   DELAY: '已推迟',
   FINISH: '已完成',
+}
+
+function avatarInitial(value) {
+  return String(value || '申').slice(0, 1)
 }
 
 function statusText(value) {
@@ -168,6 +286,11 @@ function followTaskMeta(item) {
   return parts.length ? parts.join(' · ') : '负责人待补充'
 }
 
+function agreementTypeText(value) {
+  const type = value?.type || (value?.content ? 'ELECTRONIC' : 'PAPER')
+  return type === 'PAPER' ? '纸制协议' : '电子协议'
+}
+
 function formatDate(value) {
   if (!value) return ''
   const date = new Date(value)
@@ -185,6 +308,11 @@ function goPetProfile() {
   }
 }
 
+function openPaperPreview(index) {
+  paperViewerIndex.value = index
+  paperViewerVisible.value = true
+}
+
 async function loadApplication() {
   if (!applicationId.value) return
   loading.value = true
@@ -198,11 +326,35 @@ async function loadApplication() {
   }
 }
 
-watch(() => route.params.id, loadApplication)
+async function loadAgreements() {
+  if (!applicationId.value) {
+    agreements.value = []
+    return
+  }
+  agreementLoading.value = true
+  try {
+    const result = await getAgreements({
+      parentId: applicationId.value,
+      parentType: 'ADOPT',
+      size: 20,
+      page: 1,
+      sort: 'update_time',
+      order: 'desc',
+    })
+    agreements.value = Array.isArray(result?.records) ? result.records : []
+  } catch (error) {
+    agreements.value = []
+    ElMessage.warning(error?.message || '加载协议失败')
+  } finally {
+    agreementLoading.value = false
+  }
+}
 
-onMounted(() => {
-  loadApplication()
-})
+async function loadPage() {
+  await Promise.all([loadApplication(), loadAgreements()])
+}
+
+watch(() => route.params.id, loadPage, { immediate: true })
 </script>
 
 <style scoped>
@@ -211,7 +363,57 @@ onMounted(() => {
   gap: 18px;
 }
 
-.adoption-detail-link {
+.adoption-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  grid-template-rows: minmax(152px, auto) minmax(152px, auto);
+  gap: 14px;
+}
+
+.adoption-pet-card {
+  grid-row: 1 / span 2;
+  display: grid;
+  grid-template-columns: 176px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+}
+
+.adoption-pet-cover {
+  height: 100%;
+  min-height: 304px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 248, 240, 0.92);
+  border: 1px solid rgba(243, 223, 204, 0.95);
+  display: grid;
+  place-items: center;
+}
+
+.adoption-pet-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.adoption-pet-cover :deep(.el-icon) {
+  font-size: 42px;
+  color: var(--muted);
+}
+
+.adoption-pet-copy {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.adoption-pet-copy span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.adoption-pet-link {
   display: inline-flex;
   align-items: center;
   padding: 0;
@@ -222,54 +424,168 @@ onMounted(() => {
   text-align: left;
 }
 
-.adoption-detail-link strong {
+.adoption-pet-link strong {
   color: inherit;
-  font-size: 20px;
+  font-size: 26px;
   line-height: 1.25;
 }
 
-.adoption-detail-link:hover,
-.adoption-detail-link:focus-visible {
+.adoption-pet-link:hover,
+.adoption-pet-link:focus-visible {
   color: var(--primary-strong);
 }
 
-.adoption-detail-note {
-  padding: 12px 14px;
-  border: 1px solid rgba(243, 223, 204, 0.9);
-  border-radius: 12px;
-  background: rgba(255, 253, 249, 0.95);
+.adoption-pet-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
 }
 
-.adoption-detail-note span,
-.adoption-detail-section-head span,
-.adoption-follow-head span,
-.adoption-follow-card p {
+.adoption-person-card {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.adoption-person-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.adoption-person-row strong {
+  display: block;
+  color: #5d3927;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.adoption-person-row span {
+  display: block;
+  margin-top: 4px;
   color: var(--muted);
   line-height: 1.6;
 }
 
-.adoption-detail-note span {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
+.adoption-status-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.adoption-detail-note p {
-  margin: 6px 0 0;
+.adoption-status-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.adoption-status-note {
+  margin: 0;
   color: #5d3927;
-  line-height: 1.7;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
-.adoption-detail-section-head,
-.adoption-follow-head {
+.adoption-section-head {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 12px;
 }
 
-.adoption-detail-section-head h3 {
+.adoption-section-head h3 {
   margin: 0;
+}
+
+.adoption-section-head p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.adoption-section-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.adoption-agreement-text-box {
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 253, 249, 0.96);
+  padding: 16px;
+}
+
+.adoption-agreement-text {
+  margin: 0;
+  color: #5d3927;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.adoption-paper-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.adoption-paper-card {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  display: grid;
+  gap: 10px;
+}
+
+.adoption-paper-folder {
+  position: relative;
+  min-height: 160px;
+  border: 1px solid rgba(243, 223, 204, 0.95);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 249, 241, 0.98) 0%, rgba(255, 241, 224, 0.94) 100%);
+  box-shadow: 0 10px 22px rgba(151, 96, 56, 0.08);
+  overflow: hidden;
+}
+
+.adoption-paper-tab {
+  position: absolute;
+  left: 14px;
+  top: 10px;
+  width: 58px;
+  height: 16px;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, rgba(231, 122, 59, 0.42) 0%, rgba(231, 122, 59, 0.18) 100%);
+}
+
+.adoption-paper-folder img {
+  position: absolute;
+  inset: 34px 12px 12px;
+  width: calc(100% - 24px);
+  height: calc(100% - 46px);
+  object-fit: cover;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.adoption-paper-meta {
+  display: grid;
+  gap: 2px;
+  padding-left: 4px;
+}
+
+.adoption-paper-meta strong {
+  color: #5d3927;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.adoption-paper-meta span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .adoption-follow-list {
@@ -286,6 +602,13 @@ onMounted(() => {
   gap: 10px;
 }
 
+.adoption-follow-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .adoption-follow-head strong {
   display: block;
   color: #5d3927;
@@ -293,16 +616,44 @@ onMounted(() => {
   line-height: 1.4;
 }
 
-.adoption-follow-card p {
-  margin: 0;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+.adoption-follow-head span {
+  color: var(--muted);
+  line-height: 1.6;
 }
 
-@media (max-width: 980px) {
-  .adoption-detail-section-head,
-  .adoption-follow-head {
-    flex-direction: column;
+.adoption-agreement-content-collapsed {
+  display: grid;
+  gap: 14px;
+}
+
+.adoption-detail-collapse :deep(.el-collapse-item__header) {
+  font-size: 15px;
+  font-weight: 700;
+  color: #5d3927;
+}
+
+@media (max-width: 1120px) {
+  .adoption-hero-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .adoption-pet-card {
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .adoption-pet-card {
+    grid-template-columns: 1fr;
+  }
+
+  .adoption-pet-cover {
+    min-height: 220px;
+  }
+
+  .adoption-status-row {
+    grid-template-columns: 1fr;
   }
 }
 </style>
