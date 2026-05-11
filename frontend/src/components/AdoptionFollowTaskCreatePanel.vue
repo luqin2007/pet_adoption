@@ -322,31 +322,28 @@ watch(applicationId, () => {
 .follow-task-hero-grid {
   display: grid;
   grid-template-columns: minmax(320px, 1.1fr) minmax(300px, 0.9fr);
-  gap: 16px;
+  gap: 14px;
 }
 
 .follow-task-side-grid {
   display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: 16px;
-}
-
-.follow-task-pet-card {
-  min-height: 338px;
+  grid-template-rows: repeat(2, minmax(124px, auto));
+  gap: 14px;
 }
 
 .follow-task-pet-card {
   display: flex;
   align-items: center;
   gap: 16px;
+  min-height: 262px;
 }
 
 .follow-task-pet-cover {
   display: grid;
   place-items: center;
   flex: none;
-  width: 176px;
-  height: 304px;
+  width: 150px;
+  height: 206px;
   overflow: hidden;
   border-radius: 18px;
   color: #c47a3a;
@@ -384,8 +381,11 @@ watch(applicationId, () => {
 
 .follow-task-person-card {
   display: grid;
-  gap: 12px;
-  min-height: 0;
+  align-content: center;
+  gap: 14px;
+  min-height: 124px;
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
 
 .follow-task-person-card p {
