@@ -49,6 +49,11 @@
             <div class="table-action-cell">
               <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
                 <el-button text type="primary" @click="goTaskDetail(row)">查看任务</el-button>
+                <el-button v-if="canApprove(row)" text type="success" :loading="actionLoadingId === actionKey(row, 'approve')" @click="submitTaskAction(row, 'approve')">同意</el-button>
+                <el-button v-if="canReject(row)" text type="danger" :loading="actionLoadingId === actionKey(row, 'reject')" @click="submitTaskAction(row, 'reject')">拒绝</el-button>
+                <el-button v-if="canRevoke(row)" text type="warning" :loading="actionLoadingId === actionKey(row, 'revoke')" @click="submitTaskAction(row, 'revoke')">撤销</el-button>
+                <el-button v-if="canModify(row)" text type="primary" @click="openModifyDialog(row)">修改</el-button>
+                <el-button v-if="canExecute(row)" text type="success" :loading="actionLoadingId === actionKey(row, 'execute')" @click="submitTaskAction(row, 'execute')">执行</el-button>
               </div>
             </div>
           </template>
@@ -66,13 +71,56 @@
       </div>
     </section>
   </el-card>
+
+  <el-dialog v-model="modifyDialogVisible" title="修改回访任务" width="560px" :close-on-click-modal="false">
+    <el-form label-position="top" class="follow-task-modify-form">
+      <el-form-item label="志愿者">
+        <el-select
+          v-model="modifyForm.volunteerId"
+          filterable
+          class="full-width-control"
+          placeholder="选择志愿者"
+          :loading="volunteerLoading"
+        >
+          <el-option
+            v-for="item in volunteerOptions"
+            :key="volunteerValue(item)"
+            :label="volunteerLabel(item)"
+            :value="volunteerValue(item)"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="计划时间">
+        <el-date-picker
+          v-model="modifyForm.planTime"
+          type="datetime"
+          value-format="YYYY-MM-DDTHH:mm:ss.SSS"
+          placeholder="选择计划时间"
+          class="full-width-control"
+        />
+      </el-form-item>
+      <el-form-item label="备注">
+        <el-input
+          v-model="modifyForm.remark"
+          type="textarea"
+          :autosize="{ minRows: 3, maxRows: 5 }"
+          placeholder="填写调整说明"
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="modifyDialogVisible = false">取消</el-button>
+      <el-button class="warm-btn" :loading="actionLoadingId === 'modify'" @click="submitModify">保存修改</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { getVisibleFollowTasks } from '../api/services'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getVisibleFollowTasks, updateFollowTask } from '../api/services'
+import { getVolunteerProfiles } from '../api/volunteer'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
@@ -81,13 +129,25 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const loading = ref(false)
+const volunteerLoading = ref(false)
 const actionCollapsed = ref(false)
+const actionLoadingId = ref('')
+const modifyDialogVisible = ref(false)
+const modifyTarget = ref(null)
+const volunteerOptions = ref([])
 const rows = ref([])
 const total = ref(0)
 const page = reactive({ page: 1, size: 10 })
+const modifyForm = reactive({
+  volunteerId: '',
+  planTime: '',
+  remark: '',
+})
 
 const loginRole = computed(() => Number(userStore.profile?.role || 0))
+const loginUserId = computed(() => String(userStore.profile?.id || ''))
 const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole(loginRole.value, ROLE.ADMIN))
+const isAdmin = computed(() => hasRole(loginRole.value, ROLE.ADMIN))
 const isVolunteer = computed(() => hasRole(loginRole.value, ROLE.VOLUNTEER))
 const subtitle = computed(() => {
   if (isWorker.value) return '查看全部回访任务'
@@ -118,6 +178,159 @@ function formatDate(value) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return String(value)
   return date.toLocaleString('zh-CN')
+}
+
+function isNotified(row) {
+  return row?.status === 'NOTIFIED'
+}
+
+function isTaskVolunteer(row) {
+  return String(row?.volunteerId || '') === loginUserId.value
+}
+
+function isTaskWorker(row) {
+  return String(row?.workerId || '') === loginUserId.value
+}
+
+function isApplicant(row) {
+  return String(row?.applicantId || '') === loginUserId.value
+}
+
+function canApprove(row) {
+  return isNotified(row) && isVolunteer.value && isTaskVolunteer(row)
+}
+
+function canReject(row) {
+  return isNotified(row) && ((isVolunteer.value && isTaskVolunteer(row)) || isApplicant(row))
+}
+
+function canRevoke(row) {
+  return isNotified(row) && (isAdmin.value || (isWorker.value && isTaskVolunteer(row)))
+}
+
+function canModify(row) {
+  return isNotified(row) && (isAdmin.value || (isWorker.value && isTaskWorker(row)))
+}
+
+function canExecute(row) {
+  return isNotified(row) && isVolunteer.value && isTaskVolunteer(row)
+}
+
+function actionKey(row, action) {
+  return `${row?.id || ''}:${action}`
+}
+
+function buildUpdatePayload(row, status, overrides = {}) {
+  return {
+    workerId: overrides.workerId ?? row.workerId,
+    volunteerId: overrides.volunteerId ?? row.volunteerId,
+    planTime: overrides.planTime ?? row.planTime,
+    status,
+    remark: overrides.remark ?? row.remark ?? undefined,
+  }
+}
+
+async function submitTaskAction(row, action) {
+  if (!row?.id || actionLoadingId.value) return
+  const statusMap = {
+    approve: 'IN_PROGRESS',
+    reject: 'DELAY',
+    revoke: 'CREATE',
+    execute: 'IN_PROGRESS',
+  }
+  const messageMap = {
+    approve: '确认同意这项回访任务？',
+    reject: '确认拒绝这项回访任务？',
+    revoke: '确认撤销这项回访任务通知？',
+    execute: '确认开始执行这项回访任务？',
+  }
+  const successMap = {
+    approve: '已同意回访任务',
+    reject: '已拒绝回访任务',
+    revoke: '已撤销回访任务通知',
+    execute: '回访任务已进入执行中',
+  }
+  try {
+    await ElMessageBox.confirm(messageMap[action], '回访任务', {
+      type: action === 'reject' ? 'warning' : 'info',
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+    })
+    actionLoadingId.value = actionKey(row, action)
+    await updateFollowTask(row.id, buildUpdatePayload(row, statusMap[action]))
+    ElMessage.success(successMap[action])
+    await loadRows()
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      ElMessage.warning(error?.message || '操作回访任务失败')
+    }
+  } finally {
+    actionLoadingId.value = ''
+  }
+}
+
+function volunteerName(item) {
+  return item?.realName || item?.username || '未命名志愿者'
+}
+
+function volunteerLabel(item) {
+  const phone = item?.phone ? ` · ${item.phone}` : ''
+  return `${volunteerName(item)}${phone}`
+}
+
+function volunteerValue(item) {
+  return String(item?.userId || item?.id || '')
+}
+
+async function loadVolunteerOptions() {
+  volunteerLoading.value = true
+  try {
+    const result = await getVolunteerProfiles({ size: 100, status: ['ACTIVE'] })
+    volunteerOptions.value = Array.isArray(result?.records) ? result.records : []
+  } catch (error) {
+    volunteerOptions.value = []
+    ElMessage.warning(error?.message || '加载志愿者列表失败')
+  } finally {
+    volunteerLoading.value = false
+  }
+}
+
+async function openModifyDialog(row) {
+  modifyTarget.value = row
+  modifyForm.volunteerId = String(row?.volunteerId || '')
+  modifyForm.planTime = row?.planTime || ''
+  modifyForm.remark = row?.remark || ''
+  modifyDialogVisible.value = true
+  if (!volunteerOptions.value.length) {
+    await loadVolunteerOptions()
+  }
+}
+
+async function submitModify() {
+  if (!modifyTarget.value || actionLoadingId.value) return
+  if (!modifyForm.volunteerId) {
+    ElMessage.warning('请选择志愿者')
+    return
+  }
+  if (!modifyForm.planTime) {
+    ElMessage.warning('请选择计划时间')
+    return
+  }
+  actionLoadingId.value = 'modify'
+  try {
+    await updateFollowTask(modifyTarget.value.id, buildUpdatePayload(modifyTarget.value, 'NOTIFIED', {
+      volunteerId: modifyForm.volunteerId,
+      planTime: modifyForm.planTime,
+      remark: modifyForm.remark.trim() || undefined,
+    }))
+    ElMessage.success('回访任务已修改并重新通知')
+    modifyDialogVisible.value = false
+    await loadRows()
+  } catch (error) {
+    ElMessage.warning(error?.message || '修改回访任务失败')
+  } finally {
+    actionLoadingId.value = ''
+  }
 }
 
 async function loadRows() {
@@ -174,5 +387,10 @@ onMounted(loadRows)
 .adoption-person-cell span {
   color: var(--muted);
   font-size: 12px;
+}
+
+.follow-task-modify-form {
+  display: grid;
+  gap: 2px;
 }
 </style>

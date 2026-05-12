@@ -132,6 +132,13 @@ export function getVisibleFollowTasks(query = {}) {
   })
 }
 
+export function updateFollowTask(id, payload) {
+  return request(`/adopt/follow/${id}`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
 export function addFollowRecord(id, payload) {
   return request(`/adopt/follow/${id}/record`, {
     method: 'POST',
