@@ -295,6 +295,8 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
     public VolunteerShiftResponse updateShift(Long shiftId, VolunteerShiftUpdateRequest request) {
         User login = requireWorker();
         VolunteerShift shift = volunteerShiftMapper.requireById(shiftId);
+        require(!Set.of(VolunteerShiftStatus.IN_PROGRESS, VolunteerShiftStatus.COMPLETED).contains(shift.getStatus()),
+                "exception.invalidate.volunteer.shift.status_invalid");
         request.applyTo(shift);
         checkVolunteerActive(shift.getVolunteerId());
         checkTimeConflict(shift, shiftId);

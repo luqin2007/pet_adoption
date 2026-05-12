@@ -824,6 +824,10 @@ function resetShiftForm() {
 
 function openShiftDialog(row = null) {
   if (row) {
+    if (!canEditShift(row)) {
+      ElMessage.info('执行中或已完成的排班不能编辑')
+      return
+    }
     shiftForm.id = row.id
     shiftForm.volunteerId = row.volunteerId || ''
     shiftForm.taskType = row.taskType || 'EVENT'
@@ -1090,6 +1094,10 @@ function canConfirmShift(row) {
 
 function canRejectShift(row) {
   return isVolunteer.value && String(row.volunteerId || '') === loginUserId.value && row.status === 'ASSIGNED'
+}
+
+function canEditShift(row) {
+  return isWorker.value && !['IN_PROGRESS', 'COMPLETED'].includes(row?.status)
 }
 
 async function loadBySection(section) {
@@ -1420,7 +1428,7 @@ onMounted(async () => {
                 <template #default="{ row }">
                   <div class="table-action-cell">
                     <div class="table-action-panel" :class="{ 'is-collapsed': shiftActionCollapsed }">
-                      <el-button v-if="isWorker" text type="warning" @click="openShiftDialog(row)">编辑</el-button>
+                      <el-button v-if="canEditShift(row)" text type="warning" @click="openShiftDialog(row)">编辑</el-button>
                       <el-button v-if="isWorker" text type="primary" @click="openShiftStatusDialog(row)">状态</el-button>
                       <el-button v-if="canConfirmShift(row)" text type="success" @click="confirmShift(row)">确认</el-button>
                       <el-button v-if="canRejectShift(row)" text type="danger" @click="rejectShift(row)">拒绝</el-button>
