@@ -53,6 +53,7 @@
                 <el-button v-if="canRevoke(row)" text type="warning" :loading="actionLoadingId === actionKey(row, 'revoke')" @click="submitTaskAction(row, 'revoke')">撤销</el-button>
                 <el-button v-if="canModify(row)" text type="primary" @click="openModifyDialog(row)">修改</el-button>
                 <el-button v-if="canExecute(row)" text type="success" :loading="actionLoadingId === actionKey(row, 'execute')" @click="submitTaskAction(row, 'execute')">执行</el-button>
+                <el-button v-if="canFinish(row)" text type="success" :loading="actionLoadingId === actionKey(row, 'finish')" @click="submitTaskAction(row, 'finish')">完成</el-button>
               </div>
             </div>
           </template>
@@ -215,6 +216,10 @@ function canExecute(row) {
   return isNotified(row) && isVolunteer.value && isTaskVolunteer(row)
 }
 
+function canFinish(row) {
+  return row?.status === 'IN_PROGRESS' && hasRole(loginRole.value, ROLE.WORKER) && isTaskWorker(row)
+}
+
 function actionKey(row, action) {
   return `${row?.id || ''}:${action}`
 }
@@ -236,18 +241,21 @@ async function submitTaskAction(row, action) {
     reject: 'DELAY',
     revoke: 'CREATE',
     execute: 'IN_PROGRESS',
+    finish: 'FINISH',
   }
   const messageMap = {
     approve: '确认同意这项回访任务？',
     reject: '确认拒绝这项回访任务？',
     revoke: '确认撤销这项回访任务通知？',
     execute: '确认开始执行这项回访任务？',
+    finish: '确认完成这项回访任务？',
   }
   const successMap = {
     approve: '已同意回访任务',
     reject: '已拒绝回访任务',
     revoke: '已撤销回访任务通知',
     execute: '回访任务已进入执行中',
+    finish: '回访任务已完成',
   }
   try {
     await ElMessageBox.confirm(messageMap[action], '回访任务', {

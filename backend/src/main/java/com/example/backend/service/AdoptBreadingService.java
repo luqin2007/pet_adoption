@@ -38,6 +38,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     private final FollowRecordMapper followRecordMapper;
     private final VolunteerTaskMapper volunteerTaskMapper;
     private final VolunteerShiftMapper volunteerShiftMapper;
+    private final VolunteerShiftStatusRecordMapper volunteerShiftStatusRecordMapper;
     private final AdoptBreadingFacade adoptBreadingFacade;
     private final LocationMapper locationMapper;
     private final InformationService informationService;
@@ -567,11 +568,16 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
                 createFollowVisitShift(task, adopt);
             }
         } else {
+            boolean isTaskWorker = login.isWorker() && login.is(task.getWorkerId());
+            boolean isTaskWorkerOrAdmin = isTaskWorker || login.isAdmin();
             requirePermission(login.is(task.getWorkerId()) // 负责工作人员
                     || login.is(task.getVolunteerId()) // 负责志愿者
                     || login.is(adopt.getApplicantId()) // 领养人：可修改时间
                     || login.isAdmin());
-            if (!login.is(task.getWorkerId()) && !login.isAdmin()) {
+            if (status == FollowTaskStatus.FINISH) {
+                requirePermission(oldStatus == FollowTaskStatus.IN_PROGRESS && isTaskWorker);
+            }
+            if (!isTaskWorkerOrAdmin) {
             /*
             以下内容必须由工作人员修改：
             - 志愿者
@@ -582,7 +588,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
                 requirePermission(Objects.equals(request.getWorkerId(), task.getWorkerId()));
                 requirePermission(status == task.getStatus() || status == FollowTaskStatus.IN_PROGRESS);
             }
-            if (!login.is(task.getVolunteerId())) {
+            if (!login.is(task.getVolunteerId()) && !isTaskWorkerOrAdmin) {
             /*
             以下内容必须由负责志愿者修改：
             - 状态变更为 IN_PROGRESS
@@ -592,6 +598,9 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
             }
         }
 
+        if (status == FollowTaskStatus.FINISH && oldStatus != FollowTaskStatus.FINISH) {
+            completeFollowVisitShift(task, login);
+        }
         request.applyTo(task);
         followTaskMapper.updateById(task);
         eventPublisher.publishEvent(new FollowTaskUpdateEvent(task, login));
@@ -682,6 +691,32 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
                 now,
                 now);
         volunteerShiftMapper.insert(shift);
+    }
+
+    private void completeFollowVisitShift(FollowTask task, User login) {
+        VolunteerTask volunteerTask = volunteerTaskMapper.lambdaQuery()
+                .eq(VolunteerTask::getTaskType, VolunteerTaskType.FOLLOW_VISIT)
+                .eq(VolunteerTask::getTaskId, task.getId())
+                .one();
+        requireExist(volunteerTask, "exception.not_found.volunteer_task");
+        VolunteerShift shift = volunteerShiftMapper.lambdaQuery()
+                .eq(VolunteerShift::getTaskId, volunteerTask.getId())
+                .eq(VolunteerShift::getVolunteerId, task.getVolunteerId())
+                .one();
+        requireExist(shift, "exception.not_found.volunteer_shift");
+        VolunteerShiftStatusRecord record = new VolunteerShiftStatusRecord(null,
+                shift.getId(),
+                shift.getStatus(),
+                VolunteerShiftStatus.COMPLETED,
+                "回访任务完成",
+                new Date());
+        Date now = new Date();
+        shift.setStatus(VolunteerShiftStatus.COMPLETED);
+        shift.setEndTime(now);
+        shift.setUpdateTime(now);
+        volunteerShiftMapper.updateById(shift);
+        volunteerShiftStatusRecordMapper.insert(record);
+        eventPublisher.publishEvent(new VolunteerShiftStatusEvent(shift, volunteerTask, record, login));
     }
 
     /**
