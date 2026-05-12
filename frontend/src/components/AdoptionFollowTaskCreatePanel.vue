@@ -43,8 +43,8 @@
             </div>
           </section>
 
-          <section class="console-detail-section follow-task-person-card follow-task-volunteer-card">
-            <p>负责志愿者</p>
+          <section class="console-detail-section follow-task-person-card">
+            <p>志愿者</p>
             <el-select
               v-model="form.volunteerId"
               filterable
@@ -71,16 +71,7 @@
                 </div>
               </el-option>
             </el-select>
-            <div v-if="selectedVolunteer" class="follow-volunteer-preview">
-              <el-avatar :size="36" :src="selectedVolunteer.avatar">
-                {{ avatarInitial(volunteerName(selectedVolunteer)) }}
-              </el-avatar>
-              <div>
-                <strong>{{ volunteerName(selectedVolunteer) }}</strong>
-                <span>{{ selectedVolunteer.phone || '电话待补充' }}</span>
-              </div>
-            </div>
-            <el-empty v-else-if="!volunteerLoading && !volunteerOptions.length" description="暂无可用志愿者" />
+            <el-empty v-if="!volunteerLoading && !volunteerOptions.length" description="暂无可用志愿者" />
           </section>
         </div>
       </div>
@@ -170,10 +161,6 @@ const blockedReason = computed(() => {
   if (!application.value) return ''
   if (!['TRACKING', 'AGREEMENT_SIGNED'].includes(application.value.status)) return '当前申请未进入回访阶段，不能创建回访任务'
   return ''
-})
-const selectedVolunteer = computed(() => {
-  const value = String(form.volunteerId || '')
-  return volunteerOptions.value.find((item) => volunteerValue(item) === value) || null
 })
 const canSubmit = computed(() => Boolean(application.value && !blockedReason.value && form.volunteerId && form.planTime && !saving.value))
 
@@ -412,10 +399,6 @@ watch(applicationId, () => {
   color: var(--text);
 }
 
-.follow-task-volunteer-card {
-  align-content: start;
-}
-
 .follow-task-status-row {
   display: grid;
   grid-template-columns: minmax(120px, 0.8fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(260px, 1.4fr);
@@ -463,34 +446,16 @@ watch(applicationId, () => {
   min-width: 0;
 }
 
-.follow-volunteer-meta strong,
-.follow-volunteer-preview strong {
+.follow-volunteer-meta strong {
   color: #5d3927;
   font-size: 14px;
   line-height: 1.4;
 }
 
-.follow-volunteer-meta span,
-.follow-volunteer-preview span,
-.follow-task-note {
+.follow-volunteer-meta span {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.6;
-}
-
-.follow-volunteer-preview {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border: 1px solid rgba(243, 223, 204, 0.9);
-  border-radius: 12px;
-  background: rgba(255, 253, 249, 0.95);
-}
-
-.follow-volunteer-preview div {
-  display: grid;
-  gap: 2px;
 }
 
 .follow-task-footer {
