@@ -252,6 +252,7 @@ const router = createRouter({
         { path: 'lost-pets', name: 'console-lost-pets', component: LostPetsPanel },
         { path: 'tasks', name: 'console-tasks', component: TasksPanel },
         { path: 'articles/mine', name: 'console-article-mine', component: MyArticleManagementPanel, props: { mode: 'mine' } },
+        { path: 'articles/favorites', name: 'console-article-favorites', component: MyArticleManagementPanel, props: { mode: 'favorites' } },
         { path: 'articles/manage', name: 'console-article-manage', component: MyArticleManagementPanel, props: { mode: 'manage' }, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/adopts', name: 'console-adoption-adopts', component: AdoptionManagementPanel },
         { path: 'adoption/breading', name: 'console-adoption-breading', component: BreadingManagementPanel },
@@ -340,7 +341,7 @@ router.beforeEach(async (to) => {
         }
       }
     }
-    else if (guard === 'canManageArticles') allowed = isWorker || isVolunteer
+    else if (guard === 'canManageArticles') allowed = isAdmin || isWorker || isVolunteer
     else if (guard === 'canManageUsersOrVolunteer') allowed = isAdmin || isWorker || isVolunteer
 
     if (!allowed) {

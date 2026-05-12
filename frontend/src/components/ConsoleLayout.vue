@@ -74,6 +74,7 @@ const TAB_REDIRECTS = {
   'articles': null,
   'article-mine': '/console/articles/mine',
   'article-manage': '/console/articles/manage',
+  'article-favorites': '/console/articles/favorites',
   'lost-pets': '/console/lost-pets',
   'volunteer': null,
 }
@@ -82,7 +83,7 @@ onMounted(() => {
   const tab = route.query.tab
   if (tab) {
     if (tab === 'articles') {
-      router.replace(canManageUsers.value ? '/console/articles/manage' : '/console/articles/mine')
+      router.replace(canManageArticles.value ? '/console/articles/mine' : '/console/articles/favorites')
     } else if (tab === 'volunteer') {
       router.replace(isLoginAdmin.value || hasRole(loginRole.value, ROLE.WORKER) ? '/console/volunteer/recruitments' : '/console/volunteer/applications')
     } else if (TAB_REDIRECTS[tab]) {
@@ -149,12 +150,13 @@ watch(
             <el-icon><Connection /></el-icon>
             <span>救助任务</span>
           </el-menu-item>
-          <el-sub-menu v-if="canManageArticles" index="/console/articles">
+          <el-sub-menu index="/console/articles">
             <template #title>
               <el-icon><Message /></el-icon>
               <span>公益文章</span>
             </template>
-            <el-menu-item index="/console/articles/mine">我的文章</el-menu-item>
+            <el-menu-item v-if="canManageArticles" index="/console/articles/mine">我的文章</el-menu-item>
+            <el-menu-item index="/console/articles/favorites">我的收藏</el-menu-item>
             <el-menu-item v-if="canManageUsers" index="/console/articles/manage">文章管理</el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="/console/adoption">

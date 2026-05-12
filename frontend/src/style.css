@@ -2603,6 +2603,21 @@ main {
   font-size: 16px;
 }
 
+.article-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.article-detail-actions .el-button {
+  gap: 6px;
+}
+
+.article-detail-actions .iconify {
+  font-size: 16px;
+}
+
 .article-detail-cover {
   min-height: 280px;
   border: 1px solid rgba(243, 223, 204, 0.9);

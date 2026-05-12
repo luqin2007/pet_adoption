@@ -8,6 +8,7 @@ import AppHeader from '../components/AppHeader.vue'
 import { createArticle, getArticleById, updateArticle } from '../api/article'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 import { useUserStore } from '../stores/user'
+import { ROLE, hasRole } from '../utils/roles'
 
 const router = useRouter()
 const route = useRoute()
@@ -15,11 +16,6 @@ const userStore = useUserStore()
 const formRef = ref()
 const loading = ref(false)
 const saving = ref(false)
-
-const ROLE = {
-  VOLUNTEER: 1,
-  WORKER: 2,
-}
 
 const ARTICLE_TYPE_OPTIONS = [
   { label: '救助故事', value: 'STORY' },
@@ -34,8 +30,9 @@ const form = reactive({
   content: '',
 })
 
-const isWorker = computed(() => (Number(userStore.profile.role || 0) & ROLE.WORKER) === ROLE.WORKER)
-const isVolunteer = computed(() => (Number(userStore.profile.role || 0) & ROLE.VOLUNTEER) === ROLE.VOLUNTEER)
+const loginRole = computed(() => Number(userStore.profile.role || 0))
+const isWorker = computed(() => hasRole(loginRole.value, ROLE.ADMIN) || hasRole(loginRole.value, ROLE.WORKER))
+const isVolunteer = computed(() => hasRole(loginRole.value, ROLE.VOLUNTEER))
 const canEditArticles = computed(() => isWorker.value || isVolunteer.value)
 const articleTypeOptions = computed(() => (isWorker.value ? ARTICLE_TYPE_OPTIONS : ARTICLE_TYPE_OPTIONS.filter((item) => item.value === 'STORY')))
 const isEditMode = computed(() => Boolean(route.params.id))

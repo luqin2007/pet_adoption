@@ -2,10 +2,11 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshRight, Search } from '@element-plus/icons-vue'
-import { deleteArticle, getArticles, updateArticleStatus } from '../api/article'
+import { deleteArticle, getArticles, getFavoriteArticles, unfavoriteArticle, updateArticleStatus } from '../api/article'
 import { useUserStore } from '../stores/user'
 import { useRouter } from 'vue-router'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import { ROLE, hasRole } from '../utils/roles'
 
 const props = defineProps({
   mode: {
@@ -16,11 +17,6 @@ const props = defineProps({
 
 const router = useRouter()
 const userStore = useUserStore()
-
-const ROLE = {
-  VOLUNTEER: 1,
-  WORKER: 2,
-}
 
 const ARTICLE_TYPE_OPTIONS = [
   { label: '救助故事', value: 'STORY' },
@@ -52,20 +48,33 @@ const searchForm = reactive({
   time1: '',
 })
 
-const isWorker = computed(() => (Number(userStore.profile.role || 0) & ROLE.WORKER) === ROLE.WORKER)
-const isVolunteer = computed(() => (Number(userStore.profile.role || 0) & ROLE.VOLUNTEER) === ROLE.VOLUNTEER)
+const loginRole = computed(() => Number(userStore.profile.role || 0))
+const isAdmin = computed(() => hasRole(loginRole.value, ROLE.ADMIN))
+const isWorker = computed(() => isAdmin.value || hasRole(loginRole.value, ROLE.WORKER))
+const isVolunteer = computed(() => hasRole(loginRole.value, ROLE.VOLUNTEER))
 const loginUserId = computed(() => String(userStore.profile.id || ''))
 const isManageMode = computed(() => props.mode === 'manage')
+const isFavoriteMode = computed(() => props.mode === 'favorites')
 const canUseCurrentMode = computed(() => {
   if (isManageMode.value) {
     return isWorker.value
   }
+  if (isFavoriteMode.value) {
+    return Boolean(userStore.accessToken)
+  }
   return isWorker.value || isVolunteer.value
 })
-const pageTitle = computed(() => (isManageMode.value ? '文章管理' : '我的文章'))
+const pageTitle = computed(() => {
+  if (isManageMode.value) return '文章管理'
+  if (isFavoriteMode.value) return '我的收藏'
+  return '我的文章'
+})
 const pageHint = computed(() => {
   if (isManageMode.value) {
     return '查看已发布内容，必要时下线文章或活动。'
+  }
+  if (isFavoriteMode.value) {
+    return '查看和整理你收藏的公益文章。'
   }
   return isWorker.value
     ? '管理你的救助故事、活动消息和养护知识。'
@@ -83,6 +92,7 @@ function buildQuery() {
     status: searchForm.status ? [searchForm.status] : undefined,
     time0: searchForm.time0 || undefined,
     time1: searchForm.time1 || undefined,
+    isDiscard: false,
   }
 }
 
@@ -94,7 +104,9 @@ async function loadArticles() {
   }
   loading.value = true
   try {
-    const result = await getArticles(buildQuery())
+    const result = isFavoriteMode.value
+      ? await getFavoriteArticles({ page: page.page, size: page.size })
+      : await getArticles(buildQuery())
     rows.value = Array.isArray(result?.records) ? result.records : []
     total.value = Number(result?.total || 0)
   } catch (error) {
@@ -164,19 +176,23 @@ function formatDate(value) {
 }
 
 function canEdit(row) {
-  return !isManageMode.value && row.status === 'DRAFT'
+  return !isManageMode.value && !isFavoriteMode.value && row.status === 'DRAFT'
 }
 
 function canPublish(row) {
-  return !isManageMode.value && row.status === 'DRAFT'
+  return !isManageMode.value && !isFavoriteMode.value && row.status === 'DRAFT'
 }
 
 function canDelete(row) {
-  return !isManageMode.value && row.status === 'DRAFT'
+  return !isManageMode.value && !isFavoriteMode.value && row.status === 'DRAFT'
 }
 
 function canTakeDown(row) {
   return isManageMode.value && row.status === 'PUBLISHED'
+}
+
+function canRemoveFavorite() {
+  return isFavoriteMode.value
 }
 
 function resolveTakeDownStatus(row) {
@@ -221,6 +237,26 @@ async function removeArticle(row) {
   }
 }
 
+async function removeFavorite(row) {
+  try {
+    await ElMessageBox.confirm(`确认取消收藏《${row.title}》吗？`, '取消收藏', {
+      confirmButtonText: '取消收藏',
+      cancelButtonText: '返回',
+      type: 'warning',
+    })
+    await unfavoriteArticle(row.id)
+    ElMessage.success('已取消收藏')
+    if (rows.value.length === 1 && page.page > 1) {
+      page.page -= 1
+    }
+    loadArticles()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.warning(error?.message || '取消收藏失败')
+    }
+  }
+}
+
 watch(
   () => props.mode,
   () => {
@@ -244,7 +280,7 @@ onMounted(() => {
     </template>
 
     <section v-if="canUseCurrentMode" class="pet-admin-section article-admin-shell">
-      <section class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
+      <section v-if="!isFavoriteMode" class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
         <div class="pet-filter-row article-filter-row-inline article-filter-cols-3">
           <el-input v-model="searchForm.title" clearable placeholder="标题" @keyup.enter="page.page = 1; loadArticles()" />
           <el-select v-model="searchForm.type" clearable placeholder="文章类型">
@@ -261,6 +297,15 @@ onMounted(() => {
           <div class="pet-filter-action article-filter-action">
             <el-button v-if="!isManageMode" class="soft-btn" :icon="Plus" @click="goCreateArticle">发表文章</el-button>
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="page.page = 1; loadArticles()">搜索</el-button>
+          </div>
+        </div>
+      </section>
+
+      <section v-else class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
+        <div class="pet-filter-row article-filter-row-secondary article-favorite-toolbar">
+          <span>收藏文章会显示在这里，便于稍后阅读。</span>
+          <div class="pet-filter-action article-filter-action">
+            <el-button class="soft-btn" :icon="RefreshRight" :loading="loading" @click="loadArticles">刷新</el-button>
           </div>
         </div>
       </section>
@@ -313,6 +358,7 @@ onMounted(() => {
                 <el-button v-if="canEdit(row)" text type="warning" @click="goEditArticle(row)">编辑</el-button>
                 <el-button v-if="canPublish(row)" text type="primary" @click="changeStatus(row, 'PUBLISHED')">发布</el-button>
                 <el-button v-if="canDelete(row)" text type="danger" @click="removeArticle(row)">删除</el-button>
+                <el-button v-if="canRemoveFavorite(row)" text type="danger" @click="removeFavorite(row)">取消收藏</el-button>
                 <el-button v-if="canTakeDown(row)" text type="warning" @click="changeStatus(row, resolveTakeDownStatus(row))">下线</el-button>
               </div>
             </div>
@@ -343,5 +389,13 @@ onMounted(() => {
 }
 .article-directory-filter-panel .article-filter-cols-row2 {
   grid-template-columns: 1fr 1fr auto;
+}
+.article-directory-filter-panel .article-favorite-toolbar {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+.article-favorite-toolbar > span {
+  color: var(--muted);
+  font-size: 14px;
 }
 </style>

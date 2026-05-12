@@ -38,3 +38,40 @@ export function updateArticleStatus(id, status) {
     method: 'PATCH',
   })
 }
+
+export function likeArticle(id) {
+  return request(`/publicity/articles/${id}/like`, {
+    method: 'POST',
+  })
+}
+
+export function unlikeArticle(id) {
+  return request(`/publicity/articles/${id}/like`, {
+    method: 'DELETE',
+  })
+}
+
+export function favoriteArticle(id) {
+  return request(`/publicity/articles/${id}/favorite`, {
+    method: 'POST',
+  })
+}
+
+export function unfavoriteArticle(id) {
+  return request(`/publicity/articles/${id}/favorite`, {
+    method: 'DELETE',
+  })
+}
+
+export function getFavoriteArticles(query = {}) {
+  return request('/publicity/favorites', {
+    method: 'GET',
+    query,
+  })
+}
+
+export function shareArticle(id) {
+  return request(`/publicity/articles/${id}/share`, {
+    method: 'POST',
+  })
+}
