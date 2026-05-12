@@ -7,7 +7,7 @@
       <section class="pet-admin-section">
         <section class="filter-panel pet-directory-filter-panel">
           <div class="pet-filter-row pet-filter-row-primary">
-            <el-input v-model="taskKeyword" clearable placeholder="按标题、类型、位置或状态搜索" />
+            <el-input v-model="taskKeyword" class="filter-field-lg" clearable placeholder="按标题、类型、位置或状态搜索" />
             <div class="pet-filter-action">
               <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingTasks" @click="loadTasks">刷新</el-button>
             </div>

@@ -10,7 +10,7 @@
     <section class="pet-admin-section">
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row medical-preventive-cols-search">
-          <el-input v-model="keyword" clearable :placeholder="isVaccineMode ? '按宠物、疫苗、疾病或医生搜索' : '按宠物、驱虫药、类型或医生搜索'" @keyup.enter="searchRecords" />
+          <el-input v-model="keyword" class="filter-field-lg" clearable :placeholder="isVaccineMode ? '按宠物、疫苗、疾病或医生搜索' : '按宠物、驱虫药、类型或医生搜索'" @keyup.enter="searchRecords" />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRecords">搜索</el-button>
           </div>

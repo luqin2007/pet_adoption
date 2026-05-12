@@ -10,38 +10,38 @@
       <section class="pet-admin-section">
         <section class="filter-panel pet-directory-filter-panel">
           <div class="pet-filter-row pet-filter-row-primary pet-filter-cols-4">
-            <el-input v-model="petSearchForm.name" clearable placeholder="名称" />
-            <el-select v-model="petSearchForm.type" clearable filterable placeholder="类型" @change="handlePetSearchTypeChange">
+            <el-input v-model="petSearchForm.name" class="filter-field-md" clearable placeholder="名称" />
+            <el-select v-model="petSearchForm.type" class="filter-field-sm" clearable filterable placeholder="类型" @change="handlePetSearchTypeChange">
               <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
             </el-select>
-            <el-select v-model="petSearchForm.breed" clearable filterable placeholder="品种" :disabled="!petSearchForm.type">
+            <el-select v-model="petSearchForm.breed" class="filter-field-sm" clearable filterable placeholder="品种" :disabled="!petSearchForm.type">
               <el-option v-for="item in petSearchBreedOptions" :key="item" :label="item" :value="item" />
             </el-select>
-            <el-select v-model="petSearchForm.sex" clearable placeholder="性别">
+            <el-select v-model="petSearchForm.sex" class="filter-field-sm" clearable placeholder="性别">
               <el-option label="未知" value="未知" /><el-option label="公" value="公" /><el-option label="母" value="母" />
             </el-select>
           </div>
           <div class="pet-filter-row pet-filter-row-secondary pet-filter-cols-status-age">
-            <el-select v-model="petSearchForm.status" clearable placeholder="状态">
+            <el-select v-model="petSearchForm.status" class="filter-field-sm" clearable placeholder="状态">
               <el-option v-for="item in petStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
-            <div class="pet-age-range">
+            <div class="pet-age-range filter-field-lg">
               <el-input-number v-model="petSearchForm.age0" :min="0" :controls="false" placeholder="最小月龄" />
               <span>至</span>
               <el-input-number v-model="petSearchForm.age1" :min="0" :controls="false" placeholder="最大月龄" />
             </div>
           </div>
           <div class="pet-filter-row pet-filter-row-secondary pet-filter-cols-loc">
-            <el-select v-model="petSearchForm.province" clearable filterable placeholder="省份" @change="handlePetSearchProvinceChange">
+            <el-select v-model="petSearchForm.province" class="filter-field-sm" clearable filterable placeholder="省份" @change="handlePetSearchProvinceChange">
               <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
             </el-select>
-            <el-select v-model="petSearchForm.city" clearable filterable placeholder="城市" :disabled="!petSearchForm.province" @change="handlePetSearchCityChange">
+            <el-select v-model="petSearchForm.city" class="filter-field-sm" clearable filterable placeholder="城市" :disabled="!petSearchForm.province" @change="handlePetSearchCityChange">
               <el-option v-for="item in petSearchCityOptions" :key="item" :label="item" :value="item" />
             </el-select>
-            <el-select v-model="petSearchForm.district" clearable filterable placeholder="区县" :disabled="!petSearchForm.city">
+            <el-select v-model="petSearchForm.district" class="filter-field-sm" clearable filterable placeholder="区县" :disabled="!petSearchForm.city">
               <el-option v-for="item in petSearchDistrictOptions" :key="item" :label="item" :value="item" />
             </el-select>
-            <el-input v-model="petSearchForm.address" clearable placeholder="详细地点" />
+            <el-input v-model="petSearchForm.address" class="filter-field-xl" clearable placeholder="详细地点" />
           </div>
           <div class="pet-filter-row pet-filter-search-row">
             <div class="pet-filter-action">

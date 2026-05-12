@@ -10,9 +10,17 @@
     <section class="pet-admin-section">
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row adoption-filter-row">
-          <el-select v-model="statusFilter" clearable placeholder="申请状态">
+          <el-select v-model="statusFilter" class="filter-field-sm" clearable placeholder="申请状态">
             <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
+          <el-date-picker
+            v-model="timeRange"
+            type="daterange"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            start-placeholder="申请开始"
+            end-placeholder="申请结束"
+            class="filter-field-lg"
+          />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
           </div>
@@ -142,6 +150,7 @@ const actionCollapsed = ref(false)
 const rows = ref([])
 const total = ref(0)
 const statusFilter = ref('')
+const timeRange = ref([])
 const reviewDialogVisible = ref(false)
 const reviewTarget = ref(null)
 const reviewStatus = ref('PASS')
@@ -189,6 +198,7 @@ function formatDate(value) {
 }
 
 function buildQuery() {
+  const [time0, time1] = timeRange.value || []
   return {
     page: page.page,
     size: page.size,
@@ -196,6 +206,8 @@ function buildQuery() {
     order: 'desc',
     user: isWorker.value ? undefined : [loginUserId.value],
     status: statusFilter.value ? [statusFilter.value] : undefined,
+    time0: time0 || undefined,
+    time1: time1 || undefined,
   }
 }
 

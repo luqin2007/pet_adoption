@@ -123,11 +123,12 @@ onMounted(() => {
         <div class="pet-filter-row volunteer-filter-row-primary">
           <el-input
             v-model="searchForm.title"
+            class="filter-field-md"
             placeholder="招募标题"
             clearable
             @keyup.enter="handleSearch"
           />
-          <div class="pet-cascader-group pet-cascader-group-2">
+          <div class="pet-cascader-group pet-cascader-group-2 filter-field-md">
             <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
               <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
             </el-select>
@@ -135,7 +136,7 @@ onMounted(() => {
               <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </div>
-          <el-select v-model="searchForm.status" placeholder="状态" clearable>
+          <el-select v-model="searchForm.status" class="filter-field-sm" placeholder="状态" clearable>
             <el-option label="招募中" value="PUBLISHED" />
             <el-option label="草稿" value="DRAFT" />
             <el-option label="已关闭" value="CLOSED" />
@@ -148,7 +149,7 @@ onMounted(() => {
             value-format="YYYY-MM-DD HH:mm:ss"
             start-placeholder="开始时间"
             end-placeholder="结束时间"
-            class="full-width-control volunteer-filter-date"
+            class="filter-field-lg volunteer-filter-date"
           />
           <div class="pet-filter-action volunteer-filter-action">
             <el-button class="warm-btn" :icon="Search" @click="handleSearch">搜索</el-button>

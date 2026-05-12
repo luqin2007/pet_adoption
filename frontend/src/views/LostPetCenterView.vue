@@ -118,17 +118,17 @@ onMounted(async () => {
     <main class="subpage-main">
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row lost-filter-grid-top">
-          <el-input v-model="searchForm.name" placeholder="宠物名称" clearable />
-          <el-select v-model="searchForm.type" placeholder="宠物类型" clearable filterable @change="handleTypeChange">
+          <el-input v-model="searchForm.name" class="filter-field-md" placeholder="宠物名称" clearable />
+          <el-select v-model="searchForm.type" class="filter-field-sm" placeholder="宠物类型" clearable filterable @change="handleTypeChange">
             <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
           </el-select>
-          <el-select v-model="searchForm.breed" placeholder="品种" clearable filterable :disabled="!searchForm.type">
+          <el-select v-model="searchForm.breed" class="filter-field-sm" placeholder="品种" clearable filterable :disabled="!searchForm.type">
             <el-option v-for="item in breedOptions" :key="item" :label="item" :value="item" />
           </el-select>
         </div>
 
         <div class="pet-filter-row lost-filter-grid-bottom">
-          <div class="pet-cascader-group pet-cascader-group-2">
+          <div class="pet-cascader-group pet-cascader-group-2 filter-field-md">
             <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
               <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
             </el-select>
@@ -138,11 +138,12 @@ onMounted(async () => {
           </div>
           <el-date-picker
             v-model="searchForm.lostDate"
+            class="filter-field-md"
             type="date"
             value-format="YYYY-MM-DD"
             placeholder="走失日期"
           />
-          <el-input v-model="searchForm.address" placeholder="详细地点" clearable />
+          <el-input v-model="searchForm.address" class="filter-field-xl" placeholder="详细地点" clearable />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" @click="handleSearch">搜索</el-button>
           </div>

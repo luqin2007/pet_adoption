@@ -282,18 +282,18 @@ onMounted(() => {
     <section v-if="canUseCurrentMode" class="pet-admin-section article-admin-shell">
       <section v-if="!isFavoriteMode" class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
         <div class="pet-filter-row article-filter-row-inline article-filter-cols-3">
-          <el-input v-model="searchForm.title" clearable placeholder="标题" @keyup.enter="page.page = 1; loadArticles()" />
-          <el-select v-model="searchForm.type" clearable placeholder="文章类型">
+          <el-input v-model="searchForm.title" class="filter-field-md" clearable placeholder="标题" @keyup.enter="page.page = 1; loadArticles()" />
+          <el-select v-model="searchForm.type" class="filter-field-sm" clearable placeholder="文章类型">
             <el-option v-for="item in articleTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
-          <el-select v-model="searchForm.status" clearable placeholder="文章状态">
+          <el-select v-model="searchForm.status" class="filter-field-sm" clearable placeholder="文章状态">
             <el-option v-for="item in ARTICLE_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </div>
 
         <div class="pet-filter-row article-filter-row-secondary article-filter-cols-row2">
-          <el-date-picker v-model="searchForm.time0" type="date" value-format="YYYY-MM-DD" placeholder="开始日期" class="full-width-control" />
-          <el-date-picker v-model="searchForm.time1" type="date" value-format="YYYY-MM-DD" placeholder="结束日期" class="full-width-control" />
+          <el-date-picker v-model="searchForm.time0" type="date" value-format="YYYY-MM-DD" placeholder="开始日期" class="filter-field-md" />
+          <el-date-picker v-model="searchForm.time1" type="date" value-format="YYYY-MM-DD" placeholder="结束日期" class="filter-field-md" />
           <div class="pet-filter-action article-filter-action">
             <el-button v-if="!isManageMode" class="soft-btn" :icon="Plus" @click="goCreateArticle">发表文章</el-button>
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="page.page = 1; loadArticles()">搜索</el-button>

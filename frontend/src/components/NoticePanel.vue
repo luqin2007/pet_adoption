@@ -30,6 +30,7 @@ const page = reactive({
 const filters = reactive({
   read: '',
   source: '',
+  timeRange: [],
 })
 
 const sourceOptions = computed(() =>
@@ -67,6 +68,7 @@ function dispatchNoticeUpdated() {
 }
 
 async function loadNotices() {
+  const [time0, time1] = filters.timeRange || []
   loading.value = true
   try {
     const result = await getNotices({
@@ -76,6 +78,8 @@ async function loadNotices() {
       order: 'desc',
       read: filters.read === '' ? undefined : filters.read,
       source: filters.source ? [filters.source] : undefined,
+      time0: time0 || undefined,
+      time1: time1 || undefined,
     })
     notices.value = Array.isArray(result?.records) ? result.records : []
     total.value = Number(result?.total || notices.value.length)
@@ -129,11 +133,11 @@ onMounted(() => {
 
     <section class="filter-panel pet-directory-filter-panel notice-filter-panel">
       <div class="pet-filter-row pet-filter-row-primary">
-        <el-select v-model="filters.read" clearable placeholder="阅读状态" @change="resetPageAndLoad">
+        <el-select v-model="filters.read" class="filter-field-sm" clearable placeholder="阅读状态" @change="resetPageAndLoad">
           <el-option label="未读" :value="false" />
           <el-option label="已读" :value="true" />
         </el-select>
-        <el-select v-model="filters.source" clearable filterable placeholder="通知来源" @change="resetPageAndLoad">
+        <el-select v-model="filters.source" class="filter-field-sm" clearable filterable placeholder="通知来源" @change="resetPageAndLoad">
           <el-option
             v-for="item in sourceOptions"
             :key="item.value"
@@ -141,6 +145,15 @@ onMounted(() => {
             :value="item.value"
           />
         </el-select>
+        <el-date-picker
+          v-model="filters.timeRange"
+          type="daterange"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          class="filter-field-lg"
+          @change="resetPageAndLoad"
+        />
         <div class="pet-filter-action">
           <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadNotices">刷新</el-button>
         </div>

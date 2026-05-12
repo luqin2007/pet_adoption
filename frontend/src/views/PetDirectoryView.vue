@@ -207,37 +207,37 @@ onMounted(async () => {
 
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row pet-filter-row-primary">
-          <el-select v-model="filters.type" placeholder="宠物类型" clearable filterable @change="handleFilterTypeChange">
+          <el-select v-model="filters.type" class="filter-field-sm" placeholder="宠物类型" clearable filterable @change="handleFilterTypeChange">
             <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
           </el-select>
-          <el-select v-model="filters.breed" placeholder="品种" clearable filterable :disabled="!activeType">
+          <el-select v-model="filters.breed" class="filter-field-sm" placeholder="品种" clearable filterable :disabled="!activeType">
             <el-option v-for="item in breedOptions" :key="item" :label="item" :value="item" />
           </el-select>
-          <el-select v-model="filters.sex" placeholder="性别" clearable>
+          <el-select v-model="filters.sex" class="filter-field-sm" placeholder="性别" clearable>
             <el-option label="未知" value="未知" />
             <el-option label="公" value="公" />
             <el-option label="母" value="母" />
           </el-select>
-          <div class="pet-age-range">
+          <div class="pet-age-range filter-field-lg">
             <el-input-number
               v-model="filters.age0"
-              :min="1"
+              :min="0"
               :controls="false"
               placeholder="最小月龄"
             />
             <span>至</span>
             <el-input-number
               v-model="filters.age1"
-              :min="hasValue(filters.age0) ? Number(filters.age0) : 1"
+              :min="hasValue(filters.age0) ? Number(filters.age0) : 0"
               :controls="false"
               placeholder="最大月龄"
             />
           </div>
-          <el-input v-model="filters.name" placeholder="名称" clearable />
+          <el-input v-model="filters.name" class="filter-field-md" placeholder="名称" clearable />
         </div>
 
         <div class="pet-filter-row pet-filter-row-secondary">
-          <div class="pet-cascader-group pet-cascader-group-3">
+          <div class="pet-cascader-group pet-cascader-group-3 filter-field-lg">
             <el-select v-model="filters.province" placeholder="省" clearable filterable @change="handleFilterProvinceChange">
               <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
             </el-select>
@@ -248,7 +248,7 @@ onMounted(async () => {
               <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </div>
-          <el-input v-model="filters.address" placeholder="地址" clearable />
+          <el-input v-model="filters.address" class="filter-field-xl" placeholder="地址" clearable />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="RefreshRight" @click="loadPets">刷新列表</el-button>
           </div>

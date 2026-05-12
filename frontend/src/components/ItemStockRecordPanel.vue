@@ -10,24 +10,24 @@
     <section class="pet-admin-section">
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row item-record-filter-row">
-          <el-select v-model="search.action" clearable placeholder="操作类型">
+          <el-select v-model="search.action" class="filter-field-sm" clearable placeholder="操作类型">
             <el-option label="入库" value="IN" />
             <el-option label="出库" value="OUT" />
             <el-option label="销毁" value="DESTROY" />
           </el-select>
-          <el-select v-model="search.sourceType" clearable placeholder="来源">
+          <el-select v-model="search.sourceType" class="filter-field-sm" clearable placeholder="来源">
             <el-option label="捐赠" value="DONATION" />
             <el-option label="采购" value="PURCHASE" />
           </el-select>
-          <el-input v-model="search.stockId" clearable placeholder="库存批次 ID" />
-          <el-input v-model="search.purpose" clearable placeholder="用途/说明" @keyup.enter="searchRows" />
+          <el-input v-model="search.stockId" class="filter-field-sm" clearable placeholder="库存批次 ID" @input="normalizeStockId" />
+          <el-input v-model="search.purpose" class="filter-field-xl" clearable placeholder="用途/说明" @keyup.enter="searchRows" />
           <el-date-picker
             v-model="search.timeRange"
             type="daterange"
             value-format="YYYY-MM-DD HH:mm:ss"
             start-placeholder="开始时间"
             end-placeholder="结束时间"
-            class="full-width-control"
+            class="filter-field-lg"
           />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
@@ -126,6 +126,10 @@ function actionTagType(value) {
 
 function sourceText(value) {
   return { DONATION: '捐赠', PURCHASE: '采购' }[value] || value || ''
+}
+
+function normalizeStockId(value) {
+  search.stockId = String(value || '').replace(/\D/g, '')
 }
 
 function buildQuery() {

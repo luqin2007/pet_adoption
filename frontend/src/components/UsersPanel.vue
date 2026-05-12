@@ -243,7 +243,7 @@ defineExpose({ loadUsers })
 
     <section class="filter-panel pet-directory-filter-panel">
       <div class="pet-filter-row pet-filter-row-primary">
-        <el-input v-model="userKeyword" clearable placeholder="按用户名、邮箱、联系方式或角色搜索" />
+        <el-input v-model="userKeyword" class="filter-field-lg" clearable placeholder="按用户名、邮箱、联系方式或角色搜索" />
         <div class="pet-filter-action">
           <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingUsers" @click="loadUsers">刷新</el-button>
         </div>

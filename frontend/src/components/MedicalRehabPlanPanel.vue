@@ -10,8 +10,8 @@
     <section class="pet-admin-section">
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row medical-rehab-cols-search">
-          <el-input v-model="keyword" clearable placeholder="按宠物、计划、频率或兽医搜索" @keyup.enter="searchPlans" />
-          <el-select v-model="statusFilter" clearable placeholder="状态">
+          <el-input v-model="keyword" class="filter-field-lg" clearable placeholder="按宠物、计划、频率或兽医搜索" @keyup.enter="searchPlans" />
+          <el-select v-model="statusFilter" class="filter-field-sm" clearable placeholder="状态">
             <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
           <div class="pet-filter-action">

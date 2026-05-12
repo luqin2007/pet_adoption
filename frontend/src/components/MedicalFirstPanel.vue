@@ -11,12 +11,14 @@
         <div class="pet-filter-row medical-first-cols-search">
           <el-input
             v-model="firstRegKeyword"
+            class="filter-field-md"
             clearable
             placeholder="按宠物名称搜索"
             @keyup.enter="searchFirstReg"
           />
           <el-date-picker
             v-model="firstRegDateRange"
+            class="filter-field-lg"
             type="daterange"
             range-separator="至"
             start-placeholder="开始日期"

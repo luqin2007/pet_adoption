@@ -10,14 +10,22 @@
     <section class="pet-admin-section">
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row agreement-filter-row">
-          <el-select v-model="parentTypeFilter" clearable placeholder="协议来源">
+          <el-select v-model="parentTypeFilter" class="filter-field-sm" clearable placeholder="协议来源">
             <el-option label="领养" value="ADOPT" />
             <el-option label="寄养" value="BREADING" />
           </el-select>
-          <el-select v-model="signedFilter" clearable placeholder="签署状态">
+          <el-select v-model="signedFilter" class="filter-field-sm" clearable placeholder="签署状态">
             <el-option label="已签署" :value="true" />
             <el-option label="未签署" :value="false" />
           </el-select>
+          <el-date-picker
+            v-model="timeRange"
+            type="daterange"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            start-placeholder="创建开始"
+            end-placeholder="创建结束"
+            class="filter-field-lg"
+          />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
           </div>
@@ -167,6 +175,7 @@ const total = ref(0)
 const actionCollapsed = ref(false)
 const parentTypeFilter = ref('')
 const signedFilter = ref('')
+const timeRange = ref([])
 const dialogVisible = ref(false)
 const activeAgreement = ref(null)
 const editContent = ref('')
@@ -215,6 +224,7 @@ function formatDate(value) {
 }
 
 function buildQuery() {
+  const [time0, time1] = timeRange.value || []
   return {
     page: page.page,
     size: page.size,
@@ -222,6 +232,8 @@ function buildQuery() {
     order: 'desc',
     parentType: parentTypeFilter.value || undefined,
     signed: signedFilter.value === '' ? undefined : signedFilter.value,
+    time0: time0 || undefined,
+    time1: time1 || undefined,
   }
 }
 

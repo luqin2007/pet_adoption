@@ -1457,8 +1457,8 @@ onMounted(async () => {
       <section v-if="activeSection === 'recruitments'" class="pet-admin-section">
         <section class="filter-panel pet-directory-filter-panel">
           <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-            <el-input v-model="recruitmentSearch.title" clearable placeholder="招募标题" />
-            <div class="pet-cascader-group pet-cascader-group-2">
+            <el-input v-model="recruitmentSearch.title" class="filter-field-md" clearable placeholder="招募标题" />
+            <div class="pet-cascader-group pet-cascader-group-2 filter-field-md">
               <el-select v-model="recruitmentSearch.province" clearable filterable placeholder="省份" @change="handleRecruitmentSearchProvinceChange">
                 <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
               </el-select>
@@ -1466,7 +1466,7 @@ onMounted(async () => {
                 <el-option v-for="item in recruitmentCityOptions" :key="item" :label="item" :value="item" />
               </el-select>
             </div>
-            <el-select v-model="recruitmentSearch.status" clearable placeholder="状态">
+            <el-select v-model="recruitmentSearch.status" class="filter-field-sm" clearable placeholder="状态">
               <el-option v-for="item in recruitmentStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </div>
@@ -1477,7 +1477,7 @@ onMounted(async () => {
               value-format="YYYY-MM-DD HH:mm:ss"
               start-placeholder="开始时间"
               end-placeholder="结束时间"
-              class="full-width-control"
+              class="filter-field-lg"
             />
             <div class="pet-filter-action">
               <el-button class="soft-btn" :icon="Plus" @click="openRecruitmentDialog()">新增招募</el-button>
@@ -1530,10 +1530,10 @@ onMounted(async () => {
       <section v-else-if="activeSection === 'applications'" class="pet-admin-section">
         <section class="filter-panel pet-directory-filter-panel">
           <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-            <el-select v-model="applicationSearch.status" clearable placeholder="申请状态">
+            <el-select v-model="applicationSearch.status" class="filter-field-sm" clearable placeholder="申请状态">
               <el-option v-for="item in applicationStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
-            <div class="pet-cascader-group pet-cascader-group-2">
+            <div class="pet-cascader-group pet-cascader-group-2 filter-field-md">
               <el-select v-model="applicationSearch.province" clearable filterable placeholder="省份" @change="handleApplicationProvinceChange">
                 <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
               </el-select>
@@ -1596,8 +1596,8 @@ onMounted(async () => {
       <section v-else-if="activeSection === 'profiles'" class="pet-admin-section">
         <section class="filter-panel pet-directory-filter-panel">
           <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-            <el-input v-model="profileSearch.keyword" clearable placeholder="姓名、用户名、电话或技能" />
-            <el-select v-model="profileSearch.status" clearable placeholder="档案状态">
+            <el-input v-model="profileSearch.keyword" class="filter-field-lg" clearable placeholder="姓名、用户名、电话或技能" />
+            <el-select v-model="profileSearch.status" class="filter-field-sm" clearable placeholder="档案状态">
               <el-option v-for="item in profileStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
             <div class="pet-filter-action volunteer-inline-actions">
@@ -1655,10 +1655,10 @@ onMounted(async () => {
       <section v-else-if="activeSection === 'rewards'" class="pet-admin-section">
         <section class="filter-panel pet-directory-filter-panel">
           <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-            <el-select v-model="rewardSearch.status" clearable placeholder="激励状态">
+            <el-select v-model="rewardSearch.status" class="filter-field-sm" clearable placeholder="激励状态">
               <el-option v-for="item in rewardStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
-            <el-select v-model="rewardSearch.type" clearable placeholder="激励类型">
+            <el-select v-model="rewardSearch.type" class="filter-field-sm" clearable placeholder="激励类型">
               <el-option v-for="item in rewardTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
             <el-date-picker
@@ -1667,7 +1667,7 @@ onMounted(async () => {
               value-format="YYYY-MM-DD HH:mm:ss"
               start-placeholder="开始时间"
               end-placeholder="结束时间"
-              class="full-width-control"
+              class="filter-field-lg"
             />
             <div class="pet-filter-action">
               <el-button v-if="isWorker" class="soft-btn" :icon="Plus" @click="openRewardDialog">新增激励</el-button>
@@ -1724,10 +1724,10 @@ onMounted(async () => {
           </div>
           <section class="filter-panel pet-directory-filter-panel">
             <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-              <el-select v-model="shiftSearch.status" clearable placeholder="排班状态">
+              <el-select v-model="shiftSearch.status" class="filter-field-sm" clearable placeholder="排班状态">
                 <el-option v-for="item in shiftStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
-              <el-select v-model="shiftSearch.taskType" clearable placeholder="任务类型">
+              <el-select v-model="shiftSearch.taskType" class="filter-field-sm" clearable placeholder="任务类型">
                 <el-option v-for="item in taskTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
               <el-date-picker
@@ -1736,7 +1736,7 @@ onMounted(async () => {
                 value-format="YYYY-MM-DD HH:mm:ss"
                 start-placeholder="开始时间"
                 end-placeholder="结束时间"
-                class="full-width-control"
+                class="filter-field-lg"
               />
               <div class="pet-filter-action">
                 <el-button v-if="isWorker" class="soft-btn" :icon="Plus" @click="openShiftDialog()">安排排班</el-button>
@@ -1799,7 +1799,7 @@ onMounted(async () => {
 
           <section class="filter-panel pet-directory-filter-panel">
             <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-              <el-select v-model="recordSearch.status" clearable placeholder="报告状态">
+              <el-select v-model="recordSearch.status" class="filter-field-sm" clearable placeholder="报告状态">
                 <el-option v-for="item in recordStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
               <el-date-picker
@@ -1808,7 +1808,7 @@ onMounted(async () => {
                 value-format="YYYY-MM-DD HH:mm:ss"
                 start-placeholder="开始时间"
                 end-placeholder="结束时间"
-                class="full-width-control"
+                class="filter-field-lg"
               />
               <div class="pet-filter-action">
                 <el-button class="warm-btn" :icon="Search" :loading="recordLoading" @click="searchRecords">搜索</el-button>

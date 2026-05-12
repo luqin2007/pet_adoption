@@ -10,7 +10,7 @@
     <section class="pet-admin-section">
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row medical-health-cols-search">
-          <el-input v-model="keyword" clearable placeholder="按宠物、评估人或摘要搜索" @keyup.enter="searchAssessments" />
+          <el-input v-model="keyword" class="filter-field-lg" clearable placeholder="按宠物、评估人或摘要搜索" @keyup.enter="searchAssessments" />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchAssessments">搜索</el-button>
           </div>

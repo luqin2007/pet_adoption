@@ -9,7 +9,7 @@
     <section class="pet-admin-section">
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row medical-record-cols-search">
-          <el-select v-model="statusFilter" clearable placeholder="就诊状态">
+          <el-select v-model="statusFilter" class="filter-field-sm" clearable placeholder="就诊状态">
             <el-option v-for="item in recordStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
           <div class="pet-filter-action">

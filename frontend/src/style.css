@@ -1723,7 +1723,7 @@ main {
 .filter-panel {
   margin-top: 18px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 12px;
   padding: 18px;
   border: 1px solid var(--line);
@@ -1737,7 +1737,9 @@ main {
 }
 
 .pet-filter-row {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
 }
 
@@ -1745,8 +1747,49 @@ main {
 .pet-filter-row > .el-input,
 .pet-filter-row > .el-input-number,
 .pet-filter-row > .el-date-editor {
-  width: 100%;
+  flex: 0 1 220px;
+  width: 220px;
   min-width: 0;
+}
+
+.filter-field-sm,
+.filter-field-sm.el-select,
+.filter-field-sm.el-input,
+.filter-field-sm.el-date-editor,
+.filter-field-sm.el-input-number,
+.pet-filter-row > .filter-field-sm {
+  flex: 0 1 150px;
+  width: 150px;
+}
+
+.filter-field-md,
+.filter-field-md.el-select,
+.filter-field-md.el-input,
+.filter-field-md.el-date-editor,
+.filter-field-md.el-input-number,
+.pet-filter-row > .filter-field-md {
+  flex: 0 1 220px;
+  width: 220px;
+}
+
+.filter-field-lg,
+.filter-field-lg.el-select,
+.filter-field-lg.el-input,
+.filter-field-lg.el-date-editor,
+.filter-field-lg.el-input-number,
+.pet-filter-row > .filter-field-lg {
+  flex: 0 1 320px;
+  width: 320px;
+}
+
+.filter-field-xl,
+.filter-field-xl.el-select,
+.filter-field-xl.el-input,
+.filter-field-xl.el-date-editor,
+.filter-field-xl.el-input-number,
+.pet-filter-row > .filter-field-xl {
+  flex: 1 1 420px;
+  width: 420px;
 }
 
 .pet-cascader-group {
@@ -1783,22 +1826,18 @@ main {
 }
 
 .pet-filter-row-primary {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) auto;
   align-items: center;
 }
 
 .pet-filter-row-secondary {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) auto;
   align-items: center;
 }
 
 .lost-filter-grid-top {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) auto;
   align-items: center;
 }
 
 .lost-filter-grid-bottom {
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) auto;
   align-items: center;
 }
 
@@ -1823,7 +1862,11 @@ main {
 
 .pet-filter-action {
   display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: flex-end;
+  margin-left: auto;
 }
 
 .directory-grid {
@@ -4786,10 +4829,36 @@ main {
     grid-template-columns: 1fr;
   }
 
+  .pet-filter-row > .el-select,
+  .pet-filter-row > .el-input,
+  .pet-filter-row > .el-input-number,
+  .pet-filter-row > .el-date-editor,
+  .filter-field-sm,
+  .filter-field-md,
+  .filter-field-lg,
+  .filter-field-xl,
+  .filter-field-sm.el-select,
+  .filter-field-md.el-select,
+  .filter-field-lg.el-select,
+  .filter-field-xl.el-select,
+  .filter-field-sm.el-input,
+  .filter-field-md.el-input,
+  .filter-field-lg.el-input,
+  .filter-field-xl.el-input,
+  .filter-field-sm.el-date-editor,
+  .filter-field-md.el-date-editor,
+  .filter-field-lg.el-date-editor,
+  .filter-field-xl.el-date-editor {
+    flex-basis: 100%;
+    width: 100%;
+  }
+
   .pet-filter-action,
   .article-filter-action,
   .volunteer-filter-action {
     grid-column: span 1;
+    justify-content: flex-start;
+    margin-left: 0;
   }
 
   .content-highlight {

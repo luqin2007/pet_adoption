@@ -15,13 +15,11 @@ const articles = ref([])
 const activeType = ref('ALL')
 
 const draftSearch = reactive({
-  author: '',
   title: '',
   timeRange: [],
 })
 
 const appliedSearch = reactive({
-  author: '',
   title: '',
   timeRange: [],
 })
@@ -39,16 +37,11 @@ const visibleArticles = computed(() =>
       return false
     }
 
-    const authorKeyword = appliedSearch.author.trim().toLowerCase()
     const titleKeyword = appliedSearch.title.trim().toLowerCase()
-    const authorText = String(article.authorName || '').toLowerCase()
     const titleText = String(article.title || '').toLowerCase()
     const publishDate = article.publishTime ? String(article.publishTime).slice(0, 19) : ''
     const [time0, time1] = appliedSearch.timeRange || []
 
-    if (authorKeyword && !authorText.includes(authorKeyword)) {
-      return false
-    }
     if (titleKeyword && !titleText.includes(titleKeyword)) {
       return false
     }
@@ -67,6 +60,11 @@ async function loadArticles() {
   try {
     const result = await getArticles({
       size: 60,
+      title: appliedSearch.title.trim() || undefined,
+      status: ['PUBLISHED'],
+      time0: appliedSearch.timeRange?.[0],
+      time1: appliedSearch.timeRange?.[1],
+      isDiscard: false,
     })
     articles.value = Array.isArray(result?.records) ? result.records : []
   } catch {
@@ -77,9 +75,9 @@ async function loadArticles() {
 }
 
 function applySearch() {
-  appliedSearch.author = draftSearch.author
   appliedSearch.title = draftSearch.title
   appliedSearch.timeRange = Array.isArray(draftSearch.timeRange) ? [...draftSearch.timeRange] : []
+  loadArticles()
 }
 
 function openArticle(article) {
@@ -124,8 +122,7 @@ onMounted(() => {
 
       <section class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
         <div class="pet-filter-row article-filter-row-inline">
-          <el-input class="article-filter-author" v-model="draftSearch.author" clearable placeholder="作者" @keyup.enter="applySearch" />
-          <el-input class="article-filter-title" v-model="draftSearch.title" clearable placeholder="标题" @keyup.enter="applySearch" />
+          <el-input class="article-filter-title filter-field-md" v-model="draftSearch.title" clearable placeholder="标题" @keyup.enter="applySearch" />
           <el-date-picker
             v-model="draftSearch.timeRange"
             type="datetimerange"
@@ -133,7 +130,7 @@ onMounted(() => {
             range-separator="至"
             start-placeholder="开始时间"
             end-placeholder="结束时间"
-            class="article-filter-date full-width-control"
+            class="article-filter-date filter-field-lg"
           />
           <div class="pet-filter-action article-filter-action">
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="applySearch">搜索</el-button>

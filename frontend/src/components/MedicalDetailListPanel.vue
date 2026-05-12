@@ -9,7 +9,7 @@
     <section class="pet-admin-section">
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row medical-first-cols-search">
-          <el-input v-model="searchKeyword" clearable placeholder="按摘要搜索" @keyup.enter="searchRecords" />
+          <el-input v-model="searchKeyword" class="filter-field-lg" clearable placeholder="按摘要搜索" @keyup.enter="searchRecords" />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRecords">搜索</el-button>
           </div>

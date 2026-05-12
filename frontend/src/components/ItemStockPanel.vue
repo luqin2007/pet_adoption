@@ -12,10 +12,10 @@
         <section class="pet-admin-section">
           <section class="filter-panel pet-directory-filter-panel">
             <div class="pet-filter-row item-stock-filter-row">
-              <el-select v-model="stockSearch.itemId" clearable filterable placeholder="物资">
+              <el-select v-model="stockSearch.itemId" class="filter-field-md" clearable filterable placeholder="物资">
                 <el-option v-for="item in itemOptions" :key="item.id" :label="item.name" :value="String(item.id)" />
               </el-select>
-              <el-select v-model="stockSearch.sourceType" clearable placeholder="来源">
+              <el-select v-model="stockSearch.sourceType" class="filter-field-sm" clearable placeholder="来源">
                 <el-option label="捐赠" value="DONATION" />
                 <el-option label="采购" value="PURCHASE" />
               </el-select>
@@ -75,11 +75,15 @@
               <el-button class="soft-btn" :icon="Plus" @click="openItemDialog()">添加物资</el-button>
             </div>
             <section class="filter-panel pet-directory-filter-panel item-stock-inline-filter">
-              <el-input v-model="itemSearch.keyword" clearable placeholder="搜索物资名称" @keyup.enter="loadItems" />
-              <el-select v-model="itemSearch.categoryId" clearable placeholder="分类">
-                <el-option v-for="item in categories" :key="item.id" :label="item.name" :value="String(item.id)" />
-              </el-select>
-              <el-button class="warm-btn" :icon="Search" :loading="itemLoading" @click="loadItems">搜索</el-button>
+              <div class="pet-filter-row">
+                <el-input v-model="itemSearch.keyword" class="filter-field-md" clearable placeholder="搜索物资名称" @keyup.enter="loadItems" />
+                <el-select v-model="itemSearch.categoryId" class="filter-field-sm" clearable placeholder="分类">
+                  <el-option v-for="item in categories" :key="item.id" :label="item.name" :value="String(item.id)" />
+                </el-select>
+                <div class="pet-filter-action">
+                  <el-button class="warm-btn" :icon="Search" :loading="itemLoading" @click="loadItems">搜索</el-button>
+                </div>
+              </div>
             </section>
             <el-table :data="items" v-loading="itemLoading" class="user-admin-table">
               <el-table-column label="名称" min-width="140">
@@ -660,9 +664,6 @@ onMounted(async () => {
 }
 
 .item-stock-inline-filter {
-  display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(140px, 0.8fr) auto;
-  gap: 10px;
   margin-bottom: 12px;
 }
 

@@ -13,26 +13,26 @@
           <section class="pet-admin-section">
             <section class="filter-panel pet-directory-filter-panel">
               <div class="pet-filter-row lost-filter-grid-top pet-filter-cols-4">
-                <el-input v-model="lostPetSearchForm.name" clearable placeholder="名称" />
-                <el-select v-model="lostPetSearchForm.type" clearable filterable placeholder="类型" @change="handleLostPetSearchTypeChange">
+                <el-input v-model="lostPetSearchForm.name" class="filter-field-md" clearable placeholder="名称" />
+                <el-select v-model="lostPetSearchForm.type" class="filter-field-sm" clearable filterable placeholder="类型" @change="handleLostPetSearchTypeChange">
                   <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
                 </el-select>
-                <el-select v-model="lostPetSearchForm.breed" clearable filterable placeholder="品种" :disabled="!lostPetSearchForm.type">
+                <el-select v-model="lostPetSearchForm.breed" class="filter-field-sm" clearable filterable placeholder="品种" :disabled="!lostPetSearchForm.type">
                   <el-option v-for="item in lostPetSearchBreedOptions" :key="item" :label="item" :value="item" />
                 </el-select>
-                <el-select v-model="lostPetSearchForm.status" clearable placeholder="状态">
+                <el-select v-model="lostPetSearchForm.status" class="filter-field-sm" clearable placeholder="状态">
                   <el-option v-for="item in lostPetStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
               </div>
               <div class="pet-filter-row lost-filter-grid-bottom lost-filter-cols-row2">
-                <el-select v-model="lostPetSearchForm.province" clearable filterable placeholder="省份" @change="handleLostPetSearchProvinceChange">
+                <el-select v-model="lostPetSearchForm.province" class="filter-field-sm" clearable filterable placeholder="省份" @change="handleLostPetSearchProvinceChange">
                   <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
                 </el-select>
-                <el-select v-model="lostPetSearchForm.city" clearable filterable placeholder="城市" :disabled="!lostPetSearchForm.province">
+                <el-select v-model="lostPetSearchForm.city" class="filter-field-sm" clearable filterable placeholder="城市" :disabled="!lostPetSearchForm.province">
                   <el-option v-for="item in lostPetSearchCityOptions" :key="item" :label="item" :value="item" />
                 </el-select>
-                <el-input v-model="lostPetSearchForm.address" clearable placeholder="详细地点" />
-                <el-date-picker v-model="lostPetSearchForm.lostDate" type="date" value-format="YYYY-MM-DD" placeholder="走失日期" />
+                <el-input v-model="lostPetSearchForm.address" class="filter-field-xl" clearable placeholder="详细地点" />
+                <el-date-picker v-model="lostPetSearchForm.lostDate" class="filter-field-md" type="date" value-format="YYYY-MM-DD" placeholder="走失日期" />
               </div>
               <div class="pet-filter-row lost-filter-search-row">
                 <div class="pet-filter-action">
@@ -95,7 +95,7 @@
           <section class="pet-admin-section">
             <section class="filter-panel pet-directory-filter-panel">
               <div class="pet-filter-row claim-filter-row">
-                <el-select v-model="claimSearchForm.status" clearable placeholder="申请状态">
+                <el-select v-model="claimSearchForm.status" class="filter-field-sm" clearable placeholder="申请状态">
                   <el-option v-for="item in claimStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
                 <el-date-picker
@@ -104,7 +104,7 @@
                   value-format="YYYY-MM-DD HH:mm:ss"
                   start-placeholder="开始时间"
                   end-placeholder="结束时间"
-                  class="full-width-control"
+                  class="filter-field-lg"
                 />
                 <div class="pet-filter-action">
                   <el-button class="warm-btn" :icon="Search" :loading="loadingClaims" @click="searchClaims">搜索</el-button>

@@ -16,7 +16,7 @@
             value-format="YYYY-MM-DD HH:mm:ss"
             start-placeholder="开始时间"
             end-placeholder="结束时间"
-            class="full-width-control"
+            class="filter-field-lg"
           />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
