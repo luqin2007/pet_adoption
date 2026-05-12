@@ -3,9 +3,12 @@ package com.example.backend.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.dto.*;
 import com.example.backend.entity.User;
+import com.example.backend.entity.VolunteerProfile;
 import com.example.backend.entity.property.UserRole;
+import com.example.backend.entity.property.VolunteerProfileStatus;
 import com.example.backend.event.MailSendEvent;
 import com.example.backend.mapper.UserMapper;
+import com.example.backend.mapper.VolunteerProfileMapper;
 import com.example.backend.util.*;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 
@@ -42,6 +46,7 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
     private final PasswordEncoder passwordEncoder;
     private final JwtHelper jwtHelper;
     private final ObjectProvider<AuthenticationManager> authenticationManagerProvider;
+    private final VolunteerProfileMapper volunteerProfileMapper;
 
     private FileService fileService;
 
@@ -268,8 +273,11 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         }
 
         // 更新用户信息
+        boolean wasVolunteer = user.isVolunteer();
         request.applyTo(user, passwordEncoder);
+        boolean isVolunteer = user.isVolunteer();
         updateById(user);
+        syncVolunteerProfileStatus(userId, wasVolunteer, isVolunteer);
         return UserResponse.create(user);
     }
 
@@ -315,6 +323,15 @@ public class UserService extends BaseService<UserMapper, User> implements UserDe
         requirePermission(!user.isAdmin() || login.isAdmin());
         // 非管理员变更需要本人或救助站工作人员更改
         requirePermission(login.is(userId) || login.isWorker());
+    }
+
+    private void syncVolunteerProfileStatus(Long userId, boolean wasVolunteer, boolean isVolunteer) {
+        if (wasVolunteer == isVolunteer) return;
+        VolunteerProfileStatus status = isVolunteer ? VolunteerProfileStatus.ACTIVE : VolunteerProfileStatus.DISABLED;
+        VolunteerProfile profile = volunteerProfileMapper.queryByUserId(userId).require();
+        profile.setStatus(status);
+        profile.setUpdateTime(new Date());
+        volunteerProfileMapper.updateById(profile);
     }
 
     @Autowired
