@@ -59,6 +59,9 @@ import BreadingManagementPanel from '../components/BreadingManagementPanel.vue'
 import BreadingApplicationDetailPanel from '../components/BreadingApplicationDetailPanel.vue'
 import AgreementDraftPanel from '../components/AgreementDraftPanel.vue'
 import AgreementManagementPanel from '../components/AgreementManagementPanel.vue'
+import ItemDonationPanel from '../components/ItemDonationPanel.vue'
+import ItemStockPanel from '../components/ItemStockPanel.vue'
+import ItemStockRecordPanel from '../components/ItemStockRecordPanel.vue'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
 import VolunteerApplicationDetailPanel from '../components/VolunteerApplicationDetailPanel.vue'
 import VolunteerShiftDetailPanel from '../components/VolunteerShiftDetailPanel.vue'
@@ -261,6 +264,9 @@ const router = createRouter({
         { path: 'adoption/agreements', name: 'console-adoption-agreements', component: AgreementManagementPanel, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-paper', name: 'console-adoption-agreement-paper-create', component: AgreementDraftPanel, props: { type: 'PAPER' }, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-electronic', name: 'console-adoption-agreement-electronic-create', component: AgreementDraftPanel, props: { type: 'ELECTRONIC' }, meta: { guard: 'canManageUsers' } },
+        { path: 'items/donations', name: 'console-items-donations', component: ItemDonationPanel },
+        { path: 'items/stocks', name: 'console-items-stocks', component: ItemStockPanel, meta: { guard: 'canManageUsers' } },
+        { path: 'items/records', name: 'console-items-records', component: ItemStockRecordPanel, meta: { guard: 'canManageUsers' } },
         { path: 'volunteer/recruitments', name: 'console-volunteer-recruitments', component: VolunteerManagementPanel, props: { section: 'recruitments', hideTabs: true }, meta: { guard: 'canManageUsers' } },
         { path: 'volunteer/applications', name: 'console-volunteer-applications', component: VolunteerManagementPanel, props: { section: 'applications', hideTabs: true } },
         { path: 'volunteer/applications/:id', name: 'console-volunteer-application-detail', component: VolunteerApplicationDetailPanel },

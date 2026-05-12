@@ -22,6 +22,9 @@ const activeMenu = computed(() => {
   if (route.path.startsWith('/console/adoption/follow-records')) return '/console/adoption/follow-tasks'
   if (route.path.startsWith('/console/adoption/follow-tasks')) return '/console/adoption/follow-tasks'
   if (route.path.startsWith('/console/adoption/adopts')) return '/console/adoption/adopts'
+  if (route.path.startsWith('/console/items/donations')) return '/console/items/donations'
+  if (route.path.startsWith('/console/items/stocks')) return '/console/items/stocks'
+  if (route.path.startsWith('/console/items/records')) return '/console/items/records'
   if (route.path.startsWith('/console/medical/first/')) return '/console/medical/first'
   if (route.path.startsWith('/console/medical/records/')) return '/console/medical/records'
   if (route.path.startsWith('/console/medical/detail-list')) return '/console/medical/detail-list'
@@ -172,6 +175,15 @@ watch(
             <el-menu-item index="/console/volunteer/applications">招募申请</el-menu-item>
             <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/rewards">志愿者激励</el-menu-item>
             <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/activities">志愿活动</el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="/console/items">
+            <template #title>
+              <el-icon><Connection /></el-icon>
+              <span>物资管理</span>
+            </template>
+            <el-menu-item index="/console/items/donations">捐赠</el-menu-item>
+            <el-menu-item v-if="canManageUsers" index="/console/items/stocks">物资余量</el-menu-item>
+            <el-menu-item v-if="canManageUsers" index="/console/items/records">库存管理</el-menu-item>
           </el-sub-menu>
           <el-sub-menu v-if="canViewMedical" index="/console/medical">
             <template #title>
