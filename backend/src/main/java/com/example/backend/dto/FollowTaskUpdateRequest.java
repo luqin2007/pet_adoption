@@ -37,6 +37,5 @@ public class FollowTaskUpdateRequest implements IRequest, IValidatedRequest {
     @Override
     public void validate(Errors errors) {
         validateEnum(errors, FollowTaskUpdateRequest::getStatus, FollowTaskStatus.class, "request.adopt_breading.follow_task.status");
-        validateDependency(errors, FollowTaskUpdateRequest::getPlanTime, remark);
     }
 }

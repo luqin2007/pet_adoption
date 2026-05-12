@@ -48,7 +48,6 @@
           <template #default="{ row }">
             <div class="table-action-cell">
               <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
-                <el-button text type="primary" @click="goTaskDetail(row)">查看任务</el-button>
                 <el-button v-if="canApprove(row)" text type="success" :loading="actionLoadingId === actionKey(row, 'approve')" @click="submitTaskAction(row, 'approve')">同意</el-button>
                 <el-button v-if="canReject(row)" text type="danger" :loading="actionLoadingId === actionKey(row, 'reject')" @click="submitTaskAction(row, 'reject')">拒绝</el-button>
                 <el-button v-if="canRevoke(row)" text type="warning" :loading="actionLoadingId === actionKey(row, 'revoke')" @click="submitTaskAction(row, 'revoke')">撤销</el-button>
