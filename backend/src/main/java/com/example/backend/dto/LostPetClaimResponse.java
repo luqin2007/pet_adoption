@@ -64,7 +64,7 @@ public class LostPetClaimResponse implements IResponse {
                 claim.getCreateTime(),
                 claim.getUpdateTime(),
                 claim.getLostPetId(),
-                lostPet != null ? lostPet.getPetId() : null,
+                claim.getPetId(),
                 lostPet != null ? lostPet.getName() : null,
                 lostPet != null ? lostPet.getType() : null,
                 lostPet != null ? lostPet.getBreed() : null,

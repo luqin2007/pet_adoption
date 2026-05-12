@@ -326,7 +326,16 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
 
         // 更新申请状态
         ClaimStatus status = ClaimStatus.get(request.getStatus());
-        lostPetClaimMapper.approve(claimId, status, request.getReason()).update();
+        Date now = new Date();
+        lostPetClaimMapper.approve(claimId, login.getId(), status, request.getReason()).update();
+        claim.setStatus(status);
+        claim.setReviewerId(login.getId());
+        claim.setApproveReason(request.getReason());
+        claim.setReviewTime(now);
+        claim.setUpdateTime(now);
+        if (status == ClaimStatus.PASS) {
+            claim.setClaimTime(now);
+        }
         // 更新走失宠物状态为已认领
         if (status == ClaimStatus.PASS) {
             baseMapper.updateStatus(claim.getLostPetId(), request.getPetId(), LostPetStatus.CLAIMED);

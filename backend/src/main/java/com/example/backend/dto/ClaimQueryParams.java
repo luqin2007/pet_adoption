@@ -1,6 +1,6 @@
 package com.example.backend.dto;
 
-import com.example.backend.entity.LostPetClaim;
+import com.example.backend.entity.property.ClaimStatus;
 import lombok.Data;
 import org.springframework.validation.Errors;
 
@@ -25,6 +25,7 @@ public class ClaimQueryParams implements IParam, IValidatedRequest {
 
     @Override
     public void validate(Errors errors) {
-        validateTime(errors, LostPetClaim::getCreateTime, LostPetClaim::getCreateTime);
+        validateTime(errors, ClaimQueryParams::getTime0, ClaimQueryParams::getTime1);
+        validateEnums(errors, ClaimQueryParams::getStatus, ClaimStatus.class, "request.status");
     }
 }

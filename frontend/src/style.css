@@ -3137,6 +3137,66 @@ main {
   text-overflow: ellipsis;
 }
 
+.lost-similar-grid {
+  min-height: 120px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.lost-similar-card {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  border: 1px solid rgba(179, 124, 82, 0.18);
+  border-radius: var(--radius-md);
+  background: rgba(255, 250, 243, 0.78);
+  padding: 12px;
+}
+
+.lost-similar-cover {
+  width: 96px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 244, 232, 0.9);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+}
+
+.lost-similar-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lost-similar-body {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  align-content: start;
+}
+
+.lost-similar-body strong {
+  color: #4f3324;
+  font-size: 16px;
+}
+
+.lost-similar-body span,
+.lost-similar-body small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.lost-similar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
 .lost-detail-section h2 {
   margin: 0 0 12px;
   color: #4f3324;

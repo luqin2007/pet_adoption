@@ -32,11 +32,12 @@ public interface LostPetClaimMapper extends IBaseMapper<LostPetClaim> {
                 .set(LostPetClaim::getUpdateTime, now);
     }
 
-    default MPLambdaUpdate<LostPetClaim> approve(Long id, ClaimStatus status, String reason) {
+    default MPLambdaUpdate<LostPetClaim> approve(Long id, Long reviewerId, ClaimStatus status, String reason) {
         Date now = new Date();
         return lambdaUpdate()
                 .eq(LostPetClaim::getId, id)
                 .set(LostPetClaim::getStatus, status)
+                .set(LostPetClaim::getReviewerId, reviewerId)
                 .set(LostPetClaim::getApproveReason, reason)
                 .set(status == ClaimStatus.PASS, LostPetClaim::getClaimTime, now)
                 .set(LostPetClaim::getReviewTime, now)

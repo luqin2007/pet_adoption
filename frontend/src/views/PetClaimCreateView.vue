@@ -76,7 +76,7 @@ async function submitForm() {
       reason: form.reason.trim(),
     })
     ElMessage.success('认领申请已提交')
-    router.push('/console')
+    router.push('/console/lost-pets?section=claims')
   } catch (error) {
     ElMessage.warning(error?.message || '提交认领申请失败')
   } finally {

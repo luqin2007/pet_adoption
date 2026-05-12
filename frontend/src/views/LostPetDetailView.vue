@@ -2,22 +2,32 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { ArrowLeft, ArrowRight, Close, PictureFilled } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getLostPet } from '../api/lost'
+import { getLostPet, getSimilarPets, markPetMismatch } from '../api/lost'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
+import { useUserStore } from '../stores/user'
+import { ROLE, hasRole, petStatusText } from '../utils/roles'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const loading = ref(false)
+const loadingSimilarPets = ref(false)
 const record = ref(null)
+const similarPets = ref([])
 const previewVisible = ref(false)
 const previewIndex = ref(0)
 const previewThumbsVisible = ref(true)
 
 const lostPetId = computed(() => String(route.params.id || ''))
 const mediaItems = computed(() => Array.isArray(record.value?.files) ? record.value.files : [])
+const loginRole = computed(() => Number(userStore.profile?.role || 0))
+const loginUserId = computed(() => String(userStore.profile?.id || ''))
+const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole(loginRole.value, ROLE.ADMIN))
+const canViewSimilarPets = computed(() => Boolean(record.value && userStore.isLoggedIn && (isWorker.value || String(record.value.ownerId || '') === loginUserId.value)))
 const statusText = computed(() => mapStatusText(record.value?.status))
 const statusTone = computed(() => mapStatusTone(record.value?.status))
 const basicItems = computed(() => [
@@ -63,6 +73,7 @@ function handlePreviewKeydown(e) {
 function mapStatusText(status) {
   const map = {
     SEARCHING: '正在寻找',
+    CLAIMING: '认领中',
     CLAIMED: '已找回',
     CLOSED: '已关闭',
   }
@@ -72,6 +83,7 @@ function mapStatusText(status) {
 function mapStatusTone(status) {
   const map = {
     SEARCHING: 'warning',
+    CLAIMING: 'primary',
     CLAIMED: 'success',
     CLOSED: 'info',
   }
@@ -110,8 +122,46 @@ function formatLocation(location) {
     .join(' · ') || '地点待补充'
 }
 
+function petLocationText(pet) {
+  const location = pet?.locations?.[0]
+  if (!location) return '位置待补充'
+  return [location.province, location.city, location.district, location.detailAddress].filter(Boolean).join(' · ') || '位置待补充'
+}
+
 function goBack() {
   router.push('/lost')
+}
+
+function goPet(pet) {
+  if (pet?.id) router.push(`/pets/${pet.id}`)
+}
+
+async function loadSimilarPets() {
+  if (!lostPetId.value || !canViewSimilarPets.value) {
+    similarPets.value = []
+    return
+  }
+  loadingSimilarPets.value = true
+  try {
+    const result = await getSimilarPets(lostPetId.value)
+    similarPets.value = Array.isArray(result) ? result : []
+  } catch (error) {
+    similarPets.value = []
+    ElMessage.warning(error?.message || '加载相似流浪宠物失败')
+  } finally {
+    loadingSimilarPets.value = false
+  }
+}
+
+async function dismissSimilarPet(pet) {
+  if (!pet?.id || !lostPetId.value) return
+  try {
+    const result = await markPetMismatch(lostPetId.value, pet.id)
+    similarPets.value = Array.isArray(result) ? result : similarPets.value.filter((item) => item.id !== pet.id)
+    ElMessage.success('已标记为非走失宠物')
+  } catch (error) {
+    ElMessage.warning(error?.message || '标记失败')
+  }
 }
 
 async function loadLostPet() {
@@ -123,8 +173,10 @@ async function loadLostPet() {
   loading.value = true
   try {
     record.value = await getLostPet(lostPetId.value)
+    await loadSimilarPets()
   } catch {
     record.value = null
+    similarPets.value = []
   } finally {
     loading.value = false
   }
@@ -208,6 +260,28 @@ onBeforeUnmount(() => {
               <video v-else :src="item.assetUrl" preload="metadata" />
               <span v-if="item.name" class="lost-media-strip-label">{{ item.name }}</span>
             </div>
+          </div>
+        </div>
+
+        <div v-if="canViewSimilarPets" class="lost-detail-section lost-detail-section-wide">
+          <h2>相似流浪宠物</h2>
+          <div v-loading="loadingSimilarPets" class="lost-similar-grid">
+            <article v-for="pet in similarPets" :key="pet.id" class="lost-similar-card">
+              <div class="lost-similar-cover">
+                <img v-if="pet.cover" :src="pet.cover" :alt="pet.name || '流浪宠物'" />
+                <span v-else>暂无图片</span>
+              </div>
+              <div class="lost-similar-body">
+                <strong>{{ pet.name || '未命名宠物' }}</strong>
+                <span>{{ pet.type || '宠物' }} · {{ pet.breed || '品种待补充' }} · {{ petStatusText(pet.status) }}</span>
+                <small>{{ petLocationText(pet) }}</small>
+                <div class="lost-similar-actions">
+                  <el-button text type="primary" @click="goPet(pet)">查看档案</el-button>
+                  <el-button text type="danger" @click="dismissSimilarPet(pet)">不是我的宠物</el-button>
+                </div>
+              </div>
+            </article>
+            <el-empty v-if="!loadingSimilarPets && !similarPets.length" description="暂无相似流浪宠物" />
           </div>
         </div>
       </section>

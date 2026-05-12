@@ -20,6 +20,32 @@ export function createLostPetClaim(payload) {
   })
 }
 
+export function getLostPetClaim(id) {
+  return request(`/lost/claim/${id}`, {
+    method: 'GET',
+  })
+}
+
+export function getLostPetClaims(query = {}) {
+  return request('/lost/claim', {
+    method: 'GET',
+    query,
+  })
+}
+
+export function cancelLostPetClaim(id) {
+  return request(`/lost/claim/${id}`, {
+    method: 'DELETE',
+  })
+}
+
+export function approveLostPetClaim(id, payload) {
+  return request(`/lost/claim/${id}/approve`, {
+    method: 'PATCH',
+    body: payload,
+  })
+}
+
 export function beginLostPet() {
   return request('/lost/pets', {
     method: 'PUT',
@@ -44,6 +70,18 @@ export function updateLostPetStatus(id, payload) {
   return request(`/lost/pets/${id}/status`, {
     method: 'PATCH',
     body: payload,
+  })
+}
+
+export function getSimilarPets(id) {
+  return request(`/lost/pets/${id}/similar`, {
+    method: 'GET',
+  })
+}
+
+export function markPetMismatch(lostPetId, petId) {
+  return request(`/lost/pets/${lostPetId}/mismatch/${petId}`, {
+    method: 'POST',
   })
 }
 
