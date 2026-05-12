@@ -582,19 +582,11 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
             以下内容必须由工作人员修改：
             - 志愿者
             - 负责工作人员
-            - 状态，IN_PROGRESS 除外
+            - 状态
              */
                 requirePermission(Objects.equals(request.getVolunteerId(), task.getVolunteerId()));
                 requirePermission(Objects.equals(request.getWorkerId(), task.getWorkerId()));
-                requirePermission(status == task.getStatus() || status == FollowTaskStatus.IN_PROGRESS);
-            }
-            if (!login.is(task.getVolunteerId()) && !isTaskWorkerOrAdmin) {
-            /*
-            以下内容必须由负责志愿者修改：
-            - 状态变更为 IN_PROGRESS
-             */
-                requirePermission(status == task.getStatus()
-                        || (task.getStatus() == FollowTaskStatus.NOTIFIED && status == FollowTaskStatus.IN_PROGRESS));
+                requirePermission(status == task.getStatus());
             }
         }
 
