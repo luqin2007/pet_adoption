@@ -930,11 +930,34 @@ async function saveShiftStatus() {
 
 async function confirmShift(row) {
   try {
-    await updateVolunteerShiftStatus(row.id, { status: 'CONFIRMED' })
+    await updateVolunteerShiftStatus(row.id, { status: 'CONFIRMED', reason: String(Date.now()) })
     ElMessage.success('已确认本次排班')
     loadShifts()
   } catch (error) {
     ElMessage.warning(error?.message || '确认排班失败')
+  }
+}
+
+async function rejectShift(row) {
+  try {
+    const { value } = await ElMessageBox.prompt('请输入拒绝原因', '拒绝排班', {
+      type: 'warning',
+      inputType: 'textarea',
+      inputPlaceholder: '请说明无法参与本次排班的原因',
+      inputValidator: (value) => Boolean(String(value || '').trim()) || '请输入原因',
+      confirmButtonText: '提交',
+      cancelButtonText: '取消',
+    })
+    await updateVolunteerShiftStatus(row.id, {
+      status: 'CANCELLED',
+      reason: String(value || '').trim(),
+    })
+    ElMessage.success('已拒绝本次排班')
+    loadShifts()
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      ElMessage.warning(error?.message || '拒绝排班失败')
+    }
   }
 }
 
@@ -1066,6 +1089,10 @@ function canWriteRecord(row) {
 }
 
 function canConfirmShift(row) {
+  return isVolunteer.value && String(row.volunteerId || '') === loginUserId.value && row.status === 'ASSIGNED'
+}
+
+function canRejectShift(row) {
   return isVolunteer.value && String(row.volunteerId || '') === loginUserId.value && row.status === 'ASSIGNED'
 }
 
@@ -1400,6 +1427,7 @@ onMounted(async () => {
                       <el-button v-if="isWorker" text type="warning" @click="openShiftDialog(row)">编辑</el-button>
                       <el-button v-if="isWorker" text type="primary" @click="openShiftStatusDialog(row)">状态</el-button>
                       <el-button v-if="canConfirmShift(row)" text type="success" @click="confirmShift(row)">确认</el-button>
+                      <el-button v-if="canRejectShift(row)" text type="danger" @click="rejectShift(row)">拒绝</el-button>
                       <el-button v-if="canWriteRecord(row)" text type="primary" @click="openRecordDialog(row)">写报告</el-button>
                     </div>
                   </div>

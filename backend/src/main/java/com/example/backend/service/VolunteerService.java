@@ -314,7 +314,10 @@ public class VolunteerService extends BaseService<VolunteerRecruitmentMapper, Vo
         User login = requireLoginUser();
         VolunteerShift shift = volunteerShiftMapper.requireById(shiftId);
         VolunteerShiftStatus status = VolunteerShiftStatus.get(request.getStatus());
-        if (status.requireWorker())
+        boolean selfRejectAssigned = status == VolunteerShiftStatus.CANCELLED
+                && shift.getStatus() == VolunteerShiftStatus.ASSIGNED
+                && login.is(shift.getVolunteerId());
+        if (status.requireWorker() && !selfRejectAssigned)
             requireWorker();
         if (status.requireSelf())
             requirePermission(login.is(shift.getVolunteerId()));
