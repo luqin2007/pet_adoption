@@ -7,7 +7,6 @@ import com.example.backend.dto.MedicalDetailQueryParams;
 import com.example.backend.service.MedicalService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.ibatis.annotations.Delete;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
