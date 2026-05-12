@@ -125,6 +125,13 @@ export function getFollowTasks(query = {}) {
   })
 }
 
+export function getVisibleFollowTasks(query = {}) {
+  return request('/adopt/follow/task/visible', {
+    method: 'GET',
+    query,
+  })
+}
+
 export function addFollowRecord(id, payload) {
   return request(`/adopt/follow/${id}/record`, {
     method: 'POST',

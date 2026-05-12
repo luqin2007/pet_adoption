@@ -285,7 +285,7 @@ async function submitFollowTask() {
         params: { id: String(response.id) },
       })
     } else {
-      router.push('/console/adoption/follow-records')
+      router.push('/console/adoption/follow-tasks')
     }
   } catch (error) {
     ElMessage.warning(error?.message || '创建回访任务失败')

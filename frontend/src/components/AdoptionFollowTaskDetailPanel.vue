@@ -230,7 +230,7 @@ function formatDate(value) {
 }
 
 function goBack() {
-  router.push({ name: 'console-adoption-follow-records' })
+  router.push({ name: 'console-adoption-follow-tasks' })
 }
 
 function goPetProfile() {

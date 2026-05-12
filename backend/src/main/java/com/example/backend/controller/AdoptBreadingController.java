@@ -281,6 +281,15 @@ public class AdoptBreadingController {
     }
 
     /**
+     * 查询当前用户可见回访任务
+     */
+    @GetMapping("/follow/task/visible")
+    public Result<Page<FollowTaskResponse>> getVisibleFollowTasks(PageParams page) {
+        Page<FollowTaskResponse> response = adoptBreadingService.getVisibleFollowTasks(page);
+        return Result.success(response);
+    }
+
+    /**
      * 提交回访记录
      */
     @PostMapping("/follow/{id}/record")

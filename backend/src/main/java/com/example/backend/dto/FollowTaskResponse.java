@@ -2,6 +2,8 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.FollowRecord;
 import com.example.backend.entity.FollowTask;
+import com.example.backend.entity.Adopt;
+import com.example.backend.entity.Pet;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.FollowTaskStatus;
 import com.example.backend.entity.property.ParentType;
@@ -24,6 +26,12 @@ public class FollowTaskResponse implements IResponse {
     private Date createTime;
     private Date updateTime;
 
+    // adopt
+    private Long petId;
+    private String petName;
+    private Long applicantId;
+    private String applicantName;
+
     // record
     Long recordId;
     String summary;
@@ -41,7 +49,8 @@ public class FollowTaskResponse implements IResponse {
      * User: id, username, avatar<br>
      * FollowRecord: id, summary, visitTime
      */
-    public static FollowTaskResponse create(FollowTask task, User worker, User volunteer, FollowRecord record) {
+    public static FollowTaskResponse create(FollowTask task, Adopt adopt, Pet pet, User applicant,
+                                            User worker, User volunteer, FollowRecord record) {
         return new FollowTaskResponse(
                 task.getId(),
                 task.getAdoptId(),
@@ -50,6 +59,10 @@ public class FollowTaskResponse implements IResponse {
                 task.getRemark(),
                 task.getCreateTime(),
                 task.getUpdateTime(),
+                adopt == null ? null : adopt.getPetId(),
+                pet == null ? null : pet.getName(),
+                adopt == null ? null : adopt.getApplicantId(),
+                applicant == null ? null : applicant.getUsername(),
                 record == null ? null : record.getId(),
                 record == null ? null : record.getSummary(),
                 record == null ? null : record.getVisitTime(),
@@ -64,12 +77,20 @@ public class FollowTaskResponse implements IResponse {
     /**
      * User: id, username, avatar<br>
      * FollowRecord: id, taskId, summary, visitTime<br>
+     * Adopt: id, petId, applicantId<br>
+     * Pet: id, name<br>
      * <br>
      * users: FollowTask.workerId, FollowTask.volunteerId<br>
      * records: FollowTask.id
      */
-    public static FollowTaskResponse createBatch(FollowTask task, Map<Long, User> users, Map<Long, FollowRecord> records) {
+    public static FollowTaskResponse createBatch(FollowTask task, Map<Long, Adopt> adopts,
+                                                 Map<Long, Pet> pets, Map<Long, User> users,
+                                                 Map<Long, FollowRecord> records) {
+        Adopt adopt = adopts.get(task.getAdoptId());
         return create(task,
+                adopt,
+                adopt == null ? null : pets.get(adopt.getPetId()),
+                adopt == null ? null : users.get(adopt.getApplicantId()),
                 users.get(task.getWorkerId()),
                 users.get(task.getVolunteerId()),
                 records.get(task.getId()));

@@ -2,7 +2,7 @@
   <el-card class="profile-card pet-admin-card">
     <template #header>
       <div class="profile-card-header">
-        <strong>回访记录</strong>
+        <strong>回访任务</strong>
         <span>{{ subtitle }}</span>
       </div>
     </template>
@@ -14,12 +14,12 @@
             <button class="table-primary-link adoption-pet-cell" type="button" @click="goTaskDetail(row)">
               <div class="adoption-person-cell">
                 <strong>{{ row.petName || '未命名宠物' }}</strong>
-                <span>#{{ row.taskId }} · {{ taskStatusText(row.taskStatus) }}</span>
+                <span>#{{ row.id }} · {{ taskStatusText(row.status) }}</span>
               </div>
             </button>
           </template>
         </el-table-column>
-        <el-table-column label="申请人" min-width="160">
+        <el-table-column label="领养人" min-width="160">
           <template #default="{ row }">
             <div class="adoption-person-cell">
               <strong>{{ row.applicantName || '未命名申请人' }}</strong>
@@ -27,14 +27,19 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="回访时间" min-width="160">
-          <template #default="{ row }">{{ formatDate(row.visitTime) }}</template>
+        <el-table-column label="计划时间" min-width="160">
+          <template #default="{ row }">{{ formatDate(row.planTime) }}</template>
+        </el-table-column>
+        <el-table-column label="任务状态" width="120">
+          <template #default="{ row }">
+            <el-tag :type="taskStatusTagType(row.status)" effect="plain">{{ taskStatusText(row.status) }}</el-tag>
+          </template>
         </el-table-column>
         <el-table-column label="志愿者" min-width="160">
           <template #default="{ row }">{{ row.volunteerName || '未命名志愿者' }}</template>
         </el-table-column>
-        <el-table-column label="摘要" min-width="240" show-overflow-tooltip>
-          <template #default="{ row }">{{ row.summary || '暂无' }}</template>
+        <el-table-column label="记录摘要" min-width="220" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.summary || '' }}</template>
         </el-table-column>
         <el-table-column width="40" class-name="action-col">
           <template #header>
@@ -67,7 +72,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getVisibleFollowRecords } from '../api/services'
+import { getVisibleFollowTasks } from '../api/services'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
@@ -85,9 +90,9 @@ const loginRole = computed(() => Number(userStore.profile?.role || 0))
 const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole(loginRole.value, ROLE.ADMIN))
 const isVolunteer = computed(() => hasRole(loginRole.value, ROLE.VOLUNTEER))
 const subtitle = computed(() => {
-  if (isWorker.value) return '查看全部回访记录'
-  if (isVolunteer.value) return '查看自己参与和自己领养宠物的回访记录'
-  return '查看自己领养宠物的回访记录'
+  if (isWorker.value) return '查看全部回访任务'
+  if (isVolunteer.value) return '查看自己参与和自己领养宠物的回访任务'
+  return '查看自己领养宠物的回访任务'
 })
 
 function taskStatusText(value) {
@@ -101,6 +106,13 @@ function taskStatusText(value) {
   return map[value] || value || ''
 }
 
+function taskStatusTagType(value) {
+  if (value === 'FINISH') return 'success'
+  if (value === 'DELAY') return 'info'
+  if (value === 'IN_PROGRESS' || value === 'NOTIFIED') return 'primary'
+  return 'warning'
+}
+
 function formatDate(value) {
   if (!value) return ''
   const date = new Date(value)
@@ -111,16 +123,16 @@ function formatDate(value) {
 async function loadRows() {
   loading.value = true
   try {
-    const result = await getVisibleFollowRecords({
+    const result = await getVisibleFollowTasks({
       page: page.page,
       size: page.size,
-      sort: 'visit_time',
+      sort: 'plan_time',
       order: 'desc',
     })
     rows.value = Array.isArray(result?.records) ? result.records : []
     total.value = Number(result?.total || rows.value.length)
   } catch (error) {
-    ElMessage.warning(error?.message || '加载回访记录失败')
+    ElMessage.warning(error?.message || '加载回访任务失败')
   } finally {
     loading.value = false
   }
@@ -132,10 +144,10 @@ function changePage(value) {
 }
 
 function goTaskDetail(row) {
-  if (!row?.taskId) return
+  if (!row?.id) return
   router.push({
     name: 'console-adoption-follow-task-detail',
-    params: { id: String(row.taskId) },
+    params: { id: String(row.id) },
   })
 }
 

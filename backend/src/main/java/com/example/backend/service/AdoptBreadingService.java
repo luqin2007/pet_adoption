@@ -604,6 +604,50 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     }
 
     /**
+     * 查询当前用户可见的回访任务
+     */
+    public Page<FollowTaskResponse> getVisibleFollowTasks(PageParams pageRequest) {
+        User login = requireLoginUser();
+        if (login.isWorker()) {
+            Page<FollowTask> result = followTaskMapper.lambdaQuery()
+                    .desc(FollowTask::getPlanTime)
+                    .desc(FollowTask::getCreateTime)
+                    .page(pageRequest);
+            return adoptBreadingFacade.buildFollowTaskPage(result);
+        }
+
+        Map<Long, FollowTask> tasks = new LinkedHashMap<>();
+        followTaskMapper.lambdaQuery()
+                .eq(FollowTask::getVolunteerId, login.getId())
+                .list()
+                .forEach(task -> tasks.put(task.getId(), task));
+
+        AdoptQueryParams adoptQuery = new AdoptQueryParams();
+        adoptQuery.setUser(Set.of(login.getId()));
+        Set<Long> adoptIds = baseMapper.queryByRequest(adoptQuery)
+                .list(Adopt::getId)
+                .collect(Collectors.toSet());
+        if (!adoptIds.isEmpty()) {
+            followTaskMapper.queryByAdopts(adoptIds)
+                    .list()
+                    .forEach(task -> tasks.put(task.getId(), task));
+        }
+
+        List<FollowTask> visibleTasks = tasks.values().stream()
+                .sorted(Comparator
+                        .comparing(FollowTask::getPlanTime, Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(FollowTask::getCreateTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
+        int page = Math.max(1, pageRequest.getPage());
+        int size = Math.max(1, pageRequest.getSize());
+        int from = Math.min(visibleTasks.size(), (page - 1) * size);
+        int to = Math.min(visibleTasks.size(), from + size);
+        Page<FollowTask> result = PageDTO.of(page, size, visibleTasks.size());
+        result.setRecords(from >= to ? List.of() : visibleTasks.subList(from, to));
+        return adoptBreadingFacade.buildFollowTaskPage(result);
+    }
+
+    /**
      * 查询当前用户可见的回访记录
      */
     public Page<FollowRecordResponse> getVisibleFollowRecords(PageParams pageRequest) {

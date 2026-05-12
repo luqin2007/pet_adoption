@@ -54,11 +54,13 @@ public class AdoptBreadingFacade {
         Map<Long, FollowRecord> records = taskIds.isEmpty() ? Map.of()
                 : followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
                 FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
+        Map<Long, Adopt> adopts = Map.of(adopt.getId(), adopt);
+        Map<Long, Pet> pets = pet == null ? Map.of() : Map.of(pet.getId(), pet);
         return AdoptResponse.create(adopt,
                 pet, cover,
                 users.get(adopt.getApplicantId()),
                 adopt.getReviewerId() == null ? null : users.get(adopt.getReviewerId()),
-                tasks.stream().map(task -> FollowTaskResponse.createBatch(task, users, records)).toList());
+                tasks.stream().map(task -> FollowTaskResponse.createBatch(task, adopts, pets, users, records)).toList());
     }
 
     public Page<AdoptResponse> buildAdoptPage(Page<Adopt> result) {
@@ -82,8 +84,10 @@ public class AdoptBreadingFacade {
         Map<Long, FollowRecord> records = taskIds.isEmpty() ? Map.of()
                 : followRecordMapper.queryByTasks(taskIds).group(FollowRecord::getTaskId,
                 FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
+        Map<Long, Adopt> adopts = result.getRecords().stream()
+                .collect(Collectors.toMap(Adopt::getId, Function.identity()));
         Map<Long, List<FollowTaskResponse>> followTasks = tasks.stream()
-                .map(task -> FollowTaskResponse.createBatch(task, users, records))
+                .map(task -> FollowTaskResponse.createBatch(task, adopts, pets, users, records))
                 .collect(Collectors.groupingBy(FollowTaskResponse::getAdoptId));
         return convert(result, adopt -> AdoptResponse.createBatch(adopt, pets, covers, users, followTasks));
     }
@@ -130,18 +134,37 @@ public class AdoptBreadingFacade {
     }
 
     public FollowTaskResponse buildFollowTaskResponse(FollowTask task) {
+        Adopt adopt = adoptMapper.selectById(task.getAdoptId(), Adopt::getId, Adopt::getPetId, Adopt::getApplicantId);
+        Pet pet = adopt == null ? null : petService.selectById(adopt.getPetId(), Pet::getId, Pet::getName);
+        User applicant = adopt == null ? null : userService.selectById(adopt.getApplicantId(),
+                User::getId, User::getUsername, User::getAvatar);
         User worker = userService.selectById(task.getWorkerId(),
                 User::getId, User::getUsername, User::getAvatar);
         User volunteer = userService.selectById(task.getVolunteerId(),
                 User::getId, User::getUsername, User::getAvatar);
         FollowRecord record = followRecordMapper.queryByTask(task.getId()).one(
                 FollowRecord::getId, FollowRecord::getSummary, FollowRecord::getVisitTime);
-        return FollowTaskResponse.create(task, worker, volunteer, record);
+        return FollowTaskResponse.create(task, adopt, pet, applicant, worker, volunteer, record);
     }
 
     public Page<FollowTaskResponse> buildFollowTaskPage(Page<FollowTask> result) {
+        Set<Long> adoptIds = result.getRecords().stream()
+                .map(FollowTask::getAdoptId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, Adopt> adopts = adoptIds.isEmpty() ? Map.of()
+                : adoptMapper.selectList(adoptIds, Adopt::getId, Adopt::getPetId, Adopt::getApplicantId)
+                .stream()
+                .collect(Collectors.toMap(Adopt::getId, Function.identity()));
+        Set<Long> petIds = adopts.values().stream()
+                .map(Adopt::getPetId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, Pet> pets = petIds.isEmpty() ? Map.of()
+                : petService.groupById(petIds, Pet::getId, Pet::getName);
         Map<Long, User> users = userService.groupById(
                 result.getRecords().stream().flatMap(task -> Stream.of(task.getWorkerId(), task.getVolunteerId())),
+                adopts.values().stream().map(Adopt::getApplicantId),
                 User::getId, User::getUsername, User::getAvatar);
         Set<Long> followIds = result.getRecords().stream()
                 .map(FollowTask::getId)
@@ -149,7 +172,7 @@ public class AdoptBreadingFacade {
         Map<Long, FollowRecord> records = followIds.isEmpty() ? Map.of()
                 : followRecordMapper.queryByTasks(followIds).group(FollowRecord::getTaskId,
                 FollowRecord::getId, FollowRecord::getTaskId, FollowRecord::getSummary, FollowRecord::getVisitTime);
-        return convert(result, task -> FollowTaskResponse.createBatch(task, users, records));
+        return convert(result, task -> FollowTaskResponse.createBatch(task, adopts, pets, users, records));
     }
 
     public FollowRecordResponse buildFollowRecordResponse(FollowRecord record) {
