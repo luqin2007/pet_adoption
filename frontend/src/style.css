@@ -225,6 +225,26 @@ button {
   font-size: 14px;
 }
 
+.user-menu-dropdown {
+  display: inline-flex;
+}
+
+.user-pill-badge {
+  line-height: 1;
+}
+
+.user-pill-badge .el-badge__content {
+  transform: translateY(-2px);
+}
+
+.header-user-menu .el-dropdown-menu__item {
+  gap: 8px;
+}
+
+.header-notice-menu-badge {
+  margin-left: 6px;
+}
+
 .user-pill-avatar img {
   width: 100%;
   height: 100%;
@@ -1160,6 +1180,10 @@ main {
 .console-menu .el-menu-item.is-active {
   color: var(--primary-strong);
   background: rgba(231, 122, 59, 0.1);
+}
+
+.console-menu-badge {
+  margin-left: auto;
 }
 
 .console-content {
@@ -2332,6 +2356,30 @@ main {
   align-items: center;
   min-height: 22px;
   font-size: 12px;
+}
+
+.notice-filter-panel .el-select {
+  min-width: 160px;
+}
+
+.notice-title-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.notice-title-cell strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notice-content-cell {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color: var(--muted);
 }
 
 .article-metrics-cell {

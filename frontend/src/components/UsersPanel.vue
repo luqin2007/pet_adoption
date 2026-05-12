@@ -3,6 +3,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { Delete, RefreshRight, User } from '@element-plus/icons-vue'
 import { getUsers, removeUserById, updateUserById } from '../api/user'
+import { sendNotice } from '../api/notice'
 import { useUserStore } from '../stores/user'
 import {
   ROLE,
@@ -27,10 +28,13 @@ const userFormRef = ref()
 const loadingUsers = ref(false)
 const userActionCollapsed = ref(false)
 const userDialogVisible = ref(false)
+const noticeDialogVisible = ref(false)
 const savingUser = ref(false)
+const sendingNotice = ref(false)
 const userKeyword = ref('')
 const userRows = ref([])
 const userTotal = ref(0)
+const noticeFormRef = ref()
 const userPage = reactive({
   page: 1,
   size: 10,
@@ -43,6 +47,13 @@ const userForm = reactive({
   phone: '',
   password: '',
   roles: [],
+})
+
+const noticeForm = reactive({
+  receiverId: '',
+  receiverName: '',
+  title: '',
+  content: '',
 })
 
 const userRules = {
@@ -63,6 +74,11 @@ const userRules = {
       trigger: 'blur',
     },
   ],
+}
+
+const noticeRules = {
+  title: [{ required: true, message: '请输入通知标题', trigger: 'blur' }],
+  content: [{ required: true, message: '请输入通知内容', trigger: 'blur' }],
 }
 
 const profileId = computed(() => String(userStore.profile.id || ''))
@@ -119,6 +135,14 @@ function openUserDialog(row) {
   userDialogVisible.value = true
 }
 
+function openNoticeDialog(row) {
+  noticeForm.receiverId = String(row.id || '')
+  noticeForm.receiverName = row.username || '用户'
+  noticeForm.title = ''
+  noticeForm.content = ''
+  noticeDialogVisible.value = true
+}
+
 function handleRoleChange(values) {
   userForm.roles = normalizeRoleValues(values)
 }
@@ -167,6 +191,30 @@ async function deleteUser(row) {
     if (error !== 'cancel' && error !== 'close') {
       ElMessage.warning(error?.message || '删除用户失败')
     }
+  }
+}
+
+async function submitNotice() {
+  if (!noticeFormRef.value || sendingNotice.value) {
+    return
+  }
+  sendingNotice.value = true
+  try {
+    await noticeFormRef.value.validate()
+    await sendNotice({
+      receiverId: noticeForm.receiverId,
+      title: noticeForm.title.trim(),
+      content: noticeForm.content.trim(),
+    })
+    ElMessage.success('站内信已发送')
+    noticeDialogVisible.value = false
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('notice-updated'))
+    }
+  } catch (error) {
+    ElMessage.warning(error?.message || '发送站内信失败')
+  } finally {
+    sendingNotice.value = false
   }
 }
 
@@ -230,6 +278,7 @@ defineExpose({ loadUsers })
             <div class="table-action-cell">
               <div class="table-action-panel" :class="{ 'is-collapsed': userActionCollapsed }">
                 <el-button text type="warning" :disabled="!canEditUser(row)" @click="openUserDialog(row)">编辑</el-button>
+                <el-button text type="primary" @click="openNoticeDialog(row)">通知</el-button>
                 <el-button
                   text
                   type="danger"
@@ -286,6 +335,32 @@ defineExpose({ loadUsers })
     <template #footer>
       <el-button @click="userDialogVisible = false">取消</el-button>
       <el-button type="warning" :loading="savingUser" @click="saveUser">保存</el-button>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="noticeDialogVisible" title="发送站内信" width="560px">
+    <el-form ref="noticeFormRef" :model="noticeForm" :rules="noticeRules" label-position="top">
+      <el-form-item label="接收用户">
+        <el-input :model-value="noticeForm.receiverName" disabled />
+      </el-form-item>
+      <el-form-item label="标题" prop="title">
+        <el-input v-model="noticeForm.title" maxlength="60" show-word-limit placeholder="请输入通知标题" />
+      </el-form-item>
+      <el-form-item label="内容" prop="content">
+        <el-input
+          v-model="noticeForm.content"
+          type="textarea"
+          :rows="6"
+          maxlength="600"
+          show-word-limit
+          placeholder="请输入站内通知内容"
+        />
+      </el-form-item>
+    </el-form>
+
+    <template #footer>
+      <el-button @click="noticeDialogVisible = false">取消</el-button>
+      <el-button type="warning" :loading="sendingNotice" @click="submitNotice">发送</el-button>
     </template>
   </el-dialog>
 </template>

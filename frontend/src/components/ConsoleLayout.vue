@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Connection, Message, SwitchButton, User } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -7,12 +7,14 @@ import { useUserStore } from '../stores/user'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { ROLE, hasRole } from '../utils/roles'
 import { medicalRecordOwnerExists } from '../api/services'
+import { getUnreadNoticeCount } from '../api/notice'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const { loginRole, isLoginAdmin, canManageUsers, canManageMedical, canManageRehab, canManageArticles } = useConsoleGuards()
 const hasOwnedMedicalRecords = ref(false)
+const noticeUnreadCount = ref(0)
 
 const activeMenu = computed(() => {
   if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
@@ -45,6 +47,22 @@ function handleMenuSelect(index) {
 
 function goHome() {
   router.push('/')
+}
+
+async function loadUnreadNoticeCount() {
+  if (!userStore.isLoggedIn) {
+    noticeUnreadCount.value = 0
+    return
+  }
+  try {
+    noticeUnreadCount.value = Number(await getUnreadNoticeCount() || 0)
+  } catch {
+    noticeUnreadCount.value = 0
+  }
+}
+
+function handleNoticeUpdated() {
+  loadUnreadNoticeCount()
 }
 
 async function handleLogout() {
@@ -90,6 +108,16 @@ onMounted(() => {
       router.replace(TAB_REDIRECTS[tab])
     }
   }
+  loadUnreadNoticeCount()
+  if (typeof window !== 'undefined') {
+    window.addEventListener('notice-updated', handleNoticeUpdated)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('notice-updated', handleNoticeUpdated)
+  }
 })
 
 watch(
@@ -133,6 +161,11 @@ watch(
           <el-menu-item index="/console/profile">
             <el-icon><User /></el-icon>
             <span>个人信息</span>
+          </el-menu-item>
+          <el-menu-item index="/console/notices">
+            <el-icon><Message /></el-icon>
+            <span>站内信</span>
+            <el-badge v-if="noticeUnreadCount > 0" :value="noticeUnreadCount" :max="99" class="console-menu-badge" />
           </el-menu-item>
           <el-menu-item v-if="canManageUsers" index="/console/users">
             <el-icon><User /></el-icon>

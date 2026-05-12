@@ -33,6 +33,7 @@ import MedicalHealthAssessmentView from '../views/MedicalHealthAssessmentView.vu
 import AuditHistoryView from '../views/AuditHistoryView.vue'
 import ConsoleLayout from '../components/ConsoleLayout.vue'
 import ProfilePanel from '../components/ProfilePanel.vue'
+import NoticePanel from '../components/NoticePanel.vue'
 import UsersPanel from '../components/UsersPanel.vue'
 import PetsPanel from '../components/PetsPanel.vue'
 import LostPetsPanel from '../components/LostPetsPanel.vue'
@@ -247,6 +248,7 @@ const router = createRouter({
       children: [
         { path: '', redirect: '/console/profile' },
         { path: 'profile', name: 'console-profile', component: ProfilePanel },
+        { path: 'notices', name: 'console-notices', component: NoticePanel },
         { path: 'users', name: 'console-users', component: UsersPanel, meta: { guard: 'canManageUsers' } },
         { path: 'pets', name: 'console-pets', component: PetsPanel },
         { path: 'lost-pets', name: 'console-lost-pets', component: LostPetsPanel },

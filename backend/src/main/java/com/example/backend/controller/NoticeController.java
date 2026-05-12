@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
  * - 获取未读数量：getUnreadCount ( √ × )<br>
  * - 标记已读：read ( √ × )<br>
  * - 标记未读：unread ( √ × )<br>
+ * - 发送站内通知：send ( √ × )<br>
  * - 客户端连接：connect ( √ × )
  */
 @Validated
@@ -32,15 +33,20 @@ public class NoticeController {
     }
 
     @PatchMapping("/read")
-    public Result<Void> read(IdsRequest noticeIds) {
+    public Result<Void> read(@Valid @RequestBody IdsRequest noticeIds) {
         noticeService.readNotice(noticeIds, true);
         return Result.success();
     }
 
     @PatchMapping("/unread")
-    public Result<Void> unread(IdsRequest noticeIds) {
+    public Result<Void> unread(@Valid @RequestBody IdsRequest noticeIds) {
         noticeService.readNotice(noticeIds, false);
         return Result.success();
+    }
+
+    @PostMapping("/send")
+    public Result<NoticeResponse> send(@Valid @RequestBody NoticeSendRequest request) {
+        return Result.success(noticeService.sendNotice(request));
     }
 
     @GetMapping("/unread")

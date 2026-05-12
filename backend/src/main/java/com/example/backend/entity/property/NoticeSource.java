@@ -15,7 +15,8 @@ public enum NoticeSource {
     PET_RECORD, // 流浪宠物
     RESCUE_TASK, // 救助任务
     STOCK, // 库存
-    VOLUNTEER; // 志愿活动
+    VOLUNTEER, // 志愿活动
+    SYSTEM; // 系统通知
 
     public static NoticeSource get(String name) {
         try {

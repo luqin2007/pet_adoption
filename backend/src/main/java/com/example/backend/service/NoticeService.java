@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.backend.component.NoticeSseHub;
 import com.example.backend.dto.IdsRequest;
+import com.example.backend.dto.NoticeSendRequest;
 import com.example.backend.dto.NoticeQueryParams;
 import com.example.backend.dto.NoticeResponse;
 import com.example.backend.dto.PageParams;
@@ -23,6 +24,7 @@ import java.util.List;
 public class NoticeService extends BaseService<NoticeMapper, Notice> {
 
     private final NoticeSseHub noticeSseHub;
+    private final UserService userService;
 
     public Page<NoticeResponse> getNotices(NoticeQueryParams query, PageParams page) {
         User login = requireLoginUser();
@@ -47,6 +49,22 @@ public class NoticeService extends BaseService<NoticeMapper, Notice> {
     }
 
     @Transactional
+    public NoticeResponse sendNotice(NoticeSendRequest request) {
+        User login = requireLoginUser();
+        requirePermission(login.isWorker());
+        User receiver = userService.requireById(request.getReceiverId(), User::getId);
+        Notice notice = Notice.create(receiver.getId(),
+                NoticeSource.SYSTEM,
+                request.getTitle().trim(),
+                request.getContent().trim(),
+                false);
+        save(notice);
+        NoticeResponse response = NoticeResponse.create(notice);
+        noticeSseHub.push(response);
+        return response;
+    }
+
+    @Transactional
     public List<NoticeResponse> addNotices(Collection<User> receivers, NoticeSource source, String title, String content) {
         List<Notice> notices = receivers.stream()
                 .map(receiver -> Notice.create(receiver.getId(), source, title, content, false))
@@ -56,4 +74,5 @@ public class NoticeService extends BaseService<NoticeMapper, Notice> {
                 .map(NoticeResponse::create)
                 .toList();
     }
+
 }
