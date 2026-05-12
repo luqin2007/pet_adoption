@@ -68,10 +68,35 @@ export function getVolunteerProfiles(query = {}) {
   })
 }
 
+export function getVolunteerProfile(id) {
+  return request(`/volunteers/profiles/${id}`, {
+    method: 'GET',
+  })
+}
+
+export function updateVolunteerProfile(id, payload) {
+  return request(`/volunteers/profiles/${id}`, {
+    method: 'PUT',
+    body: payload,
+  })
+}
+
+export function updateVolunteerProfileStatus(id, status) {
+  return request(`/volunteers/profiles/${id}/${status}`, {
+    method: 'POST',
+  })
+}
+
 export function getVolunteerRewards(query = {}) {
   return request('/volunteers/rewards', {
     method: 'GET',
     query,
+  })
+}
+
+export function getVolunteerReward(id) {
+  return request(`/volunteers/rewards/${id}`, {
+    method: 'GET',
   })
 }
 
@@ -126,6 +151,12 @@ export function getVolunteerServiceRecords(query = {}) {
   return request('/volunteers/records', {
     method: 'GET',
     query,
+  })
+}
+
+export function getVolunteerServiceRecord(id) {
+  return request(`/volunteers/records/${id}`, {
+    method: 'GET',
   })
 }
 

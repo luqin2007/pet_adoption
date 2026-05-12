@@ -16,6 +16,7 @@ const hasOwnedMedicalRecords = ref(false)
 
 const activeMenu = computed(() => {
   if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
+  if (route.path.startsWith('/console/volunteer/profiles')) return '/console/volunteer/profiles'
   if (route.path.startsWith('/console/volunteer/activities/')) return '/console/volunteer/activities'
   if (route.path.startsWith('/console/adoption/agreements')) return '/console/adoption/agreements'
   if (route.path.startsWith('/console/adoption/breading')) return '/console/adoption/breading'
@@ -173,6 +174,7 @@ watch(
             </template>
             <el-menu-item v-if="canManageUsers" index="/console/volunteer/recruitments">招募计划</el-menu-item>
             <el-menu-item index="/console/volunteer/applications">招募申请</el-menu-item>
+            <el-menu-item v-if="canManageUsers" index="/console/volunteer/profiles">志愿者档案</el-menu-item>
             <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/rewards">志愿者激励</el-menu-item>
             <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/activities">志愿活动</el-menu-item>
           </el-sub-menu>

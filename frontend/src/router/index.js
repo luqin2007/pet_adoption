@@ -270,6 +270,7 @@ const router = createRouter({
         { path: 'volunteer/recruitments', name: 'console-volunteer-recruitments', component: VolunteerManagementPanel, props: { section: 'recruitments', hideTabs: true }, meta: { guard: 'canManageUsers' } },
         { path: 'volunteer/applications', name: 'console-volunteer-applications', component: VolunteerManagementPanel, props: { section: 'applications', hideTabs: true } },
         { path: 'volunteer/applications/:id', name: 'console-volunteer-application-detail', component: VolunteerApplicationDetailPanel },
+        { path: 'volunteer/profiles', name: 'console-volunteer-profiles', component: VolunteerManagementPanel, props: { section: 'profiles', hideTabs: true }, meta: { guard: 'canManageUsers' } },
         { path: 'volunteer/rewards', name: 'console-volunteer-rewards', component: VolunteerManagementPanel, props: { section: 'rewards', hideTabs: true }, meta: { guard: 'canManageUsersOrVolunteer' } },
         { path: 'volunteer/activities', name: 'console-volunteer-activities', component: VolunteerManagementPanel, props: { section: 'activities', hideTabs: true }, meta: { guard: 'canManageUsersOrVolunteer' } },
         { path: 'volunteer/activities/:id', name: 'console-volunteer-activity-detail', component: VolunteerShiftDetailPanel, meta: { guard: 'canManageUsersOrVolunteer' } },

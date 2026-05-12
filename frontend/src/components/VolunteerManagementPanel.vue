@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Check, Plus, Search } from '@element-plus/icons-vue'
 import {
   createRecruitment,
@@ -9,6 +9,7 @@ import {
   createVolunteerShift,
   getRecruitments,
   getVolunteerApplications,
+  getVolunteerProfile,
   getVolunteerProfiles,
   getVolunteerRewards,
   getVolunteerServiceRecords,
@@ -17,6 +18,8 @@ import {
   updateRecruitment,
   updateRecruitmentStatus,
   updateVolunteerApplicationStatus,
+  updateVolunteerProfile,
+  updateVolunteerProfileStatus,
   updateVolunteerServiceRecordStatus,
   updateVolunteerShift,
   updateVolunteerShiftStatus,
@@ -53,12 +56,14 @@ const ROLE = {
 
 const recruitmentLoading = ref(false)
 const applicationLoading = ref(false)
+const profileLoading = ref(false)
 const rewardLoading = ref(false)
 const shiftLoading = ref(false)
 const recordLoading = ref(false)
 const volunteerOptionsLoading = ref(false)
 const recruitmentActionCollapsed = ref(false)
 const applicationActionCollapsed = ref(false)
+const profileActionCollapsed = ref(false)
 const rewardActionCollapsed = ref(false)
 const shiftActionCollapsed = ref(false)
 const recordActionCollapsed = ref(false)
@@ -69,6 +74,8 @@ const recruitmentRows = ref([])
 const recruitmentTotal = ref(0)
 const applicationRows = ref([])
 const applicationTotal = ref(0)
+const profileRows = ref([])
+const profileTotal = ref(0)
 const rewardRows = ref([])
 const rewardTotal = ref(0)
 const shiftRows = ref([])
@@ -80,6 +87,7 @@ const volunteerOptions = ref([])
 const recruitmentDialogVisible = ref(false)
 const recruitmentStatusDialogVisible = ref(false)
 const applicationReviewDialogVisible = ref(false)
+const profileDialogVisible = ref(false)
 const rewardDialogVisible = ref(false)
 const shiftDialogVisible = ref(false)
 const shiftStatusDialogVisible = ref(false)
@@ -89,6 +97,7 @@ const recordReviewDialogVisible = ref(false)
 
 const recruitmentFormRef = ref()
 const applicationReviewFormRef = ref()
+const profileFormRef = ref()
 const rewardFormRef = ref()
 const shiftFormRef = ref()
 const shiftStatusFormRef = ref()
@@ -97,14 +106,21 @@ const recordReviewFormRef = ref()
 
 const savingRecruitment = ref(false)
 const savingApplicationReview = ref(false)
+const savingProfile = ref(false)
 const savingReward = ref(false)
 const savingShift = ref(false)
 const savingShiftStatus = ref(false)
 const savingRecord = ref(false)
 const savingRecordReview = ref(false)
 
-const isWorker = computed(() => (Number(userStore.profile.role || 0) & ROLE.WORKER) === ROLE.WORKER)
-const isVolunteer = computed(() => (Number(userStore.profile.role || 0) & ROLE.VOLUNTEER) === ROLE.VOLUNTEER)
+function hasRole(role, bit) {
+  return (Number(role || 0) & bit) === bit
+}
+
+const loginRole = computed(() => Number(userStore.profile.role || 0))
+const isAdmin = computed(() => hasRole(loginRole.value, ROLE.ADMIN))
+const isWorker = computed(() => isAdmin.value || hasRole(loginRole.value, ROLE.WORKER))
+const isVolunteer = computed(() => hasRole(loginRole.value, ROLE.VOLUNTEER))
 const loginUserId = computed(() => String(userStore.profile.id || ''))
 const activityVolunteerId = computed(() => String(route.query.volunteer || ''))
 const activityShiftId = computed(() => String(route.query.shift || ''))
@@ -113,6 +129,7 @@ const sections = computed(() => {
   const items = [{ label: '招募申请', value: 'applications' }]
   if (isWorker.value) {
     items.unshift({ label: '招募计划', value: 'recruitments' })
+    items.push({ label: '志愿者档案', value: 'profiles' })
   }
   if (isWorker.value || isVolunteer.value) {
     items.push({ label: '志愿者激励', value: 'rewards' })
@@ -133,6 +150,11 @@ const applicationStatusOptions = [
   { label: '已通过', value: 'APPROVED' },
   { label: '已拒绝', value: 'REJECTED' },
   { label: '已撤回', value: 'CANCELED' },
+]
+
+const profileStatusOptions = [
+  { label: '启用', value: 'ACTIVE' },
+  { label: '停用', value: 'DISABLED' },
 ]
 
 const rewardStatusOptions = [
@@ -180,6 +202,7 @@ const recordStatusOptions = [
 
 const recruitmentPage = reactive({ page: 1, size: 10 })
 const applicationPage = reactive({ page: 1, size: 10 })
+const profilePage = reactive({ page: 1, size: 10 })
 const rewardPage = reactive({ page: 1, size: 10 })
 const shiftPage = reactive({ page: 1, size: 10 })
 const recordPage = reactive({ page: 1, size: 10 })
@@ -196,6 +219,11 @@ const applicationSearch = reactive({
   status: '',
   province: '',
   city: '',
+})
+
+const profileSearch = reactive({
+  keyword: '',
+  status: '',
 })
 
 const rewardSearch = reactive({
@@ -241,6 +269,21 @@ const applicationReviewForm = reactive({
   reason: '',
 })
 
+const profileForm = reactive({
+  id: '',
+  realName: '',
+  sex: '',
+  phone: '',
+  province: '',
+  city: '',
+  district: '',
+  detailAddress: '',
+  skills: '',
+  serviceIntention: '',
+  availableTimeDesc: '',
+  remark: '',
+})
+
 const rewardForm = reactive({
   volunteerId: '',
   periodRange: [],
@@ -271,6 +314,7 @@ const shiftForm = reactive({
 const shiftStatusForm = reactive({
   id: '',
   status: '',
+  currentStatus: '',
   reason: '',
 })
 
@@ -304,6 +348,8 @@ const recruitmentCityOptions = computed(() => getCityOptions(recruitmentSearch.p
 const recruitmentFormCityOptions = computed(() => getCityOptions(recruitmentForm.province))
 const recruitmentFormDistrictOptions = computed(() => getDistrictOptions(recruitmentForm.province, recruitmentForm.city))
 const applicationCityOptions = computed(() => getCityOptions(applicationSearch.province))
+const profileFormCityOptions = computed(() => getCityOptions(profileForm.province))
+const profileFormDistrictOptions = computed(() => getDistrictOptions(profileForm.province, profileForm.city))
 const shiftFormCityOptions = computed(() => getCityOptions(shiftForm.province))
 const shiftFormDistrictOptions = computed(() => getDistrictOptions(shiftForm.province, shiftForm.city))
 
@@ -321,6 +367,17 @@ const recruitmentRules = {
 
 const applicationReviewRules = {
   status: [{ required: true, message: '请选择审核状态', trigger: 'change' }],
+  reason: [{ required: true, message: '请填写审核说明', trigger: 'blur' }],
+}
+
+const profileRules = {
+  realName: [{ required: true, message: '请输入真实姓名', trigger: 'blur' }],
+  sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
+  phone: [{ required: true, message: '请输入联系电话', trigger: 'blur' }],
+  province: [{ required: true, message: '请选择省份', trigger: 'change' }],
+  city: [{ required: true, message: '请选择城市', trigger: 'change' }],
+  district: [{ required: true, message: '请选择区县', trigger: 'change' }],
+  detailAddress: [{ required: true, message: '请输入详细地点', trigger: 'blur' }],
 }
 
 const rewardRules = {
@@ -344,6 +401,7 @@ const shiftRules = {
 
 const shiftStatusRules = {
   status: [{ required: true, message: '请选择排班状态', trigger: 'change' }],
+  reason: [{ required: true, message: '请填写原因说明', trigger: 'blur' }],
 }
 
 const recordRules = {
@@ -354,6 +412,7 @@ const recordRules = {
 
 const recordReviewRules = {
   status: [{ required: true, message: '请选择审核结果', trigger: 'change' }],
+  reason: [{ required: true, message: '请填写审核意见', trigger: 'blur' }],
 }
 
 function formatDate(value, withTime = false) {
@@ -374,6 +433,12 @@ function formatDateTimeString(value) {
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`
 }
 
+function toApiDateTime(value) {
+  if (!value) return undefined
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : date.toISOString()
+}
+
 function canDirectCloseRecruitment(row) {
   if (!row?.endTime) return false
   return new Date().getTime() >= new Date(row.endTime).getTime()
@@ -385,6 +450,17 @@ function recruitmentStatusText(value) {
 
 function applicationStatusText(value) {
   return applicationStatusOptions.find((item) => item.value === value)?.label || value || '待补充'
+}
+
+function profileStatusText(value) {
+  return profileStatusOptions.find((item) => item.value === value)?.label || value || '待补充'
+}
+
+function tagTypeByStatus(value) {
+  if (['APPROVED', 'ACTIVE', 'ISSUED', 'COMPLETED'].includes(value)) return 'success'
+  if (['UNDER_REVIEW', 'CONFIRMED', 'IN_PROGRESS'].includes(value)) return 'primary'
+  if (['REJECTED', 'CANCELED', 'DISABLED', 'CANCELLED', 'ABSENT'].includes(value)) return 'info'
+  return 'warning'
 }
 
 function rewardStatusText(value) {
@@ -420,8 +496,9 @@ function goApplicationDetail(row) {
 }
 
 function goVolunteerActivity(row) {
-  if (!row?.volunteerId) return
-  router.push({ path: '/console/volunteer/activities', query: { volunteer: row.volunteerId } })
+  const volunteerId = row?.volunteerId || row?.userId
+  if (!volunteerId) return
+  router.push({ path: '/console/volunteer/activities', query: { volunteer: volunteerId } })
 }
 
 function goShiftPage(row) {
@@ -447,6 +524,21 @@ function handleApplicationProvinceChange() {
   applicationSearch.city = ''
   if (applicationSearch.province) {
     ensureCityOptions(applicationSearch.province)
+  }
+}
+
+function handleProfileFormProvinceChange() {
+  profileForm.city = ''
+  profileForm.district = ''
+  if (profileForm.province) {
+    ensureCityOptions(profileForm.province)
+  }
+}
+
+function handleProfileFormCityChange() {
+  profileForm.district = ''
+  if (profileForm.province && profileForm.city) {
+    ensureDistrictOptions(profileForm.province, profileForm.city)
   }
 }
 
@@ -489,8 +581,8 @@ function buildRecruitmentQuery() {
     province: recruitmentSearch.province || undefined,
     city: recruitmentSearch.city || undefined,
     status: recruitmentSearch.status ? [recruitmentSearch.status] : undefined,
-    time0: time0 || undefined,
-    time1: time1 || undefined,
+    time0: toApiDateTime(time0),
+    time1: toApiDateTime(time1),
   }
 }
 
@@ -566,8 +658,8 @@ async function saveRecruitment() {
       city: recruitmentForm.city,
       district: recruitmentForm.district,
       detailAddress: recruitmentForm.detailAddress.trim(),
-      startTime: recruitmentForm.timeRange?.[0],
-      endTime: recruitmentForm.timeRange?.[1],
+      startTime: toApiDateTime(recruitmentForm.timeRange?.[0]),
+      endTime: toApiDateTime(recruitmentForm.timeRange?.[1]),
     }
     if (recruitmentForm.id) {
       await updateRecruitment(recruitmentForm.id, payload)
@@ -585,18 +677,24 @@ async function saveRecruitment() {
   }
 }
 
-function openRecruitmentStatusDialog(row) {
+function openRecruitmentStatusDialog(row, status = 'CLOSED') {
   recruitmentStatusForm.id = row.id
-  recruitmentStatusForm.status = 'CLOSED'
-  recruitmentStatusForm.autoReason = canDirectCloseRecruitment(row)
-  recruitmentStatusForm.reason = recruitmentStatusForm.autoReason ? `~ ${formatDateTimeString(new Date())}` : ''
+  recruitmentStatusForm.status = status
+  recruitmentStatusForm.autoReason = status === 'CLOSED' && canDirectCloseRecruitment(row)
+  if (recruitmentStatusForm.autoReason) {
+    recruitmentStatusForm.reason = `~ ${formatDateTimeString(new Date())}`
+  } else if (status === 'PUBLISHED') {
+    recruitmentStatusForm.reason = `发布招募 ${formatDateTimeString(new Date())}`
+  } else {
+    recruitmentStatusForm.reason = ''
+  }
   recruitmentStatusDialogVisible.value = true
 }
 
 async function saveRecruitmentStatus() {
   if (!recruitmentStatusForm.id || !recruitmentStatusForm.status) return
-  if (!recruitmentStatusForm.autoReason && !recruitmentStatusForm.reason.trim()) {
-    ElMessage.warning('未到招募结束时间时，请填写关闭原因')
+  if (!recruitmentStatusForm.reason.trim()) {
+    ElMessage.warning('请填写原因')
     return
   }
   savingRecruitment.value = true
@@ -648,11 +746,153 @@ function changeApplicationPage(page) {
   loadApplications()
 }
 
+function buildProfileQuery() {
+  return {
+    page: profilePage.page,
+    size: profilePage.size,
+    keyword: profileSearch.keyword.trim() || undefined,
+    status: profileSearch.status ? [profileSearch.status] : undefined,
+  }
+}
+
+async function loadProfiles() {
+  if (!isWorker.value) return
+  profileLoading.value = true
+  try {
+    const result = await getVolunteerProfiles(buildProfileQuery())
+    profileRows.value = Array.isArray(result?.records) ? result.records : []
+    profileTotal.value = Number(result?.total || 0)
+  } catch (error) {
+    ElMessage.warning(error?.message || '加载志愿者档案失败')
+  } finally {
+    profileLoading.value = false
+  }
+}
+
+function searchProfiles() {
+  profilePage.page = 1
+  loadProfiles()
+}
+
+function changeProfilePage(page) {
+  profilePage.page = page
+  loadProfiles()
+}
+
+function resetProfileForm() {
+  profileForm.id = ''
+  profileForm.realName = ''
+  profileForm.sex = ''
+  profileForm.phone = ''
+  profileForm.province = ''
+  profileForm.city = ''
+  profileForm.district = ''
+  profileForm.detailAddress = ''
+  profileForm.skills = ''
+  profileForm.serviceIntention = ''
+  profileForm.availableTimeDesc = ''
+  profileForm.remark = ''
+}
+
+async function openProfileDialog(row) {
+  resetProfileForm()
+  profileDialogVisible.value = true
+  profileLoading.value = true
+  try {
+    const detail = await getVolunteerProfile(row.id)
+    Object.assign(profileForm, {
+      id: detail.id || row.id,
+      realName: detail.realName || '',
+      sex: detail.sex || '',
+      phone: detail.phone || '',
+      province: detail.province || '',
+      city: detail.city || '',
+      district: detail.district || '',
+      detailAddress: detail.address || '',
+      skills: detail.skills || '',
+      serviceIntention: detail.serviceIntention || '',
+      availableTimeDesc: detail.availableTimeDesc || '',
+      remark: detail.remark || '',
+    })
+    if (profileForm.province) ensureCityOptions(profileForm.province)
+    if (profileForm.province && profileForm.city) ensureDistrictOptions(profileForm.province, profileForm.city)
+  } catch (error) {
+    profileDialogVisible.value = false
+    ElMessage.warning(error?.message || '加载志愿者档案详情失败')
+  } finally {
+    profileLoading.value = false
+  }
+}
+
+async function saveProfile() {
+  if (!profileFormRef.value) return
+  try {
+    await profileFormRef.value.validate()
+  } catch {
+    return
+  }
+  savingProfile.value = true
+  try {
+    await updateVolunteerProfile(profileForm.id, {
+      realName: profileForm.realName.trim(),
+      sex: profileForm.sex,
+      phone: profileForm.phone.trim(),
+      province: profileForm.province,
+      city: profileForm.city,
+      district: profileForm.district,
+      detailAddress: profileForm.detailAddress.trim(),
+      skills: profileForm.skills.trim() || undefined,
+      serviceIntention: profileForm.serviceIntention.trim() || undefined,
+      availableTimeDesc: profileForm.availableTimeDesc.trim() || undefined,
+      remark: profileForm.remark.trim() || undefined,
+    })
+    ElMessage.success('志愿者档案已保存')
+    profileDialogVisible.value = false
+    loadProfiles()
+    loadVolunteerOptions()
+  } catch (error) {
+    ElMessage.warning(error?.message || '保存志愿者档案失败')
+  } finally {
+    savingProfile.value = false
+  }
+}
+
+async function toggleProfileStatus(row) {
+  const nextStatus = row.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE'
+  const actionText = nextStatus === 'ACTIVE' ? '启用' : '停用'
+  try {
+    await ElMessageBox.confirm(`确认${actionText}「${row.realName || row.username || '该志愿者'}」的志愿者档案？`, `${actionText}档案`, {
+      type: 'warning',
+      confirmButtonText: actionText,
+      cancelButtonText: '取消',
+    })
+    await updateVolunteerProfileStatus(row.id, nextStatus)
+    ElMessage.success(`志愿者档案已${actionText}`)
+    loadProfiles()
+    loadVolunteerOptions()
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      ElMessage.warning(error?.message || `${actionText}档案失败`)
+    }
+  }
+}
+
 function openApplicationReviewDialog(row) {
   applicationReviewForm.id = row.id
-  applicationReviewForm.status = row.status === 'SUBMITTED' ? 'UNDER_REVIEW' : row.status || ''
+  applicationReviewForm.status = row.status === 'SUBMITTED' ? 'UNDER_REVIEW' : ''
   applicationReviewForm.reason = row.reviewComment || ''
   applicationReviewDialogVisible.value = true
+}
+
+function applicationReviewStatusOptions() {
+  const current = applicationRows.value.find((item) => item.id === applicationReviewForm.id)?.status
+  if (current === 'SUBMITTED') {
+    return applicationStatusOptions.filter((item) => ['UNDER_REVIEW', 'APPROVED', 'REJECTED'].includes(item.value))
+  }
+  if (current === 'UNDER_REVIEW') {
+    return applicationStatusOptions.filter((item) => ['APPROVED', 'REJECTED'].includes(item.value))
+  }
+  return applicationStatusOptions.filter((item) => ['APPROVED', 'REJECTED'].includes(item.value))
 }
 
 async function saveApplicationReview() {
@@ -666,7 +906,7 @@ async function saveApplicationReview() {
   try {
     await updateVolunteerApplicationStatus(applicationReviewForm.id, {
       status: applicationReviewForm.status,
-      reason: applicationReviewForm.reason.trim() || undefined,
+      reason: applicationReviewForm.reason.trim(),
     })
     ElMessage.success('申请状态已更新')
     applicationReviewDialogVisible.value = false
@@ -678,6 +918,34 @@ async function saveApplicationReview() {
   }
 }
 
+function canReviewApplication(row) {
+  return isWorker.value && ['SUBMITTED', 'UNDER_REVIEW'].includes(row?.status)
+}
+
+function canCancelApplication(row) {
+  return !isWorker.value && ['SUBMITTED', 'UNDER_REVIEW'].includes(row?.status) && String(row?.userId || '') === loginUserId.value
+}
+
+async function cancelApplication(row) {
+  try {
+    await ElMessageBox.confirm(`确认撤回「${row.recruitmentTitle || '该招募'}」的志愿者申请？`, '撤回申请', {
+      type: 'warning',
+      confirmButtonText: '撤回',
+      cancelButtonText: '取消',
+    })
+    await updateVolunteerApplicationStatus(row.id, {
+      status: 'CANCELED',
+      reason: `${Date.now()} 用户撤回申请`,
+    })
+    ElMessage.success('志愿者申请已撤回')
+    loadApplications()
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') {
+      ElMessage.warning(error?.message || '撤回申请失败')
+    }
+  }
+}
+
 function buildRewardQuery() {
   const [time0, time1] = rewardSearch.timeRange || []
   return {
@@ -685,8 +953,8 @@ function buildRewardQuery() {
     size: rewardPage.size,
     status: rewardSearch.status ? [rewardSearch.status] : undefined,
     type: rewardSearch.type ? [rewardSearch.type] : undefined,
-    time0: time0 || undefined,
-    time1: time1 || undefined,
+    time0: toApiDateTime(time0),
+    time1: toApiDateTime(time1),
   }
 }
 
@@ -741,8 +1009,8 @@ async function saveReward() {
   try {
     await createVolunteerReward({
       volunteerId: rewardForm.volunteerId,
-      periodStart: rewardForm.periodRange?.[0],
-      periodEnd: rewardForm.periodRange?.[1],
+      periodStart: toApiDateTime(rewardForm.periodRange?.[0]),
+      periodEnd: toApiDateTime(rewardForm.periodRange?.[1]),
       serviceCount: rewardForm.serviceCount ? Number(rewardForm.serviceCount) : undefined,
       totalHours: rewardForm.totalHours,
       rewardType: rewardForm.rewardType,
@@ -778,8 +1046,8 @@ function buildShiftQuery() {
     volunteer: activityVolunteerId.value || undefined,
     status: shiftSearch.status ? [shiftSearch.status] : undefined,
     taskType: shiftSearch.taskType ? [shiftSearch.taskType] : undefined,
-    time0: time0 || undefined,
-    time1: time1 || undefined,
+    time0: toApiDateTime(time0),
+    time1: toApiDateTime(time1),
   }
 }
 
@@ -864,8 +1132,8 @@ async function saveShift() {
         city: shiftForm.city,
         district: shiftForm.district,
         detailAddress: shiftForm.detailAddress.trim(),
-        startTime: shiftForm.shiftTimeRange?.[0],
-        endTime: shiftForm.shiftTimeRange?.[1],
+        startTime: toApiDateTime(shiftForm.shiftTimeRange?.[0]),
+        endTime: toApiDateTime(shiftForm.shiftTimeRange?.[1]),
       })
       ElMessage.success('排班已更新')
     } else {
@@ -879,10 +1147,10 @@ async function saveShift() {
         city: shiftForm.city,
         district: shiftForm.district,
         detailAddress: shiftForm.detailAddress.trim(),
-        startTime: shiftForm.shiftTimeRange?.[0],
-        endTime: shiftForm.shiftTimeRange?.[1],
-        taskStartTime: shiftForm.taskTimeRange?.[0],
-        taskEndTime: shiftForm.taskTimeRange?.[1],
+        startTime: toApiDateTime(shiftForm.shiftTimeRange?.[0]),
+        endTime: toApiDateTime(shiftForm.shiftTimeRange?.[1]),
+        taskStartTime: toApiDateTime(shiftForm.taskTimeRange?.[0]),
+        taskEndTime: toApiDateTime(shiftForm.taskTimeRange?.[1]),
         remark: shiftForm.remark.trim() || undefined,
       })
       ElMessage.success('排班已创建')
@@ -898,10 +1166,21 @@ async function saveShift() {
 
 function openShiftStatusDialog(row) {
   shiftStatusForm.id = row.id
-  shiftStatusForm.status = row.status || ''
+  shiftStatusForm.currentStatus = row.status || ''
+  shiftStatusForm.status = availableShiftStatusOptions(row.status)[0]?.value || ''
   shiftStatusForm.reason = ''
   shiftAuditRecords.value = Array.isArray(row.statusRecords) ? row.statusRecords : []
   shiftStatusDialogVisible.value = true
+}
+
+function availableShiftStatusOptions(status = shiftStatusForm.currentStatus) {
+  const allowedMap = {
+    ASSIGNED: ['CANCELLED'],
+    CONFIRMED: ['IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'ABSENT'],
+    IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
+  }
+  const allowed = allowedMap[status] || []
+  return shiftStatusOptions.filter((item) => allowed.includes(item.value))
 }
 
 async function saveShiftStatus() {
@@ -915,7 +1194,7 @@ async function saveShiftStatus() {
   try {
     await updateVolunteerShiftStatus(shiftStatusForm.id, {
       status: shiftStatusForm.status,
-      reason: shiftStatusForm.reason.trim() || undefined,
+      reason: shiftStatusForm.reason.trim(),
     })
     ElMessage.success('排班状态已更新')
     shiftStatusDialogVisible.value = false
@@ -969,8 +1248,8 @@ function buildRecordQuery() {
     volunteer: activityVolunteerId.value || undefined,
     shift: activityShiftId.value || undefined,
     status: recordSearch.status ? [recordSearch.status] : undefined,
-    time0: time0 || undefined,
-    time1: time1 || undefined,
+    time0: toApiDateTime(time0),
+    time1: toApiDateTime(time1),
   }
 }
 
@@ -1019,8 +1298,8 @@ async function saveRecord() {
   savingRecord.value = true
   try {
     await createVolunteerServiceRecord(recordForm.shiftId, {
-      startTime: recordForm.startTime,
-      endTime: recordForm.endTime,
+      startTime: toApiDateTime(recordForm.startTime),
+      endTime: toApiDateTime(recordForm.endTime),
       actualHours: recordForm.actualHours,
       summary: recordForm.summary.trim(),
       content: recordForm.content.trim() || undefined,
@@ -1056,7 +1335,7 @@ async function saveRecordReview() {
   try {
     await updateVolunteerServiceRecordStatus(recordReviewForm.id, {
       status: recordReviewForm.status,
-      reason: recordReviewForm.reason.trim() || undefined,
+      reason: recordReviewForm.reason.trim(),
     })
     ElMessage.success('活动报告审核已更新')
     recordReviewDialogVisible.value = false
@@ -1100,11 +1379,17 @@ function canEditShift(row) {
   return isWorker.value && !['IN_PROGRESS', 'COMPLETED'].includes(row?.status)
 }
 
+function canManageShiftStatus(row) {
+  return isWorker.value && availableShiftStatusOptions(row?.status).length > 0
+}
+
 async function loadBySection(section) {
   if (section === 'recruitments' && isWorker.value) {
     await loadRecruitmentsData()
   } else if (section === 'applications') {
     await loadApplications()
+  } else if (section === 'profiles' && isWorker.value) {
+    await loadProfiles()
   } else if (section === 'rewards' && (isWorker.value || isVolunteer.value)) {
     await loadRewards()
   } else if (section === 'activities' && (isWorker.value || isVolunteer.value)) {
@@ -1215,7 +1500,7 @@ onMounted(async () => {
           </el-table-column>
           <el-table-column label="状态" width="100">
             <template #default="{ row }">
-              <el-tag type="warning" effect="plain">{{ recruitmentStatusText(row.status) }}</el-tag>
+              <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ recruitmentStatusText(row.status) }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="报名" width="100">
@@ -1228,8 +1513,9 @@ onMounted(async () => {
             <template #default="{ row }">
               <div class="table-action-cell">
                 <div class="table-action-panel" :class="{ 'is-collapsed': recruitmentActionCollapsed }">
-                  <el-button text type="warning" @click="openRecruitmentDialog(row)">编辑</el-button>
-                  <el-button text type="danger" :disabled="row.status === 'CLOSED'" @click="openRecruitmentStatusDialog(row)">关闭招募</el-button>
+                  <el-button v-if="row.status === 'DRAFT'" text type="warning" @click="openRecruitmentDialog(row)">编辑</el-button>
+                  <el-button v-if="row.status === 'DRAFT'" text type="success" @click="openRecruitmentStatusDialog(row, 'PUBLISHED')">发布</el-button>
+                  <el-button v-if="row.status !== 'CLOSED'" text type="danger" @click="openRecruitmentStatusDialog(row, 'CLOSED')">关闭招募</el-button>
                 </div>
               </div>
             </template>
@@ -1280,7 +1566,7 @@ onMounted(async () => {
           </el-table-column>
           <el-table-column label="状态" width="110">
             <template #default="{ row }">
-              <el-tag type="warning" effect="plain">{{ applicationStatusText(row.status) }}</el-tag>
+              <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ applicationStatusText(row.status) }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="审核意见" min-width="200" show-overflow-tooltip>
@@ -1293,7 +1579,9 @@ onMounted(async () => {
             <template #default="{ row }">
               <div class="table-action-cell">
                 <div class="table-action-panel" :class="{ 'is-collapsed': applicationActionCollapsed }">
-                  <el-button v-if="isWorker" text type="primary" @click="openApplicationReviewDialog(row)">审核</el-button>
+                  <el-button text type="primary" @click="goApplicationDetail(row)">详情</el-button>
+                  <el-button v-if="canReviewApplication(row)" text type="primary" @click="openApplicationReviewDialog(row)">审核</el-button>
+                  <el-button v-if="canCancelApplication(row)" text type="danger" @click="cancelApplication(row)">撤回</el-button>
                 </div>
               </div>
             </template>
@@ -1302,6 +1590,65 @@ onMounted(async () => {
 
         <div class="user-admin-pagination">
           <el-pagination layout="prev, pager, next, total" :current-page="applicationPage.page" :page-size="applicationPage.size" :total="applicationTotal" @current-change="changeApplicationPage" />
+        </div>
+      </section>
+
+      <section v-else-if="activeSection === 'profiles'" class="pet-admin-section">
+        <section class="filter-panel pet-directory-filter-panel">
+          <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
+            <el-input v-model="profileSearch.keyword" clearable placeholder="姓名、用户名、电话或技能" />
+            <el-select v-model="profileSearch.status" clearable placeholder="档案状态">
+              <el-option v-for="item in profileStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <div class="pet-filter-action volunteer-inline-actions">
+              <el-button class="warm-btn" :icon="Search" :loading="profileLoading" @click="searchProfiles">搜索</el-button>
+            </div>
+          </div>
+        </section>
+
+        <el-table :data="profileRows" v-loading="profileLoading" class="user-admin-table">
+          <el-table-column label="志愿者" min-width="180">
+            <template #default="{ row }">
+              <div class="volunteer-person-cell">
+                <strong>{{ row.realName || row.username || '未命名' }}</strong>
+                <span>{{ row.phone || '联系方式待补充' }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="用户名" min-width="130">
+            <template #default="{ row }">{{ row.username || '' }}</template>
+          </el-table-column>
+          <el-table-column label="地区" min-width="180">
+            <template #default="{ row }">{{ locationText(row) }}</template>
+          </el-table-column>
+          <el-table-column label="技能" min-width="220" show-overflow-tooltip>
+            <template #default="{ row }">{{ row.skills || '' }}</template>
+          </el-table-column>
+          <el-table-column label="状态" width="100">
+            <template #default="{ row }">
+              <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ profileStatusText(row.status) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column width="40" class-name="action-col">
+            <template #header>
+              <TableActionColumnHeader title="操作" :collapsed="profileActionCollapsed" @toggle="profileActionCollapsed = !profileActionCollapsed" />
+            </template>
+            <template #default="{ row }">
+              <div class="table-action-cell">
+                <div class="table-action-panel" :class="{ 'is-collapsed': profileActionCollapsed }">
+                  <el-button text type="warning" @click="openProfileDialog(row)">修改</el-button>
+                  <el-button text :type="row.status === 'ACTIVE' ? 'danger' : 'success'" @click="toggleProfileStatus(row)">
+                    {{ row.status === 'ACTIVE' ? '停用' : '启用' }}
+                  </el-button>
+                  <el-button text type="primary" @click="goVolunteerActivity(row)">排班</el-button>
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="user-admin-pagination">
+          <el-pagination layout="prev, pager, next, total" :current-page="profilePage.page" :page-size="profilePage.size" :total="profileTotal" @current-change="changeProfilePage" />
         </div>
       </section>
 
@@ -1346,7 +1693,7 @@ onMounted(async () => {
           </el-table-column>
           <el-table-column label="状态" width="100">
             <template #default="{ row }">
-              <el-tag type="warning" effect="plain">{{ rewardStatusText(row.status) }}</el-tag>
+              <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ rewardStatusText(row.status) }}</el-tag>
             </template>
           </el-table-column>
           <el-table-column width="40" class-name="action-col">
@@ -1415,7 +1762,7 @@ onMounted(async () => {
             </el-table-column>
             <el-table-column label="状态" width="100">
               <template #default="{ row }">
-                <el-tag type="warning" effect="plain">{{ shiftStatusText(row.status) }}</el-tag>
+                <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ shiftStatusText(row.status) }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column label="地点" min-width="160" show-overflow-tooltip>
@@ -1429,7 +1776,7 @@ onMounted(async () => {
                   <div class="table-action-cell">
                     <div class="table-action-panel" :class="{ 'is-collapsed': shiftActionCollapsed }">
                       <el-button v-if="canEditShift(row)" text type="warning" @click="openShiftDialog(row)">编辑</el-button>
-                      <el-button v-if="isWorker" text type="primary" @click="openShiftStatusDialog(row)">状态</el-button>
+                      <el-button v-if="canManageShiftStatus(row)" text type="primary" @click="openShiftStatusDialog(row)">状态</el-button>
                       <el-button v-if="canConfirmShift(row)" text type="success" @click="confirmShift(row)">确认</el-button>
                       <el-button v-if="canRejectShift(row)" text type="danger" @click="rejectShift(row)">拒绝</el-button>
                       <el-button v-if="canWriteRecord(row)" text type="primary" @click="openRecordDialog(row)">写报告</el-button>
@@ -1481,7 +1828,7 @@ onMounted(async () => {
             <el-table-column prop="summary" label="服务摘要" min-width="160" show-overflow-tooltip />
             <el-table-column label="状态" width="100">
               <template #default="{ row }">
-                <el-tag type="warning" effect="plain">{{ recordStatusText(row.status) }}</el-tag>
+                <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ recordStatusText(row.status) }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column label="审核意见" min-width="140" show-overflow-tooltip>
@@ -1559,18 +1906,18 @@ onMounted(async () => {
     </template>
   </el-dialog>
 
-  <el-dialog v-model="recruitmentStatusDialogVisible" title="关闭招募计划" width="520px">
+  <el-dialog v-model="recruitmentStatusDialogVisible" title="修改招募状态" width="520px">
     <el-form label-position="top">
       <el-form-item label="目标状态">
-        <el-input model-value="已关闭" disabled />
+        <el-input :model-value="recruitmentStatusText(recruitmentStatusForm.status)" disabled />
       </el-form-item>
-      <el-form-item :label="recruitmentStatusForm.autoReason ? '关闭备注' : '关闭原因'" required>
+      <el-form-item :label="recruitmentStatusForm.status === 'CLOSED' ? (recruitmentStatusForm.autoReason ? '关闭备注' : '关闭原因') : '状态备注'" required>
         <el-input
           v-model="recruitmentStatusForm.reason"
           type="textarea"
           :autosize="{ minRows: 4, maxRows: 7 }"
           :disabled="recruitmentStatusForm.autoReason"
-          :placeholder="recruitmentStatusForm.autoReason ? '关闭时间会自动保存' : '招募未结束，请填写原因'"
+          :placeholder="recruitmentStatusForm.status === 'CLOSED' ? (recruitmentStatusForm.autoReason ? '关闭时间会自动保存' : '请填写关闭原因') : '请填写状态变更说明'"
         />
       </el-form-item>
     </el-form>
@@ -1584,16 +1931,68 @@ onMounted(async () => {
     <el-form ref="applicationReviewFormRef" :model="applicationReviewForm" :rules="applicationReviewRules" label-position="top">
       <el-form-item label="申请状态" prop="status">
         <el-select v-model="applicationReviewForm.status" placeholder="请选择状态">
-          <el-option v-for="item in applicationStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-option v-for="item in applicationReviewStatusOptions()" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="审核意见">
-        <el-input v-model="applicationReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="通过或拒绝时可补充原因" />
+      <el-form-item label="审核意见" prop="reason">
+        <el-input v-model="applicationReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="请填写通过、拒绝或进入审核的说明" />
       </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="applicationReviewDialogVisible = false">取消</el-button>
       <el-button type="warning" :loading="savingApplicationReview" @click="saveApplicationReview">保存</el-button>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="profileDialogVisible" title="修改志愿者档案" width="760px">
+    <el-form ref="profileFormRef" :model="profileForm" :rules="profileRules" label-position="top" class="pet-admin-form">
+      <el-form-item label="真实姓名" prop="realName">
+        <el-input v-model="profileForm.realName" placeholder="请输入真实姓名" />
+      </el-form-item>
+      <el-form-item label="性别" prop="sex">
+        <el-select v-model="profileForm.sex" placeholder="请选择性别">
+          <el-option label="未知" value="未知" />
+          <el-option label="男" value="男" />
+          <el-option label="女" value="女" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="联系电话" prop="phone">
+        <el-input v-model="profileForm.phone" placeholder="请输入联系电话" />
+      </el-form-item>
+      <el-form-item label="省份" prop="province">
+        <el-select v-model="profileForm.province" filterable clearable placeholder="省份" @change="handleProfileFormProvinceChange">
+          <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="城市" prop="city">
+        <el-select v-model="profileForm.city" filterable clearable placeholder="城市" :disabled="!profileForm.province" @change="handleProfileFormCityChange">
+          <el-option v-for="item in profileFormCityOptions" :key="item" :label="item" :value="item" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="区县" prop="district">
+        <el-select v-model="profileForm.district" filterable clearable placeholder="区县" :disabled="!profileForm.city">
+          <el-option v-for="item in profileFormDistrictOptions" :key="item" :label="item" :value="item" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="详细地点" prop="detailAddress" class="pet-admin-span-2">
+        <el-input v-model="profileForm.detailAddress" placeholder="请输入详细地点" />
+      </el-form-item>
+      <el-form-item label="技能说明" class="pet-admin-span-2">
+        <el-input v-model="profileForm.skills" type="textarea" :autosize="{ minRows: 3, maxRows: 6 }" />
+      </el-form-item>
+      <el-form-item label="服务意向" class="pet-admin-span-2">
+        <el-input v-model="profileForm.serviceIntention" type="textarea" :autosize="{ minRows: 3, maxRows: 6 }" />
+      </el-form-item>
+      <el-form-item label="可服务时间" class="pet-admin-span-2">
+        <el-input v-model="profileForm.availableTimeDesc" type="textarea" :autosize="{ minRows: 3, maxRows: 6 }" />
+      </el-form-item>
+      <el-form-item label="备注" class="pet-admin-span-2">
+        <el-input v-model="profileForm.remark" type="textarea" :autosize="{ minRows: 3, maxRows: 6 }" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="profileDialogVisible = false">取消</el-button>
+      <el-button type="warning" :loading="savingProfile" @click="saveProfile">保存</el-button>
     </template>
   </el-dialog>
 
@@ -1712,10 +2111,10 @@ onMounted(async () => {
     <el-form ref="shiftStatusFormRef" :model="shiftStatusForm" :rules="shiftStatusRules" label-position="top">
       <el-form-item label="排班状态" prop="status">
         <el-select v-model="shiftStatusForm.status" placeholder="请选择状态">
-          <el-option v-for="item in shiftStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-option v-for="item in availableShiftStatusOptions()" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="原因说明">
+      <el-form-item label="原因说明" prop="reason">
         <el-input v-model="shiftStatusForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="例如：志愿者缺勤、活动结束、临时取消" />
       </el-form-item>
     </el-form>
@@ -1764,7 +2163,7 @@ onMounted(async () => {
           <el-option label="已驳回" value="REJECTED" />
         </el-select>
       </el-form-item>
-      <el-form-item label="审核意见">
+      <el-form-item label="审核意见" prop="reason">
         <el-input v-model="recordReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="填写审核说明或驳回原因" />
       </el-form-item>
     </el-form>
