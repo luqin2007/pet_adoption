@@ -38,11 +38,7 @@ const activeMenu = computed(() => {
 const canViewMedical = computed(() => canManageMedical.value || canManageRehab.value || hasOwnedMedicalRecords.value)
 
 function handleMenuSelect(index) {
-  if (index === 'api-coverage') {
-    router.push('/api-coverage')
-  } else {
-    router.push(index)
-  }
+  router.push(index)
 }
 
 function goHome() {
@@ -236,10 +232,6 @@ watch(
             <el-menu-item v-if="canManageRehab" index="/console/medical/rehab">康复计划</el-menu-item>
             <el-menu-item v-if="canManageMedical" index="/console/medical/health">健康评估</el-menu-item>
           </el-sub-menu>
-          <el-menu-item index="api-coverage">
-            <el-icon><Connection /></el-icon>
-            <span>接口覆盖台</span>
-          </el-menu-item>
         </el-menu>
       </aside>
 

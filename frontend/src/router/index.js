@@ -7,7 +7,6 @@ import ArticleEditorView from '../views/ArticleEditorView.vue'
 import AuthView from '../views/AuthView.vue'
 import ForgotPasswordView from '../views/ForgotPasswordView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
-import ApiCoverageView from '../views/ApiCoverageView.vue'
 import BreadingCreateView from '../views/BreadingCreateView.vue'
 import DonationCreateView from '../views/DonationCreateView.vue'
 import HomeView from '../views/HomeView.vue'
@@ -295,12 +294,6 @@ const router = createRouter({
       path: '/console/audit-history',
       name: 'audit-history',
       component: AuditHistoryView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/api-coverage',
-      name: 'api-coverage',
-      component: ApiCoverageView,
       meta: { requiresAuth: true },
     },
   ],
