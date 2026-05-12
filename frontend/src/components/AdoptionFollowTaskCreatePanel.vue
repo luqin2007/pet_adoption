@@ -71,7 +71,6 @@
                 </div>
               </el-option>
             </el-select>
-            <el-empty v-if="!volunteerLoading && !volunteerOptions.length" description="暂无可用志愿者" />
           </section>
         </div>
       </div>
