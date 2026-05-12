@@ -146,15 +146,4 @@ function goBack() { router.back() }
   color: #333;
   margin: 0;
 }
-.form-group-title {
-  display: flex;
-  align-items: center;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--el-color-warning);
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #eee;
-  margin-top: 16px;
-  margin-bottom: 12px;
-}
 </style>

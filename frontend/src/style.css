@@ -434,33 +434,6 @@ main {
   font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
 }
 
-.progress-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
-.progress-metrics div {
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  padding: 12px 10px;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.8);
-}
-
-.progress-metrics span {
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.progress-metrics strong {
-  display: block;
-  margin-top: 5px;
-  font-size: 24px;
-  color: var(--primary-strong);
-}
-
 .quick-action-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -529,12 +502,6 @@ main {
   line-height: 1.45;
 }
 
-.panel-note {
-  margin: 12px 0 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
 .story-card {
   box-shadow: 0 10px 24px rgba(151, 96, 56, 0.1);
 }
@@ -556,12 +523,6 @@ main {
 
 .content-section {
   margin-top: 34px;
-}
-
-.section-action {
-  margin-top: 18px;
-  display: flex;
-  justify-content: center;
 }
 
 .section-head {
@@ -814,7 +775,6 @@ main {
 
 .activity-cover-placeholder,
 .article-cover-placeholder,
-.content-highlight-cover-placeholder,
 .hub-card-cover-placeholder,
 .lost-cover-placeholder {
   width: 100%;
@@ -1330,12 +1290,6 @@ main {
   gap: 14px;
 }
 
-.user-admin-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 10px;
-}
-
 .full-width-control,
 .full-width-control.el-input-number,
 .full-width-control.el-date-editor {
@@ -1402,38 +1356,6 @@ main {
   min-width: 0;
 }
 
-.pet-admin-section-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-}
-
-.pet-admin-section-head strong {
-  color: var(--primary-strong);
-  font-size: 17px;
-}
-
-.pet-admin-section-head span {
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.pet-record-button.el-button {
-  background: #fff;
-  border-color: rgba(231, 122, 59, 0.35);
-  color: var(--primary-strong);
-  font-weight: 800;
-}
-
-.pet-record-button.el-button:hover,
-.pet-record-button.el-button:focus {
-  background: #fffaf4;
-  border-color: rgba(231, 122, 59, 0.7);
-  color: var(--primary-strong);
-}
-
 .pet-admin-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1458,16 +1380,8 @@ main {
   padding-top: 12px;
 }
 
-.pet-admin-span-2,
-.pet-admin-actions {
+.pet-admin-span-2 {
   grid-column: span 2;
-}
-
-.pet-admin-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  flex-wrap: wrap;
 }
 
 .pet-admin-pet {
@@ -1869,20 +1783,6 @@ main {
   min-width: 0;
 }
 
-.pet-inline-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 8px;
-  min-width: 0;
-}
-
-.pet-inline-group > .el-date-editor,
-.pet-inline-group > .el-input,
-.pet-inline-group > .el-select {
-  width: 100%;
-  min-width: 0;
-}
-
 .pet-filter-row-primary {
   align-items: center;
 }
@@ -2096,72 +1996,6 @@ main {
   line-height: 1.8;
 }
 
-.content-highlight {
-  display: grid;
-  grid-template-columns: minmax(220px, 44%) minmax(0, 1fr);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  border: 1px solid var(--line);
-  background: rgba(255, 253, 249, 0.96);
-  box-shadow: 0 12px 30px rgba(151, 96, 56, 0.08);
-}
-
-.content-highlight img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  min-height: 280px;
-}
-
-.content-highlight-cover-placeholder {
-  min-height: 280px;
-}
-
-.content-highlight-body {
-  padding: 20px;
-}
-
-.content-highlight-body h2 {
-  margin: 14px 0 0;
-  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
-  font-size: 28px;
-  line-height: 1.35;
-}
-
-.content-highlight-body p {
-  margin: 14px 0 0;
-  color: var(--muted);
-  line-height: 1.75;
-}
-
-.content-highlight-meta,
-.hub-card-meta {
-  margin-top: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  color: #6f4b35;
-  font-size: 13px;
-}
-
-.content-highlight-meta span,
-.hub-card-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.content-highlight-meta .iconify,
-.hub-card-meta .iconify {
-  color: var(--accent);
-  font-size: 16px;
-}
-
-.article-filter-panel {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-}
-
 .article-hub-grid {
   margin-top: 18px;
   display: grid;
@@ -2213,34 +2047,6 @@ main {
   color: var(--muted);
   line-height: 1.72;
   min-height: 72px;
-}
-
-.volunteer-hero {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-xl);
-  background:
-    radial-gradient(circle at top right, rgba(47, 157, 143, 0.14), transparent 30%),
-    linear-gradient(155deg, rgba(255, 253, 249, 0.97) 0%, rgba(255, 244, 232, 0.92) 100%);
-  box-shadow: var(--shadow);
-  padding: 22px;
-}
-
-.volunteer-hero-copy-full {
-  display: grid;
-  gap: 10px;
-}
-
-.volunteer-hero-copy-full h1 {
-  margin: 0;
-  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
-  font-size: clamp(34px, 4vw, 48px);
-  line-height: 1.15;
-}
-
-.volunteer-hero-copy-full p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.8;
 }
 
 .volunteer-directory-filter-panel {
@@ -2353,24 +2159,6 @@ main {
   gap: 18px;
 }
 
-.article-console-filter-form {
-  gap: 16px;
-}
-
-.article-filter-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.article-filter-grid-primary {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.article-filter-grid-secondary {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
-}
-
 .article-search-btn.el-button {
   border-radius: 999px;
   border-color: rgba(231, 122, 59, 0.2);
@@ -2385,10 +2173,6 @@ main {
   justify-content: center;
   width: 100%;
   min-height: 32px;
-}
-
-.table-action-header-label {
-  display: none;
 }
 
 .table-action-toggle {
@@ -2494,14 +2278,6 @@ main {
 .article-editor-form {
   display: grid;
   gap: 4px;
-}
-
-.article-publish-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--muted);
-  font-size: 13px;
 }
 
 .article-editor-shell {
@@ -3043,41 +2819,6 @@ main {
 
 .recruitment-detail-panel > .el-alert {
   margin-bottom: 16px;
-}
-
-.lost-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
-  gap: 20px;
-}
-
-.lost-sidecard {
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--line);
-  background:
-    radial-gradient(circle at top right, rgba(231, 122, 59, 0.18), transparent 32%),
-    rgba(255, 253, 249, 0.96);
-  padding: 24px;
-  display: grid;
-  gap: 10px;
-  align-content: center;
-  box-shadow: 0 12px 30px rgba(151, 96, 56, 0.08);
-}
-
-.lost-sidecard strong {
-  font-size: 42px;
-  color: var(--primary-strong);
-  line-height: 1;
-}
-
-.lost-sidecard span {
-  font-weight: 700;
-  color: #6c4834;
-}
-
-.lost-sidecard small {
-  color: var(--muted);
-  line-height: 1.7;
 }
 
 .lost-grid {
@@ -3867,12 +3608,6 @@ main {
   text-align: right;
 }
 
-.pet-profile-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
 .pet-profile-health-status {
   min-height: 72px;
   display: flex;
@@ -4507,15 +4242,7 @@ main {
     grid-template-columns: 1fr;
   }
 
-  .volunteer-hero {
-    grid-template-columns: 1fr;
-  }
-
   .article-detail-hero {
-    grid-template-columns: 1fr;
-  }
-
-  .lost-hero {
     grid-template-columns: 1fr;
   }
 
@@ -4651,8 +4378,7 @@ main {
   }
 
   .pet-cascader-group-2,
-  .pet-cascader-group-3,
-  .pet-inline-group {
+  .pet-cascader-group-3 {
     grid-template-columns: 1fr;
   }
 
@@ -4686,10 +4412,6 @@ main {
     grid-column: span 1;
     justify-content: flex-start;
     margin-left: 0;
-  }
-
-  .content-highlight {
-    grid-template-columns: 1fr;
   }
 
   .volunteer-grid {
@@ -4731,21 +4453,7 @@ main {
     grid-column: span 1;
   }
 
-  .user-admin-toolbar {
-    grid-template-columns: 1fr;
-  }
-
-  .article-publish-row {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
   .profile-avatar-field {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .pet-admin-section-head {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -4755,8 +4463,6 @@ main {
   }
 
   .pet-admin-span-2,
-  .pet-admin-actions,
-  .console-filter-span-2,
   .action-form-span-2,
   .location-add-span-2,
   .pet-album-upload-box .action-form-actions {
@@ -4832,13 +4538,8 @@ main {
   }
 
   .content-hero-copy,
-  .content-highlight-body,
   .hub-card-body {
     padding: 16px;
-  }
-
-  .progress-metrics {
-    grid-template-columns: 1fr;
   }
 
   .console-detail-summary,
