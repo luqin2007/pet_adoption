@@ -1090,26 +1090,38 @@ main {
 }
 
 .console-page {
-  max-width: 1220px;
-  margin: 0 auto;
-  padding: 18px 20px 30px;
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding: 14px 16px 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 249, 0.72), rgba(255, 249, 242, 0.94)),
+    var(--bg);
 }
 
 .console-topbar {
   border: 1px solid var(--line);
-  border-radius: var(--radius-xl);
-  background: rgba(255, 253, 249, 0.92);
-  padding: 18px 20px;
+  border-radius: 14px;
+  background: rgba(255, 253, 249, 0.96);
+  padding: 12px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  box-shadow: 0 10px 24px rgba(163, 104, 59, 0.08);
+  position: sticky;
+  top: 10px;
+  z-index: 18;
+  backdrop-filter: blur(12px);
 }
 
 .console-topbar h1 {
   margin: 0;
-  font-size: 30px;
-  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  font-size: 22px;
+  font-family: 'Nunito Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-weight: 900;
+  letter-spacing: 0;
 }
 
 .console-topbar p {
@@ -1126,18 +1138,25 @@ main {
 }
 
 .console-layout {
-  margin-top: 16px;
+  margin-top: 14px;
   display: grid;
-  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: 252px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
 }
 
 .console-sidebar {
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 253, 249, 0.9);
-  padding: 14px;
-  height: fit-content;
+  border-radius: 14px;
+  background: rgba(255, 253, 249, 0.95);
+  padding: 10px;
+  height: calc(100vh - 106px);
+  position: sticky;
+  top: 82px;
+  overflow: auto;
+  box-shadow: 0 10px 26px rgba(163, 104, 59, 0.08);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(231, 122, 59, 0.42) transparent;
 }
 
 .console-sidebar h2 {
@@ -1149,11 +1168,17 @@ main {
 .console-menu.el-menu {
   border-right: none;
   background: transparent;
+  --el-menu-item-height: 38px;
+  --el-menu-sub-item-height: 36px;
 }
 
 .console-menu .el-sub-menu__title {
-  border-radius: 10px;
-  margin: 4px 0;
+  border-radius: 8px;
+  margin: 2px 0;
+  height: 38px;
+  line-height: 38px;
+  font-weight: 800;
+  color: #5d3927;
 }
 
 .console-menu .el-sub-menu__title:hover,
@@ -1168,18 +1193,23 @@ main {
 }
 
 .console-menu .el-menu-item {
-  border-radius: 10px;
-  margin: 4px 0;
+  border-radius: 8px;
+  margin: 2px 0;
+  height: 38px;
+  line-height: 38px;
+  color: #5d3927;
 }
 
 .console-menu .el-sub-menu .el-menu-item {
-  margin-left: 8px;
-  background: rgba(255, 253, 249, 0.4);
+  margin-left: 4px;
+  padding-left: 34px !important;
+  background: rgba(255, 248, 241, 0.72);
 }
 
 .console-menu .el-menu-item.is-active {
   color: var(--primary-strong);
   background: rgba(231, 122, 59, 0.1);
+  font-weight: 900;
 }
 
 .console-menu-badge {
@@ -1188,21 +1218,29 @@ main {
 
 .console-content {
   min-width: 0;
+  width: 100%;
+}
+
+.console-content > * {
+  width: 100%;
 }
 
 .profile-card.el-card {
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 253, 249, 0.92);
+  border-radius: 14px;
+  background: rgba(255, 253, 249, 0.98);
+  box-shadow: 0 10px 26px rgba(163, 104, 59, 0.08);
+  width: 100%;
 }
 
 .profile-card .el-card__header {
   border-bottom: 1px solid var(--line);
-  padding: 14px 18px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, rgba(255, 248, 241, 0.96), rgba(255, 253, 249, 0.96));
 }
 
 .profile-card .el-card__body {
-  padding: 18px;
+  padding: 14px;
 }
 
 .profile-card-header {
@@ -1214,7 +1252,8 @@ main {
 }
 
 .profile-card-header strong {
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: 900;
 }
 
 .profile-card-header span {
@@ -1304,8 +1343,26 @@ main {
 }
 
 .user-admin-table {
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
+  width: 100%;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+}
+
+.user-admin-table.el-table {
+  --el-table-header-bg-color: #fff7ee;
+  --el-table-row-hover-bg-color: rgba(231, 122, 59, 0.06);
+  --el-table-border-color: rgba(243, 223, 204, 0.9);
+  font-size: 13px;
+}
+
+.user-admin-table .el-table__header th {
+  color: #6f4b35;
+  font-weight: 900;
+}
+
+.user-admin-table .el-table__cell {
+  padding: 8px 0;
 }
 
 .user-role-tag {
@@ -1332,16 +1389,17 @@ main {
 
 .pet-admin-card .el-card__body {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 
 .pet-admin-section {
   border: 1px solid rgba(243, 223, 204, 0.9);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.7);
-  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 12px;
   display: grid;
-  gap: 14px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .pet-admin-section-head {
@@ -1721,26 +1779,26 @@ main {
 }
 
 .filter-panel {
-  margin-top: 18px;
+  margin-top: 0;
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  padding: 18px;
+  gap: 10px;
+  padding: 12px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 253, 249, 0.92);
+  border-radius: 12px;
+  background: rgba(255, 250, 244, 0.92);
 }
 
 .filter-panel.pet-directory-filter-panel {
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 10px;
 }
 
 .pet-filter-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .pet-filter-row > .el-select,

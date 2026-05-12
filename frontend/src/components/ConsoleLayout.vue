@@ -142,6 +142,7 @@ watch(
     <header class="console-topbar">
       <div>
         <h1>后台管理</h1>
+        <p>{{ userStore.displayName }} 的全幅工作台</p>
       </div>
       <div class="console-topbar-actions">
         <el-button text type="warning" @click="goHome">
