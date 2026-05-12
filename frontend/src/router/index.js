@@ -61,6 +61,7 @@ import AgreementDraftPanel from '../components/AgreementDraftPanel.vue'
 import AgreementManagementPanel from '../components/AgreementManagementPanel.vue'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
 import VolunteerApplicationDetailPanel from '../components/VolunteerApplicationDetailPanel.vue'
+import VolunteerShiftDetailPanel from '../components/VolunteerShiftDetailPanel.vue'
 import { medicalRecordOwnerExists } from '../api/services'
 
 const router = createRouter({
@@ -265,6 +266,7 @@ const router = createRouter({
         { path: 'volunteer/applications/:id', name: 'console-volunteer-application-detail', component: VolunteerApplicationDetailPanel },
         { path: 'volunteer/rewards', name: 'console-volunteer-rewards', component: VolunteerManagementPanel, props: { section: 'rewards', hideTabs: true }, meta: { guard: 'canManageUsersOrVolunteer' } },
         { path: 'volunteer/activities', name: 'console-volunteer-activities', component: VolunteerManagementPanel, props: { section: 'activities', hideTabs: true }, meta: { guard: 'canManageUsersOrVolunteer' } },
+        { path: 'volunteer/activities/:id', name: 'console-volunteer-activity-detail', component: VolunteerShiftDetailPanel, meta: { guard: 'canManageUsersOrVolunteer' } },
         { path: 'medical/first', name: 'console-medical-first', component: MedicalFirstPanel, meta: { guard: 'canViewMedical' } },
         { path: 'medical/first/:id', name: 'console-medical-first-detail', component: FirstRegistrationDetailPanel, meta: { guard: 'canViewMedical' } },
         { path: 'medical/records', name: 'console-medical-records', component: MedicalRecordPanel, meta: { guard: 'canViewMedical' } },

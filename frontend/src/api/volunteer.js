@@ -95,6 +95,12 @@ export function getVolunteerShifts(query = {}) {
   })
 }
 
+export function getVolunteerShift(id) {
+  return request(`/volunteers/shifts/${id}`, {
+    method: 'GET',
+  })
+}
+
 export function createVolunteerShift(payload) {
   return request('/volunteers/shifts', {
     method: 'POST',

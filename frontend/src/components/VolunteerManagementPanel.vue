@@ -425,18 +425,14 @@ function goVolunteerActivity(row) {
 }
 
 function goShiftPage(row) {
-  if (row?.taskType === 'RESCUE' && row?.taskSourceId) {
-    router.push(`/tasks/${row.taskSourceId}`)
-    return
-  }
   if (row?.id) {
-    router.push({ path: '/console/volunteer/activities', query: { shift: row.id, volunteer: row.volunteerId || undefined } })
+    router.push({ name: 'console-volunteer-activity-detail', params: { id: String(row.id) } })
   }
 }
 
 function goRecordShift(row) {
   if (row?.shiftId) {
-    router.push({ path: '/console/volunteer/activities', query: { shift: row.shiftId, volunteer: row.volunteerId || undefined } })
+    router.push({ name: 'console-volunteer-activity-detail', params: { id: String(row.shiftId) } })
   }
 }
 

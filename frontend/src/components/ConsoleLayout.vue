@@ -16,6 +16,7 @@ const hasOwnedMedicalRecords = ref(false)
 
 const activeMenu = computed(() => {
   if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
+  if (route.path.startsWith('/console/volunteer/activities/')) return '/console/volunteer/activities'
   if (route.path.startsWith('/console/adoption/agreements')) return '/console/adoption/agreements'
   if (route.path.startsWith('/console/adoption/breading')) return '/console/adoption/breading'
   if (route.path.startsWith('/console/adoption/follow-records')) return '/console/adoption/follow-tasks'
