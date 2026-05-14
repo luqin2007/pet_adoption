@@ -626,6 +626,7 @@ CREATE TABLE `follow_record` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '领养跟踪记录',
   `task_id` bigint NOT NULL COMMENT '跟踪任务 id',
   `volunteer_id` bigint NOT NULL COMMENT '志愿者 id',
+  `adopter_id` bigint NOT NULL COMMENT '领养人员',
   `summary` varchar(255) NOT NULL COMMENT '简介状况',
   `visit_time` datetime NOT NULL COMMENT '回访时间',
   `life_status` text COMMENT '生活状态',
@@ -637,7 +638,9 @@ CREATE TABLE `follow_record` (
   KEY `idx_follow_record_task_id` (`task_id`),
   CONSTRAINT `fk_follow_record_task_id` FOREIGN KEY (`task_id`) REFERENCES `follow_task` (`id`),
   KEY `idx_follow_record_volunteer_id` (`volunteer_id`),
-  CONSTRAINT `fk_follow_record_volunteer_id` FOREIGN KEY (`volunteer_id`) REFERENCES `user` (`id`)
+  CONSTRAINT `fk_follow_record_volunteer_id` FOREIGN KEY (`volunteer_id`) REFERENCES `user` (`id`),
+      KEY `idx_follow_record_adopter_id` (`adopter_id`),
+  CONSTRAINT `fk_follow_record_adopter_id` FOREIGN KEY (`adopter_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='领养跟踪记录';
 
 CREATE TABLE `category` (
