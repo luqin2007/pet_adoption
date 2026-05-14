@@ -119,7 +119,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getVisibleFollowTasks, updateFollowTask } from '../api/services'
+import { getFollowTasks, updateFollowTask } from '../api/services'
 import { getVolunteerProfiles } from '../api/volunteer'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
@@ -343,7 +343,7 @@ async function submitModify() {
 async function loadRows() {
   loading.value = true
   try {
-    const result = await getVisibleFollowTasks({
+    const result = await getFollowTasks({
       page: page.page,
       size: page.size,
       sort: 'plan_time',

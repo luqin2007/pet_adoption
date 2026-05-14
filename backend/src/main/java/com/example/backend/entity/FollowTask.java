@@ -33,6 +33,12 @@ public class FollowTask implements IId {
     private Long workerId;
 
     /**
+     * 领养人员
+     * *外键:user(id) 非空 bigint*
+     */
+    private Long adopterId;
+
+    /**
      * 志愿者 id
      * *外键:user(id) bigint*
      */

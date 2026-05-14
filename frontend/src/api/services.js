@@ -125,13 +125,6 @@ export function getFollowTasks(query = {}) {
   })
 }
 
-export function getVisibleFollowTasks(query = {}) {
-  return request('/adopt/follow/task/visible', {
-    method: 'GET',
-    query,
-  })
-}
-
 export function updateFollowTask(id, payload) {
   return request(`/adopt/follow/${id}`, {
     method: 'PUT',
@@ -156,13 +149,6 @@ export function getFollowRecords(idOrQuery, page) {
   return request('/adopt/follow/record', {
     method: 'GET',
     query: idOrQuery || {},
-  })
-}
-
-export function getVisibleFollowRecords(query = {}) {
-  return request('/adopt/follow/record/visible', {
-    method: 'GET',
-    query,
   })
 }
 

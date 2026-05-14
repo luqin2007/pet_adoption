@@ -604,6 +604,7 @@ CREATE TABLE `follow_task` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '领养跟踪任务',
   `adopt_id` bigint NOT NULL COMMENT '申请 id',
   `worker_id` bigint NOT NULL COMMENT '安排人员',
+  `adopter_id` bigint NOT NULL COMMENT '领养人员',
   `volunteer_id` bigint COMMENT '志愿者 id',
   `status` varchar(20) NOT NULL COMMENT '状态',
   `remark` text COMMENT '备注（如节假日顺延等）',
@@ -615,6 +616,8 @@ CREATE TABLE `follow_task` (
   CONSTRAINT `fk_follow_task_adopt_id` FOREIGN KEY (`adopt_id`) REFERENCES `adopt` (`id`),
   KEY `idx_follow_task_worker_id` (`worker_id`),
   CONSTRAINT `fk_follow_task_worker_id` FOREIGN KEY (`worker_id`) REFERENCES `user` (`id`),
+  KEY `idx_follow_task_adopter_id` (`adopter_id`),
+  CONSTRAINT `fk_follow_task_adopter_id` FOREIGN KEY (`adopter_id`) REFERENCES `user` (`id`),
   KEY `idx_follow_task_volunteer_id` (`volunteer_id`),
   CONSTRAINT `fk_follow_task_volunteer_id` FOREIGN KEY (`volunteer_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='领养跟踪任务';

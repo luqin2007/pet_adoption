@@ -51,7 +51,7 @@ public class RehabPlanAddRequest implements IRequest {
     }
 
     public List<Order> createOrders(Long allowerId, Long planId) {
-        return (orders == null ? List.<OrderRequest>of() : orders).stream()
+        return (orders == null || orders.isEmpty()) ? List.of() : orders.stream()
                 .map(request -> request.create(allowerId, planId, REHAB_PLAN))
                 .toList();
     }

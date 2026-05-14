@@ -11,6 +11,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -139,6 +140,19 @@ public class MPLambdaQuery<T extends IId> {
 
     public <V> MPLambdaQuery<T> asc(SFunction<T, V> column) {
         query.orderByAsc(column);
+        return this;
+    }
+
+    @SafeVarargs
+    public final MPLambdaQuery<T> or(boolean condition, Consumer<LambdaQueryWrapper<T>>... conditions) {
+        if (conditions.length == 0 || !condition) return this;
+        query.and(wrapper -> {
+            conditions[0].accept(wrapper);
+            for (int i = 1; i < conditions.length; i++) {
+                wrapper.or();
+                conditions[i].accept(wrapper);
+            }
+        });
         return this;
     }
 

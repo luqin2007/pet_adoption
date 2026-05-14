@@ -281,15 +281,6 @@ public class AdoptBreadingController {
     }
 
     /**
-     * 查询当前用户可见回访任务
-     */
-    @GetMapping("/follow/task/visible")
-    public Result<Page<FollowTaskResponse>> getVisibleFollowTasks(PageParams page) {
-        Page<FollowTaskResponse> response = adoptBreadingService.getVisibleFollowTasks(page);
-        return Result.success(response);
-    }
-
-    /**
      * 提交回访记录
      */
     @PostMapping("/follow/{id}/record")
@@ -314,15 +305,6 @@ public class AdoptBreadingController {
     @GetMapping("/follow/record")
     public Result<Page<FollowRecordResponse>> getFollowRecords(@Valid FollowRecordQueryParams query, PageParams page) {
         Page<FollowRecordResponse> response = adoptBreadingService.getFollowRecords(query, page);
-        return Result.success(response);
-    }
-
-    /**
-     * 查询当前用户可见回访记录
-     */
-    @GetMapping("/follow/record/visible")
-    public Result<Page<FollowRecordResponse>> getVisibleFollowRecords(PageParams page) {
-        Page<FollowRecordResponse> response = adoptBreadingService.getVisibleFollowRecords(page);
         return Result.success(response);
     }
 }

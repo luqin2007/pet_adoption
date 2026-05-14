@@ -13,6 +13,8 @@ public class FollowRecordQueryParams implements IParam, IValidatedRequest {
     private Date time0;
     private Date time1;
 
+    private Long requireAdopter, requireVolunteer;
+
     @Override
     public void validate(Errors errors) {
         validateTime(errors, FollowRecordQueryParams::getTime0, FollowRecordQueryParams::getTime1);

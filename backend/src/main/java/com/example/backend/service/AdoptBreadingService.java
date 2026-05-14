@@ -1,7 +1,6 @@
 package com.example.backend.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.entity.property.*;
@@ -460,7 +459,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requireAgreementStatus(agreement, AGREEMENT_PENDING_CONFIRM, "exception.invalidate.agreement.status_abnormal");
+        requireAgreementStatus(agreement, AGREEMENT_PENDING_CONFIRM);
         require(StringUtils.hasText(agreement.getSign()), "exception.invalidate.agreement.status_abnormal");
 
         Date now = new Date();
@@ -494,12 +493,12 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         };
     }
 
-    private void requireAgreementStatus(Agreement agreement, AdoptBreadingStatus expected, String message) {
-        requireEqual(expected, requireAgreementStatus(agreement), message);
+    private void requireAgreementStatus(Agreement agreement, AdoptBreadingStatus expected) {
+        requireEqual(expected, requireAgreementStatus(agreement), "exception.invalidate.agreement.status_abnormal");
     }
 
     private void requireAgreementDraft(Agreement agreement) {
-        requireAgreementStatus(agreement, AGREEMENT_DRAFT, "exception.invalidate.agreement.status_abnormal");
+        requireAgreementStatus(agreement, AGREEMENT_DRAFT);
     }
 
     private void requireAgreementPendingOrDraft(Agreement agreement) {
@@ -537,13 +536,12 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Long volunteerId = request.getVolunteerId();
         User volunteer = userService.requireById(volunteerId, User::getRole);
         requirePermission(volunteer.isVolunteer());
-        Adopt adopt = requireById(adoptId,
-                Adopt::getStatus);
+        Adopt adopt = requireById(adoptId, Adopt::getStatus);
         require(Set.of(AdoptBreadingStatus.AGREEMENT_SIGNED, AdoptBreadingStatus.TRACKING).contains(adopt.getStatus()),
                 "exception.invalidate.adopt.status_invalid");
 
         // 记录
-        FollowTask task = request.create(adoptId, login.getId());
+        FollowTask task = request.create(adoptId, adopt.getApplicantId(), login.getId());
         followTaskMapper.insert(task);
         if (adopt.getStatus() == AdoptBreadingStatus.AGREEMENT_SIGNED) {
             baseMapper.updateStatus(adoptId, AdoptBreadingStatus.TRACKING).update();
@@ -723,92 +721,19 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询回访任务列表
      */
     public Page<FollowTaskResponse> getFollowTasks(FollowTaskQueryParams query, PageParams page) {
+        User login = requireLoginUser();
+        if (!login.isWorker()) {
+            query.setRequireAdopter(login.getId());
+            if (login.isVolunteer()) {
+                query.setRequireVolunteer(login.getId());
+            }
+        } else { // 工作人员查询不需要限定领养人、志愿者
+            query.setRequireAdopter(null);
+            query.setRequireVolunteer(null);
+        }
+
         Page<FollowTask> result = followTaskMapper.queryByRequest(query).page(page);
         return adoptBreadingFacade.buildFollowTaskPage(result);
-    }
-
-    /**
-     * 查询当前用户可见的回访任务
-     */
-    public Page<FollowTaskResponse> getVisibleFollowTasks(PageParams pageRequest) {
-        User login = requireLoginUser();
-        if (login.isWorker()) {
-            Page<FollowTask> result = followTaskMapper.lambdaQuery()
-                    .desc(FollowTask::getPlanTime)
-                    .desc(FollowTask::getCreateTime)
-                    .page(pageRequest);
-            return adoptBreadingFacade.buildFollowTaskPage(result);
-        }
-
-        Map<Long, FollowTask> tasks = new LinkedHashMap<>();
-        followTaskMapper.lambdaQuery()
-                .eq(FollowTask::getVolunteerId, login.getId())
-                .list()
-                .forEach(task -> tasks.put(task.getId(), task));
-
-        AdoptQueryParams adoptQuery = new AdoptQueryParams();
-        adoptQuery.setUser(Set.of(login.getId()));
-        Set<Long> adoptIds = baseMapper.queryByRequest(adoptQuery)
-                .list(Adopt::getId)
-                .collect(Collectors.toSet());
-        if (!adoptIds.isEmpty()) {
-            followTaskMapper.queryByAdopts(adoptIds)
-                    .list()
-                    .forEach(task -> tasks.put(task.getId(), task));
-        }
-
-        List<FollowTask> visibleTasks = tasks.values().stream()
-                .sorted(Comparator
-                        .comparing(FollowTask::getPlanTime, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(FollowTask::getCreateTime, Comparator.nullsLast(Comparator.reverseOrder())))
-                .toList();
-        int page = Math.max(1, pageRequest.getPage());
-        int size = Math.max(1, pageRequest.getSize());
-        int from = Math.min(visibleTasks.size(), (page - 1) * size);
-        int to = Math.min(visibleTasks.size(), from + size);
-        Page<FollowTask> result = PageDTO.of(page, size, visibleTasks.size());
-        result.setRecords(from >= to ? List.of() : visibleTasks.subList(from, to));
-        return adoptBreadingFacade.buildFollowTaskPage(result);
-    }
-
-    /**
-     * 查询当前用户可见的回访记录
-     */
-    public Page<FollowRecordResponse> getVisibleFollowRecords(PageParams pageRequest) {
-        User login = requireLoginUser();
-        if (login.isWorker()) {
-            Page<FollowRecord> result = followRecordMapper.lambdaQuery()
-                    .desc(FollowRecord::getVisitTime)
-                    .page(pageRequest);
-            return adoptBreadingFacade.buildFollowRecordPage(result);
-        }
-
-        Set<Long> taskIds = new HashSet<>();
-        taskIds.addAll(followTaskMapper.lambdaQuery()
-                .eq(FollowTask::getVolunteerId, login.getId())
-                .list(FollowTask::getId)
-                .toList());
-
-        AdoptQueryParams adoptQuery = new AdoptQueryParams();
-        adoptQuery.setUser(Set.of(login.getId()));
-        Set<Long> adoptIds = baseMapper.queryByRequest(adoptQuery)
-                .list(Adopt::getId)
-                .collect(Collectors.toSet());
-        if (!adoptIds.isEmpty()) {
-            taskIds.addAll(followTaskMapper.queryByAdopts(adoptIds)
-                    .list(FollowTask::getId)
-                    .toList());
-        }
-
-        List<FollowRecord> records = taskIds.isEmpty() ? List.of()
-                : followRecordMapper.queryByTasks(taskIds).list();
-        int page = Math.max(1, pageRequest.getPage());
-        int size = Math.max(1, pageRequest.getSize());
-        int from = Math.min(records.size(), (page - 1) * size);
-        int to = Math.min(records.size(), from + size);
-        Page<FollowRecord> result = PageDTO.of(page, size, records.size());
-        result.setRecords(from >= to ? List.of() : records.subList(from, to));
-        return adoptBreadingFacade.buildFollowRecordPage(result);
     }
 
     /**
@@ -819,13 +744,13 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         // 权限校验
         User login = requireLoginUser();
         FollowTask task = followTaskMapper.requireById(taskId,
-                FollowTask::getStatus, FollowTask::getVolunteerId);
+                FollowTask::getStatus, FollowTask::getAdopterId, FollowTask::getVolunteerId);
         requireEqual(FollowTaskStatus.IN_PROGRESS, task.getStatus(), "exception.invalidate.follow_task.status_invalid");
         requirePermission(login.isWorker() || login.is(task.getVolunteerId()));
         if (followRecordMapper.queryByTask(taskId).exists())
             throw ServiceException.conflict("exception.conflict.follow_record.exists");
 
-        FollowRecord record = request.create(taskId, login.getId());
+        FollowRecord record = request.create(taskId, task.getAdopterId(), login.getId());
         followRecordMapper.insert(record);
         eventPublisher.publishEvent(new FollowRecordEvent(record, login));
         return adoptBreadingFacade.buildFollowRecordResponse(record);
@@ -842,8 +767,18 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     /**
      * 查询回访记录
      */
-    public Page<FollowRecordResponse> getFollowRecords(FollowRecordQueryParams queryRequest, PageParams pageRequest) {
-        Page<FollowRecord> result = followRecordMapper.queryByRequest(queryRequest).page(pageRequest);
+    public Page<FollowRecordResponse> getFollowRecords(FollowRecordQueryParams query, PageParams page) {
+        User login = requireLoginUser();
+        if (!login.isWorker()) {
+            query.setRequireAdopter(login.getId());
+            if (login.isVolunteer()) {
+                query.setRequireVolunteer(login.getId());
+            }
+        } else { // 工作人员查询不需要限定领养人、志愿者
+            query.setRequireAdopter(null);
+            query.setRequireVolunteer(null);
+        }
+        Page<FollowRecord> result = followRecordMapper.queryByRequest(query).page(page);
         return adoptBreadingFacade.buildFollowRecordPage(result);
     }
 
