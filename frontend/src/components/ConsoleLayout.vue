@@ -147,9 +147,8 @@ watch(
           </el-menu-item>
           <el-menu-item index="/console/notices">
             <el-icon><Message /></el-icon>
-            <el-badge :value="noticeUnreadCount" :max="99" :hidden="noticeUnreadCount === 0" class="console-menu-badge">
-              <span>站内信</span>
-            </el-badge>
+            <span>站内信</span>
+            <span v-if="noticeUnreadCount > 0" class="console-menu-badge">{{ noticeUnreadCount > 99 ? '99+' : noticeUnreadCount }}</span>
           </el-menu-item>
           <el-menu-item v-if="canManageUsers" index="/console/users">
             <el-icon><User /></el-icon>

@@ -1189,6 +1189,16 @@ main {
 
 .console-menu-badge {
   margin-left: auto;
+  flex-shrink: 0;
+  border-radius: 10px;
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 20px;
+  min-width: 20px;
+  text-align: center;
+  background: var(--el-color-danger);
+  color: #fff;
+  font-weight: 600;
 }
 
 .console-content {
@@ -1373,6 +1383,26 @@ main {
 .filter-range-input {
   flex: 1;
   min-width: 0;
+}
+
+.filter-time-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-time-item {
+  width: 100%;
+}
+
+.filter-enum-vertical .el-checkbox {
+  display: flex;
+  margin-right: 0;
+  margin-bottom: 6px;
+}
+
+.filter-enum-vertical .el-checkbox:last-child {
+  margin-bottom: 0;
 }
 
 .user-role-tag {

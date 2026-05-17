@@ -36,7 +36,7 @@ defineProps({
       </template>
 
       <template v-else-if="type === 'enum'">
-        <el-checkbox-group v-model="filter.values">
+        <el-checkbox-group v-model="filter.values" :class="{ 'filter-enum-vertical': options.length <= 5 }">
           <el-checkbox v-for="opt in options" :key="opt.value" :label="opt.value">
             {{ opt.label }}
           </el-checkbox>
@@ -52,14 +52,22 @@ defineProps({
       </template>
 
       <template v-else-if="type === 'time'">
-        <el-date-picker
-          v-model="filter.range"
-          type="daterange"
-          value-format="YYYY-MM-DD"
-          start-placeholder="开始"
-          end-placeholder="结束"
-          class="filter-range-input"
-        />
+        <div class="filter-time-stack">
+          <el-date-picker
+            v-model="filter.start"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="开始日期"
+            class="filter-time-item"
+          />
+          <el-date-picker
+            v-model="filter.end"
+            type="date"
+            value-format="YYYY-MM-DD"
+            placeholder="结束日期"
+            class="filter-time-item"
+          />
+        </div>
       </template>
     </el-popover>
   </div>

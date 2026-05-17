@@ -11,7 +11,7 @@ export function useTableFilters(config) {
     } else if (cfg.type === 'number') {
       filters[key] = { type: 'number', min: null, max: null }
     } else if (cfg.type === 'time') {
-      filters[key] = { type: 'time', range: null }
+      filters[key] = { type: 'time', start: null, end: null }
     }
   }
 
@@ -21,7 +21,7 @@ export function useTableFilters(config) {
     if (f.type === 'text') return f.value.trim() !== ''
     if (f.type === 'enum') return f.values.length > 0
     if (f.type === 'number') return f.min !== null || f.max !== null
-    if (f.type === 'time') return f.range !== null && f.range.length === 2
+    if (f.type === 'time') return f.start !== null || f.end !== null
     return false
   }
 
@@ -53,12 +53,11 @@ export function useTableFilters(config) {
           result = result.filter((r) => Number(r[key] ?? 0) <= f.max)
         }
       } else if (f.type === 'time') {
-        if (f.range && f.range.length === 2) {
-          const [start, end] = f.range
+        if (f.start || f.end) {
           result = result.filter((r) => {
             const t = new Date(r[key]).getTime()
-            return (!start || t >= new Date(start).getTime()) &&
-              (!end || t <= new Date(end).getTime())
+            return (!f.start || t >= new Date(f.start).getTime()) &&
+              (!f.end || t <= new Date(f.end).getTime())
           })
         }
       }
