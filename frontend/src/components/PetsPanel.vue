@@ -83,11 +83,13 @@
                   <el-button v-if="canManageUsers" text type="primary" @click="openPetDialog(row)">审核</el-button>
                   <el-button v-if="canEditPet(row)" text type="warning" @click="openPetEditor(row)">编辑</el-button>
                   <el-button v-if="canEditPet(row)" text type="danger" @click="removePet(row)">删除</el-button>
-                  <el-button v-if="canManageMedical && !petFirstRegIds.has(row.id)" text type="success" @click="goCreateFirstReg(row)">初诊</el-button>
-                  <el-button v-if="petFirstRegIds.has(row.id) && canManageMedical" text type="primary" @click="goMedicalRecord(row)">就诊</el-button>
-                  <el-button v-if="canManageMedical" text type="success" @click="openVaccineDialog(row)">疫苗</el-button>
-                  <el-button v-if="canManageMedical" text type="primary" @click="openDewormDialog(row)">驱虫</el-button>
-                  <el-button v-if="isDoctor" text type="warning" @click="openAssessmentDialog(row)">评估</el-button>
+                  <div v-if="showMedicalActions(row)" class="table-action-row">
+                    <el-button v-if="canManageMedical && !petFirstRegIds.has(row.id)" text type="success" @click="goCreateFirstReg(row)">初诊</el-button>
+                    <el-button v-if="petFirstRegIds.has(row.id) && canManageMedical" text type="primary" @click="goMedicalRecord(row)">就诊</el-button>
+                    <el-button v-if="canManageMedical" text type="success" @click="openVaccineDialog(row)">疫苗</el-button>
+                    <el-button v-if="canManageMedical" text type="primary" @click="openDewormDialog(row)">驱虫</el-button>
+                    <el-button v-if="isDoctor" text type="warning" @click="openAssessmentDialog(row)">评估</el-button>
+                  </div>
                 </div>
               </div>
             </template>
@@ -394,6 +396,9 @@ function isOwnPet(row) {
 
 function canEditPet(row) {
   return canManageUsers.value || (isOwnPet(row) && ['WAITING', 'AGAINST'].includes(String(row?.status || '')))
+}
+function showMedicalActions(row) {
+  return ['SHELTERED', 'HEALTH'].includes(row?.status)
 }
 
 function dewormerTypeText(value) {
