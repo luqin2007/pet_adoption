@@ -237,7 +237,10 @@ onMounted(() => {
     <template #header>
       <div class="profile-card-header">
         <strong>个人信息修改</strong>
-        <span>修改后将同步到你的登录资料</span>
+        <div class="profile-actions">
+          <el-button @click="resetForm">重置</el-button>
+          <el-button type="warning" :loading="submitting" @click="submitProfile">保存</el-button>
+        </div>
       </div>
     </template>
 
@@ -298,10 +301,6 @@ onMounted(() => {
         </el-input>
       </el-form-item>
 
-      <div class="profile-actions">
-        <el-button @click="resetForm">重置</el-button>
-        <el-button type="warning" :loading="submitting" @click="submitProfile">保存修改</el-button>
-      </div>
     </el-form>
   </el-card>
 </template>
