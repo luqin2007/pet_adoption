@@ -368,6 +368,7 @@ main {
   --el-button-text-color: #2b150a;
   --el-button-hover-text-color: #2b150a;
   --el-button-active-text-color: #2b150a;
+  color: #2b150a;
   font-weight: 700;
 }
 
