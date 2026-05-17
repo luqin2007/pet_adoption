@@ -1333,6 +1333,32 @@ main {
   padding: 8px 0;
 }
 
+.table-filter-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.filter-icon {
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.filter-icon:hover {
+  color: var(--text);
+}
+
+.filter-icon.filter-active {
+  color: var(--primary);
+}
+
+.filter-mode-toggle {
+  margin-top: 10px;
+}
+
 .user-role-tag {
   margin: 2px 5px 2px 0;
 }
