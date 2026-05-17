@@ -67,7 +67,14 @@ export function useNoticeSse() {
 
   async function connect() {
     if (!started) return
-    const token = userStore.accessToken
+    // Read from localStorage directly to always get the freshest token
+    const session = (() => {
+      try {
+        const raw = localStorage.getItem('pet_adoption_user_session')
+        return raw ? JSON.parse(raw) : null
+      } catch { return null }
+    })()
+    const token = session?.accessToken || userStore.accessToken
     if (!token) {
       scheduleReconnect(userStore, 5000)
       return

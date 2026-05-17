@@ -1,3 +1,5 @@
+import { getActivePinia } from 'pinia'
+
 const API_BASE_URL = String(import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
 const API_PREFIX = String(import.meta.env.VITE_API_PREFIX || '/api/v1')
   .replace(/^\/?/, '/')
@@ -92,6 +94,7 @@ function clearSession() {
     return
   }
   localStorage.removeItem(SESSION_STORAGE_KEY)
+  syncStoreFromLocalStorage()
 }
 
 function syncSessionFromAuthData(userData) {
@@ -110,6 +113,25 @@ function syncSessionFromAuthData(userData) {
       avatar: buildAssetUrl(userData.avatar ?? current.profile.avatar ?? ''),
     },
   })
+  syncStoreFromLocalStorage()
+}
+
+function syncStoreFromLocalStorage() {
+  try {
+    const pinia = getActivePinia()
+    if (!pinia) return
+    const store = pinia._s.get('user')
+    if (!store) return
+    const session = readSession()
+    store.accessToken = session.accessToken
+    store.refreshToken = session.refreshToken
+    store.profile.id = session.profile.id
+    store.profile.username = session.profile.username
+    store.profile.email = session.profile.email
+    store.profile.avatar = session.profile.avatar
+  } catch {
+    // Pinia not yet initialized
+  }
 }
 
 function withApiPrefix(path) {
