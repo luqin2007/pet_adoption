@@ -160,15 +160,10 @@ watch(
             <el-icon><Connection /></el-icon>
             <span>救助任务</span>
           </el-menu-item>
-          <el-sub-menu index="/console/articles">
-            <template #title>
-              <el-icon><Message /></el-icon>
-              <span>公益文章</span>
-            </template>
-            <el-menu-item v-if="canManageArticles" index="/console/articles/mine">我的文章</el-menu-item>
-            <el-menu-item index="/console/articles/favorites">我的收藏</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/articles/manage">文章管理</el-menu-item>
-          </el-sub-menu>
+          <el-menu-item index="/console/articles">
+            <el-icon><Message /></el-icon>
+            <span>公益文章</span>
+          </el-menu-item>
           <el-menu-item index="/console/adoption">
             <el-icon><Connection /></el-icon>
             <span>领养寄养</span>

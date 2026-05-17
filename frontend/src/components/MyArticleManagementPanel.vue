@@ -246,9 +246,9 @@ onMounted(() => {
     </template>
 
     <el-tabs v-model="activeTab" class="article-tabs">
-      <el-tab-pane label="我的收藏" name="favorites" />
-      <el-tab-pane v-if="isWorker || isVolunteer" label="我的文章" name="mine" />
-      <el-tab-pane v-if="isWorker" label="文章管理" name="manage" />
+      <el-tab-pane label="收藏" name="favorites" />
+      <el-tab-pane v-if="isWorker || isVolunteer" label="我的" name="mine" />
+      <el-tab-pane v-if="isWorker" label="管理" name="manage" />
     </el-tabs>
 
     <section class="pet-admin-section article-admin-shell">
