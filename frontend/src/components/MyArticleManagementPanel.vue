@@ -239,8 +239,11 @@ onMounted(() => {
       <div class="profile-card-header">
         <strong>公益文章</strong>
         <div class="profile-actions">
-          <el-button v-if="!isFavoriteMode" class="warm-btn" :icon="Plus" @click="goCreateArticle">发表文章</el-button>
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
+          <el-button-group v-if="!isFavoriteMode" class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="goCreateArticle" />
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh" />
+          </el-button-group>
+          <el-button v-else class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh" />
         </div>
       </div>
     </template>
