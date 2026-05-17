@@ -42,6 +42,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  allowedSections: {
+    type: Array,
+    default: null,
+  },
 })
 
 const userStore = useUserStore()
@@ -134,6 +138,9 @@ const sections = computed(() => {
   if (isWorker.value || isVolunteer.value) {
     items.push({ label: '志愿者激励', value: 'rewards' })
     items.push({ label: '志愿活动', value: 'activities' })
+  }
+  if (props.allowedSections) {
+    return items.filter((item) => props.allowedSections.includes(item.value))
   }
   return items
 })

@@ -5,6 +5,7 @@
         <strong>领养寄养</strong>
         <span>{{ activeTabSubtitle }}</span>
         <div class="profile-actions">
+          <el-button class="warm-btn" :icon="Plus" @click="router.push('/breading/new')">寄养</el-button>
           <el-button class="warm-btn" :icon="RefreshRight" :loading="activeTabLoading" @click="handleActiveTabRefresh">刷新</el-button>
         </div>
       </div>
@@ -496,7 +497,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowDown, ArrowUp, Delete, Edit, RefreshRight, Upload } from '@element-plus/icons-vue'
+import { ArrowDown, ArrowUp, Delete, Edit, Plus, RefreshRight, Upload } from '@element-plus/icons-vue'
 import {
   deleteAgreementFile,
   getAdoptApplication,

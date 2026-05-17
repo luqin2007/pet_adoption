@@ -17,7 +17,7 @@ const hasOwnedMedicalRecords = ref(false)
 const { unreadCount: noticeUnreadCount, check: checkNoticeCount } = useNoticeSse()
 
 const activeMenu = computed(() => {
-  if (route.path.startsWith('/console/volunteer')) return '/console/volunteer'
+  if (route.path.startsWith('/console/volunteer')) return route.path.startsWith('/console/volunteer/recruitments') ? '/console/volunteer/recruitments' : '/console/volunteer'
   if (route.path.startsWith('/console/adoption')) return '/console/adoption'
   if (route.path.startsWith('/console/items/donations')) return '/console/items/donations'
   if (route.path.startsWith('/console/items/stocks')) return '/console/items/stocks'
@@ -168,10 +168,14 @@ watch(
             <el-icon><Connection /></el-icon>
             <span>领养寄养</span>
           </el-menu-item>
-          <el-menu-item index="/console/volunteer">
-            <el-icon><Connection /></el-icon>
-            <span>志愿者</span>
-          </el-menu-item>
+          <el-sub-menu index="/console/volunteer">
+            <template #title>
+              <el-icon><Connection /></el-icon>
+              <span>志愿者</span>
+            </template>
+            <el-menu-item index="/console/volunteer">志愿者</el-menu-item>
+            <el-menu-item index="/console/volunteer/recruitments">志愿者招募</el-menu-item>
+          </el-sub-menu>
           <el-sub-menu index="/console/items">
             <template #title>
               <el-icon><Connection /></el-icon>

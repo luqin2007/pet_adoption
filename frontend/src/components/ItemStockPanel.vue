@@ -64,7 +64,7 @@
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="物资管理" name="catalog">
+      <el-tab-pane label="物资类型" name="catalog">
         <section class="pet-admin-section">
           <div class="item-stock-block-head">
             <strong>物资信息</strong>
@@ -95,7 +95,7 @@
           </el-table>
         </section>
 
-        <section class="pet-admin-section">
+        <section class="pet-admin-section" style="margin-top: 20px">
           <div class="item-stock-block-head">
             <strong>物资分类</strong>
             <el-button class="soft-btn" :icon="Plus" @click="openCategoryDialog()">添加分类</el-button>

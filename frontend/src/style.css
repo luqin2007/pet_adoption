@@ -1343,6 +1343,16 @@ main {
   padding: 8px 0;
 }
 
+.item-stock-tabs .el-tab-pane {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.item-stock-tabs .user-admin-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
 .table-filter-header {
   display: inline-flex;
   align-items: center;
@@ -1433,10 +1443,7 @@ main {
 }
 
 .pet-admin-section {
-  border: 1px solid rgba(243, 223, 204, 0.9);
-  border-radius: 12px;
   background: rgba(255, 255, 255, 0.82);
-  padding: 12px;
   display: grid;
   gap: 12px;
   min-width: 0;
@@ -2247,12 +2254,27 @@ main {
 
 .article-admin-card .el-card__body {
   display: grid;
-  gap: 18px;
+  /* gap: 18px; */
 }
 
 .article-admin-shell {
   display: grid;
   gap: 18px;
+}
+
+.article-tabs {
+  --el-tabs-header-margin-bottom: 0;
+}
+
+.article-tabs .el-tabs__header {
+  margin-bottom: 0;
+}
+
+.article-tabs + .pet-admin-section {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 0;
+  margin-top: 0;
 }
 
 .article-search-btn.el-button {
