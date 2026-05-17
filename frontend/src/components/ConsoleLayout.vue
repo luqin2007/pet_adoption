@@ -5,16 +5,16 @@ import { ArrowLeft, Connection, Message, SwitchButton, User } from '@element-plu
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { useNoticePoller } from '../composables/useNoticePoller'
 import { ROLE, hasRole } from '../utils/roles'
 import { medicalRecordOwnerExists } from '../api/services'
-import { getUnreadNoticeCount } from '../api/notice'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const { loginRole, isLoginAdmin, canManageUsers, canManageMedical, canManageRehab, canManageArticles } = useConsoleGuards()
 const hasOwnedMedicalRecords = ref(false)
-const noticeUnreadCount = ref(0)
+const { unreadCount: noticeUnreadCount, check: checkNoticeCount } = useNoticePoller()
 
 const activeMenu = computed(() => {
   if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
@@ -45,20 +45,8 @@ function goHome() {
   router.push('/')
 }
 
-async function loadUnreadNoticeCount() {
-  if (!userStore.isLoggedIn) {
-    noticeUnreadCount.value = 0
-    return
-  }
-  try {
-    noticeUnreadCount.value = Number(await getUnreadNoticeCount() || 0)
-  } catch {
-    noticeUnreadCount.value = 0
-  }
-}
-
 function handleNoticeUpdated() {
-  loadUnreadNoticeCount()
+  checkNoticeCount()
 }
 
 async function handleLogout() {
@@ -104,7 +92,6 @@ onMounted(() => {
       router.replace(TAB_REDIRECTS[tab])
     }
   }
-  loadUnreadNoticeCount()
   if (typeof window !== 'undefined') {
     window.addEventListener('notice-updated', handleNoticeUpdated)
   }
