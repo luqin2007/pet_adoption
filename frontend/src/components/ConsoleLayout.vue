@@ -17,9 +17,7 @@ const hasOwnedMedicalRecords = ref(false)
 const { unreadCount: noticeUnreadCount, check: checkNoticeCount } = useNoticeSse()
 
 const activeMenu = computed(() => {
-  if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
-  if (route.path.startsWith('/console/volunteer/profiles')) return '/console/volunteer/profiles'
-  if (route.path.startsWith('/console/volunteer/activities/')) return '/console/volunteer/activities'
+  if (route.path.startsWith('/console/volunteer')) return '/console/volunteer'
   if (route.path.startsWith('/console/adoption')) return '/console/adoption'
   if (route.path.startsWith('/console/items/donations')) return '/console/items/donations'
   if (route.path.startsWith('/console/items/stocks')) return '/console/items/stocks'
@@ -83,7 +81,7 @@ onMounted(() => {
     if (tab === 'articles') {
       router.replace('/console/articles')
     } else if (tab === 'volunteer') {
-      router.replace(isLoginAdmin.value || hasRole(loginRole.value, ROLE.WORKER) ? '/console/volunteer/recruitments' : '/console/volunteer/applications')
+      router.replace('/console/volunteer')
     } else if (TAB_REDIRECTS[tab]) {
       router.replace(TAB_REDIRECTS[tab])
     }
@@ -175,17 +173,10 @@ watch(
             <el-icon><Connection /></el-icon>
             <span>领养寄养</span>
           </el-menu-item>
-          <el-sub-menu index="/console/volunteer">
-            <template #title>
-              <el-icon><Connection /></el-icon>
-              <span>志愿者</span>
-            </template>
-            <el-menu-item v-if="canManageUsers" index="/console/volunteer/recruitments">招募计划</el-menu-item>
-            <el-menu-item index="/console/volunteer/applications">招募申请</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/volunteer/profiles">志愿者档案</el-menu-item>
-            <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/rewards">志愿者激励</el-menu-item>
-            <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/activities">志愿活动</el-menu-item>
-          </el-sub-menu>
+          <el-menu-item index="/console/volunteer">
+            <el-icon><Connection /></el-icon>
+            <span>志愿者</span>
+          </el-menu-item>
           <el-sub-menu index="/console/items">
             <template #title>
               <el-icon><Connection /></el-icon>
