@@ -10,15 +10,10 @@ import { useTableFilters } from '../composables/useTableFilters'
 import TableFilterHeader from './TableFilterHeader.vue'
 import { ROLE, hasRole } from '../utils/roles'
 
-const props = defineProps({
-  mode: {
-    type: String,
-    default: 'mine',
-  },
-})
-
 const router = useRouter()
 const userStore = useUserStore()
+
+const activeTab = ref('favorites')
 
 const ARTICLE_TYPE_OPTIONS = [
   { label: '救助故事', value: 'STORY' },
@@ -47,37 +42,19 @@ const isAdmin = computed(() => hasRole(loginRole.value, ROLE.ADMIN))
 const isWorker = computed(() => isAdmin.value || hasRole(loginRole.value, ROLE.WORKER))
 const isVolunteer = computed(() => hasRole(loginRole.value, ROLE.VOLUNTEER))
 const loginUserId = computed(() => String(userStore.profile.id || ''))
-const isManageMode = computed(() => props.mode === 'manage')
-const isFavoriteMode = computed(() => props.mode === 'favorites')
-const canUseCurrentMode = computed(() => {
-  if (isManageMode.value) {
-    return isWorker.value
-  }
-  if (isFavoriteMode.value) {
-    return Boolean(userStore.accessToken)
-  }
-  return isWorker.value || isVolunteer.value
-})
-const pageTitle = computed(() => {
-  if (isManageMode.value) return '文章管理'
-  if (isFavoriteMode.value) return '我的收藏'
-  return '我的文章'
-})
+const isManageMode = computed(() => activeTab.value === 'manage')
+const isFavoriteMode = computed(() => activeTab.value === 'favorites')
+const isMineMode = computed(() => activeTab.value === 'mine')
 
 async function loadArticles() {
-  if (!canUseCurrentMode.value) {
-    rows.value = []
-    total.value = 0
-    return
-  }
   loading.value = true
   try {
-    const result = isFavoriteMode.value
+    const result = activeTab.value === 'favorites'
       ? await getFavoriteArticles({ page: page.page, size: page.size })
       : await getArticles({
           page: page.page,
           size: page.size,
-          author: isManageMode.value ? undefined : loginUserId.value || undefined,
+          author: activeTab.value === 'manage' ? undefined : loginUserId.value || undefined,
           isDiscard: false,
         })
     rows.value = Array.isArray(result?.records) ? result.records : []
@@ -132,7 +109,7 @@ function goEditArticle(row) {
 
 function goArticlePage(row) {
   if (!row?.id) return
-  if (!isManageMode.value && row.status === 'DRAFT') {
+  if (isMineMode.value && row.status === 'DRAFT') {
     goEditArticle(row)
     return
   }
@@ -165,22 +142,22 @@ function formatDate(value) {
 }
 
 function canEdit(row) {
-  return !isManageMode.value && !isFavoriteMode.value && row.status === 'DRAFT'
+  return isMineMode.value && row.status === 'DRAFT'
 }
 
 function canPublish(row) {
-  return !isManageMode.value && !isFavoriteMode.value && row.status === 'DRAFT'
+  return isMineMode.value && row.status === 'DRAFT'
 }
 
 function canDelete(row) {
-  return !isManageMode.value && !isFavoriteMode.value && row.status === 'DRAFT'
+  return isMineMode.value && row.status === 'DRAFT'
 }
 
 function canTakeDown(row) {
   return isManageMode.value && row.status === 'PUBLISHED'
 }
 
-function canRemoveFavorite() {
+function canRemoveFavorite(row) {
   return isFavoriteMode.value
 }
 
@@ -246,13 +223,10 @@ async function removeFavorite(row) {
   }
 }
 
-watch(
-  () => props.mode,
-  () => {
-    page.page = 1
-    loadArticles()
-  },
-)
+watch(activeTab, () => {
+  page.page = 1
+  loadArticles()
+})
 
 onMounted(() => {
   loadArticles()
@@ -263,7 +237,7 @@ onMounted(() => {
   <el-card class="profile-card pet-admin-card article-admin-card">
     <template #header>
       <div class="profile-card-header">
-        <strong>{{ pageTitle }}</strong>
+        <strong>公益文章</strong>
         <div class="profile-actions">
           <el-button v-if="!isFavoriteMode" class="warm-btn" :icon="Plus" @click="goCreateArticle">发表文章</el-button>
           <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
@@ -271,7 +245,13 @@ onMounted(() => {
       </div>
     </template>
 
-    <section v-if="canUseCurrentMode" class="pet-admin-section article-admin-shell">
+    <el-tabs v-model="activeTab" class="article-tabs">
+      <el-tab-pane label="我的收藏" name="favorites" />
+      <el-tab-pane v-if="isWorker || isVolunteer" label="我的文章" name="mine" />
+      <el-tab-pane v-if="isWorker" label="文章管理" name="manage" />
+    </el-tabs>
+
+    <section class="pet-admin-section article-admin-shell">
       <el-table :data="filteredArticles" v-loading="loading" class="user-admin-table">
         <el-table-column label="标题" min-width="260" show-overflow-tooltip>
           <template #default="{ row }">
@@ -338,12 +318,11 @@ onMounted(() => {
         />
       </div>
     </section>
-
-    <section v-else class="pet-admin-section">
-      <el-empty description="没有文章管理权限" />
-    </section>
   </el-card>
 </template>
 
 <style scoped>
+.article-tabs {
+  margin-bottom: 8px;
+}
 </style>

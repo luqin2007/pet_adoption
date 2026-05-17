@@ -50,15 +50,12 @@ import MedicalRecordDetailPanel from '../components/MedicalRecordDetailPanel.vue
 import FirstRegistrationDetailView from '../views/FirstRegistrationDetailView.vue'
 import MedicalDetailListPanel from '../components/MedicalDetailListPanel.vue'
 import MyArticleManagementPanel from '../components/MyArticleManagementPanel.vue'
-import AdoptionManagementPanel from '../components/AdoptionManagementPanel.vue'
+import AdoptionHubPanel from '../components/AdoptionHubPanel.vue'
 import AdoptionApplicationDetailPanel from '../components/AdoptionApplicationDetailPanel.vue'
 import AdoptionFollowTaskCreatePanel from '../components/AdoptionFollowTaskCreatePanel.vue'
 import AdoptionFollowTaskDetailPanel from '../components/AdoptionFollowTaskDetailPanel.vue'
-import AdoptionFollowRecordPanel from '../components/AdoptionFollowRecordPanel.vue'
-import BreadingManagementPanel from '../components/BreadingManagementPanel.vue'
 import BreadingApplicationDetailPanel from '../components/BreadingApplicationDetailPanel.vue'
 import AgreementDraftPanel from '../components/AgreementDraftPanel.vue'
-import AgreementManagementPanel from '../components/AgreementManagementPanel.vue'
 import ItemDonationPanel from '../components/ItemDonationPanel.vue'
 import ItemStockPanel from '../components/ItemStockPanel.vue'
 import ItemStockRecordPanel from '../components/ItemStockRecordPanel.vue'
@@ -255,15 +252,11 @@ const router = createRouter({
         { path: 'articles/mine', name: 'console-article-mine', component: MyArticleManagementPanel, props: { mode: 'mine' } },
         { path: 'articles/favorites', name: 'console-article-favorites', component: MyArticleManagementPanel, props: { mode: 'favorites' } },
         { path: 'articles/manage', name: 'console-article-manage', component: MyArticleManagementPanel, props: { mode: 'manage' }, meta: { guard: 'canManageUsers' } },
-        { path: 'adoption/adopts', name: 'console-adoption-adopts', component: AdoptionManagementPanel },
-        { path: 'adoption/breading', name: 'console-adoption-breading', component: BreadingManagementPanel },
+        { path: 'adoption', name: 'console-adoption', component: AdoptionHubPanel },
         { path: 'adoption/breading/:id', name: 'console-adoption-breading-detail', component: BreadingApplicationDetailPanel },
-        { path: 'adoption/follow-records', redirect: { name: 'console-adoption-follow-tasks' } },
-        { path: 'adoption/follow-tasks', name: 'console-adoption-follow-tasks', component: AdoptionFollowRecordPanel },
         { path: 'adoption/follow-tasks/:id', name: 'console-adoption-follow-task-detail', component: AdoptionFollowTaskDetailPanel },
         { path: 'adoption/adopts/:id', name: 'console-adoption-adopt-detail', component: AdoptionApplicationDetailPanel },
         { path: 'adoption/adopts/:id/follow', name: 'console-adoption-follow-create', component: AdoptionFollowTaskCreatePanel, meta: { guard: 'canManageAdoptFollow' } },
-        { path: 'adoption/agreements', name: 'console-adoption-agreements', component: AgreementManagementPanel, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-paper', name: 'console-adoption-agreement-paper-create', component: AgreementDraftPanel, props: { type: 'PAPER' }, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-electronic', name: 'console-adoption-agreement-electronic-create', component: AgreementDraftPanel, props: { type: 'ELECTRONIC' }, meta: { guard: 'canManageUsers' } },
         { path: 'items/donations', name: 'console-items-donations', component: ItemDonationPanel },

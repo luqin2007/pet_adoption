@@ -20,11 +20,7 @@ const activeMenu = computed(() => {
   if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
   if (route.path.startsWith('/console/volunteer/profiles')) return '/console/volunteer/profiles'
   if (route.path.startsWith('/console/volunteer/activities/')) return '/console/volunteer/activities'
-  if (route.path.startsWith('/console/adoption/agreements')) return '/console/adoption/agreements'
-  if (route.path.startsWith('/console/adoption/breading')) return '/console/adoption/breading'
-  if (route.path.startsWith('/console/adoption/follow-records')) return '/console/adoption/follow-tasks'
-  if (route.path.startsWith('/console/adoption/follow-tasks')) return '/console/adoption/follow-tasks'
-  if (route.path.startsWith('/console/adoption/adopts')) return '/console/adoption/adopts'
+  if (route.path.startsWith('/console/adoption')) return '/console/adoption'
   if (route.path.startsWith('/console/items/donations')) return '/console/items/donations'
   if (route.path.startsWith('/console/items/stocks')) return '/console/items/stocks'
   if (route.path.startsWith('/console/items/records')) return '/console/items/records'
@@ -74,9 +70,9 @@ async function handleLogout() {
 const TAB_REDIRECTS = {
   'medical-first': '/console/medical/first',
   'articles': null,
-  'article-mine': '/console/articles/mine',
-  'article-manage': '/console/articles/manage',
-  'article-favorites': '/console/articles/favorites',
+  'article-mine': '/console/articles',
+  'article-manage': '/console/articles',
+  'article-favorites': '/console/articles',
   'lost-pets': '/console/lost-pets',
   'volunteer': null,
 }
@@ -85,7 +81,7 @@ onMounted(() => {
   const tab = route.query.tab
   if (tab) {
     if (tab === 'articles') {
-      router.replace(canManageArticles.value ? '/console/articles/mine' : '/console/articles/favorites')
+      router.replace('/console/articles')
     } else if (tab === 'volunteer') {
       router.replace(isLoginAdmin.value || hasRole(loginRole.value, ROLE.WORKER) ? '/console/volunteer/recruitments' : '/console/volunteer/applications')
     } else if (TAB_REDIRECTS[tab]) {
@@ -175,16 +171,10 @@ watch(
             <el-menu-item index="/console/articles/favorites">我的收藏</el-menu-item>
             <el-menu-item v-if="canManageUsers" index="/console/articles/manage">文章管理</el-menu-item>
           </el-sub-menu>
-          <el-sub-menu index="/console/adoption">
-            <template #title>
-              <el-icon><Connection /></el-icon>
-              <span>领养寄养</span>
-            </template>
-            <el-menu-item index="/console/adoption/breading">寄养管理</el-menu-item>
-            <el-menu-item index="/console/adoption/adopts">领养管理</el-menu-item>
-            <el-menu-item index="/console/adoption/follow-tasks">回访任务</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/adoption/agreements">协议管理</el-menu-item>
-          </el-sub-menu>
+          <el-menu-item index="/console/adoption">
+            <el-icon><Connection /></el-icon>
+            <span>领养寄养</span>
+          </el-menu-item>
           <el-sub-menu index="/console/volunteer">
             <template #title>
               <el-icon><Connection /></el-icon>
