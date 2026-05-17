@@ -12,8 +12,7 @@
 
     <el-tabs v-model="activeTab" class="item-stock-tabs">
       <el-tab-pane label="库存余量" name="stocks">
-        <div style="overflow: hidden">
-        <el-table :data="filteredStocks" v-loading="stockLoading" class="user-admin-table">
+        <el-table ref="stockTableRef" :data="filteredStocks" v-loading="stockLoading" class="user-admin-table">
           <el-table-column label="物资" min-width="140">
             <template #header>
               <TableFilterHeader label="物资" :filter="filters.itemName" type="text" :active="isActive('itemName')" />
@@ -62,8 +61,7 @@
 
         <div class="user-admin-pagination">
           <el-pagination layout="prev, pager, next, total" :current-page="stockPage.page" :page-size="stockPage.size" :total="stockTotal" @current-change="changeStockPage" />
-        </div>
-      </div>
+</div>
       </el-tab-pane>
 
       <el-tab-pane label="物资类型" name="catalog">
@@ -123,12 +121,11 @@
       </el-tab-pane>
 
       <el-tab-pane label="库存预警" name="subscribes">
-        <div style="overflow: hidden">
         <div class="item-stock-block-head">
           <strong>预警订阅</strong>
           <el-button class="soft-btn" :icon="Plus" @click="openSubscribeDialog">添加预警</el-button>
         </div>
-        <el-table :data="filteredSubscribes" v-loading="subscribeLoading" class="user-admin-table">
+        <el-table ref="subscribeTableRef" :data="filteredSubscribes" v-loading="subscribeLoading" class="user-admin-table">
           <el-table-column label="预警类型" min-width="150">
             <template #header>
               <TableFilterHeader label="预警类型" :filter="subscribeFilters.action" type="enum" :options="subscribeActionOptions" :active="isSubscribeActive('action')" />
@@ -153,7 +150,6 @@
             </template>
           </el-table-column>
         </el-table>
-        </div>
       </el-tab-pane>
     </el-tabs>
   </el-card>
@@ -249,7 +245,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshRight } from '@element-plus/icons-vue'
@@ -275,6 +271,8 @@ import { useTableFilters } from '../composables/useTableFilters'
 
 const route = useRoute()
 const activeTab = ref('stocks')
+const stockTableRef = ref(null)
+const subscribeTableRef = ref(null)
 const stockLoading = ref(false)
 const itemLoading = ref(false)
 const categoryLoading = ref(false)
@@ -645,12 +643,17 @@ async function prefillDonationStock() {
   }
 }
 
-watch(activeTab, (value) => {
+watch(activeTab, async (value) => {
   if (value === 'catalog') {
     loadCategories()
     handleRefreshItems()
+  } else if (value === 'stocks') {
+    await nextTick()
+    stockTableRef.value?.doLayout()
   } else if (value === 'subscribes') {
     loadSubscribes()
+    await nextTick()
+    subscribeTableRef.value?.doLayout()
   }
 })
 
