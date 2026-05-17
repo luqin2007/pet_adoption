@@ -3,10 +3,11 @@
     <template #header>
       <div class="profile-card-header">
         <strong>领养寄养</strong>
-        <span>{{ activeTabSubtitle }}</span>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="Plus" @click="router.push('/breading/new')">寄养</el-button>
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="activeTabLoading" @click="handleActiveTabRefresh">刷新</el-button>
+          <el-button-group class="console-btn-group">
+            <el-button v-if="activeTabName === 'breading'" class="warm-btn" :icon="Plus" @click="router.push('/breading/new')" />
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="activeTabLoading" @click="handleActiveTabRefresh" />
+          </el-button-group>
         </div>
       </div>
     </template>
@@ -561,16 +562,6 @@ function statusTagType(value) {
   return 'warning'
 }
 
-const activeTabSubtitle = computed(() => {
-  const map = {
-    adopt: isWorker.value ? '查看与审核全部领养申请' : '查看我的领养申请',
-    breading: isWorker.value ? '查看与审核全部寄养申请' : '查看我的寄养申请',
-    follow: followActiveSubtitle.value,
-    agreement: '查看领养/寄养协议并维护协议内容',
-  }
-  return map[activeTabName.value] || ''
-})
-
 const activeTabLoading = computed(() => {
   const map = { adopt: adoptLoading, breading: breadingLoading, follow: followLoading, agreement: agreementLoading }
   return (map[activeTabName.value] || ref(false)).value
@@ -889,12 +880,6 @@ const followStatusFilterOptions = [
 ]
 
 const followFilteredTasks = computed(() => followApplyFilter(followRows.value || []))
-
-const followActiveSubtitle = computed(() => {
-  if (isWorker.value) return '查看全部回访任务'
-  if (isVolunteerRole.value) return '查看自己参与和自己领养宠物的回访任务'
-  return '查看自己领养宠物的回访任务'
-})
 
 function followStatusText(value) {
   const map = { CREATE: '刚创建', NOTIFIED: '已通知', IN_PROGRESS: '执行中', DELAY: '推迟', FINISH: '已完成' }
