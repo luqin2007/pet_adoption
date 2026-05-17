@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
-import { ArrowRight, Plus, RefreshRight } from '@element-plus/icons-vue'
+import { ArrowRight, Filter, Plus, RefreshRight } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
@@ -12,6 +12,7 @@ import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 const router = useRouter()
 const loading = ref(false)
 const pets = ref([])
+const filterDialogVisible = ref(false)
 const filters = ref({
   type: '',
   breed: '',
@@ -43,6 +44,40 @@ const activeBreed = computed(() => filters.value.breed)
 const cityOptions = computed(() => getCityOptions(filters.value.province))
 const districtOptions = computed(() => getDistrictOptions(filters.value.province, filters.value.city))
 const breedOptions = computed(() => getBreedOptions(activeType.value))
+
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (filters.value.type) count++
+  if (filters.value.breed) count++
+  if (filters.value.sex) count++
+  if (hasValue(filters.value.age0) || hasValue(filters.value.age1)) count++
+  if (filters.value.name) count++
+  if (filters.value.province) count++
+  if (filters.value.city) count++
+  if (filters.value.district) count++
+  if (filters.value.address) count++
+  return count
+})
+
+function applyFilters() {
+  filterDialogVisible.value = false
+  loadPets()
+}
+
+function resetFilters() {
+  filters.value = {
+    type: '',
+    breed: '',
+    sex: '',
+    age0: undefined,
+    age1: undefined,
+    name: '',
+    province: '',
+    city: '',
+    district: '',
+    address: '',
+  }
+}
 
 const filteredPets = computed(() =>
   pets.value.filter((pet) => {
@@ -201,11 +236,54 @@ onMounted(async () => {
         </div>
         <div class="directory-hero-side">
           <span class="directory-hero-count">{{ filteredPets.length }} 份领养档案</span>
-          <el-button class="warm-btn directory-hero-action" :icon="Plus" @click="router.push('/pets/new')">发现宠物</el-button>
+          <div class="directory-hero-actions">
+            <el-badge :value="activeFilterCount" :hidden="activeFilterCount === 0">
+              <el-button class="warm-btn" :icon="Filter" @click="filterDialogVisible = true">筛选条件</el-button>
+            </el-badge>
+            <el-button class="warm-btn directory-hero-action" :icon="Plus" @click="router.push('/pets/new')">发现宠物</el-button>
+          </div>
         </div>
       </section>
 
-      <section class="filter-panel pet-directory-filter-panel">
+      <section class="directory-grid" v-loading="loading">
+        <article v-for="pet in filteredPets" :key="pet.id" class="directory-card">
+          <div class="directory-cover">
+            <img v-if="pet.cover" :src="pet.cover" :alt="pet.name" loading="lazy" />
+            <div v-else class="directory-cover-placeholder">暂无封面</div>
+            <span class="directory-badge">{{ getStatusText(pet) }}</span>
+          </div>
+          <div class="directory-body">
+            <div class="directory-head">
+              <div>
+                <h3>{{ pet.name }}</h3>
+                <p>{{ formatAge(pet.age) }} · {{ pet.sex || '性别待补充' }}</p>
+                <span v-if="formatTags(pet)" class="directory-tag-line">
+                  <Icon icon="mdi:tag-heart-outline" />{{ formatTags(pet) }}
+                </span>
+              </div>
+              <span class="directory-type">{{ pet.type || '宠物' }}</span>
+            </div>
+
+            <p class="directory-desc">{{ pet.description || '救助站正在完善它的故事与性格描述。' }}</p>
+
+            <div class="directory-meta">
+              <span><Icon icon="mdi:map-marker-radius-outline" />{{ formatLocation(pet) }}</span>
+              <span><Icon icon="mdi:account-heart-outline" />{{ pet.username || '暖窝救助站' }}</span>
+            </div>
+
+            <el-button text type="warning" class="card-link" @click="openPetProfile(pet.id)">
+              查看宠物档案
+              <el-icon><ArrowRight /></el-icon>
+            </el-button>
+          </div>
+        </article>
+
+        <el-empty v-if="!loading && filteredPets.length === 0" description="没有找到合适的领养档案" />
+      </section>
+    </main>
+
+    <el-dialog v-model="filterDialogVisible" title="筛选条件" width="680px">
+      <div class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row pet-filter-row-primary">
           <el-select v-model="filters.type" class="filter-field-sm" placeholder="宠物类型" clearable filterable @change="handleFilterTypeChange">
             <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
@@ -249,48 +327,14 @@ onMounted(async () => {
             </el-select>
           </div>
           <el-input v-model="filters.address" class="filter-field-xl" placeholder="地址" clearable />
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="RefreshRight" @click="loadPets">刷新列表</el-button>
-          </div>
         </div>
-      </section>
+      </div>
 
-      <section class="directory-grid" v-loading="loading">
-        <article v-for="pet in filteredPets" :key="pet.id" class="directory-card">
-          <div class="directory-cover">
-            <img v-if="pet.cover" :src="pet.cover" :alt="pet.name" loading="lazy" />
-            <div v-else class="directory-cover-placeholder">暂无封面</div>
-            <span class="directory-badge">{{ getStatusText(pet) }}</span>
-          </div>
-          <div class="directory-body">
-            <div class="directory-head">
-              <div>
-                <h3>{{ pet.name }}</h3>
-                <p>{{ formatAge(pet.age) }} · {{ pet.sex || '性别待补充' }}</p>
-                <span v-if="formatTags(pet)" class="directory-tag-line">
-                  <Icon icon="mdi:tag-heart-outline" />{{ formatTags(pet) }}
-                </span>
-              </div>
-              <span class="directory-type">{{ pet.type || '宠物' }}</span>
-            </div>
-
-            <p class="directory-desc">{{ pet.description || '救助站正在完善它的故事与性格描述。' }}</p>
-
-            <div class="directory-meta">
-              <span><Icon icon="mdi:map-marker-radius-outline" />{{ formatLocation(pet) }}</span>
-              <span><Icon icon="mdi:account-heart-outline" />{{ pet.username || '暖窝救助站' }}</span>
-            </div>
-
-            <el-button text type="warning" class="card-link" @click="openPetProfile(pet.id)">
-              查看宠物档案
-              <el-icon><ArrowRight /></el-icon>
-            </el-button>
-          </div>
-        </article>
-
-        <el-empty v-if="!loading && filteredPets.length === 0" description="没有找到合适的领养档案" />
-      </section>
-    </main>
+      <template #footer>
+        <el-button @click="resetFilters">重置</el-button>
+        <el-button class="warm-btn" :icon="RefreshRight" @click="applyFilters">应用筛选</el-button>
+      </template>
+    </el-dialog>
 
     <AppFooter />
   </div>

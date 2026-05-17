@@ -1778,6 +1778,16 @@ main {
   margin-top: 0;
 }
 
+.directory-hero-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.directory-hero-actions .el-badge {
+  display: inline-flex;
+}
+
 .filter-panel {
   margin-top: 0;
   display: grid;
