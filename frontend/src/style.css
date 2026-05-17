@@ -1348,9 +1348,13 @@ main {
   overflow: hidden;
 }
 
+.item-stock-tabs .pet-admin-section {
+  overflow-x: auto;
+}
+
 .item-stock-tabs .user-admin-table {
   width: 100%;
-  table-layout: fixed;
+  max-width: 100%;
 }
 
 .table-filter-header {
@@ -2699,6 +2703,20 @@ main {
 
 .volunteer-admin-tabs {
   max-width: 720px;
+}
+
+.volunteer-tabs {
+  --el-tabs-header-margin-bottom: 0;
+}
+
+.volunteer-tabs .el-tabs__header {
+  margin-bottom: 0;
+}
+
+.volunteer-tabs + .pet-admin-section {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 0;
 }
 
 .volunteer-inline-actions {

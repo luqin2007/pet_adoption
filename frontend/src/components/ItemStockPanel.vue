@@ -12,6 +12,7 @@
 
     <el-tabs v-model="activeTab" class="item-stock-tabs">
       <el-tab-pane label="库存余量" name="stocks">
+        <div style="overflow: hidden">
         <el-table :data="filteredStocks" v-loading="stockLoading" class="user-admin-table">
           <el-table-column label="物资" min-width="140">
             <template #header>
@@ -62,6 +63,7 @@
         <div class="user-admin-pagination">
           <el-pagination layout="prev, pager, next, total" :current-page="stockPage.page" :page-size="stockPage.size" :total="stockTotal" @current-change="changeStockPage" />
         </div>
+      </div>
       </el-tab-pane>
 
       <el-tab-pane label="物资类型" name="catalog">
@@ -121,6 +123,7 @@
       </el-tab-pane>
 
       <el-tab-pane label="库存预警" name="subscribes">
+        <div style="overflow: hidden">
         <div class="item-stock-block-head">
           <strong>预警订阅</strong>
           <el-button class="soft-btn" :icon="Plus" @click="openSubscribeDialog">添加预警</el-button>
@@ -150,6 +153,7 @@
             </template>
           </el-table-column>
         </el-table>
+        </div>
       </el-tab-pane>
     </el-tabs>
   </el-card>

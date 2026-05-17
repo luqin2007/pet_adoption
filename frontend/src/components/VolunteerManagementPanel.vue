@@ -1459,7 +1459,14 @@ onMounted(async () => {
     </template>
 
     <div class="volunteer-admin-shell">
-      <el-segmented v-if="!props.hideTabs" v-model="activeSection" :options="sections" block class="volunteer-admin-tabs" />
+      <el-tabs v-if="!props.hideTabs" v-model="activeSection" class="volunteer-tabs">
+        <el-tab-pane
+          v-for="item in sections"
+          :key="item.value"
+          :label="item.label"
+          :name="item.value"
+        />
+      </el-tabs>
 
       <section v-if="activeSection === 'recruitments'" class="pet-admin-section">
         <section class="filter-panel pet-directory-filter-panel">

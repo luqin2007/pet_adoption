@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Connection, Message, SwitchButton, User } from '@element-plus/icons-vue'
+import { ArrowLeft, Box, Document, Flag, House, Link, Message, Plus, Search, Setting, Stamp, SwitchButton, User } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
@@ -145,32 +145,32 @@ watch(
             <span v-if="noticeUnreadCount > 0" class="console-menu-badge">{{ noticeUnreadCount > 99 ? '99+' : noticeUnreadCount }}</span>
           </el-menu-item>
           <el-menu-item v-if="canManageUsers" index="/console/users">
-            <el-icon><User /></el-icon>
+            <el-icon><Setting /></el-icon>
             <span>用户管理</span>
           </el-menu-item>
           <el-menu-item index="/console/pets">
-            <el-icon><Connection /></el-icon>
+            <el-icon><House /></el-icon>
             <span>流浪宠物</span>
           </el-menu-item>
           <el-menu-item index="/console/lost-pets">
-            <el-icon><Connection /></el-icon>
+            <el-icon><Search /></el-icon>
             <span>丢失宠物</span>
           </el-menu-item>
           <el-menu-item index="/console/tasks">
-            <el-icon><Connection /></el-icon>
+            <el-icon><Flag /></el-icon>
             <span>救助任务</span>
           </el-menu-item>
           <el-menu-item index="/console/articles">
-            <el-icon><Message /></el-icon>
+            <el-icon><Document /></el-icon>
             <span>公益文章</span>
           </el-menu-item>
           <el-menu-item index="/console/adoption">
-            <el-icon><Connection /></el-icon>
+            <el-icon><Link /></el-icon>
             <span>领养寄养</span>
           </el-menu-item>
           <el-sub-menu index="/console/volunteer">
             <template #title>
-              <el-icon><Connection /></el-icon>
+              <el-icon><Stamp /></el-icon>
               <span>志愿者</span>
             </template>
             <el-menu-item index="/console/volunteer">志愿者</el-menu-item>
@@ -178,7 +178,7 @@ watch(
           </el-sub-menu>
           <el-sub-menu index="/console/items">
             <template #title>
-              <el-icon><Connection /></el-icon>
+              <el-icon><Box /></el-icon>
               <span>物资管理</span>
             </template>
             <el-menu-item index="/console/items/donations">捐赠</el-menu-item>
@@ -187,7 +187,7 @@ watch(
           </el-sub-menu>
           <el-sub-menu v-if="canViewMedical" index="/console/medical">
             <template #title>
-              <el-icon><Connection /></el-icon>
+              <el-icon><Plus /></el-icon>
               <span>医疗护理</span>
             </template>
             <el-menu-item v-if="canManageMedical" index="/console/medical/first">初诊登记</el-menu-item>
