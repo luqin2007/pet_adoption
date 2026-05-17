@@ -72,7 +72,7 @@
           <section class="pet-admin-section">
             <el-table :data="filteredClaims" v-loading="loadingClaims" class="user-admin-table">
               <el-table-column label="走失宠物" min-width="190">
-                <template #header><TableFilterHeader label="走失宠物" :filter="claimFilterState.applicantName" type="text" placeholder="搜索宠物名称…" :active="isClaimFilterActive('applicantName')" /></template>
+                <template #header><TableFilterHeader label="走失宠物" :filter="claimFilterState.lostPetName" type="text" placeholder="搜索宠物名称…" :active="isClaimFilterActive('lostPetName')" /></template>
                 <template #default="{ row }">
                   <button class="pet-admin-name-button" type="button" @click="goClaimLostPet(row)">{{ row.lostPetName || '未命名' }}</button>
                   <span class="lost-claim-subtext">{{ row.lostPetType || '宠物' }} · {{ row.lostPetBreed || '品种待补充' }}</span>
@@ -296,6 +296,7 @@ const statusOptions = [
 const filteredLostPets = computed(() => applyReportFilter(lostPetRows.value || []))
 
 const { filters: claimFilterState, isActive: isClaimFilterActive, applyFilter: applyClaimFilter } = useTableFilters({
+  lostPetName: { type: 'text' },
   applicantName: { type: 'text' },
   status: { type: 'enum' },
   createTime: { type: 'time' },
