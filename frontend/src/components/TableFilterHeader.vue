@@ -37,7 +37,7 @@ defineProps({
 
       <template v-else-if="type === 'enum'">
         <el-checkbox-group v-model="filter.values" :class="{ 'filter-enum-vertical': options.length <= 5 }">
-          <el-checkbox v-for="opt in options" :key="opt.value" :label="opt.value">
+          <el-checkbox v-for="opt in options" :key="opt.value" :value="opt.value">
             {{ opt.label }}
           </el-checkbox>
         </el-checkbox-group>
