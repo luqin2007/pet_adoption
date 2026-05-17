@@ -5,8 +5,10 @@
         <div class="profile-card-header">
           <strong>丢失宠物</strong>
           <div class="profile-actions">
-            <el-button class="warm-btn" :icon="Plus" @click="router.push('/lost/new')">走失报备</el-button>
-            <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingLostPets || loadingClaims" @click="handleRefreshCurrent">刷新</el-button>
+            <el-button-group class="console-btn-group">
+              <el-button class="warm-btn" :icon="Plus" @click="router.push('/lost/new')" />
+              <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingLostPets || loadingClaims" @click="handleRefreshCurrent" />
+            </el-button-group>
           </div>
         </div>
       </template>
@@ -45,9 +47,6 @@
               <el-table-column label="联系人" min-width="180">
                 <template #header><TableFilterHeader label="联系人" :filter="reportFilterState.ownerName" type="text" placeholder="搜索联系人…" :active="isReportFilterActive('ownerName')" /></template>
                 <template #default="{ row }">{{ row.ownerName || '联系人待补充' }} · {{ row.contactPhone || '电话待补充' }}</template>
-              </el-table-column>
-              <el-table-column label="匹配结果" min-width="180">
-                <template #default="{ row }">{{ row.petName || '暂未匹配到流浪宠物档案' }}</template>
               </el-table-column>
               <el-table-column width="40" class-name="action-col">
                 <template #header><TableActionColumnHeader title="操作" :collapsed="lostPetActionCollapsed" @toggle="lostPetActionCollapsed = !lostPetActionCollapsed" /></template>
