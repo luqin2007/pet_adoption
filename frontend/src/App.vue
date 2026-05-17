@@ -1,7 +1,7 @@
 <script setup>
-import { useNoticePoller } from './composables/useNoticePoller'
+import { useNoticeSse } from './composables/useNoticeSse'
 
-useNoticePoller()
+useNoticeSse()
 </script>
 
 <template>

@@ -5,7 +5,7 @@ import { ArrowLeft, Connection, Message, SwitchButton, User } from '@element-plu
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
-import { useNoticePoller } from '../composables/useNoticePoller'
+import { useNoticeSse } from '../composables/useNoticeSse'
 import { ROLE, hasRole } from '../utils/roles'
 import { medicalRecordOwnerExists } from '../api/services'
 
@@ -14,7 +14,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const { loginRole, isLoginAdmin, canManageUsers, canManageMedical, canManageRehab, canManageArticles } = useConsoleGuards()
 const hasOwnedMedicalRecords = ref(false)
-const { unreadCount: noticeUnreadCount, check: checkNoticeCount } = useNoticePoller()
+const { unreadCount: noticeUnreadCount, check: checkNoticeCount } = useNoticeSse()
 
 const activeMenu = computed(() => {
   if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
@@ -147,8 +147,9 @@ watch(
           </el-menu-item>
           <el-menu-item index="/console/notices">
             <el-icon><Message /></el-icon>
-            <span>站内信</span>
-            <el-badge v-if="noticeUnreadCount > 0" :value="noticeUnreadCount" :max="99" class="console-menu-badge" />
+            <el-badge :value="noticeUnreadCount" :max="99" :hidden="noticeUnreadCount === 0" class="console-menu-badge">
+              <span>站内信</span>
+            </el-badge>
           </el-menu-item>
           <el-menu-item v-if="canManageUsers" index="/console/users">
             <el-icon><User /></el-icon>
