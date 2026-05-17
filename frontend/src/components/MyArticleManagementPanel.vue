@@ -69,17 +69,6 @@ const pageTitle = computed(() => {
   if (isFavoriteMode.value) return '我的收藏'
   return '我的文章'
 })
-const pageHint = computed(() => {
-  if (isManageMode.value) {
-    return '查看已发布内容，必要时下线文章或活动。'
-  }
-  if (isFavoriteMode.value) {
-    return '查看和整理你收藏的公益文章。'
-  }
-  return isWorker.value
-    ? '管理你的救助故事、活动消息和养护知识。'
-    : '管理你的救助故事。'
-})
 const articleTypeOptions = computed(() => (isManageMode.value || isWorker.value ? ARTICLE_TYPE_OPTIONS : ARTICLE_TYPE_OPTIONS.filter((item) => item.value === 'STORY')))
 
 function buildQuery() {
@@ -275,7 +264,6 @@ onMounted(() => {
     <template #header>
       <div class="profile-card-header">
         <strong>{{ pageTitle }}</strong>
-        <span>{{ pageHint }}</span>
       </div>
     </template>
 
@@ -297,15 +285,6 @@ onMounted(() => {
           <div class="pet-filter-action article-filter-action">
             <el-button v-if="!isManageMode" class="soft-btn" :icon="Plus" @click="goCreateArticle">发表文章</el-button>
             <el-button class="warm-btn" :icon="Search" :loading="loading" @click="page.page = 1; loadArticles()">搜索</el-button>
-          </div>
-        </div>
-      </section>
-
-      <section v-else class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
-        <div class="pet-filter-row article-filter-row-secondary article-favorite-toolbar">
-          <span>收藏文章会显示在这里，便于稍后阅读。</span>
-          <div class="pet-filter-action article-filter-action">
-            <el-button class="soft-btn" :icon="RefreshRight" :loading="loading" @click="loadArticles">刷新</el-button>
           </div>
         </div>
       </section>
