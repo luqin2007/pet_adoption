@@ -8,6 +8,7 @@ import com.example.backend.mapper.IBaseMapper;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 public class MPLambdaUpdate<T extends IId> {
@@ -26,7 +27,7 @@ public class MPLambdaUpdate<T extends IId> {
         // 去重
         Set<?> set = values instanceof Set
                 ? (Set<?>) values
-                : Set.of(values);
+                : new HashSet<>(values);
         query
                 .eq(set.size() == 1, column, set.iterator().next())
                 .in(set.size() != 1, column, set);

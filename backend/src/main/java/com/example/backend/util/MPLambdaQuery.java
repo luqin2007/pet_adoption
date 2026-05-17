@@ -102,10 +102,15 @@ public class MPLambdaQuery<T extends IId> {
 
     @SafeVarargs
     public final MPLambdaQuery<T> like(SFunction<T, ?> column, String text, SFunction<T, ?>... otherColumns) {
-        query.like(!ObjectUtils.isEmpty(text), column, text);
-        for (SFunction<T, ?> c : otherColumns) {
-            query.or();
-            query.like(!ObjectUtils.isEmpty(text), c, text);
+        if (otherColumns == null || otherColumns.length == 0) {
+            query.like(text != null, column, text);
+        } else {
+            query.or(text != null, wrapper -> {
+                wrapper.like(column, text);
+                for (SFunction<T, ?> otherColumn : otherColumns) {
+                    wrapper.like(otherColumn, text);
+                }
+            });
         }
         return this;
     }
