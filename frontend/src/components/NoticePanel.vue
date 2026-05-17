@@ -127,7 +127,6 @@ onMounted(() => {
     <template #header>
       <div class="profile-card-header">
         <strong>站内信</strong>
-        <span>查看系统通知和工作人员发送的消息</span>
       </div>
     </template>
 
@@ -148,7 +147,7 @@ onMounted(() => {
         <el-date-picker
           v-model="filters.timeRange"
           type="daterange"
-          value-format="YYYY-MM-DD HH:mm:ss"
+          value-format="YYYY-MM-DD"
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           class="filter-field-lg"

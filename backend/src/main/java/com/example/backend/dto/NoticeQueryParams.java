@@ -2,6 +2,7 @@ package com.example.backend.dto;
 
 import com.example.backend.entity.property.NoticeSource;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.Errors;
 
 import java.util.Date;
@@ -23,6 +24,7 @@ public class NoticeQueryParams implements IParam, IValidatedRequest {
     /**
      * 时间范围
      */
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date time0, time1;
 
 
