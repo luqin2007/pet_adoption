@@ -12,7 +12,7 @@
       </template>
 
       <el-tabs v-model="activeSection" class="lost-console-tabs">
-        <el-tab-pane label="走失报备" name="reports">
+        <el-tab-pane label="报备" name="reports">
           <section class="pet-admin-section">
             <el-table :data="filteredLostPets" v-loading="loadingLostPets" class="user-admin-table">
               <el-table-column label="宠物" min-width="220">
@@ -68,7 +68,7 @@
           </section>
         </el-tab-pane>
 
-        <el-tab-pane label="认领申请" name="claims">
+        <el-tab-pane label="认领" name="claims">
           <section class="pet-admin-section">
             <el-table :data="filteredClaims" v-loading="loadingClaims" class="user-admin-table">
               <el-table-column label="走失宠物" min-width="190">

@@ -12,140 +12,144 @@
 
     <el-tabs v-model="activeTab" class="item-stock-tabs">
       <el-tab-pane label="库存余量" name="stocks">
+        <el-table :data="filteredStocks" v-loading="stockLoading" class="user-admin-table">
+          <el-table-column label="物资" min-width="140">
+            <template #header>
+              <TableFilterHeader label="物资" :filter="filters.itemName" type="text" :active="isActive('itemName')" />
+            </template>
+            <template #default="{ row }">{{ row.itemName }}</template>
+          </el-table-column>
+          <el-table-column label="分类" min-width="120">
+            <template #header>
+              <TableFilterHeader label="分类" :filter="filters.categoryName" type="text" :active="isActive('categoryName')" />
+            </template>
+            <template #default="{ row }">{{ row.categoryName }}</template>
+          </el-table-column>
+          <el-table-column label="余量" width="120">
+            <template #header>
+              <TableFilterHeader label="余量" :filter="filters.count" type="number" :active="isActive('count')" />
+            </template>
+            <template #default="{ row }">{{ row.count }}{{ row.unit || '' }}</template>
+          </el-table-column>
+          <el-table-column label="来源" width="100">
+            <template #header>
+              <TableFilterHeader label="来源" :filter="filters.sourceType" type="enum" :options="sourceTypeOptions" :active="isActive('sourceType')" />
+            </template>
+            <template #default="{ row }">{{ sourceText(row.sourceType) }}</template>
+          </el-table-column>
+          <el-table-column label="有效期" min-width="150">
+            <template #header>
+              <TableFilterHeader label="有效期" :filter="filters.expireTime" type="time" :active="isActive('expireTime')" />
+            </template>
+            <template #default="{ row }">{{ formatDate(row.expireTime) }}</template>
+          </el-table-column>
+          <el-table-column width="40" class-name="action-col">
+            <template #header>
+              <TableActionColumnHeader title="操作" :collapsed="stockActionCollapsed" @toggle="stockActionCollapsed = !stockActionCollapsed" />
+            </template>
+            <template #default="{ row }">
+              <div class="table-action-cell">
+                <div class="table-action-panel" :class="{ 'is-collapsed': stockActionCollapsed }">
+                  <el-button text type="success" @click="openStockDialog(row, 'IN')">入库</el-button>
+                  <el-button text type="warning" @click="openStockDialog(row, 'OUT')">出库</el-button>
+                  <el-button text type="danger" @click="openStockDialog(row, 'DESTROY')">销毁</el-button>
+                </div>
+              </div>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="user-admin-pagination">
+          <el-pagination layout="prev, pager, next, total" :current-page="stockPage.page" :page-size="stockPage.size" :total="stockTotal" @current-change="changeStockPage" />
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane label="物资管理" name="catalog">
         <section class="pet-admin-section">
-          <el-table :data="filteredStocks" v-loading="stockLoading" class="user-admin-table">
-            <el-table-column label="物资" min-width="170">
+          <div class="item-stock-block-head">
+            <strong>物资信息</strong>
+            <el-button class="soft-btn" :icon="Plus" @click="openItemDialog()">添加物资</el-button>
+          </div>
+          <el-table :data="filteredItems" v-loading="itemLoading" class="user-admin-table">
+            <el-table-column label="名称" min-width="140">
               <template #header>
-                <div class="item-stock-filter-group">
-                  <TableFilterHeader label="物资" :filter="filters.itemName" type="text" :active="isActive('itemName')" />
-                  <TableFilterHeader label="分类" :filter="filters.categoryName" type="enum" :active="isActive('categoryName')" :options="categoryOptions" />
-                </div>
+                <TableFilterHeader label="名称" :filter="itemFilters.name" type="text" :active="isItemActive('name')" />
               </template>
-              <template #default="{ row }">
-                <strong class="item-stock-name">{{ row.itemName || '物资' }}</strong>
-                <span class="item-stock-subtext">{{ row.categoryName || '' }} · #{{ row.id }}</span>
-              </template>
+              <template #default="{ row }">{{ row.name }}</template>
             </el-table-column>
-            <el-table-column label="余量" width="120">
-              <template #default="{ row }">{{ row.count }}{{ row.unit || '' }}</template>
-            </el-table-column>
-            <el-table-column label="来源" width="100">
-              <template #default="{ row }">{{ sourceText(row.sourceType) }}</template>
-            </el-table-column>
-            <el-table-column label="有效期" min-width="150">
-              <template #default="{ row }">{{ formatDate(row.expireTime) }}</template>
-            </el-table-column>
-            <el-table-column label="最近记录" min-width="180" show-overflow-tooltip>
-              <template #default="{ row }">{{ stockRecordSummary(row) }}</template>
-            </el-table-column>
-            <el-table-column width="40" class-name="action-col">
+            <el-table-column label="分类" min-width="120">
               <template #header>
-                <TableActionColumnHeader title="操作" :collapsed="stockActionCollapsed" @toggle="stockActionCollapsed = !stockActionCollapsed" />
+                <TableFilterHeader label="分类" :filter="itemFilters.categoryName" type="text" :active="isItemActive('categoryName')" />
               </template>
+              <template #default="{ row }">{{ row.categoryName }}</template>
+            </el-table-column>
+            <el-table-column label="单位" width="80">
+              <template #default="{ row }">{{ row.unit }}</template>
+            </el-table-column>
+            <el-table-column width="120">
               <template #default="{ row }">
-                <div class="table-action-cell">
-                  <div class="table-action-panel" :class="{ 'is-collapsed': stockActionCollapsed }">
-                    <el-button text type="success" @click="openStockDialog(row, 'IN')">入库</el-button>
-                    <el-button text type="warning" @click="openStockDialog(row, 'OUT')">出库</el-button>
-                    <el-button text type="danger" @click="openStockDialog(row, 'DESTROY')">销毁</el-button>
-                  </div>
-                </div>
+                <el-button text type="primary" @click="openItemDialog(row)">编辑</el-button>
+                <el-button text type="danger" @click="removeItem(row)">删除</el-button>
               </template>
             </el-table-column>
           </el-table>
-
-          <div class="user-admin-pagination">
-            <el-pagination layout="prev, pager, next, total" :current-page="stockPage.page" :page-size="stockPage.size" :total="stockTotal" @current-change="changeStockPage" />
-          </div>
         </section>
-      </el-tab-pane>
 
-      <el-tab-pane label="物资与分类" name="catalog">
-        <section class="item-stock-two-col">
-          <div>
-            <div class="item-stock-block-head">
-              <strong>物资信息</strong>
-              <el-button class="soft-btn" :icon="Plus" @click="openItemDialog()">添加物资</el-button>
-            </div>
-            <section class="filter-panel pet-directory-filter-panel item-stock-inline-filter">
-              <div class="pet-filter-row">
-                <el-input v-model="itemSearch.keyword" class="filter-field-md" clearable placeholder="搜索物资名称" @keyup.enter="loadItems" />
-                <el-select v-model="itemSearch.categoryId" class="filter-field-sm" clearable placeholder="分类">
-                  <el-option v-for="item in categories" :key="item.id" :label="item.name" :value="String(item.id)" />
-                </el-select>
-                <div class="pet-filter-action">
-                  <el-button class="warm-btn" :icon="Search" :loading="itemLoading" @click="loadItems">搜索</el-button>
-                </div>
-              </div>
-            </section>
-            <el-table :data="items" v-loading="itemLoading" class="user-admin-table">
-              <el-table-column label="名称" min-width="140">
-                <template #default="{ row }">{{ row.name }}</template>
-              </el-table-column>
-              <el-table-column label="分类" min-width="120">
-                <template #default="{ row }">{{ row.categoryName }}</template>
-              </el-table-column>
-              <el-table-column label="单位" width="80">
-                <template #default="{ row }">{{ row.unit }}</template>
-              </el-table-column>
-              <el-table-column width="120">
-                <template #default="{ row }">
-                  <el-button text type="primary" @click="openItemDialog(row)">编辑</el-button>
-                  <el-button text type="danger" @click="removeItem(row)">删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
+        <section class="pet-admin-section">
+          <div class="item-stock-block-head">
+            <strong>物资分类</strong>
+            <el-button class="soft-btn" :icon="Plus" @click="openCategoryDialog()">添加分类</el-button>
           </div>
-
-          <div>
-            <div class="item-stock-block-head">
-              <strong>物资分类</strong>
-              <el-button class="soft-btn" :icon="Plus" @click="openCategoryDialog()">添加分类</el-button>
-            </div>
-            <el-table :data="categories" v-loading="categoryLoading" class="user-admin-table">
-              <el-table-column label="分类" min-width="120">
-                <template #default="{ row }">{{ row.name }}</template>
-              </el-table-column>
-              <el-table-column label="说明" min-width="150" show-overflow-tooltip>
-                <template #default="{ row }">{{ row.description || '' }}</template>
-              </el-table-column>
-              <el-table-column width="120">
-                <template #default="{ row }">
-                  <el-button text type="primary" @click="openCategoryDialog(row)">编辑</el-button>
-                  <el-button text type="danger" @click="removeCategory(row)">删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
+          <el-table :data="filteredCategories" v-loading="categoryLoading" class="user-admin-table">
+            <el-table-column label="分类" min-width="120">
+              <template #header>
+                <TableFilterHeader label="分类" :filter="categoryFilters.name" type="text" :active="isCategoryActive('name')" />
+              </template>
+              <template #default="{ row }">{{ row.name }}</template>
+            </el-table-column>
+            <el-table-column label="说明" min-width="150" show-overflow-tooltip>
+              <template #default="{ row }">{{ row.description || '' }}</template>
+            </el-table-column>
+            <el-table-column width="120">
+              <template #default="{ row }">
+                <el-button text type="primary" @click="openCategoryDialog(row)">编辑</el-button>
+                <el-button text type="danger" @click="removeCategory(row)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </section>
       </el-tab-pane>
 
       <el-tab-pane label="库存预警" name="subscribes">
-        <section class="pet-admin-section">
-          <div class="item-stock-block-head">
-            <strong>预警订阅</strong>
-            <el-button class="soft-btn" :icon="Plus" @click="openSubscribeDialog">添加预警</el-button>
-          </div>
-          <el-table :data="subscribes" v-loading="subscribeLoading" class="user-admin-table">
-            <el-table-column label="预警类型" min-width="150">
-              <template #default="{ row }">{{ subscribeActionText(row.action) }}</template>
-            </el-table-column>
-            <el-table-column label="物资" min-width="160">
-              <template #default="{ row }">{{ row.itemName || row.username || '' }}</template>
-            </el-table-column>
-            <el-table-column label="阈值" width="100">
-              <template #default="{ row }">{{ row.count || '' }}</template>
-            </el-table-column>
-            <el-table-column label="创建时间" min-width="150">
-              <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
-            </el-table-column>
-            <el-table-column width="90">
-              <template #default="{ row }">
-                <el-button text type="danger" @click="removeSubscribe(row)">取消</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </section>
+        <div class="item-stock-block-head">
+          <strong>预警订阅</strong>
+          <el-button class="soft-btn" :icon="Plus" @click="openSubscribeDialog">添加预警</el-button>
+        </div>
+        <el-table :data="filteredSubscribes" v-loading="subscribeLoading" class="user-admin-table">
+          <el-table-column label="预警类型" min-width="150">
+            <template #header>
+              <TableFilterHeader label="预警类型" :filter="subscribeFilters.action" type="enum" :options="subscribeActionOptions" :active="isSubscribeActive('action')" />
+            </template>
+            <template #default="{ row }">{{ subscribeActionText(row.action) }}</template>
+          </el-table-column>
+          <el-table-column label="物资" min-width="160">
+            <template #default="{ row }">{{ row.itemName || row.username || '' }}</template>
+          </el-table-column>
+          <el-table-column label="阈值" width="100">
+            <template #default="{ row }">{{ row.count || '' }}</template>
+          </el-table-column>
+          <el-table-column label="创建时间" min-width="150">
+            <template #header>
+              <TableFilterHeader label="创建时间" :filter="subscribeFilters.createTime" type="time" :active="isSubscribeActive('createTime')" />
+            </template>
+            <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
+          </el-table-column>
+          <el-table-column width="90">
+            <template #default="{ row }">
+              <el-button text type="danger" @click="removeSubscribe(row)">取消</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </el-tab-pane>
     </el-tabs>
   </el-card>
@@ -244,7 +248,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, RefreshRight, Search } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import {
   cancelSubscribe,
   createCategory,
@@ -287,7 +291,6 @@ const itemDialogVisible = ref(false)
 const categoryDialogVisible = ref(false)
 const subscribeDialogVisible = ref(false)
 const stockPage = reactive({ page: 1, size: 10 })
-const itemSearch = reactive({ keyword: '', categoryId: '' })
 const stockForm = reactive(resetStockForm())
 const itemForm = reactive({ id: '', name: '', categoryId: '', unit: '', description: '' })
 const categoryForm = reactive({ id: '', name: '', description: '' })
@@ -295,14 +298,46 @@ const subscribeForm = reactive({ action: 'ITEM_COUNT', elementId: '', count: '' 
 
 const { filters, isActive, applyFilter } = useTableFilters({
   itemName: { type: 'text' },
-  categoryName: { type: 'enum' },
+  categoryName: { type: 'text' },
+  expireTime: { type: 'time' },
+  sourceType: { type: 'enum' },
+  count: { type: 'number' },
 })
 
-const categoryOptions = computed(() =>
-  (categories.value || []).map((c) => ({ value: c.name, label: c.name })),
-)
+const sourceTypeOptions = [
+  { value: 'DONATION', label: '捐赠' },
+  { value: 'PURCHASE', label: '采购' },
+]
 
 const filteredStocks = computed(() => applyFilter(stocks.value || []))
+
+const { filters: itemFilters, isActive: isItemActive, applyFilter: applyItemFilter } = useTableFilters({
+  name: { type: 'text' },
+  categoryName: { type: 'text' },
+})
+
+const filteredItems = computed(() => applyItemFilter(items.value || []))
+
+const { filters: categoryFilters, isActive: isCategoryActive, applyFilter: applyCategoryFilter } = useTableFilters({
+  name: { type: 'text' },
+})
+
+const filteredCategories = computed(() => applyCategoryFilter(categories.value || []))
+
+const { filters: subscribeFilters, isActive: isSubscribeActive, applyFilter: applySubscribeFilter } = useTableFilters({
+  action: { type: 'enum' },
+  createTime: { type: 'time' },
+})
+
+const subscribeActionOptions = [
+  { value: 'ITEM_CHANGE', label: '物资变动通知' },
+  { value: 'ITEM_COUNT', label: '低库存预警' },
+  { value: 'IN_STOCK', label: '入库通知' },
+  { value: 'OUT_STOCK', label: '出库通知' },
+  { value: 'DONATE', label: '捐赠通知' },
+]
+
+const filteredSubscribes = computed(() => applySubscribeFilter(subscribes.value || []))
 
 function resetStockForm() {
   return {
@@ -389,15 +424,11 @@ async function loadCategories() {
   }
 }
 
-async function loadItems() {
+async function handleRefreshItems() {
   itemLoading.value = true
   try {
-    const query = {
-      size: 200,
-      keyword: itemSearch.keyword.trim() || undefined,
-      category: itemSearch.categoryId ? [itemSearch.categoryId] : undefined,
-    }
-    if (!query.keyword && !query.category && categories.value.length) {
+    const query = { size: 200 }
+    if (categories.value.length) {
       query.category = categories.value.map((item) => String(item.id))
     }
     const result = await getItems(query)
@@ -494,7 +525,7 @@ async function submitItem() {
     else await createItem(payload)
     ElMessage.success('物资信息已保存')
     itemDialogVisible.value = false
-    await loadItems()
+    await handleRefreshItems()
   } catch (error) {
     ElMessage.warning(error?.message || '保存物资失败')
   } finally {
@@ -507,7 +538,7 @@ async function removeItem(row) {
     await ElMessageBox.confirm(`确认删除物资「${row.name}」？`, '删除物资', { type: 'warning' })
     await discardItem(row.id)
     ElMessage.success('物资已删除')
-    await loadItems()
+    await handleRefreshItems()
   } catch (error) {
     if (error !== 'cancel' && error !== 'close') ElMessage.warning(error?.message || '删除物资失败')
   }
@@ -535,7 +566,7 @@ async function submitCategory() {
     ElMessage.success('分类已保存')
     categoryDialogVisible.value = false
     await loadCategories()
-    await loadItems()
+    await handleRefreshItems()
   } catch (error) {
     ElMessage.warning(error?.message || '保存分类失败')
   } finally {
@@ -613,7 +644,7 @@ async function prefillDonationStock() {
 watch(activeTab, (value) => {
   if (value === 'catalog') {
     loadCategories()
-    loadItems()
+    handleRefreshItems()
   } else if (value === 'subscribes') {
     loadSubscribes()
   }
@@ -621,7 +652,7 @@ watch(activeTab, (value) => {
 
 onMounted(async () => {
   await loadCategories()
-  await loadItems()
+  await handleRefreshItems()
   await loadStocks()
   await prefillDonationStock()
 })
