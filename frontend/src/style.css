@@ -365,10 +365,10 @@ main {
   --el-button-hover-border-color: var(--primary-strong);
   --el-button-active-bg-color: var(--primary-strong);
   --el-button-active-border-color: var(--primary-strong);
-  --el-button-text-color: #2b150a;
-  --el-button-hover-text-color: #2b150a;
-  --el-button-active-text-color: #2b150a;
-  color: #2b150a;
+  --el-button-text-color: rgba(255, 253, 249, 0.98);
+  --el-button-hover-text-color: rgba(255, 253, 249, 0.98);
+  --el-button-active-text-color: rgba(255, 253, 249, 0.98);
+  color: rgba(255, 253, 249, 0.98);
   font-weight: 700;
 }
 
@@ -379,9 +379,9 @@ main {
   --el-button-hover-border-color: var(--primary-strong);
   --el-button-active-bg-color: var(--primary-strong);
   --el-button-active-border-color: var(--primary-strong);
-  --el-button-text-color: #2b150a;
-  --el-button-hover-text-color: #2b150a;
-  --el-button-active-text-color: #2b150a;
+  --el-button-text-color: rgba(255, 253, 249, 0.98);
+  --el-button-hover-text-color: rgba(255, 253, 249, 0.98);
+  --el-button-active-text-color: rgba(255, 253, 249, 0.98);
   font-weight: 700;
 }
 
