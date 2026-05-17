@@ -358,6 +358,19 @@ main {
   flex-wrap: wrap;
 }
 
+.el-button--warning {
+  --el-button-bg-color: var(--primary);
+  --el-button-border-color: var(--primary);
+  --el-button-hover-bg-color: var(--primary-strong);
+  --el-button-hover-border-color: var(--primary-strong);
+  --el-button-active-bg-color: var(--primary-strong);
+  --el-button-active-border-color: var(--primary-strong);
+  --el-button-text-color: #2b150a;
+  --el-button-hover-text-color: #2b150a;
+  --el-button-active-text-color: #2b150a;
+  font-weight: 700;
+}
+
 .warm-btn.el-button {
   --el-button-bg-color: var(--primary);
   --el-button-border-color: var(--primary);
@@ -365,7 +378,9 @@ main {
   --el-button-hover-border-color: var(--primary-strong);
   --el-button-active-bg-color: var(--primary-strong);
   --el-button-active-border-color: var(--primary-strong);
-  --el-button-text-color: #fff;
+  --el-button-text-color: #2b150a;
+  --el-button-hover-text-color: #2b150a;
+  --el-button-active-text-color: #2b150a;
   border-radius: 14px;
   font-weight: 700;
 }
