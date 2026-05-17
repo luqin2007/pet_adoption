@@ -358,7 +358,7 @@ main {
   flex-wrap: wrap;
 }
 
-.el-button--warning {
+.el-button.el-button--warning {
   --el-button-bg-color: var(--primary);
   --el-button-border-color: var(--primary);
   --el-button-hover-bg-color: var(--primary-strong);
