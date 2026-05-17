@@ -4,53 +4,15 @@
       <template #header>
         <div class="profile-card-header">
           <strong>流浪宠物</strong>
-          <span>筛选和维护在库宠物档案</span>
+          <div class="profile-actions">
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingPets" @click="handleRefresh">刷新</el-button>
+          </div>
         </div>
       </template>
       <section class="pet-admin-section">
-        <section class="filter-panel pet-directory-filter-panel">
-          <div class="pet-filter-row pet-filter-row-primary pet-filter-cols-4">
-            <el-input v-model="petSearchForm.name" class="filter-field-md" clearable placeholder="名称" />
-            <el-select v-model="petSearchForm.type" class="filter-field-sm" clearable filterable placeholder="类型" @change="handlePetSearchTypeChange">
-              <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <el-select v-model="petSearchForm.breed" class="filter-field-sm" clearable filterable placeholder="品种" :disabled="!petSearchForm.type">
-              <el-option v-for="item in petSearchBreedOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <el-select v-model="petSearchForm.sex" class="filter-field-sm" clearable placeholder="性别">
-              <el-option label="未知" value="未知" /><el-option label="公" value="公" /><el-option label="母" value="母" />
-            </el-select>
-          </div>
-          <div class="pet-filter-row pet-filter-row-secondary pet-filter-cols-status-age">
-            <el-select v-model="petSearchForm.status" class="filter-field-sm" clearable placeholder="状态">
-              <el-option v-for="item in petStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-            <div class="pet-age-range filter-field-lg">
-              <el-input-number v-model="petSearchForm.age0" :min="0" :controls="false" placeholder="最小月龄" />
-              <span>至</span>
-              <el-input-number v-model="petSearchForm.age1" :min="0" :controls="false" placeholder="最大月龄" />
-            </div>
-          </div>
-          <div class="pet-filter-row pet-filter-row-secondary pet-filter-cols-loc">
-            <el-select v-model="petSearchForm.province" class="filter-field-sm" clearable filterable placeholder="省份" @change="handlePetSearchProvinceChange">
-              <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <el-select v-model="petSearchForm.city" class="filter-field-sm" clearable filterable placeholder="城市" :disabled="!petSearchForm.province" @change="handlePetSearchCityChange">
-              <el-option v-for="item in petSearchCityOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <el-select v-model="petSearchForm.district" class="filter-field-sm" clearable filterable placeholder="区县" :disabled="!petSearchForm.city">
-              <el-option v-for="item in petSearchDistrictOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <el-input v-model="petSearchForm.address" class="filter-field-xl" clearable placeholder="详细地点" />
-          </div>
-          <div class="pet-filter-row pet-filter-search-row">
-            <div class="pet-filter-action">
-              <el-button class="warm-btn" :icon="Search" :loading="loadingPets" @click="searchPets">搜索</el-button>
-            </div>
-          </div>
-        </section>
-        <el-table :data="visiblePets" v-loading="loadingPets" class="user-admin-table">
-          <el-table-column label="宠物" min-width="180">
+        <el-table :data="filteredPets" v-loading="loadingPets" class="user-admin-table">
+          <el-table-column min-width="180">
+            <template #header><TableFilterHeader label="宠物" :filter="filters.name" type="text" :active="isActive('name')" /></template>
             <template #default="{ row }">
               <div class="pet-admin-pet">
                 <button class="pet-admin-cover-button" type="button" @click="goPetProfile(row)">
@@ -63,13 +25,18 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="状态" width="120">
+          <el-table-column width="120">
+            <template #header><TableFilterHeader label="状态" :filter="filters.status" type="enum" :options="statusOptions" :active="isActive('status')" /></template>
             <template #default="{ row }"><el-tag type="warning" effect="plain">{{ petStatusText(row.status) }}</el-tag></template>
           </el-table-column>
-          <el-table-column label="位置" min-width="220">
+          <el-table-column min-width="220">
+            <template #header><TableFilterHeader label="位置" :filter="filters.address" type="text" :active="isActive('address')" /></template>
             <template #default="{ row }">{{ petLocationText(row) }}</template>
           </el-table-column>
-          <el-table-column prop="health" label="健康" min-width="140" />
+          <el-table-column min-width="140">
+            <template #header><TableFilterHeader label="健康" :filter="filters.health" type="text" :active="isActive('health')" /></template>
+            <template #default="{ row }">{{ row.health }}</template>
+          </el-table-column>
           <el-table-column width="40" class-name="action-col">
             <template #header><TableActionColumnHeader title="操作" :collapsed="petActionCollapsed" @toggle="petActionCollapsed = !petActionCollapsed" /></template>
             <template #default="{ row }">
@@ -254,14 +221,16 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Upload } from '@element-plus/icons-vue'
+import { Upload, RefreshRight } from '@element-plus/icons-vue'
 import { createPet, deletePetById, getPets, updatePetStatus, uploadPetMedia, getPetStatusRecords } from '../api/pets'
 import { addDeworm, addHealthAssessment, addVaccine, getDewormerOptions, getFirstVisitRegistrations, getVaccineOptions } from '../api/services'
 import { resolveCatalogValue, splitCatalogValue, useInformationCatalog } from '../composables/useInformationCatalog'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { useTableFilters } from '../composables/useTableFilters'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole, petStatusOptions, petStatusLabelMap, petStatusText, petLocationText } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 import AuditRecordList from './AuditRecordList.vue'
 
 const router = useRouter()
@@ -293,10 +262,32 @@ const dewormerOptions = ref([])
 const medicalTargetPet = ref(null)
 const savingMedicalRecord = ref(false)
 
-const petSearchForm = reactive({
-  name: '', age0: undefined, age1: undefined, sex: '', type: '', breed: '', status: '',
-  province: '', city: '', district: '', address: '',
+const { filters, isActive, applyFilter } = useTableFilters({
+  name: { type: 'text' },
+  type: { type: 'enum' },
+  breed: { type: 'enum' },
+  sex: { type: 'enum' },
+  status: { type: 'enum' },
+  age: { type: 'number' },
+  health: { type: 'text' },
+  address: { type: 'text' },
 })
+
+const sexOptions = [
+  { value: '公', label: '公' },
+  { value: '母', label: '母' },
+  { value: '未知', label: '未知' },
+]
+
+const statusOptions = [
+  { value: 'WAITING', label: '待审核' },
+  { value: 'APPROVED', label: '已通过' },
+  { value: 'SHELTERED', label: '已收容' },
+  { value: 'HEALTH', label: '健康' },
+  { value: 'ADOPTED', label: '已领养' },
+  { value: 'DIED', label: '死亡' },
+  { value: 'REJECT', label: '已拒绝' },
+]
 
 const petForm = reactive({
   id: '', name: '', age: 0, sex: '未知', type: '', typeInput: '猫', breed: '', breedInput: '',
@@ -315,11 +306,8 @@ const assessmentForm = reactive({ age: 0, weight: 0, scoreBcs: 80, scoreMental: 
 const petFormCityOptions = computed(() => getCityOptions(petForm.province))
 const petFormDistrictOptions = computed(() => getDistrictOptions(petForm.province, petForm.city))
 const petFormBreedOptions = computed(() => getBreedOptions(resolveCatalogValue(petForm.type, petForm.typeInput)))
-const petSearchCityOptions = computed(() => getCityOptions(petSearchForm.province))
-const petSearchDistrictOptions = computed(() => getDistrictOptions(petSearchForm.province, petSearchForm.city))
-const petSearchBreedOptions = computed(() => getBreedOptions(petSearchForm.type))
 
-const visiblePets = computed(() => petRows.value)
+const filteredPets = computed(() => applyFilter(petRows.value || []))
 const currentUserId = computed(() => String(userStore.profile?.id || ''))
 const isDoctor = computed(() => hasRole(userStore.profile?.role, ROLE.DOCTOR))
 
@@ -378,28 +366,16 @@ function openPetCreateDialog() {
 function handlePetFormTypeChange() { petForm.breed = ''; petForm.breedInput = '' }
 function handlePetFormProvinceChange() { petForm.city = ''; petForm.district = ''; if (petForm.province) ensureCityOptions(petForm.province) }
 function handlePetFormCityChange() { petForm.district = ''; if (petForm.province && petForm.city) ensureDistrictOptions(petForm.province, petForm.city) }
-function handlePetSearchTypeChange() { petSearchForm.breed = '' }
-function handlePetSearchProvinceChange() { petSearchForm.city = ''; petSearchForm.district = ''; if (petSearchForm.province) ensureCityOptions(petSearchForm.province) }
-function handlePetSearchCityChange() { petSearchForm.district = ''; if (petSearchForm.province && petSearchForm.city) ensureDistrictOptions(petSearchForm.province, petSearchForm.city) }
-
-function buildPetSearchQuery() {
-  return {
-    page: petPage.page, size: petPage.size, sort: 'update_time', order: 'desc',
-    mine: canManageUsers.value ? undefined : true,
-    user: canManageUsers.value ? undefined : [currentUserId.value],
-    name: petSearchForm.name.trim() || undefined, age0: petSearchForm.age0 ?? undefined, age1: petSearchForm.age1 ?? undefined,
-    sex: petSearchForm.sex || undefined, type: petSearchForm.type ? [petSearchForm.type] : undefined,
-    breed: petSearchForm.breed ? [petSearchForm.breed] : undefined, status: petSearchForm.status ? [petSearchForm.status] : undefined,
-    province: petSearchForm.province || undefined, city: petSearchForm.city || undefined, district: petSearchForm.district || undefined,
-    address: petSearchForm.address.trim() || undefined,
-  }
-}
 
 async function loadPets() {
   if (!canManageUsers.value && !currentUserId.value) return
   loadingPets.value = true
   try {
-    const result = await getPets(buildPetSearchQuery())
+    const result = await getPets({
+      page: petPage.page, size: petPage.size, sort: 'update_time', order: 'desc',
+      mine: canManageUsers.value ? undefined : true,
+      user: canManageUsers.value ? undefined : [currentUserId.value],
+    })
     petRows.value = Array.isArray(result?.records) ? result.records : []
     petTotal.value = Number(result?.total || petRows.value.length)
     loadPetFirstRegIds()
@@ -459,7 +435,7 @@ async function removePet(row) {
 }
 
 function changePetPage(page) { petPage.page = page; loadPets() }
-function searchPets() { petPage.page = 1; loadPets() }
+function handleRefresh() { petPage.page = 1; loadPets() }
 
 async function submitPetInfo() {
   if (!petFormRef.value || savingPet.value) return

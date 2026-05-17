@@ -4,36 +4,18 @@
       <div class="profile-card-header">
         <strong>协议管理</strong>
         <span>查看领养/寄养协议并维护协议内容</span>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
+        </div>
       </div>
     </template>
 
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row agreement-filter-row">
-          <el-select v-model="parentTypeFilter" class="filter-field-sm" clearable placeholder="协议来源">
-            <el-option label="领养" value="ADOPT" />
-            <el-option label="寄养" value="BREADING" />
-          </el-select>
-          <el-select v-model="signedFilter" class="filter-field-sm" clearable placeholder="签署状态">
-            <el-option label="已签署" :value="true" />
-            <el-option label="未签署" :value="false" />
-          </el-select>
-          <el-date-picker
-            v-model="timeRange"
-            type="daterange"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            start-placeholder="创建开始"
-            end-placeholder="创建结束"
-            class="filter-field-lg"
-          />
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
-          </div>
-        </div>
-      </section>
-
-      <el-table :data="rows" v-loading="loading" class="user-admin-table">
-        <el-table-column label="宠物" min-width="180" show-overflow-tooltip>
+      <el-table :data="filteredRows" v-loading="loading" class="user-admin-table">
+        <el-table-column min-width="180" show-overflow-tooltip>
+          <template #header>
+            <TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" />
+          </template>
           <template #default="{ row }">
             <button class="table-primary-link" type="button" @click="openAgreementDialog(row)">
               {{ row.petName || parentTypeText(row.parentType) }}
@@ -46,12 +28,18 @@
         <el-table-column label="类型" width="110">
           <template #default="{ row }">{{ agreementTypeText(row) }}</template>
         </el-table-column>
-        <el-table-column label="签署状态" width="110">
+        <el-table-column width="110">
+          <template #header>
+            <TableFilterHeader label="签署" :filter="filters.signed" type="enum" :active="isActive('signed')" :options="signedOptions" />
+          </template>
           <template #default="{ row }">
             <el-tag :type="row.signTime ? 'success' : 'warning'" effect="plain">{{ row.signTime ? '已签署' : '未签署' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="创建时间" min-width="160">
+        <el-table-column min-width="160">
+          <template #header>
+            <TableFilterHeader label="创建时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" />
+          </template>
           <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
         <el-table-column label="更新时间" min-width="160">
@@ -152,7 +140,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowDown, ArrowUp, Delete, Edit, Search, Upload } from '@element-plus/icons-vue'
+import { ArrowDown, ArrowUp, Delete, Edit, RefreshRight, Upload } from '@element-plus/icons-vue'
 import {
   deleteAgreementFile,
   getAgreement,
@@ -162,6 +150,8 @@ import {
   uploadAgreement,
 } from '../api/services'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
+import { useTableFilters } from '../composables/useTableFilters'
 
 const route = useRoute()
 
@@ -173,15 +163,25 @@ const uploading = ref(false)
 const rows = ref([])
 const total = ref(0)
 const actionCollapsed = ref(false)
-const parentTypeFilter = ref('')
-const signedFilter = ref('')
-const timeRange = ref([])
 const dialogVisible = ref(false)
 const activeAgreement = ref(null)
 const editContent = ref('')
 const originalPaperOrder = ref([])
 const fileInputRef = ref(null)
 const page = reactive({ page: 1, size: 10 })
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  petName: { type: 'text' },
+  signed: { type: 'enum' },
+  createTime: { type: 'time' },
+})
+
+const signedOptions = [
+  { value: true, label: '已签署' },
+  { value: false, label: '未签署' },
+]
+
+const filteredRows = computed(() => applyFilter(rows.value || []))
 
 const activeType = computed(() => inferAgreementType(activeAgreement.value))
 const activeTitle = computed(() => activeAgreement.value
@@ -224,16 +224,11 @@ function formatDate(value) {
 }
 
 function buildQuery() {
-  const [time0, time1] = timeRange.value || []
   return {
     page: page.page,
     size: page.size,
     sort: 'create_time',
     order: 'desc',
-    parentType: parentTypeFilter.value || undefined,
-    signed: signedFilter.value === '' ? undefined : signedFilter.value,
-    time0: time0 || undefined,
-    time1: time1 || undefined,
   }
 }
 
@@ -255,7 +250,7 @@ async function loadRows() {
   }
 }
 
-function searchRows() {
+function handleRefresh() {
   page.page = 1
   loadRows()
 }

@@ -4,21 +4,16 @@
       <div class="profile-card-header">
         <strong>健康评估</strong>
         <span>查看宠物健康评分与评估摘要</span>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadAssessments">刷新</el-button>
+        </div>
       </div>
     </template>
 
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row medical-health-cols-search">
-          <el-input v-model="keyword" class="filter-field-lg" clearable placeholder="按宠物、评估人或摘要搜索" @keyup.enter="searchAssessments" />
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchAssessments">搜索</el-button>
-          </div>
-        </div>
-      </section>
-
       <el-table :data="displayedRows" v-loading="loading" class="user-admin-table" row-key="id">
-        <el-table-column label="宠物" min-width="160">
+        <el-table-column min-width="160">
+          <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" placeholder="搜索宠物…" /></template>
           <template #default="{ row }">
             <button class="pet-admin-name-button" type="button" @click="goDetail(row)">{{ row.petName || '未命名' }}</button>
             <span class="medical-health-subtext">{{ row.petType || '宠物' }} · {{ row.petSex || '未知' }} · {{ row.petAge ?? 0 }} 月</span>
@@ -58,7 +53,7 @@
       </el-table>
 
       <div class="user-admin-pagination">
-        <el-pagination layout="prev, pager, next, total" :current-page="page.page" :page-size="page.size" :total="filteredRows.length" @current-change="changePage" />
+        <el-pagination layout="prev, pager, next, total" :current-page="page.page" :page-size="page.size" :total="filteredAssessments.length" @current-change="(p) => page.page = p" />
       </div>
     </section>
   </el-card>
@@ -68,30 +63,28 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
+import { RefreshRight } from '@element-plus/icons-vue'
 import { getHealthAssessments } from '../api/services'
+import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 
 const router = useRouter()
 const loading = ref(false)
 const rows = ref([])
-const keyword = ref('')
 const actionCollapsed = ref(false)
 const page = reactive({ page: 1, size: 10 })
 
-const filteredRows = computed(() => {
-  const text = keyword.value.trim().toLowerCase()
-  if (!text) return rows.value
-  return rows.value.filter((row) =>
-    [row.petName, row.petType, row.username, row.summary]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(text)),
-  )
+const { filters, isActive, applyFilter } = useTableFilters({
+  petName: { type: 'text' },
+  assessmentTime: { type: 'time' },
 })
+
+const filteredAssessments = computed(() => applyFilter(rows.value || []))
 
 const displayedRows = computed(() => {
   const start = (page.page - 1) * page.size
-  return filteredRows.value.slice(start, start + page.size)
+  return filteredAssessments.value.slice(start, start + page.size)
 })
 
 function formatDate(value) {
@@ -103,14 +96,6 @@ function formatDate(value) {
 
 function goDetail(row) {
   if (row?.id) router.push(`/console/medical/health/${row.id}`)
-}
-
-function searchAssessments() {
-  page.page = 1
-}
-
-function changePage(value) {
-  page.page = value
 }
 
 async function loadAssessments() {

@@ -1,11 +1,13 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, RefreshRight, Search } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { deleteArticle, getArticles, getFavoriteArticles, unfavoriteArticle, updateArticleStatus } from '../api/article'
 import { useUserStore } from '../stores/user'
 import { useRouter } from 'vue-router'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import { useTableFilters } from '../composables/useTableFilters'
+import TableFilterHeader from './TableFilterHeader.vue'
 import { ROLE, hasRole } from '../utils/roles'
 
 const props = defineProps({
@@ -40,14 +42,6 @@ const page = reactive({
   size: 10,
 })
 
-const searchForm = reactive({
-  title: '',
-  type: '',
-  status: '',
-  time0: '',
-  time1: '',
-})
-
 const loginRole = computed(() => Number(userStore.profile.role || 0))
 const isAdmin = computed(() => hasRole(loginRole.value, ROLE.ADMIN))
 const isWorker = computed(() => isAdmin.value || hasRole(loginRole.value, ROLE.WORKER))
@@ -69,21 +63,6 @@ const pageTitle = computed(() => {
   if (isFavoriteMode.value) return '我的收藏'
   return '我的文章'
 })
-const articleTypeOptions = computed(() => (isManageMode.value || isWorker.value ? ARTICLE_TYPE_OPTIONS : ARTICLE_TYPE_OPTIONS.filter((item) => item.value === 'STORY')))
-
-function buildQuery() {
-  return {
-    page: page.page,
-    size: page.size,
-    author: isManageMode.value ? undefined : loginUserId.value || undefined,
-    title: searchForm.title.trim() || undefined,
-    type: searchForm.type || undefined,
-    status: searchForm.status ? [searchForm.status] : undefined,
-    time0: searchForm.time0 || undefined,
-    time1: searchForm.time1 || undefined,
-    isDiscard: false,
-  }
-}
 
 async function loadArticles() {
   if (!canUseCurrentMode.value) {
@@ -95,7 +74,12 @@ async function loadArticles() {
   try {
     const result = isFavoriteMode.value
       ? await getFavoriteArticles({ page: page.page, size: page.size })
-      : await getArticles(buildQuery())
+      : await getArticles({
+          page: page.page,
+          size: page.size,
+          author: isManageMode.value ? undefined : loginUserId.value || undefined,
+          isDiscard: false,
+        })
     rows.value = Array.isArray(result?.records) ? result.records : []
     total.value = Number(result?.total || 0)
   } catch (error) {
@@ -107,12 +91,28 @@ async function loadArticles() {
   }
 }
 
-function resetSearch() {
-  searchForm.title = ''
-  searchForm.type = ''
-  searchForm.status = ''
-  searchForm.time0 = ''
-  searchForm.time1 = ''
+const { filters, isActive, applyFilter } = useTableFilters({
+  title: { type: 'text' },
+  type: { type: 'enum' },
+  status: { type: 'enum' },
+  publishTime: { type: 'time' },
+})
+
+const typeOptions = [
+  { value: 'STORY', label: '救助故事' },
+  { value: 'ACTIVITY', label: '活动' },
+  { value: 'KNOWLEDGE', label: '科普知识' },
+]
+
+const statusOptions = [
+  { value: 'DRAFT', label: '草稿' },
+  { value: 'PUBLISHED', label: '已发布' },
+  { value: 'OFFLINE', label: '已下线' },
+]
+
+const filteredArticles = computed(() => applyFilter(rows.value || []))
+
+function handleRefresh() {
   page.page = 1
   loadArticles()
 }
@@ -250,7 +250,7 @@ watch(
   () => props.mode,
   () => {
     page.page = 1
-    resetSearch()
+    loadArticles()
   },
 )
 
@@ -264,32 +264,15 @@ onMounted(() => {
     <template #header>
       <div class="profile-card-header">
         <strong>{{ pageTitle }}</strong>
+        <div class="profile-actions">
+          <el-button v-if="!isFavoriteMode" class="warm-btn" :icon="Plus" @click="goCreateArticle">发表文章</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
+        </div>
       </div>
     </template>
 
     <section v-if="canUseCurrentMode" class="pet-admin-section article-admin-shell">
-      <section v-if="!isFavoriteMode" class="filter-panel pet-directory-filter-panel article-directory-filter-panel">
-        <div class="pet-filter-row article-filter-row-inline article-filter-cols-3">
-          <el-input v-model="searchForm.title" class="filter-field-md" clearable placeholder="标题" @keyup.enter="page.page = 1; loadArticles()" />
-          <el-select v-model="searchForm.type" class="filter-field-sm" clearable placeholder="文章类型">
-            <el-option v-for="item in articleTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-          <el-select v-model="searchForm.status" class="filter-field-sm" clearable placeholder="文章状态">
-            <el-option v-for="item in ARTICLE_STATUS_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-        </div>
-
-        <div class="pet-filter-row article-filter-row-secondary article-filter-cols-row2">
-          <el-date-picker v-model="searchForm.time0" type="date" value-format="YYYY-MM-DD" placeholder="开始日期" class="filter-field-md" />
-          <el-date-picker v-model="searchForm.time1" type="date" value-format="YYYY-MM-DD" placeholder="结束日期" class="filter-field-md" />
-          <div class="pet-filter-action article-filter-action">
-            <el-button v-if="!isManageMode" class="soft-btn" :icon="Plus" @click="goCreateArticle">发表文章</el-button>
-            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="page.page = 1; loadArticles()">搜索</el-button>
-          </div>
-        </div>
-      </section>
-
-      <el-table :data="rows" v-loading="loading" class="user-admin-table">
+      <el-table :data="filteredArticles" v-loading="loading" class="user-admin-table">
         <el-table-column label="标题" min-width="260" show-overflow-tooltip>
           <template #default="{ row }">
             <button class="table-primary-link" type="button" @click="goArticlePage(row)">{{ row.title || '未命名文章' }}</button>
@@ -363,18 +346,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.article-directory-filter-panel .article-filter-cols-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-.article-directory-filter-panel .article-filter-cols-row2 {
-  grid-template-columns: 1fr 1fr auto;
-}
-.article-directory-filter-panel .article-favorite-toolbar {
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-}
-.article-favorite-toolbar > span {
-  color: var(--muted);
-  font-size: 14px;
-}
 </style>

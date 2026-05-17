@@ -4,30 +4,23 @@
       <div class="profile-card-header">
         <strong>物资余量</strong>
         <span>库存批次、出入库操作、物资分类和预警</span>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="stockLoading" @click="handleRefresh">刷新</el-button>
+        </div>
       </div>
     </template>
 
     <el-tabs v-model="activeTab" class="item-stock-tabs">
       <el-tab-pane label="库存余量" name="stocks">
         <section class="pet-admin-section">
-          <section class="filter-panel pet-directory-filter-panel">
-            <div class="pet-filter-row item-stock-filter-row">
-              <el-select v-model="stockSearch.itemId" class="filter-field-md" clearable filterable placeholder="物资">
-                <el-option v-for="item in itemOptions" :key="item.id" :label="item.name" :value="String(item.id)" />
-              </el-select>
-              <el-select v-model="stockSearch.sourceType" class="filter-field-sm" clearable placeholder="来源">
-                <el-option label="捐赠" value="DONATION" />
-                <el-option label="采购" value="PURCHASE" />
-              </el-select>
-              <div class="pet-filter-action">
-                <el-button class="soft-btn" :icon="Plus" @click="openStockDialog(null, 'IN')">入库</el-button>
-                <el-button class="warm-btn" :icon="Search" :loading="stockLoading" @click="searchStocks">搜索</el-button>
-              </div>
-            </div>
-          </section>
-
-          <el-table :data="stocks" v-loading="stockLoading" class="user-admin-table">
+          <el-table :data="filteredStocks" v-loading="stockLoading" class="user-admin-table">
             <el-table-column label="物资" min-width="170">
+              <template #header>
+                <div class="item-stock-filter-group">
+                  <TableFilterHeader label="物资" :filter="filters.itemName" type="text" :active="isActive('itemName')" />
+                  <TableFilterHeader label="分类" :filter="filters.categoryName" type="enum" :active="isActive('categoryName')" :options="categoryOptions" />
+                </div>
+              </template>
               <template #default="{ row }">
                 <strong class="item-stock-name">{{ row.itemName || '物资' }}</strong>
                 <span class="item-stock-subtext">{{ row.categoryName || '' }} · #{{ row.id }}</span>
@@ -248,10 +241,10 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search } from '@element-plus/icons-vue'
+import { Plus, RefreshRight, Search } from '@element-plus/icons-vue'
 import {
   cancelSubscribe,
   createCategory,
@@ -269,6 +262,8 @@ import {
   updateItem,
 } from '../api/services'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
+import { useTableFilters } from '../composables/useTableFilters'
 
 const route = useRoute()
 const activeTab = ref('stocks')
@@ -292,12 +287,22 @@ const itemDialogVisible = ref(false)
 const categoryDialogVisible = ref(false)
 const subscribeDialogVisible = ref(false)
 const stockPage = reactive({ page: 1, size: 10 })
-const stockSearch = reactive({ itemId: '', sourceType: '' })
 const itemSearch = reactive({ keyword: '', categoryId: '' })
 const stockForm = reactive(resetStockForm())
 const itemForm = reactive({ id: '', name: '', categoryId: '', unit: '', description: '' })
 const categoryForm = reactive({ id: '', name: '', description: '' })
 const subscribeForm = reactive({ action: 'ITEM_COUNT', elementId: '', count: '' })
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  itemName: { type: 'text' },
+  categoryName: { type: 'enum' },
+})
+
+const categoryOptions = computed(() =>
+  (categories.value || []).map((c) => ({ value: c.name, label: c.name })),
+)
+
+const filteredStocks = computed(() => applyFilter(stocks.value || []))
 
 function resetStockForm() {
   return {
@@ -346,8 +351,6 @@ function buildStockQuery() {
   return {
     page: stockPage.page,
     size: stockPage.size,
-    item: stockSearch.itemId ? [stockSearch.itemId] : undefined,
-    source: stockSearch.sourceType ? [stockSearch.sourceType] : undefined,
   }
 }
 
@@ -364,7 +367,7 @@ async function loadStocks() {
   }
 }
 
-function searchStocks() {
+function handleRefresh() {
   stockPage.page = 1
   loadStocks()
 }
@@ -684,5 +687,11 @@ onMounted(async () => {
   .item-stock-inline-filter {
     grid-template-columns: 1fr;
   }
+}
+
+.item-stock-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 </style>

@@ -4,22 +4,16 @@
       <div class="profile-card-header">
         <strong>就诊记录</strong>
         <span>{{ petName ? `${petName}的就诊历史` : '查看就诊历史' }}</span>
+        <div class="profile-actions">
+          <el-button v-if="canManageMedical && petId" class="soft-btn" :icon="Plus" @click="goCreateRecord" />
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingRecords" @click="loadRecords">刷新</el-button>
+        </div>
       </div>
     </template>
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row medical-record-cols-search">
-          <el-select v-model="statusFilter" class="filter-field-sm" clearable placeholder="就诊状态">
-            <el-option v-for="item in recordStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="Search" circle :loading="loadingRecords" @click="searchRecords" />
-            <el-button v-if="canManageMedical && petId" class="soft-btn" :icon="Plus" @click="goCreateRecord" />
-          </div>
-        </div>
-      </section>
-      <el-table :data="recordRows" v-loading="loadingRecords" class="user-admin-table">
-        <el-table-column label="宠物" min-width="120">
+      <el-table :data="displayedRecords" v-loading="loadingRecords" class="user-admin-table">
+        <el-table-column min-width="120">
+          <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" placeholder="搜索宠物…" /></template>
           <template #default="{ row }">
             <div>
               <button class="pet-admin-name-button" type="button" @click="goMedicalRecordDetail(row)">{{ row.petName || '未命名' }}</button>
@@ -57,7 +51,7 @@
         </el-table-column>
       </el-table>
       <div class="user-admin-pagination">
-        <el-pagination layout="prev, pager, next, total" :current-page="page.page" :page-size="page.size" :total="total" @current-change="changePage" />
+        <el-pagination layout="prev, pager, next, total" :current-page="page.page" :page-size="page.size" :total="total" @current-change="(p) => page.page = p" />
       </div>
     </section>
 
@@ -109,11 +103,13 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getMedicalRecords, updateMedicalRecord, getMedicalDetails, getFirstVisitRegistrations } from '../api/services'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { useTableFilters } from '../composables/useTableFilters'
 import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 import MedicalRecordCreateDialog from './MedicalRecordCreateDialog.vue'
 
 const route = useRoute()
@@ -130,8 +126,6 @@ const saving = ref(false)
 const actionCollapsed = ref(false)
 const editDialogVisible = ref(false)
 const recordRows = ref([])
-const total = ref(0)
-const statusFilter = ref('')
 const page = reactive({ page: 1, size: 10 })
 const editFormRef = ref()
 
@@ -141,6 +135,20 @@ const createDialogVisible = ref(false)
 const createDialogPetId = ref('')
 const createDialogPetName = ref('')
 const createDialogPetAge = ref(null)
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  petName: { type: 'text' },
+  recordTime: { type: 'time' },
+})
+
+const filteredRecords = computed(() => applyFilter(recordRows.value || []))
+
+const displayedRecords = computed(() => {
+  const start = (page.page - 1) * page.size
+  return filteredRecords.value.slice(start, start + page.size)
+})
+
+const total = computed(() => filteredRecords.value.length)
 
 const editForm = reactive({
   id: '', type: '', status: '', startTime: '', endTime: '', price: '', cost: '', ownerPhone: '',
@@ -233,12 +241,10 @@ const editRules = {
 async function loadRecords() {
   loadingRecords.value = true
   try {
-    const query = { page: page.page, size: page.size, sort: 'create_time', order: 'desc' }
+    const query = { page: 1, size: 500, sort: 'create_time', order: 'desc' }
     if (petId.value) query.pet = petId.value
-    if (statusFilter.value) query.status = statusFilter.value
     const result = await getMedicalRecords(query)
     recordRows.value = Array.isArray(result?.records) ? result.records : []
-    total.value = Number(result?.total || recordRows.value.length)
     loadDetailExistence()
   } catch (error) { ElMessage.warning(error?.message || '加载就诊记录失败') }
   finally { loadingRecords.value = false }
@@ -259,9 +265,6 @@ async function loadDetailExistence() {
     detailIdMap.value = map
   } catch { /* ignore */ }
 }
-
-function searchRecords() { page.page = 1; loadRecords() }
-function changePage(p) { page.page = p; loadRecords() }
 
 function openEditDialog(row) {
   Object.assign(editForm, {

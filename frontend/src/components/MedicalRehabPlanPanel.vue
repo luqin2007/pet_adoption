@@ -4,22 +4,14 @@
       <div class="profile-card-header">
         <strong>康复计划</strong>
         <span>跟踪宠物康复计划与执行记录</span>
+        <div class="profile-actions">
+          <el-button class="soft-btn" :icon="Plus" @click="goCreatePlan">创建计划</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadPlans">刷新</el-button>
+        </div>
       </div>
     </template>
 
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row medical-rehab-cols-search">
-          <el-input v-model="keyword" class="filter-field-lg" clearable placeholder="按宠物、计划、频率或兽医搜索" @keyup.enter="searchPlans" />
-          <el-select v-model="statusFilter" class="filter-field-sm" clearable placeholder="状态">
-            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchPlans">搜索</el-button>
-          </div>
-        </div>
-      </section>
-
       <el-table :data="displayedRows" v-loading="loading" class="user-admin-table" row-key="id">
         <el-table-column label="康复计划" min-width="210" show-overflow-tooltip>
           <template #default="{ row }">
@@ -27,13 +19,15 @@
             <span class="medical-rehab-subtext">{{ row.frequency || '' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="宠物" min-width="150">
+        <el-table-column min-width="150">
+          <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" placeholder="搜索宠物…" /></template>
           <template #default="{ row }">
             <button class="pet-admin-name-button" type="button" @click="goPet(row)">{{ row.petName || '未命名' }}</button>
             <span class="medical-rehab-subtext">{{ row.petType || '宠物' }} · {{ row.petSex || '未知' }} · {{ row.petAge ?? 0 }} 月</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="110">
+        <el-table-column width="110">
+          <template #header><TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="statusOptions" /></template>
           <template #default="{ row }">
             <el-tag size="small" :type="statusTagType(row.status)" effect="plain">{{ statusText(row.status) }}</el-tag>
           </template>
@@ -58,7 +52,7 @@
       </el-table>
 
       <div class="user-admin-pagination">
-        <el-pagination layout="prev, pager, next, total" :current-page="page.page" :page-size="page.size" :total="filteredRows.length" @current-change="changePage" />
+        <el-pagination layout="prev, pager, next, total" :current-page="page.page" :page-size="page.size" :total="filteredPlans.length" @current-change="(p) => page.page = p" />
       </div>
     </section>
   </el-card>
@@ -68,18 +62,18 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getRehabPlans } from '../api/services'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
+import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 const loading = ref(false)
 const rows = ref([])
-const keyword = ref('')
-const statusFilter = ref('')
 const actionCollapsed = ref(false)
 const page = reactive({ page: 1, size: 10 })
 
@@ -89,20 +83,17 @@ const statusOptions = [
   { label: '已废弃', value: 'DISCARD' },
 ]
 
-const filteredRows = computed(() => {
-  const text = keyword.value.trim().toLowerCase()
-  return rows.value.filter((row) => {
-    if (statusFilter.value && row.status !== statusFilter.value) return false
-    if (!text) return true
-    return [row.title, row.content, row.frequency, row.petName, row.petType, row.username]
-      .filter(Boolean)
-      .some((value) => String(value).toLowerCase().includes(text))
-  })
+const { filters, isActive, applyFilter } = useTableFilters({
+  petName: { type: 'text' },
+  status: { type: 'enum' },
+  createTime: { type: 'time' },
 })
+
+const filteredPlans = computed(() => applyFilter(rows.value || []))
 
 const displayedRows = computed(() => {
   const start = (page.page - 1) * page.size
-  return filteredRows.value.slice(start, start + page.size)
+  return filteredPlans.value.slice(start, start + page.size)
 })
 
 function statusText(value) {
@@ -127,6 +118,10 @@ function goPet(row) {
   if (row?.petId) router.push(`/pets/${row.petId}`)
 }
 
+function goCreatePlan() {
+  router.push({ path: '/console/medical/rehab/new' })
+}
+
 function canUpdatePlan(row) {
   return hasRole(userStore.profile?.role, ROLE.DOCTOR) && String(row?.doctorId || '') === String(userStore.profile?.id || '')
 }
@@ -137,14 +132,6 @@ function goDetail(row, action = '') {
     path: `/console/medical/rehab/${row.id}`,
     query: action ? { action } : {},
   })
-}
-
-function searchPlans() {
-  page.page = 1
-}
-
-function changePage(value) {
-  page.page = value
 }
 
 async function loadPlans() {

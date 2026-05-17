@@ -4,31 +4,15 @@
       <div class="profile-card-header">
         <strong>寄养管理</strong>
         <span>{{ isWorker ? '查看与审核全部寄养申请' : '查看我的寄养申请' }}</span>
+        <div class="profile-actions">
+          <el-button class="soft-btn" :icon="Plus" @click="goCreateBreading">申请寄养</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
+        </div>
       </div>
     </template>
 
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row adoption-filter-row">
-          <el-select v-model="statusFilter" class="filter-field-sm" clearable placeholder="申请状态">
-            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-          <el-date-picker
-            v-model="timeRange"
-            type="daterange"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            start-placeholder="申请开始"
-            end-placeholder="申请结束"
-            class="filter-field-lg"
-          />
-          <div class="pet-filter-action">
-            <el-button class="soft-btn" :icon="Plus" @click="goCreateBreading">申请寄养</el-button>
-            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
-          </div>
-        </div>
-      </section>
-
-      <el-table :data="rows" v-loading="loading" class="user-admin-table">
+      <el-table :data="filteredRows" v-loading="loading" class="user-admin-table">
         <el-table-column label="宠物" min-width="200" show-overflow-tooltip>
           <template #default="{ row }">
             <button class="table-primary-link adoption-pet-detail-cell" type="button" @click="goBreadingDetail(row)">
@@ -40,6 +24,9 @@
           </template>
         </el-table-column>
         <el-table-column label="申请人" min-width="160">
+          <template #header>
+            <TableFilterHeader label="申请人" :filter="filters.applicantName" type="text" :active="isActive('applicantName')" />
+          </template>
           <template #default="{ row }">
             <div class="adoption-person-cell">
               <strong>{{ row.applicantName || '未命名用户' }}</strong>
@@ -47,7 +34,10 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="120">
+        <el-table-column width="120">
+          <template #header>
+            <TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="breadingStatusFilterOptions" />
+          </template>
           <template #default="{ row }">
             <el-tag :type="statusTagType(row.status)" effect="plain">{{ statusText(row.status) }}</el-tag>
           </template>
@@ -55,7 +45,10 @@
         <el-table-column label="审核人" min-width="120">
           <template #default="{ row }">{{ row.reviewerName || '' }}</template>
         </el-table-column>
-        <el-table-column label="申请时间" min-width="160">
+        <el-table-column min-width="160">
+          <template #header>
+            <TableFilterHeader label="申请时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" />
+          </template>
           <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
         <el-table-column width="40" class-name="action-col">
@@ -135,11 +128,13 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getBreadingApplications, updateBreadingStatus } from '../api/services'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
+import { useTableFilters } from '../composables/useTableFilters'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -149,9 +144,23 @@ const acting = ref(false)
 const actionCollapsed = ref(false)
 const rows = ref([])
 const total = ref(0)
-const statusFilter = ref('')
-const timeRange = ref([])
 const reviewDialogVisible = ref(false)
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  applicantName: { type: 'text' },
+  status: { type: 'enum' },
+  createTime: { type: 'time' },
+})
+
+const breadingStatusFilterOptions = [
+  { value: 'CREATE', label: '已创建' },
+  { value: 'PASS', label: '已通过' },
+  { value: 'REJECT', label: '已拒绝' },
+  { value: 'FINISH', label: '已完成' },
+  { value: 'CANCEL', label: '已取消' },
+]
+
+const filteredRows = computed(() => applyFilter(rows.value || []))
 const reviewTarget = ref(null)
 const reviewStatus = ref('PASS')
 const agreementDialogVisible = ref(false)
@@ -197,16 +206,12 @@ function formatDate(value) {
 }
 
 function buildQuery() {
-  const [time0, time1] = timeRange.value || []
   return {
     page: page.page,
     size: page.size,
     sort: 'create_time',
     order: 'desc',
     applicant: isWorker.value ? undefined : [loginUserId.value],
-    status: statusFilter.value ? [statusFilter.value] : undefined,
-    time0: time0 || undefined,
-    time1: time1 || undefined,
   }
 }
 
@@ -224,7 +229,7 @@ async function loadRows() {
   }
 }
 
-function searchRows() {
+function handleRefresh() {
   page.page = 1
   loadRows()
 }
