@@ -1,5 +1,6 @@
 package com.example.backend.event;
 
+import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
 import com.example.backend.entity.User;
 import com.example.backend.entity.property.NoticeSource;
@@ -12,7 +13,7 @@ import com.example.backend.util.LangHelper;
  *
  * @see com.example.backend.service.PetService#updateStatus(Long, com.example.backend.dto.PetStatusUpdateRequest)
  */
-public record PetStatusChangeEvent(PetStatusRecord data, User user) implements INotifyEvent<PetStatusRecord> {
+public record PetStatusChangeEvent(PetStatusRecord data, Pet pet, User user) implements INotifyEvent<PetStatusRecord> {
     @Override
     public NoticeSource getSource() {
         return NoticeSource.PET_RECORD;

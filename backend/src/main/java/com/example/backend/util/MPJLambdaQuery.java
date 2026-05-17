@@ -33,7 +33,7 @@ public class MPJLambdaQuery<BASE extends IId, QUERY, DTO> {
     }
 
     public <V> MPJLambdaQuery<BASE, QUERY, DTO> in(SFunction<QUERY, V> column, Collection<V> values) {
-        if (values == null) return this;
+        if (values == null || values.isEmpty()) return this;
 
         // 去重
         Set<?> set = values instanceof Set

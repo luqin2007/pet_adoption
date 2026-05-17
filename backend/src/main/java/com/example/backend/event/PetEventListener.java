@@ -37,7 +37,7 @@ public class PetEventListener extends BaseEventListener {
     public void onPetStatus(PetStatusChangeEvent event) {
         PetStatusRecord record = event.data();
         String petName = petMapper.requireById(record.getPetId(), Pet::getName).getName("");
-        notifyWorkers(null, event, petName);
+        notify(event.user(), List.of(event.pet().getDiscoverId()), event, petName);
     }
 
     @TransactionalEventListener

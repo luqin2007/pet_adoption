@@ -80,11 +80,6 @@ public class PetService extends BaseService<PetMapper, Pet> {
      */
     public Page<PetResponse> getPets(PetQueryParams paramRequest, PageParams pageRequest) {
         Optional<User> login = getLoginUser();
-        if (Boolean.TRUE.equals(paramRequest.getMine())) {
-            User user = requireLoginUser();
-            login = Optional.of(user);
-            paramRequest.setUser(Set.of(user.getId()));
-        }
         if (login.isEmpty() || !login.get().isWorker())
             paramRequest.setIsDiscard(Boolean.FALSE);
 
@@ -278,7 +273,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
     @Transactional
     public PetStatusRecordResponse updateStatus(Long petId, PetStatusUpdateRequest request) {
         // 校验权限
-        Pet pet = requireById(petId, Pet::getId, Pet::getStatus);
+        Pet pet = requireById(petId);
         User login = requireLoginUser();
         checkUserPermission(pet, login);
 
@@ -286,7 +281,7 @@ public class PetService extends BaseService<PetMapper, Pet> {
         PetStatusRecord record = request.create(pet, login.getId());
         baseMapper.updateStatus(petId, record.getTo()).update();
         petStatusRecordMapper.insert(record);
-        eventPublisher.publishEvent(new PetStatusChangeEvent(record, login));
+        eventPublisher.publishEvent(new PetStatusChangeEvent(record, pet, login));
         String cover = fileService.getCoverUrl(petId, PET);
         return PetStatusRecordResponse.create(record, pet, cover, login);
     }
