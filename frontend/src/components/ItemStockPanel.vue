@@ -12,8 +12,7 @@
 
     <el-tabs v-model="activeTab" class="item-stock-tabs">
 <el-tab-pane label="库存余量" name="stocks">
-        <template v-if="activeTab === 'stocks'">
-        <div style="min-width: 0">
+        <section class="pet-admin-section">
         <el-table :data="filteredStocks" v-loading="stockLoading" class="user-admin-table">
           <el-table-column label="物资" min-width="140">
             <template #header>
@@ -64,8 +63,7 @@
         <div class="user-admin-pagination">
           <el-pagination layout="prev, pager, next, total" :current-page="stockPage.page" :page-size="stockPage.size" :total="stockTotal" @current-change="changeStockPage" />
         </div>
-        </div>
-        </template>
+        </section>
       </el-tab-pane>
 
       <el-tab-pane label="物资类型" name="catalog">
@@ -125,13 +123,12 @@
       </el-tab-pane>
 
       <el-tab-pane label="库存预警" name="subscribes">
-        <template v-if="activeTab === 'subscribes'">
-        <div style="min-width: 0">
+        <section class="pet-admin-section">
         <div class="item-stock-block-head">
           <strong>预警订阅</strong>
           <el-button class="soft-btn" :icon="Plus" @click="openSubscribeDialog">添加预警</el-button>
         </div>
-        <el-table ref="subscribeTableRef" :data="filteredSubscribes" v-loading="subscribeLoading" class="user-admin-table">
+        <el-table :data="filteredSubscribes" v-loading="subscribeLoading" class="user-admin-table">
           <el-table-column label="预警类型" min-width="150">
             <template #header>
               <TableFilterHeader label="预警类型" :filter="subscribeFilters.action" type="enum" :options="subscribeActionOptions" :active="isSubscribeActive('action')" />
@@ -156,8 +153,7 @@
             </template>
           </el-table-column>
         </el-table>
-        </div>
-        </template>
+        </section>
       </el-tab-pane>
     </el-tabs>
   </el-card>
