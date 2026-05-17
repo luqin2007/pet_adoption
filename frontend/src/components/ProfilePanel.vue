@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, Lock, Upload, User } from '@element-plus/icons-vue'
+import { Check, Delete, Lock, Upload, User } from '@element-plus/icons-vue'
 import { getUserById, updateUserById, uploadUserAvatar, deleteUserAvatar } from '../api/user'
 import { useUserStore } from '../stores/user'
 
@@ -238,8 +238,7 @@ onMounted(() => {
       <div class="profile-card-header">
         <strong>个人信息修改</strong>
         <div class="profile-actions">
-          <el-button @click="resetForm">重置</el-button>
-          <el-button class="warm-btn" :loading="submitting" @click="submitProfile">保存</el-button>
+          <el-button class="warm-btn" :icon="Check" :loading="submitting" @click="submitProfile" />
         </div>
       </div>
     </template>

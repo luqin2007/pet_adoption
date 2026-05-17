@@ -132,7 +132,7 @@ onMounted(() => {
       <div class="profile-card-header">
         <strong>站内信</strong>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh" />
         </div>
       </div>
     </template>

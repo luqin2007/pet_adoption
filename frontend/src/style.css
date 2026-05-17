@@ -1429,6 +1429,32 @@ main {
   justify-content: flex-end;
 }
 
+.console-search-panel {
+  margin: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 250, 244, 0.92);
+  border-radius: 0;
+}
+
+.console-btn-group .el-button {
+  border-radius: 0;
+  margin-left: 0;
+}
+
+.console-btn-group .el-button:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.console-btn-group .el-button:last-child {
+  border-radius: 0 10px 10px 0;
+}
+
+.console-btn-group .el-button.is-active {
+  background: var(--primary-strong);
+  border-color: var(--primary-strong);
+}
+
 .pet-admin-card .el-card__body {
   display: grid;
   gap: 12px;

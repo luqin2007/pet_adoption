@@ -5,10 +5,48 @@
         <div class="profile-card-header">
           <strong>流浪宠物</strong>
           <div class="profile-actions">
-            <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingPets" @click="handleRefresh">刷新</el-button>
+            <el-button-group class="console-btn-group">
+              <el-button class="warm-btn" :icon="Plus" @click="router.push('/pets/new')" />
+              <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingPets" @click="handleRefresh" />
+              <el-button class="warm-btn" :icon="MoreFilled" :class="{ 'is-active': showSearchPanel }" @click="showSearchPanel = !showSearchPanel" />
+            </el-button-group>
           </div>
         </div>
       </template>
+      <div v-if="showSearchPanel" class="console-search-panel" @keyup.enter="handleRefresh">
+        <div class="pet-filter-row pet-filter-row-primary">
+          <el-input v-model="petSearchForm.name" class="filter-field-sm" placeholder="名称" clearable />
+          <el-select v-model="petSearchForm.type" class="filter-field-sm" placeholder="类型" clearable>
+            <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="petSearchForm.breed" class="filter-field-sm" placeholder="品种" clearable>
+            <el-option v-for="item in breedOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="petSearchForm.sex" class="filter-field-sm" placeholder="性别" clearable>
+            <el-option v-for="opt in sexOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+          <el-select v-model="petSearchForm.status" class="filter-field-sm" placeholder="状态" clearable>
+            <el-option v-for="opt in statusOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </div>
+        <div class="pet-filter-row pet-filter-row-primary" style="margin-top: 8px">
+          <div class="pet-age-range filter-field-sm">
+            <el-input-number v-model="petSearchForm.age0" :min="0" :controls="false" placeholder="最小月龄" />
+            <span>至</span>
+            <el-input-number v-model="petSearchForm.age1" :min="0" :controls="false" placeholder="最大月龄" />
+          </div>
+          <el-select v-model="petSearchForm.province" class="filter-field-sm" placeholder="省" clearable filterable @change="petSearchForm.city = ''; petSearchForm.district = ''">
+            <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="petSearchForm.city" class="filter-field-sm" placeholder="市" clearable filterable :disabled="!petSearchForm.province" @change="petSearchForm.district = ''">
+            <el-option v-for="item in getCityOptions(petSearchForm.province)" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="petSearchForm.district" class="filter-field-sm" placeholder="县" clearable filterable :disabled="!petSearchForm.city">
+            <el-option v-for="item in getDistrictOptions(petSearchForm.province, petSearchForm.city)" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-input v-model="petSearchForm.address" class="filter-field-lg" placeholder="地址" clearable />
+        </div>
+      </div>
       <section class="pet-admin-section">
         <el-table :data="filteredPets" v-loading="loadingPets" class="user-admin-table">
           <el-table-column min-width="180">
@@ -221,7 +259,7 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Upload, RefreshRight } from '@element-plus/icons-vue'
+import { MoreFilled, Plus, Upload, RefreshRight } from '@element-plus/icons-vue'
 import { createPet, deletePetById, getPets, updatePetStatus, uploadPetMedia, getPetStatusRecords } from '../api/pets'
 import { addDeworm, addHealthAssessment, addVaccine, getDewormerOptions, getFirstVisitRegistrations, getVaccineOptions } from '../api/services'
 import { resolveCatalogValue, splitCatalogValue, useInformationCatalog } from '../composables/useInformationCatalog'
@@ -237,12 +275,37 @@ const router = useRouter()
 const userStore = useUserStore()
 const { canManageUsers, canManageMedical } = useConsoleGuards()
 const { ensureInformationCatalog, ensureCityOptions, ensureDistrictOptions, provinceOptions, typeOptions, getCityOptions, getDistrictOptions, getBreedOptions } = useInformationCatalog()
+const breedOptions = computed(() => {
+  const breeds = []
+  typeOptions.value.forEach((type) => {
+    getBreedOptions(type).forEach((breed) => {
+      if (!breeds.includes(breed)) breeds.push(breed)
+    })
+  })
+  return breeds
+})
 
 // --- State ---
 const petFormRef = ref()
 const petEditFormRef = ref()
 const petMediaInputRef = ref()
 const loadingPets = ref(false)
+const showSearchPanel = ref(false)
+const hasValue = (v) => v !== undefined && v !== null && v !== ''
+
+const petSearchForm = reactive({
+  name: '',
+  type: '',
+  breed: '',
+  sex: '',
+  age0: undefined,
+  age1: undefined,
+  status: '',
+  province: '',
+  city: '',
+  district: '',
+  address: '',
+})
 const savingPet = ref(false)
 const uploadingPetMedia = ref(false)
 const petActionCollapsed = ref(false)
@@ -375,6 +438,17 @@ async function loadPets() {
       page: petPage.page, size: petPage.size, sort: 'update_time', order: 'desc',
       mine: canManageUsers.value ? undefined : true,
       user: canManageUsers.value ? undefined : [currentUserId.value],
+      name: petSearchForm.name || undefined,
+      type: petSearchForm.type ? [petSearchForm.type] : undefined,
+      breed: petSearchForm.breed ? [petSearchForm.breed] : undefined,
+      sex: petSearchForm.sex || undefined,
+      age0: hasValue(petSearchForm.age0) ? Number(petSearchForm.age0) : undefined,
+      age1: hasValue(petSearchForm.age1) ? Number(petSearchForm.age1) : undefined,
+      status: petSearchForm.status ? [petSearchForm.status] : undefined,
+      province: petSearchForm.province || undefined,
+      city: petSearchForm.city || undefined,
+      district: petSearchForm.district || undefined,
+      address: petSearchForm.address || undefined,
     })
     petRows.value = Array.isArray(result?.records) ? result.records : []
     petTotal.value = Number(result?.total || petRows.value.length)
