@@ -239,7 +239,7 @@ onMounted(() => {
         <strong>个人信息修改</strong>
         <div class="profile-actions">
           <el-button @click="resetForm">重置</el-button>
-          <el-button type="warning" :loading="submitting" @click="submitProfile">保存</el-button>
+          <el-button class="warm-btn" :loading="submitting" @click="submitProfile">保存</el-button>
         </div>
       </div>
     </template>
