@@ -382,7 +382,6 @@ main {
   --el-button-text-color: #2b150a;
   --el-button-hover-text-color: #2b150a;
   --el-button-active-text-color: #2b150a;
-  border-radius: 14px;
   font-weight: 700;
 }
 
@@ -1233,7 +1232,6 @@ main {
 }
 
 .profile-card-header span {
-  color: var(--muted);
   font-size: 13px;
 }
 

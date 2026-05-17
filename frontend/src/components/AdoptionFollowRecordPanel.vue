@@ -110,7 +110,7 @@
     </el-form>
     <template #footer>
       <el-button @click="modifyDialogVisible = false">取消</el-button>
-      <el-button class="warm-btn" :loading="actionLoadingId === 'modify'" @click="submitModify">保存修改</el-button>
+      <el-button class="warm-btn" :loading="actionLoadingId === 'modify'" @click="submitModify">保存</el-button>
     </template>
   </el-dialog>
 </template>

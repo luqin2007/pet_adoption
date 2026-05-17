@@ -150,7 +150,7 @@ onMounted(() => {
           <div class="article-editor-actions">
             <el-button class="soft-btn" @click="goBack">取消</el-button>
             <template v-if="isEditMode">
-              <el-button class="soft-btn article-search-btn" :loading="saving" @click="saveArticle(false)">保存修改</el-button>
+              <el-button class="soft-btn article-search-btn" :loading="saving" @click="saveArticle(false)">保存</el-button>
             </template>
             <template v-else>
               <el-button class="soft-btn" :loading="saving" @click="saveArticle(false)">保存草稿</el-button>
