@@ -44,7 +44,6 @@ const isVolunteer = computed(() => hasRole(loginRole.value, ROLE.VOLUNTEER))
 const loginUserId = computed(() => String(userStore.profile.id || ''))
 const isManageMode = computed(() => activeTab.value === 'manage')
 const isFavoriteMode = computed(() => activeTab.value === 'favorites')
-const isMineMode = computed(() => activeTab.value === 'mine')
 
 async function loadArticles() {
   loading.value = true
@@ -54,7 +53,6 @@ async function loadArticles() {
       : await getArticles({
           page: page.page,
           size: page.size,
-          author: activeTab.value === 'manage' ? undefined : loginUserId.value || undefined,
           isDiscard: false,
         })
     rows.value = Array.isArray(result?.records) ? result.records : []
@@ -109,10 +107,6 @@ function goEditArticle(row) {
 
 function goArticlePage(row) {
   if (!row?.id) return
-  if (isMineMode.value && row.status === 'DRAFT') {
-    goEditArticle(row)
-    return
-  }
   router.push(`/articles/${row.id}`)
 }
 
@@ -141,16 +135,21 @@ function formatDate(value) {
   return date.toLocaleString('zh-CN')
 }
 
+function isOwnArticle(row) {
+  const userId = loginUserId.value
+  return userId && String(row.authorId) === userId
+}
+
 function canEdit(row) {
-  return isMineMode.value && row.status === 'DRAFT'
+  return isOwnArticle(row) && row.status === 'DRAFT'
 }
 
 function canPublish(row) {
-  return isMineMode.value && row.status === 'DRAFT'
+  return isOwnArticle(row) && row.status === 'DRAFT'
 }
 
 function canDelete(row) {
-  return isMineMode.value && row.status === 'DRAFT'
+  return isOwnArticle(row) && row.status === 'DRAFT'
 }
 
 function canTakeDown(row) {
@@ -250,7 +249,6 @@ onMounted(() => {
 
     <el-tabs v-model="activeTab" class="article-tabs">
       <el-tab-pane label="收藏" name="favorites" />
-      <el-tab-pane v-if="isWorker || isVolunteer" label="我的" name="mine" />
       <el-tab-pane v-if="isWorker" label="管理" name="manage" />
     </el-tabs>
 
