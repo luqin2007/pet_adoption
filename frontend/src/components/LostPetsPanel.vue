@@ -5,6 +5,7 @@
         <div class="profile-card-header">
           <strong>丢失宠物</strong>
           <div class="profile-actions">
+            <el-button class="warm-btn" :icon="Plus" @click="router.push('/lost/new')">走失报备</el-button>
             <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingLostPets || loadingClaims" @click="handleRefreshCurrent">刷新</el-button>
           </div>
         </div>
@@ -15,7 +16,7 @@
           <section class="pet-admin-section">
             <el-table :data="filteredLostPets" v-loading="loadingLostPets" class="user-admin-table">
               <el-table-column label="宠物" min-width="220">
-                <template #header><TableFilterHeader label="宠物" :filter="reportFilters.name" type="text" placeholder="搜索宠物名称…" :active="isReportFilterActive('name')" /></template>
+                <template #header><TableFilterHeader label="宠物" :filter="reportFilterState.name" type="text" placeholder="搜索宠物名称…" :active="isReportFilterActive('name')" /></template>
                 <template #default="{ row }">
                   <div class="pet-admin-pet">
                     <button class="pet-admin-cover-button" type="button" @click="goLostPetDetail(row)">
@@ -29,20 +30,20 @@
                 </template>
               </el-table-column>
               <el-table-column label="状态" width="120">
-                <template #header><TableFilterHeader label="状态" :filter="reportFilters.status" type="enum" :options="statusOptions" :active="isReportFilterActive('status')" /></template>
+                <template #header><TableFilterHeader label="状态" :filter="reportFilterState.status" type="enum" :options="statusOptions" :active="isReportFilterActive('status')" /></template>
                 <template #default="{ row }">
                   <el-tag :type="lostStatusTag(row.status)" effect="plain">{{ lostPetStatusText(row.status) }}</el-tag>
                 </template>
               </el-table-column>
               <el-table-column label="走失时间" min-width="140">
-                <template #header><TableFilterHeader label="走失时间" :filter="reportFilters.lostTime" type="time" :active="isReportFilterActive('lostTime')" /></template>
+                <template #header><TableFilterHeader label="走失时间" :filter="reportFilterState.lostTime" type="time" :active="isReportFilterActive('lostTime')" /></template>
                 <template #default="{ row }">{{ row.lostTime ? String(row.lostTime).slice(0, 10) : '时间待补充' }}</template>
               </el-table-column>
               <el-table-column label="位置" min-width="240">
                 <template #default="{ row }">{{ lostPetLocationText(row) }}</template>
               </el-table-column>
               <el-table-column label="联系人" min-width="180">
-                <template #header><TableFilterHeader label="联系人" :filter="reportFilters.ownerName" type="text" placeholder="搜索联系人…" :active="isReportFilterActive('ownerName')" /></template>
+                <template #header><TableFilterHeader label="联系人" :filter="reportFilterState.ownerName" type="text" placeholder="搜索联系人…" :active="isReportFilterActive('ownerName')" /></template>
                 <template #default="{ row }">{{ row.ownerName || '联系人待补充' }} · {{ row.contactPhone || '电话待补充' }}</template>
               </el-table-column>
               <el-table-column label="匹配结果" min-width="180">
@@ -71,14 +72,14 @@
           <section class="pet-admin-section">
             <el-table :data="filteredClaims" v-loading="loadingClaims" class="user-admin-table">
               <el-table-column label="走失宠物" min-width="190">
-                <template #header><TableFilterHeader label="走失宠物" :filter="claimFilters.applicantName" type="text" placeholder="搜索宠物名称…" :active="isClaimFilterActive('applicantName')" /></template>
+                <template #header><TableFilterHeader label="走失宠物" :filter="claimFilterState.applicantName" type="text" placeholder="搜索宠物名称…" :active="isClaimFilterActive('applicantName')" /></template>
                 <template #default="{ row }">
                   <button class="pet-admin-name-button" type="button" @click="goClaimLostPet(row)">{{ row.lostPetName || '未命名' }}</button>
                   <span class="lost-claim-subtext">{{ row.lostPetType || '宠物' }} · {{ row.lostPetBreed || '品种待补充' }}</span>
                 </template>
               </el-table-column>
               <el-table-column label="申请人" min-width="150">
-                <template #header><TableFilterHeader label="申请人" :filter="claimFilters.applicantName" type="text" placeholder="搜索申请人…" :active="isClaimFilterActive('applicantName')" /></template>
+                <template #header><TableFilterHeader label="申请人" :filter="claimFilterState.applicantName" type="text" placeholder="搜索申请人…" :active="isClaimFilterActive('applicantName')" /></template>
                 <template #default="{ row }">
                   <div class="lost-claim-person">
                     <el-avatar :size="30" :src="row.applicantAvatar">{{ (row.applicantName || '用').slice(0, 1) }}</el-avatar>
@@ -90,13 +91,13 @@
                 <template #default="{ row }">{{ row.applicantPhone || '' }}</template>
               </el-table-column>
               <el-table-column label="状态" width="110">
-                <template #header><TableFilterHeader label="状态" :filter="claimFilters.status" type="enum" :options="claimStatusOptions" :active="isClaimFilterActive('status')" /></template>
+                <template #header><TableFilterHeader label="状态" :filter="claimFilterState.status" type="enum" :options="claimStatusOptions" :active="isClaimFilterActive('status')" /></template>
                 <template #default="{ row }">
                   <el-tag :type="claimStatusTag(row.status)" effect="plain">{{ claimStatusText(row.status) }}</el-tag>
                 </template>
               </el-table-column>
               <el-table-column label="申请时间" min-width="160">
-                <template #header><TableFilterHeader label="申请时间" :filter="claimFilters.createTime" type="time" :active="isClaimFilterActive('createTime')" /></template>
+                <template #header><TableFilterHeader label="申请时间" :filter="claimFilterState.createTime" type="time" :active="isClaimFilterActive('createTime')" /></template>
                 <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
               </el-table-column>
               <el-table-column width="40" class-name="action-col">
@@ -228,7 +229,7 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { RefreshRight } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import {
   approveLostPetClaim,
   cancelLostPetClaim,
@@ -280,7 +281,7 @@ const lostPetEditForm = reactive({ id: '', name: '', age: 0, sex: '', type: '', 
 const lostPetReviewForm = reactive({ id: '', status: '', reason: '' })
 const claimReviewForm = reactive({ status: 'PASS', reason: '' })
 
-const reportFilters = useTableFilters({
+const { filters: reportFilterState, isActive: isReportFilterActive, applyFilter: applyReportFilter } = useTableFilters({
   name: { type: 'text' },
   status: { type: 'enum' },
   lostTime: { type: 'time' },
@@ -292,10 +293,9 @@ const statusOptions = [
   { value: 'CLAIMED', label: '已认领' },
   { value: 'CLOSED', label: '已关闭' },
 ]
-function isReportFilterActive(key) { return reportFilters.isActive(key) }
-const filteredLostPets = computed(() => reportFilters.applyFilter(lostPetRows.value || []))
+const filteredLostPets = computed(() => applyReportFilter(lostPetRows.value || []))
 
-const claimFilters = useTableFilters({
+const { filters: claimFilterState, isActive: isClaimFilterActive, applyFilter: applyClaimFilter } = useTableFilters({
   applicantName: { type: 'text' },
   status: { type: 'enum' },
   createTime: { type: 'time' },
@@ -305,8 +305,7 @@ const claimStatusOptions = [
   { value: 'PASS', label: '已通过' },
   { value: 'REJECT', label: '已拒绝' },
 ]
-function isClaimFilterActive(key) { return claimFilters.isActive(key) }
-const filteredClaims = computed(() => claimFilters.applyFilter(claimRows.value || []))
+const filteredClaims = computed(() => applyClaimFilter(claimRows.value || []))
 
 const lostPetEditCityOptions = computed(() => getCityOptions(lostPetEditForm.province))
 const lostPetEditDistrictOptions = computed(() => getDistrictOptions(lostPetEditForm.province, lostPetEditForm.city))
