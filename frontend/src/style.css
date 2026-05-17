@@ -1343,19 +1343,7 @@ main {
   padding: 8px 0;
 }
 
-.item-stock-tabs .el-tab-pane {
-  min-width: 0;
-  overflow: hidden;
-}
 
-.item-stock-tabs .pet-admin-section {
-  overflow-x: auto;
-}
-
-.item-stock-tabs .user-admin-table {
-  width: 100%;
-  max-width: 100%;
-}
 
 .table-filter-header {
   display: inline-flex;
