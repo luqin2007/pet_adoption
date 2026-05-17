@@ -5,7 +5,10 @@
         <div class="profile-card-header">
           <strong>救助任务</strong>
           <div class="profile-actions">
-            <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingTasks" @click="handleRefresh">刷新</el-button>
+            <el-button-group class="console-btn-group">
+              <el-button class="warm-btn" :icon="Plus" @click="router.push('/tasks/new')" />
+              <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingTasks" @click="handleRefresh" />
+            </el-button-group>
           </div>
         </div>
       </template>
@@ -106,7 +109,7 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { RefreshRight } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { deleteRescueTask, getRescueTasks, updateRescueTask, updateRescueTaskStatus, getRescueTaskRecords } from '../api/services'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
