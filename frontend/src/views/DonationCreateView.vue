@@ -207,10 +207,10 @@ onMounted(() => {
               </div>
               <div class="donation-item-grid">
                 <el-form-item label="物资名称">
-                  <el-input v-model="item.itemName" placeholder="例如：幼猫粮、尿垫、航空箱" clearable />
+                  <el-input v-model="item.itemName" clearable />
                 </el-form-item>
                 <el-form-item label="单位">
-                  <el-input v-model="item.itemUnit" placeholder="袋 / 箱 / 个" clearable />
+                  <el-input v-model="item.itemUnit" clearable />
                 </el-form-item>
                 <el-form-item label="物资分类">
                   <el-select v-model="item.categoryId" placeholder="选择已有分类" filterable clearable>
@@ -224,7 +224,7 @@ onMounted(() => {
                   <el-date-picker v-model="item.expireTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" placeholder="选择有效期" />
                 </el-form-item>
                 <el-form-item label="物资说明">
-                  <el-input v-model="item.description" placeholder="新旧程度、规格、包装状态等" clearable />
+                  <el-input v-model="item.description" clearable />
                 </el-form-item>
               </div>
             </section>
@@ -235,13 +235,13 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="取货地址">
-            <el-input v-model="form.address" :disabled="!requiresAddress" placeholder="定点取货时填写" clearable />
+            <el-input v-model="form.address" :disabled="!requiresAddress" clearable />
           </el-form-item>
           <el-form-item label="快递单号">
-            <el-input v-model="form.trackingNumber" :disabled="!requiresTracking" placeholder="快递寄送时填写" clearable />
+            <el-input v-model="form.trackingNumber" :disabled="!requiresTracking" clearable />
           </el-form-item>
           <el-form-item label="备注" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="4" placeholder="补充物资状态、交付时间、联系方式等" />
+            <el-input v-model="form.description" type="textarea" :rows="4" />
           </el-form-item>
           <el-form-item label="捐赠影像" class="action-form-span-2">
             <input ref="fileInputRef" class="profile-avatar-input" type="file" accept="image/*,video/*" multiple @change="uploadFiles" />

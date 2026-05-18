@@ -131,7 +131,7 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="联系方式" prop="applicantPhone">
-            <el-input v-model="form.applicantPhone" placeholder="手机号或微信号" clearable />
+            <el-input v-model="form.applicantPhone" clearable />
           </el-form-item>
           <el-form-item label="寄养时间" prop="timeRange">
             <el-date-picker
@@ -143,7 +143,7 @@ onMounted(() => {
             />
           </el-form-item>
           <el-form-item label="宠物情况说明" class="action-form-span-2">
-            <el-input v-model="form.petDescription" type="textarea" :rows="5" placeholder="写下性格、饮食习惯、健康情况和寄养原因" />
+            <el-input v-model="form.petDescription" type="textarea" :rows="5" />
           </el-form-item>
         </el-form>
 

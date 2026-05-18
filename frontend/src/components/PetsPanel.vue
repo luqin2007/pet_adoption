@@ -103,7 +103,7 @@
 
     <el-dialog v-model="petCreateDialogVisible" title="记录流浪宠物" width="760px">
       <el-form ref="petFormRef" :model="petForm" :rules="petRules" label-position="top" class="pet-admin-form">
-        <el-form-item label="宠物名称"><el-input v-model="petForm.name" placeholder="可留空，由救助站后续命名" /></el-form-item>
+        <el-form-item label="宠物名称"><el-input v-model="petForm.name" placeholder="可留空，后续由救助站命名" /></el-form-item>
         <el-form-item label="年龄（月）"><el-input-number v-model="petForm.age" :min="0" /></el-form-item>
         <el-form-item label="性别" prop="sex">
           <el-select v-model="petForm.sex"><el-option label="未知" value="未知" /><el-option label="公" value="公" /><el-option label="母" value="母" /></el-select>
@@ -124,7 +124,7 @@
             <el-input v-model="petForm.breedInput" placeholder="输入新品种" clearable />
           </div>
         </el-form-item>
-        <el-form-item label="健康状况"><el-input v-model="petForm.health" placeholder="未体检、恢复中、已体检等" /></el-form-item>
+        <el-form-item label="健康状况"><el-input v-model="petForm.health" /></el-form-item>
         <el-form-item label="省份" prop="province">
           <el-select v-model="petForm.province" placeholder="选择省份" filterable clearable @change="handlePetFormProvinceChange">
             <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
@@ -162,7 +162,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态原因" prop="reason">
-          <el-input v-model="petEditForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="例如：资料审核通过，已完成收容" />
+          <el-input v-model="petEditForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" />
         </el-form-item>
       </el-form>
       <div class="dialog-footer">
@@ -246,7 +246,7 @@
           <el-slider v-model="assessmentForm.scoreAppetite" :min="0" :max="100" show-input />
         </el-form-item>
         <el-form-item label="评估摘要" class="pet-admin-span-2">
-          <el-input v-model="assessmentForm.summary" type="textarea" :rows="4" placeholder="填写健康状态、护理建议和复查重点" />
+          <el-input v-model="assessmentForm.summary" type="textarea" :rows="4" />
         </el-form-item>
       </el-form>
       <template #footer>

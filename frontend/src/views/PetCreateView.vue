@@ -161,7 +161,7 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="健康状况">
-            <el-input v-model="form.health" placeholder="例如：轻微擦伤、精神状态良好" clearable />
+            <el-input v-model="form.health" clearable />
           </el-form-item>
           <el-form-item label="省份" prop="province">
             <el-select v-model="form.province" placeholder="选择省份" filterable clearable @change="handleProvinceChange">
@@ -179,10 +179,10 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="详细位置" prop="detailAddress" class="action-form-span-2">
-            <el-input v-model="form.detailAddress" placeholder="例如：小区东门、绿道入口、公交站旁" clearable />
+            <el-input v-model="form.detailAddress" clearable />
           </el-form-item>
           <el-form-item label="情况描述" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="4" placeholder="写下状态、发现经过、是否亲人" />
+            <el-input v-model="form.description" type="textarea" :rows="4" />
           </el-form-item>
         </el-form>
 

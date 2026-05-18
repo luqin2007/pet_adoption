@@ -252,7 +252,7 @@ onMounted(async () => {
                 <el-input v-model="form.realName" placeholder="请输入真实姓名" clearable />
               </el-form-item>
               <el-form-item label="联系电话" prop="phone">
-                <el-input v-model="form.phone" placeholder="请输入手机号或常用联系方式" clearable />
+                <el-input v-model="form.phone" clearable />
               </el-form-item>
               <el-form-item label="性别" prop="sex">
                 <el-select v-model="form.sex" placeholder="请选择性别" clearable>
@@ -263,7 +263,7 @@ onMounted(async () => {
                 <el-input-number v-model="form.age" :min="1" :max="100" controls-position="right" class="full-width-control" />
               </el-form-item>
               <el-form-item label="职业">
-                <el-input v-model="form.profession" placeholder="可填写当前职业或身份" clearable />
+                <el-input v-model="form.profession" clearable />
               </el-form-item>
               <el-form-item label="省份" prop="province">
                 <el-select v-model="form.province" placeholder="选择省份" filterable clearable @change="handleProvinceChange">
@@ -281,19 +281,19 @@ onMounted(async () => {
                 </el-select>
               </el-form-item>
               <el-form-item label="详细地址" prop="detailAddress" class="action-form-span-2">
-                <el-input v-model="form.detailAddress" placeholder="填写常驻位置" clearable />
+                <el-input v-model="form.detailAddress" clearable />
               </el-form-item>
               <el-form-item label="过往经历" prop="experience" class="action-form-span-2">
-                <el-input v-model="form.experience" type="textarea" :rows="4" placeholder="参与过巡护、救助、接待或记录整理吗" />
+                <el-input v-model="form.experience" type="textarea" :rows="4" />
               </el-form-item>
               <el-form-item label="可提供的技能" prop="skills" class="action-form-span-2">
-                <el-input v-model="form.skills" type="textarea" :rows="3" placeholder="比如拍照、沟通、驾驶、基础护理" />
+                <el-input v-model="form.skills" type="textarea" :rows="3" />
               </el-form-item>
               <el-form-item label="可服务时间" prop="availableTimeDesc" class="action-form-span-2">
-                <el-input v-model="form.availableTimeDesc" type="textarea" :rows="3" placeholder="比如周末全天、工作日晚上" />
+                <el-input v-model="form.availableTimeDesc" type="textarea" :rows="3" />
               </el-form-item>
               <el-form-item label="申请动机" prop="motivation" class="action-form-span-2">
-                <el-input v-model="form.motivation" type="textarea" :rows="4" placeholder="说说你为什么想参与这项志愿服务" />
+                <el-input v-model="form.motivation" type="textarea" :rows="4" />
               </el-form-item>
             </el-form>
 

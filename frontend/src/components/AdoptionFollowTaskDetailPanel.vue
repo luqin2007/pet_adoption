@@ -122,19 +122,19 @@
               />
             </el-form-item>
             <el-form-item label="摘要" prop="summary">
-              <el-input v-model="form.summary" placeholder="一句话摘要" clearable />
+              <el-input v-model="form.summary" clearable />
             </el-form-item>
             <el-form-item label="生活状态" prop="lifeStatus" class="follow-task-span-2">
-              <el-input v-model="form.lifeStatus" type="textarea" :rows="3" placeholder="记录宠物的生活状态" />
+              <el-input v-model="form.lifeStatus" type="textarea" :rows="3" />
             </el-form-item>
             <el-form-item label="健康状态" prop="healthStatus" class="follow-task-span-2">
-              <el-input v-model="form.healthStatus" type="textarea" :rows="3" placeholder="记录宠物的健康状态" />
+              <el-input v-model="form.healthStatus" type="textarea" :rows="3" />
             </el-form-item>
             <el-form-item label="风险观察" prop="risk" class="follow-task-span-2">
-              <el-input v-model="form.risk" type="textarea" :rows="3" placeholder="记录风险或异常情况" />
+              <el-input v-model="form.risk" type="textarea" :rows="3" />
             </el-form-item>
             <el-form-item label="建议与反馈" prop="suggestion" class="follow-task-span-2">
-              <el-input v-model="form.suggestion" type="textarea" :rows="4" placeholder="填写建议、后续安排和反馈" />
+              <el-input v-model="form.suggestion" type="textarea" :rows="4" />
             </el-form-item>
           </div>
           <div class="follow-task-footer">

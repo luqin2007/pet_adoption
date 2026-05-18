@@ -236,7 +236,7 @@ onMounted(() => {
   <el-card class="profile-card" v-loading="loadingProfile">
     <template #header>
       <div class="profile-card-header">
-        <strong>个人信息修改</strong>
+        <strong>个人信息</strong>
         <div class="profile-actions">
           <el-button class="warm-btn" :icon="Check" :loading="submitting" @click="submitProfile" />
         </div>
@@ -293,7 +293,7 @@ onMounted(() => {
       </el-form-item>
 
       <el-form-item label="确认新密码" prop="confirmPassword">
-        <el-input v-model="profileForm.confirmPassword" placeholder="请再次输入新密码" show-password>
+        <el-input v-model="profileForm.confirmPassword" show-password>
           <template #prefix>
             <el-icon><Lock /></el-icon>
           </template>

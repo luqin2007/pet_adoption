@@ -270,35 +270,35 @@ onMounted(() => { loadDetail() })
         <el-form v-if="editing" class="medical-detail-edit-form" label-position="top">
           <section class="medical-edit-section medical-edit-section-wide">
             <el-form-item label="摘要">
-              <el-input v-model="editForm.summary" type="textarea" :autosize="{ minRows: 2 }" placeholder="简要概括本次就诊情况" />
+              <el-input v-model="editForm.summary" type="textarea" :autosize="{ minRows: 2 }" />
             </el-form-item>
           </section>
 
           <section class="medical-edit-section">
             <el-form-item label="体格检查">
-              <el-input v-model="editForm.physicalExam" type="textarea" :autosize="{ minRows: 3 }" placeholder="记录体格检查观察结果" />
+              <el-input v-model="editForm.physicalExam" type="textarea" :autosize="{ minRows: 3 }" />
             </el-form-item>
           </section>
 
           <section class="medical-edit-section">
             <el-form-item label="诊断">
-              <el-input v-model="editForm.diagnosis" type="textarea" :autosize="{ minRows: 3 }" placeholder="填写诊断结论" />
+              <el-input v-model="editForm.diagnosis" type="textarea" :autosize="{ minRows: 3 }" />
             </el-form-item>
             <el-form-item label="鉴别诊断">
-              <el-input v-model="editForm.differential" type="textarea" :autosize="{ minRows: 2 }" placeholder="填写需要排除或观察的情况" />
+              <el-input v-model="editForm.differential" type="textarea" :autosize="{ minRows: 2 }" />
             </el-form-item>
           </section>
 
           <section class="medical-edit-section medical-edit-section-wide">
             <div class="medical-edit-grid">
               <el-form-item label="检查计划">
-                <el-input v-model="editForm.exam" type="textarea" :autosize="{ minRows: 3 }" placeholder="填写后续检查安排" />
+                <el-input v-model="editForm.exam" type="textarea" :autosize="{ minRows: 3 }" />
               </el-form-item>
               <el-form-item label="治疗方案">
-                <el-input v-model="editForm.treatment" type="textarea" :autosize="{ minRows: 3 }" placeholder="填写治疗方案" />
+                <el-input v-model="editForm.treatment" type="textarea" :autosize="{ minRows: 3 }" />
               </el-form-item>
               <el-form-item label="医嘱">
-                <el-input v-model="editForm.advice" type="textarea" :autosize="{ minRows: 3 }" placeholder="填写护理、复诊或用药建议" />
+                <el-input v-model="editForm.advice" type="textarea" :autosize="{ minRows: 3 }" />
               </el-form-item>
             </div>
           </section>
@@ -380,7 +380,7 @@ onMounted(() => { loadDetail() })
           </div>
         </el-form-item>
         <el-form-item label="诊断结果">
-          <el-input v-model="diagnosisForm.result" type="textarea" :autosize="{ minRows: 4 }" placeholder="填写检查诊断结果" />
+          <el-input v-model="diagnosisForm.result" type="textarea" :autosize="{ minRows: 4 }" />
         </el-form-item>
       </el-form>
       <template #footer>

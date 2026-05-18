@@ -114,13 +114,13 @@
   <el-dialog v-model="recordDialogVisible" title="添加康复记录" width="620px">
     <el-form label-position="top" class="rehab-dialog-form">
       <el-form-item label="康复步骤">
-        <el-input v-model="recordForm.step" placeholder="例如：关节活动训练" />
+        <el-input v-model="recordForm.step" />
       </el-form-item>
       <el-form-item label="宠物反应">
-        <el-input v-model="recordForm.reaction" type="textarea" :rows="3" placeholder="记录宠物配合度、疼痛反应或异常表现" />
+        <el-input v-model="recordForm.reaction" type="textarea" :rows="3" />
       </el-form-item>
       <el-form-item label="备注">
-        <el-input v-model="recordForm.note" type="textarea" :rows="3" placeholder="补充执行情况和下次建议" />
+        <el-input v-model="recordForm.note" type="textarea" :rows="3" />
       </el-form-item>
       <el-form-item label="文件">
         <div class="medical-upload-row">

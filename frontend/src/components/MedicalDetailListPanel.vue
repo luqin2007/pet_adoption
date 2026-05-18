@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>病例</strong>
-        <span>{{ petName ? `${petName} 的病例` : '所有病例记录' }}</span>
         <div class="profile-actions">
           <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadRecords">刷新</el-button>
         </div>
@@ -12,13 +11,13 @@
     <section class="pet-admin-section">
       <el-table :data="displayedRecords" v-loading="loading" class="user-admin-table">
         <el-table-column min-width="180" show-overflow-tooltip>
-          <template #header><TableFilterHeader label="摘要" :filter="filters.summary" type="text" :active="isActive('summary')" placeholder="搜索摘要…" /></template>
+          <template #header><TableFilterHeader label="摘要" :filter="filters.summary" type="text" :active="isActive('summary')" /></template>
           <template #default="{ row }">
             <button class="table-primary-link" type="button" @click="goDetail(row)">{{ row.summary || '未命名病例' }}</button>
           </template>
         </el-table-column>
         <el-table-column width="120">
-          <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" placeholder="搜索宠物…" /></template>
+          <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" /></template>
           <template #default="{ row }">{{ row.petName || '' }}</template>
         </el-table-column>
         <el-table-column label="医生" width="100">

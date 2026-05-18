@@ -19,12 +19,12 @@
       <el-form label-position="top" class="medical-detail-edit-form rehab-create-form">
         <section class="medical-edit-section">
           <el-form-item label="计划标题">
-            <el-input v-model="form.title" placeholder="例如：术后活动恢复计划" />
+            <el-input v-model="form.title" />
           </el-form-item>
         </section>
         <section class="medical-edit-section">
           <el-form-item label="执行频率">
-            <el-input v-model="form.frequency" placeholder="例如：每日 2 次，每次 15 分钟" />
+            <el-input v-model="form.frequency" />
           </el-form-item>
         </section>
         <section class="medical-edit-section medical-edit-section-wide">
@@ -42,7 +42,7 @@
         </section>
         <section class="medical-edit-section medical-edit-section-wide">
           <el-form-item label="康复内容">
-            <el-input v-model="form.content" type="textarea" :rows="6" placeholder="填写康复目标、执行方式、注意事项和观察重点" />
+            <el-input v-model="form.content" type="textarea" :rows="6" />
           </el-form-item>
         </section>
         <section class="medical-edit-section medical-edit-section-wide">

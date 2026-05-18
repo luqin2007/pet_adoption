@@ -192,7 +192,7 @@ onBeforeUnmount(() => {
       <section class="action-form-panel">
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
           <el-form-item label="任务简介" prop="summary">
-            <el-input v-model="form.summary" maxlength="20" show-word-limit placeholder="例如：滨江幼猫救助" clearable />
+            <el-input v-model="form.summary" maxlength="20" show-word-limit clearable />
           </el-form-item>
           <el-form-item label="任务类型" prop="type">
             <el-select v-model="form.type" placeholder="选择任务类型">
@@ -215,10 +215,10 @@ onBeforeUnmount(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="详细位置" prop="detailAddress">
-            <el-input v-model="form.detailAddress" placeholder="例如：公园西门、桥下通道" clearable />
+            <el-input v-model="form.detailAddress" clearable />
           </el-form-item>
           <el-form-item label="情况描述" prop="description" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="5" placeholder="写下动物数量、伤情、能否接近和现场风险" />
+            <el-input v-model="form.description" type="textarea" :rows="5" />
           </el-form-item>
           <el-form-item label="现场图片" class="action-form-span-2">
             <input ref="fileInputRef" class="profile-avatar-input" type="file" accept="image/*" multiple @change="handleImageChange" />

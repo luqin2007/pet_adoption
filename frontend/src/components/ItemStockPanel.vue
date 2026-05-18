@@ -235,7 +235,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="库存批次">
-        <el-input v-model="stockForm.id" :disabled="stockForm.action === 'IN'" placeholder="出库/销毁时使用已有批次" />
+        <el-input v-model="stockForm.id" :disabled="stockForm.action === 'IN'" />
       </el-form-item>
       <el-form-item label="数量">
         <el-input-number v-model="stockForm.count" :min="0.01" :controls="false" class="full-width-control" />
@@ -250,7 +250,7 @@
         <el-date-picker v-model="stockForm.expireTime" :disabled="stockForm.action !== 'IN'" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" placeholder="选择有效期" />
       </el-form-item>
       <el-form-item label="用途/说明">
-        <el-input v-model="stockForm.purpose" placeholder="例如：捐赠入库、犬舍消耗、过期销毁" />
+        <el-input v-model="stockForm.purpose" />
       </el-form-item>
       <el-form-item v-if="stockForm.sourceType === 'PURCHASE' && stockForm.action === 'IN'" label="单价">
         <el-input v-model="stockForm.price" placeholder="采购单价" />

@@ -3,16 +3,15 @@
     <template #header>
       <div class="profile-card-header">
         <strong>初诊登记</strong>
-        <span>记录首次检查结果</span>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingFirstReg" @click="loadFirstRegistrations">刷新</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingFirstReg" @click="loadFirstRegistrations" />
         </div>
       </div>
     </template>
     <section class="pet-admin-section">
       <el-table :data="displayedFirstRegs" v-loading="loadingFirstReg" class="user-admin-table">
         <el-table-column min-width="120" show-overflow-tooltip>
-          <template #header><TableFilterHeader label="宠物名称" :filter="filters.petName" type="text" :active="isActive('petName')" placeholder="搜索宠物名称…" /></template>
+          <template #header><TableFilterHeader label="宠物名称" :filter="filters.petName" type="text" :active="isActive('petName')" /></template>
           <template #default="{ row }">
             <button class="table-primary-link" type="button" @click="goFirstRegistrationDetail(row)">{{ row.name || '未命名' }}</button>
           </template>

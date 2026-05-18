@@ -329,10 +329,10 @@ watch(
             </el-select>
           </el-form-item>
           <el-form-item label="明显特征">
-            <el-input v-model="form.features" placeholder="例如：红色项圈、尾巴尖是白色" clearable />
+            <el-input v-model="form.features" clearable />
           </el-form-item>
           <el-form-item label="详细地点" prop="detailAddress" class="action-form-span-2">
-            <el-input v-model="form.detailAddress" placeholder="例如：小区北门、地铁口、便利店门口" clearable />
+            <el-input v-model="form.detailAddress" clearable />
           </el-form-item>
           <el-form-item class="action-form-span-2 lost-pet-similar-form-item">
             <div class="lost-pet-similar-panel" v-loading="loadingSimilarLostPets">
@@ -358,7 +358,7 @@ watch(
             </div>
           </el-form-item>
           <el-form-item label="补充说明" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="5" placeholder="写下走失经过、习惯、是否怕生" />
+            <el-input v-model="form.description" type="textarea" :rows="5" />
           </el-form-item>
           <el-form-item label="宠物照片" class="action-form-span-2">
             <input ref="fileInputRef" class="profile-avatar-input" type="file" accept="image/*" multiple @change="handleImageChange" />

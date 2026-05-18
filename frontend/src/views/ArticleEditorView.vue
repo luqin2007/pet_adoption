@@ -147,7 +147,6 @@ onMounted(() => {
                 v-model="form.content"
                 type="textarea"
                 :autosize="{ minRows: 14, maxRows: 24 }"
-                placeholder="在这里写下救助经过、活动信息或养护知识。"
               />
             </el-form-item>
           </el-form>

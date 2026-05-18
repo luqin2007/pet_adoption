@@ -239,7 +239,7 @@ defineExpose({ loadUsers })
       <div class="profile-card-header">
         <strong>用户管理</strong>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingUsers" @click="loadUsers">刷新</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingUsers" @click="loadUsers" />
         </div>
       </div>
     </template>

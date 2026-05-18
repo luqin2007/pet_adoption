@@ -13,7 +13,7 @@
     <section class="pet-admin-section">
       <el-table :data="displayedRows" v-loading="loading" class="user-admin-table">
         <el-table-column min-width="150">
-          <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" placeholder="搜索宠物…" /></template>
+          <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" /></template>
           <template #default="{ row }">
             <button class="pet-admin-name-button" type="button" @click="goPet(row)">{{ row.petName || '未命名' }}</button>
             <span class="medical-preventive-subtext">{{ row.petType || '宠物' }} · {{ row.petSex || '未知' }} · {{ row.petAge ?? 0 }} 月</span>

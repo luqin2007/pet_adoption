@@ -47,7 +47,6 @@
               v-model="content"
               type="textarea"
               :autosize="{ minRows: 14, maxRows: 22 }"
-              placeholder="填写领养协议正文、双方权责、回访约定、医疗说明和违约处理"
             />
           </el-form-item>
         </el-form>

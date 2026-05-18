@@ -144,7 +144,7 @@ onMounted(async () => {
 
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
           <el-form-item label="联系电话" prop="applicantPhone">
-            <el-input v-model="form.applicantPhone" placeholder="请输入手机号或其他常用联系方式" clearable />
+            <el-input v-model="form.applicantPhone" clearable />
           </el-form-item>
           <el-form-item label="省份" prop="province">
             <el-select v-model="form.province" placeholder="选择省份" filterable clearable @change="handleProvinceChange">
@@ -162,7 +162,7 @@ onMounted(async () => {
             </el-select>
           </el-form-item>
           <el-form-item label="详细地址" prop="detailAddress" class="action-form-span-2">
-            <el-input v-model="form.detailAddress" placeholder="填写方便联系和评估的居住地址" clearable />
+            <el-input v-model="form.detailAddress" clearable />
           </el-form-item>
         </el-form>
 

@@ -77,7 +77,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="详细位置" prop="detailAddress"><el-input v-model="taskEditForm.detailAddress" placeholder="请输入救助位置" clearable /></el-form-item>
-        <el-form-item label="情况描述" prop="description" class="pet-admin-span-2"><el-input v-model="taskEditForm.description" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="描述现场情况、动物状态和风险" /></el-form-item>
+        <el-form-item label="情况描述" prop="description" class="pet-admin-span-2"><el-input v-model="taskEditForm.description" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="taskEditDialogVisible = false">取消</el-button>
@@ -93,7 +93,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态原因" prop="reason">
-          <el-input v-model="taskReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="例如：资料审核通过，安排志愿者跟进" />
+          <el-input v-model="taskReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" />
         </el-form-item>
       </el-form>
       <div class="dialog-footer">

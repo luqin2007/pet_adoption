@@ -155,9 +155,9 @@
             <el-option v-for="item in lostPetEditDistrictOptions" :key="item" :label="item" :value="item" />
           </el-select>
         </el-form-item>
-        <el-form-item label="明显特征"><el-input v-model="lostPetEditForm.features" placeholder="例如：项圈、毛色、体型特征" /></el-form-item>
+        <el-form-item label="明显特征"><el-input v-model="lostPetEditForm.features" /></el-form-item>
         <el-form-item label="详细地点" prop="detailAddress" class="pet-admin-span-2"><el-input v-model="lostPetEditForm.detailAddress" placeholder="请输入详细地点" /></el-form-item>
-        <el-form-item label="补充说明" class="pet-admin-span-2"><el-input v-model="lostPetEditForm.description" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="补充走失经过或识别信息" /></el-form-item>
+        <el-form-item label="补充说明" class="pet-admin-span-2"><el-input v-model="lostPetEditForm.description" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="lostPetEditDialogVisible = false">取消</el-button>
@@ -173,7 +173,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="审核原因" prop="reason">
-          <el-input v-model="lostPetReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="例如：信息核验通过，保留为寻找中" />
+          <el-input v-model="lostPetReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" />
         </el-form-item>
       </el-form>
       <template #footer>

@@ -2039,7 +2039,6 @@ onMounted(async () => {
           type="textarea"
           :autosize="{ minRows: 4, maxRows: 7 }"
           :disabled="recruitmentStatusForm.autoReason"
-          :placeholder="recruitmentStatusForm.status === 'CLOSED' ? (recruitmentStatusForm.autoReason ? '关闭时间会自动保存' : '请填写关闭原因') : '请填写状态变更说明'"
         />
       </el-form-item>
     </el-form>
@@ -2057,7 +2056,7 @@ onMounted(async () => {
         </el-select>
       </el-form-item>
       <el-form-item label="审核意见" prop="reason">
-        <el-input v-model="applicationReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="请填写通过、拒绝或进入审核的说明" />
+        <el-input v-model="applicationReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="审核的说明" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -2143,7 +2142,7 @@ onMounted(async () => {
         <el-input-number v-model="rewardForm.totalHours" :min="0" :precision="1" :step="0.5" :controls="false" class="full-width-control" />
       </el-form-item>
       <el-form-item label="激励内容">
-        <el-input v-model="rewardForm.rewardValue" placeholder="例如：50 积分、证书、猫砂礼包" />
+        <el-input v-model="rewardForm.rewardValue" />
       </el-form-item>
       <el-form-item label="激励原因" prop="rewardReason" class="pet-admin-span-2">
         <el-input v-model="rewardForm.rewardReason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" />
@@ -2171,7 +2170,7 @@ onMounted(async () => {
         </el-select>
       </el-form-item>
       <el-form-item label="任务标题" prop="title" class="pet-admin-span-2">
-        <el-input v-model="shiftForm.title" placeholder="例如：周末巡护、开放日接待、运输协助" :disabled="Boolean(shiftForm.id)" />
+        <el-input v-model="shiftForm.title" :disabled="Boolean(shiftForm.id)" />
       </el-form-item>
       <el-form-item label="排班时间" prop="shiftTimeRange">
         <el-date-picker
@@ -2233,7 +2232,7 @@ onMounted(async () => {
         </el-select>
       </el-form-item>
       <el-form-item label="原因说明" prop="reason">
-        <el-input v-model="shiftStatusForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="例如：志愿者缺勤、活动结束、临时取消" />
+        <el-input v-model="shiftStatusForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" />
       </el-form-item>
     </el-form>
     <div class="dialog-footer">
@@ -2255,7 +2254,7 @@ onMounted(async () => {
         <el-input-number v-model="recordForm.actualHours" :min="0" :precision="1" :step="0.5" :controls="false" class="full-width-control" />
       </el-form-item>
       <el-form-item label="服务摘要" prop="summary" class="pet-admin-span-2">
-        <el-input v-model="recordForm.summary" placeholder="一句话概括本次服务情况" />
+        <el-input v-model="recordForm.summary" />
       </el-form-item>
       <el-form-item label="服务内容" class="pet-admin-span-2">
         <el-input v-model="recordForm.content" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" />

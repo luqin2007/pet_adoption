@@ -381,7 +381,7 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="详细位置" prop="detailAddress" class="location-add-span-2">
-            <el-input v-model="locationForm.detailAddress" placeholder="例如：小区东门、公交站旁" clearable />
+            <el-input v-model="locationForm.detailAddress" clearable />
           </el-form-item>
         </el-form>
         <template #footer>
