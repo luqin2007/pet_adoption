@@ -230,7 +230,7 @@
         </section>
       </el-tab-pane>
 
-      <el-tab-pane label="协议" name="agreement">
+      <el-tab-pane v-if="canManageUsers" label="协议" name="agreement">
         <section class="pet-admin-section">
           <el-table :data="agreementFilteredRows" v-loading="agreementLoading" class="user-admin-table">
             <el-table-column min-width="180" show-overflow-tooltip>

@@ -258,7 +258,6 @@ const currentAgreementType = computed(() => {
 })
 
 const hasAgreement = computed(() => {
-  if (isBreadingType.value) return false
   const statuses = ['AGREEMENT_DRAFT', 'AGREEMENT_PENDING_CONFIRM', 'AGREEMENT_SIGNED']
   return statuses.includes(application.value?.status) && Boolean(currentAgreement.value)
 })
@@ -511,7 +510,7 @@ async function loadApplication() {
 }
 
 async function loadAgreementsData() {
-  if (!applicationId.value || isBreadingType.value) {
+  if (!applicationId.value) {
     agreements.value = []
     return
   }
@@ -519,7 +518,7 @@ async function loadAgreementsData() {
   try {
     const result = await getAgreements({
       parentId: applicationId.value,
-      parentType: 'ADOPT',
+      parentType: isBreadingType.value ? 'BREADING' : 'ADOPT',
       size: 20,
       page: 1,
       sort: 'update_time',
