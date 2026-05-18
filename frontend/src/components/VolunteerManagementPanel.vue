@@ -107,7 +107,7 @@ function handlePlusClick() {
     } else {
       openRecordDialog()
     }
-  } else if (activeSection.value === 'recruitments') {
+  } else if (activeSection.value === 'recruitments' || activeSection.value === 'applications') {
     openRecruitmentDialog()
   } else {
     router.push('/volunteers')
@@ -1536,7 +1536,7 @@ watch(
 watch(
   () => props.section,
   (value) => {
-    if (value && value !== activeSection.value) {
+    if (value && value !== activeSection.value && sections.value.some((item) => item.value === value)) {
       activeSection.value = value
     }
   },
