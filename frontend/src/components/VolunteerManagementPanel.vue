@@ -98,6 +98,22 @@ function searchCurrentSection() {
   sectionSearchMap[activeSection.value]?.() || searchRecruitments()
 }
 
+function handlePlusClick() {
+  if (activeSection.value === 'rewards') {
+    openRewardDialog()
+  } else if (activeSection.value === 'activities') {
+    if (isWorker.value) {
+      openShiftDialog()
+    } else {
+      openRecordDialog()
+    }
+  } else if (activeSection.value === 'recruitments') {
+    openRecruitmentDialog()
+  } else {
+    router.push('/volunteers')
+  }
+}
+
 const recruitmentRows = ref([])
 const recruitmentTotal = ref(0)
 const applicationRows = ref([])
@@ -379,7 +395,6 @@ const rewardForm = reactive({
   periodRange: [],
   serviceCount: undefined,
   totalHours: undefined,
-  rewardType: '',
   rewardValue: '',
   rewardReason: '',
   remark: '',
@@ -473,7 +488,6 @@ const profileRules = {
 const rewardRules = {
   volunteerId: [{ required: true, message: '请选择志愿者', trigger: 'change' }],
   periodRange: [{ required: true, message: '请选择统计周期', trigger: 'change' }],
-  rewardType: [{ required: true, message: '请选择激励类型', trigger: 'change' }],
   rewardReason: [{ required: true, message: '请输入激励原因', trigger: 'blur' }],
 }
 
@@ -588,7 +602,7 @@ function goApplicationDetail(row) {
 function goVolunteerActivity(row) {
   const volunteerId = row?.volunteerId || row?.userId
   if (!volunteerId) return
-  router.push({ path: '/console/volunteer/activities', query: { volunteer: volunteerId } })
+  router.push({ name: 'console-volunteer', query: { volunteer: volunteerId } })
 }
 
 function goShiftPage(row) {
@@ -1076,7 +1090,6 @@ function resetRewardForm() {
   rewardForm.periodRange = []
   rewardForm.serviceCount = undefined
   rewardForm.totalHours = undefined
-  rewardForm.rewardType = ''
   rewardForm.rewardValue = ''
   rewardForm.rewardReason = ''
   rewardForm.remark = ''
@@ -1086,6 +1099,30 @@ function openRewardDialog() {
   resetRewardForm()
   rewardDialogVisible.value = true
   loadVolunteerOptions()
+}
+
+async function autoCalculateReward() {
+  if (!rewardForm.volunteerId || !rewardForm.periodRange?.[0] || !rewardForm.periodRange?.[1]) {
+    rewardForm.serviceCount = undefined
+    rewardForm.totalHours = undefined
+    return
+  }
+  try {
+    const result = await getVolunteerServiceRecords({
+      volunteerId: rewardForm.volunteerId,
+      time0: rewardForm.periodRange[0],
+      time1: rewardForm.periodRange[1],
+      size: 999,
+    })
+    const records = result?.records || result || []
+    const count = records.length
+    const hours = records.reduce((sum, r) => sum + (Number(r.actualHours) || 0), 0)
+    rewardForm.serviceCount = count || undefined
+    rewardForm.totalHours = hours || undefined
+  } catch {
+    rewardForm.serviceCount = undefined
+    rewardForm.totalHours = undefined
+  }
 }
 
 async function saveReward() {
@@ -1103,7 +1140,6 @@ async function saveReward() {
       periodEnd: toApiDateTime(rewardForm.periodRange?.[1]),
       serviceCount: rewardForm.serviceCount ? Number(rewardForm.serviceCount) : undefined,
       totalHours: rewardForm.totalHours,
-      rewardType: rewardForm.rewardType,
       rewardValue: rewardForm.rewardValue.trim() || undefined,
       rewardReason: rewardForm.rewardReason.trim(),
       remark: rewardForm.remark.trim() || undefined,
@@ -1518,6 +1554,9 @@ watch(
 watch(
   () => [route.query.volunteer, route.query.shift],
   () => {
+    if (route.query.volunteer || route.query.shift) {
+      activeSection.value = 'activities'
+    }
     if (activeSection.value === 'activities') {
       shiftPage.page = 1
       recordPage.page = 1
@@ -1527,6 +1566,9 @@ watch(
 )
 
 onMounted(async () => {
+  if (route.query.volunteer || route.query.shift) {
+    activeSection.value = 'activities'
+  }
   await ensureInformationCatalog()
   await loadBySection(activeSection.value)
 })
@@ -1539,7 +1581,7 @@ onMounted(async () => {
         <strong>志愿者</strong>
         <div class="profile-actions">
           <el-button-group class="console-btn-group">
-            <el-button class="warm-btn" :icon="Plus" @click="router.push('/volunteers')" />
+            <el-button class="warm-btn" :icon="Plus" @click="handlePlusClick" />
             <el-button class="warm-btn" :icon="RefreshRight" :loading="currentSectionLoading" @click="searchCurrentSection" />
           </el-button-group>
         </div>
@@ -1557,9 +1599,6 @@ onMounted(async () => {
       </el-tabs>
 
       <section v-if="activeSection === 'recruitments'" class="pet-admin-section">
-        <div v-if="isWorker" class="section-header-actions">
-          <el-button class="warm-btn" :icon="Plus" @click="openRecruitmentDialog()">新增招募计划</el-button>
-        </div>
         <el-table :data="filteredRecruitments" v-loading="recruitmentLoading" class="user-admin-table">
           <el-table-column min-width="220" show-overflow-tooltip>
             <template #header>
@@ -1741,9 +1780,6 @@ onMounted(async () => {
       </section>
 
       <section v-else-if="activeSection === 'rewards'" class="pet-admin-section">
-        <div class="section-header-actions">
-          <el-button class="warm-btn" :icon="Plus" @click="openRewardDialog()">新增激励</el-button>
-        </div>
         <el-table :data="filteredRewards" v-loading="rewardLoading" class="user-admin-table">
           <el-table-column min-width="160">
             <template #header>
@@ -1800,10 +1836,6 @@ onMounted(async () => {
       </section>
 
       <section v-else-if="activeSection === 'activities'" class="volunteer-activity-stack">
-        <div class="section-header-actions">
-          <el-button v-if="isWorker" class="warm-btn" :icon="Plus" @click="openShiftDialog()">安排排班</el-button>
-          <el-button v-else class="warm-btn" :icon="Plus" @click="openRecordDialog()">写服务报告</el-button>
-        </div>
         <div class="volunteer-activity-block">
           <div class="volunteer-block-head">
             <strong>志愿活动排班</strong>
@@ -2078,13 +2110,8 @@ onMounted(async () => {
   <el-dialog v-model="rewardDialogVisible" title="新增志愿者激励" width="720px">
     <el-form ref="rewardFormRef" :model="rewardForm" :rules="rewardRules" label-position="top" class="pet-admin-form">
       <el-form-item label="志愿者" prop="volunteerId">
-        <el-select v-model="rewardForm.volunteerId" placeholder="选择志愿者" filterable :loading="volunteerOptionsLoading">
+        <el-select v-model="rewardForm.volunteerId" placeholder="选择志愿者" filterable :loading="volunteerOptionsLoading" @change="autoCalculateReward">
           <el-option v-for="item in volunteerOptions" :key="item.userId" :label="`${item.realName || item.username} · ${item.phone || '无电话'}`" :value="item.userId" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="激励类型" prop="rewardType">
-        <el-select v-model="rewardForm.rewardType" placeholder="选择激励类型">
-          <el-option v-for="item in rewardTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item label="统计周期" prop="periodRange">
@@ -2095,6 +2122,7 @@ onMounted(async () => {
           start-placeholder="开始时间"
           end-placeholder="结束时间"
           class="full-width-control"
+          @change="autoCalculateReward"
         />
       </el-form-item>
       <el-form-item label="服务次数">
@@ -2252,11 +2280,3 @@ onMounted(async () => {
     </template>
   </el-dialog>
 </template>
-
-<style scoped>
-.section-header-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
-}
-</style>
