@@ -277,7 +277,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
         boolean used = baseMapper.queryByCategory(categoryId).exists();
         if (used)
             throw ServiceException.conflict("exception.conflict.category.not_empty");
-        categoryMapper.update(categoryMapper.discard(categoryId));
+        categoryMapper.discard(categoryId).update();
     }
 
     /**
@@ -291,8 +291,7 @@ public class ItemDonationService extends BaseService<ItemMapper, Item> {
      * 查询物资分类
      */
     public Page<Category> getCategories(String name, PageParams pageRequest) {
-        Page<Category> page = pageRequest.createPage();
-        return categoryMapper.selectPage(page, categoryMapper.queryName(name));
+        return categoryMapper.queryName(name).page(pageRequest);
     }
 
     /**

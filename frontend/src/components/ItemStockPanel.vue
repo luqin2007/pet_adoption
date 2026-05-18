@@ -88,10 +88,17 @@
             <el-table-column label="单位" width="80">
               <template #default="{ row }">{{ row.unit }}</template>
             </el-table-column>
-            <el-table-column width="120">
+            <el-table-column width="40" class-name="action-col">
+              <template #header>
+                <TableActionColumnHeader title="操作" :collapsed="itemActionCollapsed" @toggle="itemActionCollapsed = !itemActionCollapsed" />
+              </template>
               <template #default="{ row }">
-                <el-button text type="primary" @click="openItemDialog(row)">编辑</el-button>
-                <el-button text type="danger" @click="removeItem(row)">删除</el-button>
+                <div class="table-action-cell">
+                  <div class="table-action-panel" :class="{ 'is-collapsed': itemActionCollapsed }">
+                    <el-button text type="primary" @click="openItemDialog(row)">编辑</el-button>
+                    <el-button text type="danger" @click="removeItem(row)">删除</el-button>
+                  </div>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -112,10 +119,17 @@
             <el-table-column label="说明" min-width="150" show-overflow-tooltip>
               <template #default="{ row }">{{ row.description || '' }}</template>
             </el-table-column>
-            <el-table-column width="120">
+            <el-table-column width="40" class-name="action-col">
+              <template #header>
+                <TableActionColumnHeader title="操作" :collapsed="categoryActionCollapsed" @toggle="categoryActionCollapsed = !categoryActionCollapsed" />
+              </template>
               <template #default="{ row }">
-                <el-button text type="primary" @click="openCategoryDialog(row)">编辑</el-button>
-                <el-button text type="danger" @click="removeCategory(row)">删除</el-button>
+                <div class="table-action-cell">
+                  <div class="table-action-panel" :class="{ 'is-collapsed': categoryActionCollapsed }">
+                    <el-button text type="primary" @click="openCategoryDialog(row)">编辑</el-button>
+                    <el-button text type="danger" @click="removeCategory(row)">删除</el-button>
+                  </div>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -285,6 +299,8 @@ const savingItem = ref(false)
 const savingCategory = ref(false)
 const savingSubscribe = ref(false)
 const stockActionCollapsed = ref(false)
+const itemActionCollapsed = ref(false)
+const categoryActionCollapsed = ref(false)
 const stocks = ref([])
 const items = ref([])
 const itemOptions = ref([])
