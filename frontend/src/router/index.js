@@ -52,6 +52,7 @@ import MedicalDetailListPanel from '../components/MedicalDetailListPanel.vue'
 import MyArticleManagementPanel from '../components/MyArticleManagementPanel.vue'
 import AdoptionHubPanel from '../components/AdoptionHubPanel.vue'
 import AdoptionApplicationDetailPanel from '../components/AdoptionApplicationDetailPanel.vue'
+import ApplicationDetailPanel from '../components/ApplicationDetailPanel.vue'
 import AdoptionFollowTaskCreatePanel from '../components/AdoptionFollowTaskCreatePanel.vue'
 import AdoptionFollowTaskDetailPanel from '../components/AdoptionFollowTaskDetailPanel.vue'
 import BreadingApplicationDetailPanel from '../components/BreadingApplicationDetailPanel.vue'
@@ -251,9 +252,9 @@ const router = createRouter({
         { path: 'tasks', name: 'console-tasks', component: TasksPanel },
         { path: 'articles', name: 'console-articles', component: MyArticleManagementPanel },
         { path: 'adoption', name: 'console-adoption', component: AdoptionHubPanel },
-        { path: 'adoption/breading/:id', name: 'console-adoption-breading-detail', component: BreadingApplicationDetailPanel },
+        { path: 'adoption/breading/:id', name: 'console-adoption-breading-detail', component: ApplicationDetailPanel },
         { path: 'adoption/follow-tasks/:id', name: 'console-adoption-follow-task-detail', component: AdoptionFollowTaskDetailPanel },
-        { path: 'adoption/adopts/:id', name: 'console-adoption-adopt-detail', component: AdoptionApplicationDetailPanel },
+        { path: 'adoption/adopts/:id', name: 'console-adoption-adopt-detail', component: ApplicationDetailPanel },
         { path: 'adoption/adopts/:id/follow', name: 'console-adoption-follow-create', component: AdoptionFollowTaskCreatePanel, meta: { guard: 'canManageAdoptFollow' } },
         { path: 'adoption/agreements/new-paper', name: 'console-adoption-agreement-paper-create', component: AgreementDraftPanel, props: { type: 'PAPER' }, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-electronic', name: 'console-adoption-agreement-electronic-create', component: AgreementDraftPanel, props: { type: 'ELECTRONIC' }, meta: { guard: 'canManageUsers' } },

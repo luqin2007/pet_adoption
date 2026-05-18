@@ -211,12 +211,12 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Long applicantId;
         switch (parentType) {
             case ADOPT -> {
-                Adopt adopt = requireById(request.getParentId(), Adopt::getStatus);
+                Adopt adopt = requireById(request.getParentId(), Adopt::getStatus, Adopt::getApplicantId);
                 status = adopt.getStatus();
                 applicantId = adopt.getApplicantId();
             }
             case BREADING -> {
-                Breading breading = breadingMapper.requireById(request.getParentId(), Breading::getStatus);
+                Breading breading = breadingMapper.requireById(request.getParentId(), Breading::getStatus, Breading::getApplicantId);
                 status = breading.getStatus();
                 applicantId = breading.getApplicantId();
             }
@@ -260,9 +260,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     @Transactional
     public AgreementResponse updateAgreement(Long agreementId, AgreementUpdateRequest request) {
         User login = requireLoginUser();
-        requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requirePermission(login.is(agreement.getReviewerId()));
+        requirePermission(login.is(agreement.getReviewerId()) || login.is(agreement.getApplicantId()));
         requireAgreementStatus(agreement, AGREEMENT_DRAFT);
 
         // 记录旧协议内容
@@ -279,9 +278,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     @Transactional
     public List<AgreementFileResponse> uploadAgreement(Long agreementId, AgreementFilesUploadTable request) {
         User login = requireLoginUser();
-        requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requirePermission(login.is(agreement.getReviewerId()));
+        requirePermission(login.is(agreement.getReviewerId()) || login.is(agreement.getApplicantId()));
 
         // 备份协议数据
         requireAgreementStatus(agreement, AGREEMENT_DRAFT);
@@ -343,15 +341,12 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     @Transactional
     public List<AgreementFileResponse> deleteAgreementFile(Long agreementId, Long fileId) {
         User login = requireLoginUser();
-        requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requirePermission(login.is(agreement.getReviewerId()));
-
+        requirePermission(login.is(agreement.getReviewerId()) || login.is(agreement.getApplicantId()));
         requireAgreementStatus(agreement, AGREEMENT_DRAFT);
         requireEqual(PAPER, agreement.getType(), "exception.invalidate.agreement_type");
         AgreementFile target = agreementFileMapper.requireById(fileId);
         requireEqual(agreementId, target.getAgreementId(), "exception.not_found.agreement_file");
-        require(target.getPage() != null && target.getPage() > 0, "exception.not_found.agreement_file");
 
         recordAgreementUpdate(agreement);
         agreementFileMapper.deleteById(fileId);
@@ -377,12 +372,11 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     @Transactional
     public List<AgreementFileResponse> reorderAgreementFiles(Long agreementId, AgreementFilesOrderRequest request) {
         User login = requireLoginUser();
-        requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requirePermission(login.is(agreement.getReviewerId()));
-
+        requirePermission(login.is(agreement.getReviewerId()) || login.is(agreement.getApplicantId()));
         requireAgreementStatus(agreement, AGREEMENT_DRAFT);
         requireEqual(PAPER, agreement.getType(), "exception.invalidate.agreement_type");
+
         List<AgreementFile> files = agreementFileMapper.queryByAgreement(agreementId).list();
         List<Long> fileOrder = request.getFileOrder();
         require(fileOrder.size() == files.size(), "request.adopt_breading.agreement.file_order");
@@ -428,17 +422,14 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public AgreementResponse signAgreement(Long agreementId, MultipartFile sign) {
         User login = requireLoginUser();
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requirePermission(login.isWorker());
         requirePermission(login.is(agreement.getApplicantId()));
         Long parentId = agreement.getParentId();
         if (agreement.getParentType() == ParentType.ADOPT) {
             Adopt adopt = requireById(parentId, Adopt::getStatus);
-            require(Set.of(AGREEMENT_DRAFT, AGREEMENT_PENDING_CONFIRM).contains(adopt.getStatus()),
-                    "exception.invalidate.adopt.status_abnormal");
+            requireEqual(AGREEMENT_DRAFT, adopt.getStatus(), "exception.invalidate.adopt.status_abnormal");
         } else if (agreement.getParentType() == ParentType.BREADING) {
             Breading breading = breadingMapper.requireById(parentId, Breading::getStatus);
-            require(Set.of(AGREEMENT_DRAFT, AGREEMENT_PENDING_CONFIRM).contains(breading.getStatus()),
-                    "exception.invalidate.breading.status_abnormal");
+            requireEqual(AGREEMENT_DRAFT, breading.getStatus(), "exception.invalidate.breading.status_abnormal");
         } else {
             throw ServiceException.system("exception.system.agreement.parent_type_invalid");
         }

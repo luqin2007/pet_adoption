@@ -28,6 +28,8 @@ public class AgreementResponse implements IResponse {
     private List<AgreementFileResponse> files;
     private Date createTime;
     private Date updateTime;
+    private Long applicantId;
+    private Long reviewerId;
 
     public static AgreementResponse create(Agreement agreement, String petName, List<AgreementFileResponse> files) {
         return new AgreementResponse(
@@ -41,7 +43,9 @@ public class AgreementResponse implements IResponse {
                 agreement.getSignTime(),
                 files,
                 agreement.getCreateTime(),
-                agreement.getUpdateTime()
+                agreement.getUpdateTime(),
+                agreement.getApplicantId(),
+                agreement.getReviewerId()
         );
     }
 

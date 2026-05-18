@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>寄养申请详情</strong>
-        <span>{{ application?.petName || '查看寄养申请信息' }}</span>
       </div>
     </template>
 
