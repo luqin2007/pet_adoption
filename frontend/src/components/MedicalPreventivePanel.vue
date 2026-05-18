@@ -3,9 +3,8 @@
     <template #header>
       <div class="profile-card-header">
         <strong>{{ isVaccineMode ? '疫苗接种' : '驱虫管理' }}</strong>
-        <span>{{ isVaccineMode ? '查看所有疫苗接种记录' : '查看所有驱虫记录' }}</span>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadRecords">刷新</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadRecords"/>
         </div>
       </div>
     </template>

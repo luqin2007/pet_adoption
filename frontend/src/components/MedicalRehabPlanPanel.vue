@@ -3,10 +3,11 @@
     <template #header>
       <div class="profile-card-header">
         <strong>康复计划</strong>
-        <span>跟踪宠物康复计划与执行记录</span>
         <div class="profile-actions">
-          <el-button class="soft-btn" :icon="Plus" @click="goCreatePlan">创建计划</el-button>
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadPlans">刷新</el-button>
+          <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="goCreatePlan"/>
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadPlans"/>
+          </el-button-group>
         </div>
       </div>
     </template>

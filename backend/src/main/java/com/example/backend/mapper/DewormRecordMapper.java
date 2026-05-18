@@ -37,5 +37,10 @@ public interface DewormRecordMapper extends IBaseMapper<DewormRecord> {
     default String getMissingMessage() {
         return "exception.not_found.deworm_record";
     }
+
+    @Override
+    default Class<DewormRecord> getEntityClass() {
+        return DewormRecord.class;
+    }
 }
 

@@ -3,9 +3,8 @@
     <template #header>
       <div class="profile-card-header">
         <strong>健康评估</strong>
-        <span>查看宠物健康评分与评估摘要</span>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadAssessments">刷新</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadAssessments"/>
         </div>
       </div>
     </template>

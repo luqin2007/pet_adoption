@@ -3,10 +3,9 @@
     <template #header>
       <div class="profile-card-header">
         <strong>就诊记录</strong>
-        <span>{{ petName ? `${petName}的就诊历史` : '查看就诊历史' }}</span>
         <div class="profile-actions">
           <el-button v-if="canManageMedical && petId" class="soft-btn" :icon="Plus" @click="goCreateRecord" />
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingRecords" @click="loadRecords">刷新</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingRecords" @click="loadRecords" />
         </div>
       </div>
     </template>

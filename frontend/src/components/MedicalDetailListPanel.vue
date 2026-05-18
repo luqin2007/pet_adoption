@@ -4,7 +4,7 @@
       <div class="profile-card-header">
         <strong>病例</strong>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadRecords">刷新</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadRecords" />
         </div>
       </div>
     </template>
