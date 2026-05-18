@@ -136,7 +136,7 @@ function avatarInitial(value) {
 }
 
 function goBack() {
-  router.push({ name: 'console-adoption-breading' })
+  router.push({ name: 'console-adoption' })
 }
 
 async function loadDetail() {

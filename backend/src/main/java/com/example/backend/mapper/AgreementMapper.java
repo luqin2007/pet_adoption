@@ -19,6 +19,7 @@ public interface AgreementMapper extends IBaseMapper<Agreement> {
         return lambdaQuery()
                 .eq(Agreement::getParentType, params.getParentType())
                 .eq(Agreement::getParentId, params.getParentId())
+                .eq(Agreement::getApplicantId, params.getUser())
                 .exist(Agreement::getSignTime, params.getSigned())
                 .in(Agreement::getCreateTime, params.getTime0(), params.getTime1());
     }

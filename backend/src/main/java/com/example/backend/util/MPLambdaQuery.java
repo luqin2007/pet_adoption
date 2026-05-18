@@ -138,6 +138,26 @@ public class MPLambdaQuery<T extends IId> {
         return this;
     }
 
+    public <V> MPLambdaQuery<T> lt(SFunction<T, V> column, V value) {
+        query.lt(column, value);
+        return this;
+    }
+
+    public <V> MPLambdaQuery<T> le(SFunction<T, V> column, V value) {
+        query.le(column, value);
+        return this;
+    }
+
+    public <V> MPLambdaQuery<T> gt(SFunction<T, V> column, V value) {
+        query.gt(column, value);
+        return this;
+    }
+
+    public <V> MPLambdaQuery<T> ge(SFunction<T, V> column, V value) {
+        query.ge(column, value);
+        return this;
+    }
+
     public <V> MPLambdaQuery<T> desc(SFunction<T, V> column) {
         query.orderByDesc(column);
         return this;

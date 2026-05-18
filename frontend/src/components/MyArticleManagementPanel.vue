@@ -272,20 +272,8 @@ onMounted(() => {
             <el-tag effect="plain" :type="statusTagType(row.status)">{{ statusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="发布时间" min-width="175">
-          <template #default="{ row }">{{ formatDate(row.publishTime) }}</template>
-        </el-table-column>
         <el-table-column label="更新时间" min-width="175">
           <template #default="{ row }">{{ formatDate(row.updateTime) }}</template>
-        </el-table-column>
-        <el-table-column label="互动" width="170">
-          <template #default="{ row }">
-            <div class="article-metrics-cell">
-              <span>浏览 {{ row.viewCount || 0 }}</span>
-              <span>点赞 {{ row.likeCount || 0 }}</span>
-              <span>分享 {{ row.shareCount || 0 }}</span>
-            </div>
-          </template>
         </el-table-column>
         <el-table-column width="40" class-name="action-col">
           <template #header>

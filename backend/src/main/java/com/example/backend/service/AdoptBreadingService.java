@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import static com.example.backend.entity.property.AdoptBreadingStatus.*;
 import static com.example.backend.entity.property.AgreementType.PAPER;
 import static com.example.backend.entity.property.ParentType.AGREEMENT;
+import static com.example.backend.entity.property.ParentType.VOLUNTEER_TASK;
 
 @SuppressWarnings("unchecked")
 @Service
@@ -186,7 +187,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public String beginAgreement() {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
-        return beginRedisUuid(agreementTemplate, "");
+        return beginRedisUuid(agreementTemplate, String.valueOf(login.getId()));
     }
 
     /**
@@ -196,19 +197,32 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public AgreementResponse addAgreement(AgreementAddRequest request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
+
         // 检查 uuid
         String uuid = request.getUuid();
         if (AgreementType.get(request.getType()) == PAPER) {
-            requireRedisUuid(agreementTemplate, uuid);
+            String user = requireRedisUuid(agreementTemplate, uuid);
+            requirePermission(login.is(Long.valueOf(user)));
         }
+
         // 检查申请
-        Agreement agreement = request.create();
-        ParentType parentType = agreement.getParentType();
-        AdoptBreadingStatus status = switch (parentType) {
-            case ADOPT -> requireById(agreement.getParentId(), Adopt::getStatus).getStatus();
-            case BREADING -> breadingMapper.requireById(agreement.getParentId(), Breading::getStatus).getStatus();
+        ParentType parentType = ParentType.get(request.getParentType());
+        AdoptBreadingStatus status;
+        Long applicantId;
+        switch (parentType) {
+            case ADOPT -> {
+                Adopt adopt = requireById(request.getParentId(), Adopt::getStatus);
+                status = adopt.getStatus();
+                applicantId = adopt.getApplicantId();
+            }
+            case BREADING -> {
+                Breading breading = breadingMapper.requireById(request.getParentId(), Breading::getStatus);
+                status = breading.getStatus();
+                applicantId = breading.getApplicantId();
+            }
             default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
-        };
+        }
+        Agreement agreement = request.create(applicantId, login.getId());
         requireEqual(AdoptBreadingStatus.PASS, status, "exception.invalidate.adopt_breading_status");
 
         // 保存协议
@@ -248,7 +262,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requireAgreementDraft(agreement);
+        requirePermission(login.is(agreement.getReviewerId()));
+        requireAgreementStatus(agreement, AGREEMENT_DRAFT);
 
         // 记录旧协议内容
         recordAgreementUpdate(agreement);
@@ -265,10 +280,11 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public List<AgreementFileResponse> uploadAgreement(Long agreementId, AgreementFilesUploadTable request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
+        Agreement agreement = agreementMapper.requireById(agreementId);
+        requirePermission(login.is(agreement.getReviewerId()));
 
         // 备份协议数据
-        Agreement agreement = agreementMapper.requireById(agreementId);
-        requireAgreementDraft(agreement);
+        requireAgreementStatus(agreement, AGREEMENT_DRAFT);
         recordAgreementUpdate(agreement);
         if (agreement.getType() == AgreementType.ELECTRONIC) { // 切换协议类型
             agreement.setType(PAPER);
@@ -302,7 +318,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public String uploadAgreementFile(String uuid, MultipartFile file) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
-        requireRedisUuid(agreementTemplate, uuid);
+        String user = requireRedisUuid(agreementTemplate, uuid);
+        requirePermission(login.is(Long.valueOf(user)));
 
         // 上传文件
         TempFileInfo fileInfo = fileService.uploadTempImage(file, null, uuid, agreementFileTemplate, AGREEMENT);
@@ -315,7 +332,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public void deleteAgreementFile(String uuid, String filename) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
-        requireRedisUuid(agreementTemplate, uuid);
+        String user = requireRedisUuid(agreementTemplate, uuid);
+        requirePermission(login.is(Long.valueOf(user)));
         fileService.deleteTempFile(agreementFileTemplate, uuid, filename, AGREEMENT);
     }
 
@@ -326,9 +344,10 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public List<AgreementFileResponse> deleteAgreementFile(Long agreementId, Long fileId) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
-
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requireAgreementDraft(agreement);
+        requirePermission(login.is(agreement.getReviewerId()));
+
+        requireAgreementStatus(agreement, AGREEMENT_DRAFT);
         requireEqual(PAPER, agreement.getType(), "exception.invalidate.agreement_type");
         AgreementFile target = agreementFileMapper.requireById(fileId);
         requireEqual(agreementId, target.getAgreementId(), "exception.not_found.agreement_file");
@@ -359,9 +378,10 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public List<AgreementFileResponse> reorderAgreementFiles(Long agreementId, AgreementFilesOrderRequest request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
-
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requireAgreementDraft(agreement);
+        requirePermission(login.is(agreement.getReviewerId()));
+
+        requireAgreementStatus(agreement, AGREEMENT_DRAFT);
         requireEqual(PAPER, agreement.getType(), "exception.invalidate.agreement_type");
         List<AgreementFile> files = agreementFileMapper.queryByAgreement(agreementId).list();
         List<Long> fileOrder = request.getFileOrder();
@@ -408,16 +428,15 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
     public AgreementResponse signAgreement(Long agreementId, MultipartFile sign) {
         User login = requireLoginUser();
         Agreement agreement = agreementMapper.requireById(agreementId);
-        requireAgreementPendingOrDraft(agreement);
+        requirePermission(login.isWorker());
+        requirePermission(login.is(agreement.getApplicantId()));
         Long parentId = agreement.getParentId();
         if (agreement.getParentType() == ParentType.ADOPT) {
-            Adopt adopt = requireById(parentId, Adopt::getStatus, Adopt::getApplicantId);
-            requirePermission(login.is(adopt.getApplicantId()));
+            Adopt adopt = requireById(parentId, Adopt::getStatus);
             require(Set.of(AGREEMENT_DRAFT, AGREEMENT_PENDING_CONFIRM).contains(adopt.getStatus()),
                     "exception.invalidate.adopt.status_abnormal");
         } else if (agreement.getParentType() == ParentType.BREADING) {
-            Breading breading = breadingMapper.requireById(parentId, Breading::getStatus, Breading::getApplicantId);
-            requirePermission(login.is(breading.getApplicantId()));
+            Breading breading = breadingMapper.requireById(parentId, Breading::getStatus);
             require(Set.of(AGREEMENT_DRAFT, AGREEMENT_PENDING_CONFIRM).contains(breading.getStatus()),
                     "exception.invalidate.breading.status_abnormal");
         } else {
@@ -436,17 +455,15 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN_UPLOAD));
 
         // 更新数据
-        transactionTemplate.executeWithoutResult(status -> {
-            agreementMapper.uploadSign(agreementId, filename, now).update();
-            switch (agreement.getParentType()) {
-                case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_PENDING_CONFIRM).update();
-                case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_PENDING_CONFIRM).update();
-                default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
-            }
-            if (oldSign != null && !oldSign.equals(filename)) {
-                fileService.deleteFile(oldSign, agreementId, AGREEMENT);
-            }
-        });
+        agreementMapper.uploadSign(agreementId, filename, now).update();
+        switch (agreement.getParentType()) {
+            case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_PENDING_CONFIRM).update();
+            case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_PENDING_CONFIRM).update();
+            default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+        }
+        if (oldSign != null && !oldSign.equals(filename)) {
+            fileService.deleteFile(oldSign, agreementId, AGREEMENT);
+        }
         eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
         return adoptBreadingFacade.buildAgreementResponse(agreement);
     }
@@ -459,6 +476,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
+        requirePermission(login.is(agreement.getReviewerId()));
         requireAgreementStatus(agreement, AGREEMENT_PENDING_CONFIRM);
         require(StringUtils.hasText(agreement.getSign()), "exception.invalidate.agreement.status_abnormal");
 
@@ -467,14 +485,12 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         agreement.setUpdateTime(now);
         agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN_CONFIRM));
 
-        transactionTemplate.executeWithoutResult(status -> {
-            agreementMapper.confirmSign(agreementId, now).update();
-            switch (agreement.getParentType()) {
-                case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_SIGNED).update();
-                case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_SIGNED).update();
-                default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
-            }
-        });
+        agreementMapper.confirmSign(agreementId, now).update();
+        switch (agreement.getParentType()) {
+            case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_SIGNED).update();
+            case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_SIGNED).update();
+            default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+        }
         eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
         return adoptBreadingFacade.buildAgreementResponse(agreement);
     }
@@ -485,26 +501,13 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
                 .toList();
     }
 
-    private AdoptBreadingStatus requireAgreementStatus(Agreement agreement) {
-        return switch (agreement.getParentType()) {
+    private void requireAgreementStatus(Agreement agreement, AdoptBreadingStatus expected) {
+        AdoptBreadingStatus status = switch (agreement.getParentType()) {
             case ADOPT -> requireById(agreement.getParentId(), Adopt::getStatus).getStatus();
             case BREADING -> breadingMapper.requireById(agreement.getParentId(), Breading::getStatus).getStatus();
             default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
         };
-    }
-
-    private void requireAgreementStatus(Agreement agreement, AdoptBreadingStatus expected) {
-        requireEqual(expected, requireAgreementStatus(agreement), "exception.invalidate.agreement.status_abnormal");
-    }
-
-    private void requireAgreementDraft(Agreement agreement) {
-        requireAgreementStatus(agreement, AGREEMENT_DRAFT);
-    }
-
-    private void requireAgreementPendingOrDraft(Agreement agreement) {
-        AdoptBreadingStatus status = requireAgreementStatus(agreement);
-        require(status == AGREEMENT_DRAFT || status == AGREEMENT_PENDING_CONFIRM,
-                "exception.invalidate.agreement.status_abnormal");
+        requireEqual(expected, status, "exception.invalidate.agreement.status_abnormal");
     }
 
     /**
@@ -512,8 +515,8 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      */
     public AgreementResponse getAgreement(Long agreementId) {
         User login = requireLoginUser();
-        requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
+        requirePermission(login.isWorker() || login.is(agreement.getApplicantId()));
         return adoptBreadingFacade.buildAgreementResponse(agreement);
     }
 
@@ -521,6 +524,10 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 查询协议列表
      */
     public Page<AgreementResponse> getAgreements(AgreementQueryParams queryRequest, PageParams pageRequest) {
+        User login = requireLoginUser();
+        if (!login.isWorker()) {
+            queryRequest.setUser(login.getId());
+        }
         Page<Agreement> result = agreementMapper.queryByRequest(queryRequest).page(pageRequest);
         return adoptBreadingFacade.buildAgreementPage(result);
     }
@@ -560,153 +567,93 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         FollowTaskStatus status = FollowTaskStatus.get(request.getStatus());
         FollowTaskStatus oldStatus = task.getStatus();
         Adopt adopt = requireById(task.getAdoptId(), Adopt::getApplicantId, Adopt::getPetId);
-        if (oldStatus == FollowTaskStatus.NOTIFIED) {
-            requireNotifiedFollowTaskPermission(login, task, adopt, status);
-            if (status == FollowTaskStatus.IN_PROGRESS && login.is(task.getVolunteerId())) {
-                createFollowVisitShift(task, adopt);
-            }
-        } else {
-            boolean isTaskWorker = login.isWorker() && login.is(task.getWorkerId());
-            boolean isTaskWorkerOrAdmin = isTaskWorker || login.isAdmin();
-            requirePermission(login.is(task.getWorkerId()) // 负责工作人员
-                    || login.is(task.getVolunteerId()) // 负责志愿者
-                    || login.is(adopt.getApplicantId()) // 领养人：可修改时间
-                    || login.isAdmin());
-            if (status == FollowTaskStatus.FINISH) {
-                requirePermission(oldStatus == FollowTaskStatus.IN_PROGRESS && isTaskWorker);
-            }
-            if (!isTaskWorkerOrAdmin) {
+
+        boolean isTaskWorker = login.isWorker() && login.is(task.getWorkerId());
+        boolean isTaskWorkerOrAdmin = isTaskWorker || login.isAdmin();
+        requirePermission(login.is(task.getWorkerId()) // 负责工作人员
+                || login.is(task.getVolunteerId()) // 负责志愿者
+                || login.is(adopt.getApplicantId()) // 领养人：可修改时间
+                || login.isAdmin());
+        if (status == FollowTaskStatus.FINISH) {
+            requirePermission(oldStatus == FollowTaskStatus.IN_PROGRESS && isTaskWorkerOrAdmin);
+        }
+        if (!isTaskWorkerOrAdmin) {
             /*
             以下内容必须由工作人员修改：
             - 志愿者
             - 负责工作人员
             - 状态
              */
-                requirePermission(Objects.equals(request.getVolunteerId(), task.getVolunteerId()));
-                requirePermission(Objects.equals(request.getWorkerId(), task.getWorkerId()));
-                requirePermission(status == task.getStatus());
-            }
+            requirePermission(Objects.equals(request.getVolunteerId(), task.getVolunteerId()));
+            requirePermission(Objects.equals(request.getWorkerId(), task.getWorkerId()));
+            requirePermission(status == task.getStatus());
         }
 
-        if (status == FollowTaskStatus.FINISH && oldStatus != FollowTaskStatus.FINISH) {
-            completeFollowVisitShift(task, login);
+        if (status == FollowTaskStatus.IN_PROGRESS && oldStatus != FollowTaskStatus.IN_PROGRESS) {
+            require(task.getPlanTime() != null, "exception.invalidate.follow_task.status_invalid");
+            VolunteerTask volunteerTask = volunteerTaskMapper.queryFollowTask(task.getId()).one();
+            if (volunteerTask == null) { // 新建回访志愿者任务
+                Pet pet = petService.requireById(adopt.getPetId(), Pet::getId, Pet::getName);
+                Location source = locationMapper.queryByParent(ParentType.PET, adopt.getPetId()).require();
+                volunteerTask = new VolunteerTask(null,
+                        VolunteerTaskType.FOLLOW_VISIT,
+                        task.getId(),
+                        null,
+                        "回访任务：" + pet.getName("未命名宠物"),
+                        "领养回访任务 #" + task.getId(),
+                        task.getPlanTime(),
+                        task.getPlanTime(), // 结束时间暂且使用开始时间，需要管理员手动设置
+                        new Date());
+                volunteerTaskMapper.insert(volunteerTask);
+                Location location = source.copy(VOLUNTEER_TASK, volunteerTask.getId(), task.getWorkerId());
+                locationMapper.insert(location);
+                volunteerTask.setLocationId(location.getId());
+                volunteerTaskMapper.updateById(volunteerTask);
+            }
+
+            if (volunteerShiftMapper.queryByVolunteerTask(task.getVolunteerId(), volunteerTask.getId()).exists()) {
+                throw ServiceException.conflict("exception.conflict.volunteer.shift.exists");
+            }
+            Date start = task.getPlanTime();
+            if (volunteerShiftMapper.queryConflictByVolunteer(task.getVolunteerId(), start).exists()) {
+                throw ServiceException.conflict("exception.conflict.volunteer.shift.time");
+            }
+            Date now = new Date();
+            VolunteerShift shift = new VolunteerShift(null, // 志愿者排班
+                    task.getVolunteerId(),
+                    task.getWorkerId(),
+                    volunteerTask.getId(),
+                    VolunteerShiftStatus.ASSIGNED,
+                    "领养回访任务 #" + task.getId(),
+                    start,
+                    start,
+                    now,
+                    now);
+            volunteerShiftMapper.insert(shift);
         }
+
+        if (status == FollowTaskStatus.FINISH && oldStatus != FollowTaskStatus.FINISH) { // 完成志愿者任务
+            VolunteerTask volunteerTask = volunteerTaskMapper.queryFollowTask(task.getId()).require();
+            VolunteerShift shift = volunteerShiftMapper.queryByVolunteerTask(task.getVolunteerId(), volunteerTask.getId()).require();
+            VolunteerShiftStatusRecord record = new VolunteerShiftStatusRecord(null,
+                    shift.getId(),
+                    shift.getStatus(),
+                    VolunteerShiftStatus.COMPLETED,
+                    "回访任务完成",
+                    new Date());
+            Date now = new Date();
+            shift.setStatus(VolunteerShiftStatus.COMPLETED);
+            shift.setEndTime(now);
+            shift.setUpdateTime(now);
+            volunteerShiftMapper.updateById(shift);
+            volunteerShiftStatusRecordMapper.insert(record);
+            eventPublisher.publishEvent(new VolunteerShiftStatusEvent(shift, volunteerTask, record, login));
+        }
+
         request.applyTo(task);
         followTaskMapper.updateById(task);
         eventPublisher.publishEvent(new FollowTaskUpdateEvent(task, login));
         return adoptBreadingFacade.buildFollowTaskResponse(task);
-    }
-
-    private void requireNotifiedFollowTaskPermission(User login, FollowTask task, Adopt adopt, FollowTaskStatus status) {
-        boolean isTaskVolunteer = login.isVolunteer() && login.is(task.getVolunteerId());
-        boolean isApplicant = login.is(adopt.getApplicantId());
-        boolean isTaskWorker = login.isWorker() && login.is(task.getWorkerId());
-        boolean canRevoke = login.isAdmin() || (login.isWorker() && login.is(task.getVolunteerId()));
-        boolean allowed = switch (status) {
-            case IN_PROGRESS -> isTaskVolunteer;
-            case DELAY -> isTaskVolunteer || isApplicant;
-            case CREATE -> canRevoke;
-            case NOTIFIED -> isTaskWorker || login.isAdmin();
-            default -> false;
-        };
-        requirePermission(allowed);
-    }
-
-    private void createFollowVisitShift(FollowTask task, Adopt adopt) {
-        require(task.getPlanTime() != null, "exception.invalidate.follow_task.status_invalid");
-        VolunteerTask volunteerTask = volunteerTaskMapper.lambdaQuery()
-                .eq(VolunteerTask::getTaskType, VolunteerTaskType.FOLLOW_VISIT)
-                .eq(VolunteerTask::getTaskId, task.getId())
-                .one();
-        if (volunteerTask == null) {
-            Pet pet = petService.requireById(adopt.getPetId(), Pet::getId, Pet::getName);
-            Location source = locationMapper.queryByParent(ParentType.PET, adopt.getPetId()).require();
-            volunteerTask = new VolunteerTask(null,
-                    VolunteerTaskType.FOLLOW_VISIT,
-                    task.getId(),
-                    null,
-                    "回访任务：" + pet.getName("未命名宠物"),
-                    "领养回访任务 #" + task.getId(),
-                    task.getPlanTime(),
-                    new Date(task.getPlanTime().getTime() + 60 * 60 * 1000L),
-                    new Date());
-            volunteerTaskMapper.insert(volunteerTask);
-            Location location = new Location(null,
-                    volunteerTask.getId(),
-                    ParentType.VOLUNTEER_TASK,
-                    task.getWorkerId(),
-                    source.getProvince(),
-                    source.getCity(),
-                    source.getDistrict(),
-                    source.getDetailAddress(),
-                    new Date());
-            locationMapper.insert(location);
-            volunteerTask.setLocationId(location.getId());
-            volunteerTaskMapper.updateById(volunteerTask);
-        }
-
-        boolean existed = volunteerShiftMapper.lambdaQuery()
-                .eq(VolunteerShift::getVolunteerId, task.getVolunteerId())
-                .eq(VolunteerShift::getTaskId, volunteerTask.getId())
-                .exists();
-        if (existed) {
-            throw ServiceException.conflict("exception.conflict.volunteer.shift.exists");
-        }
-        Date start = task.getPlanTime();
-        Date end = new Date(start.getTime() + 60 * 60 * 1000L);
-        boolean conflict = volunteerShiftMapper.lambdaQuery()
-                .eq(VolunteerShift::getVolunteerId, task.getVolunteerId())
-                .in(VolunteerShift::getStatus, List.of(
-                        VolunteerShiftStatus.ASSIGNED,
-                        VolunteerShiftStatus.CONFIRMED,
-                        VolunteerShiftStatus.IN_PROGRESS))
-                .list(VolunteerShift::getStartTime, VolunteerShift::getEndTime)
-                .stream()
-                .anyMatch(shift -> shift.getStartTime() != null
-                        && shift.getEndTime() != null
-                        && shift.getStartTime().before(end)
-                        && start.before(shift.getEndTime()));
-        if (conflict) {
-            throw ServiceException.conflict("exception.conflict.volunteer.shift.time");
-        }
-        Date now = new Date();
-        VolunteerShift shift = new VolunteerShift(null,
-                task.getVolunteerId(),
-                task.getWorkerId(),
-                volunteerTask.getId(),
-                VolunteerShiftStatus.ASSIGNED,
-                "领养回访任务 #" + task.getId(),
-                start,
-                end,
-                now,
-                now);
-        volunteerShiftMapper.insert(shift);
-    }
-
-    private void completeFollowVisitShift(FollowTask task, User login) {
-        VolunteerTask volunteerTask = volunteerTaskMapper.lambdaQuery()
-                .eq(VolunteerTask::getTaskType, VolunteerTaskType.FOLLOW_VISIT)
-                .eq(VolunteerTask::getTaskId, task.getId())
-                .one();
-        requireExist(volunteerTask, "exception.not_found.volunteer_task");
-        VolunteerShift shift = volunteerShiftMapper.lambdaQuery()
-                .eq(VolunteerShift::getTaskId, volunteerTask.getId())
-                .eq(VolunteerShift::getVolunteerId, task.getVolunteerId())
-                .one();
-        requireExist(shift, "exception.not_found.volunteer_shift");
-        VolunteerShiftStatusRecord record = new VolunteerShiftStatusRecord(null,
-                shift.getId(),
-                shift.getStatus(),
-                VolunteerShiftStatus.COMPLETED,
-                "回访任务完成",
-                new Date());
-        Date now = new Date();
-        shift.setStatus(VolunteerShiftStatus.COMPLETED);
-        shift.setEndTime(now);
-        shift.setUpdateTime(now);
-        volunteerShiftMapper.updateById(shift);
-        volunteerShiftStatusRecordMapper.insert(record);
-        eventPublisher.publishEvent(new VolunteerShiftStatusEvent(shift, volunteerTask, record, login));
     }
 
     /**

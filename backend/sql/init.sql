@@ -571,6 +571,8 @@ CREATE TABLE `agreement` (
   `parent_type` varchar(20) NOT NULL COMMENT '申请类型 (ADOPT / BREADING)',
   `content` text COMMENT '电子协议正文，null 表示纸质协议扫描',
   `type` varchar(20) NOT NULL COMMENT '协议类型',
+  `applicant_id` bigint not null COMMENT '签署用户',
+  `reviewer_id` bigint not null COMMENT '审核用户',
   `sign` varchar(255) COMMENT '签名图片',
   `sign_time` datetime COMMENT '签署时间',
   `create_time` datetime NOT NULL COMMENT '创建时间',

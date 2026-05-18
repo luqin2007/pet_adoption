@@ -38,13 +38,15 @@ public class AgreementAddRequest implements IRequest, IValidatedRequest {
      */
     private List<String> fileOrder;
 
-    public Agreement create() {
+    public Agreement create(Long applicantId, Long reviewerId) {
         Date now = new Date();
         return new Agreement(null,
                 parentId,
                 ParentType.get(parentType),
                 content,
                 AgreementType.get(type),
+                applicantId,
+                reviewerId,
                 null,
                 null,
                 now,
