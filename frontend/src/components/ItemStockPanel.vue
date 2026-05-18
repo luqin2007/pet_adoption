@@ -2,7 +2,7 @@
   <el-card class="profile-card pet-admin-card">
     <template #header>
       <div class="profile-card-header">
-        <strong>物资余量</strong>
+        <strong>物资管理</strong>
         <div class="profile-actions">
           <el-button-group class="console-btn-group">
             <el-button class="warm-btn" :icon="Plus" @click="handleStockPlusClick" />

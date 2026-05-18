@@ -181,7 +181,7 @@ watch(
               <span>物资管理</span>
             </template>
             <el-menu-item index="/console/items/donations">捐赠</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/items/stocks">物资余量</el-menu-item>
+            <el-menu-item v-if="canManageUsers" index="/console/items/stocks">物资管理</el-menu-item>
           </el-sub-menu>
           <el-sub-menu v-if="canViewMedical" index="/console/medical">
             <template #title>
