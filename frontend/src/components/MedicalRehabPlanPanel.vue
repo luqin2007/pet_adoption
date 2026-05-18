@@ -15,6 +15,7 @@
     <section class="pet-admin-section">
       <el-table :data="displayedRows" v-loading="loading" class="user-admin-table" row-key="id">
         <el-table-column label="康复计划" min-width="210" show-overflow-tooltip>
+          <template #header><TableFilterHeader label="康复计划" :filter="filters.title" type="text" :active="isActive('title')" /></template>
           <template #default="{ row }">
             <button class="table-primary-link" type="button" @click="goDetail(row)">{{ row.title || '未命名计划' }}</button>
             <span class="medical-rehab-subtext">{{ row.frequency || '' }}</span>
@@ -33,7 +34,8 @@
             <el-tag size="small" :type="statusTagType(row.status)" effect="plain">{{ statusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="负责兽医" min-width="120">
+        <el-table-column label="兽医" min-width="120">
+          <template #header><TableFilterHeader label="兽医" :filter="filters.username" type="text" :active="isActive('username')" /></template>
           <template #default="{ row }">{{ row.username || '' }}</template>
         </el-table-column>
         <el-table-column label="计划时间" min-width="190">
@@ -65,6 +67,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getRehabPlans } from '../api/services'
+import { formatDate } from '../utils/format'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 import { useTableFilters } from '../composables/useTableFilters'
@@ -86,6 +89,8 @@ const statusOptions = [
 
 const { filters, isActive, applyFilter } = useTableFilters({
   petName: { type: 'text' },
+  title: { type: 'text' },
+  username: { type: 'text' },
   status: { type: 'enum' },
   createTime: { type: 'time' },
 })
@@ -106,13 +111,6 @@ function statusTagType(value) {
   if (value === 'COMPLETED') return 'success'
   if (value === 'DISCARD') return 'info'
   return 'warning'
-}
-
-function formatDate(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleString('zh-CN')
 }
 
 function goPet(row) {

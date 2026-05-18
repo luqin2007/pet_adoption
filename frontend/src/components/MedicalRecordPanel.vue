@@ -21,19 +21,24 @@
           </template>
         </el-table-column>
         <el-table-column label="类型" width="100">
+          <template #header><TableFilterHeader label="类型" :filter="filters.type" type="enum" :active="isActive('type')" :options="recordTypeOptions" /></template>
           <template #default="{ row }"><el-tag effect="plain" type="warning">{{ recordTypeText(row.type) }}</el-tag></template>
         </el-table-column>
         <el-table-column label="状态" width="110">
+          <template #header><TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="recordStatusOptions" /></template>
           <template #default="{ row }"><el-tag effect="plain" :type="recordStatusTagType(row.status)">{{ recordStatusText(row.status) }}</el-tag></template>
         </el-table-column>
-        <el-table-column label="接诊医生" min-width="120">
+        <el-table-column label="兽医" min-width="120">
+          <template #header><TableFilterHeader label="兽医" :filter="filters.username" type="text" :active="isActive('username')" /></template>
           <template #default="{ row }">{{ row.username || '—' }}</template>
         </el-table-column>
         <el-table-column label="就诊时间" min-width="160">
-          <template #default="{ row }">{{ formatDateTime(row.startTime) }}</template>
+          <template #header><TableFilterHeader label="就诊时间" :filter="filters.startTime" type="time" :active="isActive('startTime')" /></template>
+          <template #default="{ row }">{{ formatDate(row.startTime) }}</template>
         </el-table-column>
         <el-table-column label="创建时间" min-width="160">
-          <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
+          <template #header><TableFilterHeader label="创建时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" /></template>
+          <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
         <el-table-column width="40" class-name="action-col">
           <template #header><TableActionColumnHeader title="操作" :collapsed="actionCollapsed" @toggle="actionCollapsed = !actionCollapsed" /></template>
@@ -104,6 +109,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getMedicalRecords, updateMedicalRecord, getMedicalDetails, getFirstVisitRegistrations } from '../api/services'
+import { formatDate } from '../utils/format'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useTableFilters } from '../composables/useTableFilters'
 import { ROLE, hasRole } from '../utils/roles'
@@ -137,7 +143,11 @@ const createDialogPetAge = ref(null)
 
 const { filters, isActive, applyFilter } = useTableFilters({
   petName: { type: 'text' },
-  recordTime: { type: 'time' },
+  type: { type: 'enum' },
+  status: { type: 'enum' },
+  username: { type: 'text' },
+  startTime: { type: 'time' },
+  createTime: { type: 'time' },
 })
 
 const filteredRecords = computed(() => applyFilter(recordRows.value || []))
@@ -179,7 +189,7 @@ function recordStatusTagType(v) {
   if (v === 'PROCESSING') return 'primary'
   return 'warning'
 }
-function formatDateTime(v) { return v ? new Date(v).toLocaleString('zh-CN') : '—' }
+function formatDateTime(v) { return formatDate(v) }
 function canEditRecord(row) { return canManageMedical.value && row.status !== 'COMPLETED' && row.status !== 'CANCELED' }
 function canCancelRecord(row) { return canManageMedical.value && row.status !== 'COMPLETED' && row.status !== 'CANCELED' }
 

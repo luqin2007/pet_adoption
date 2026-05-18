@@ -20,10 +20,12 @@
           <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" /></template>
           <template #default="{ row }">{{ row.petName || '' }}</template>
         </el-table-column>
-        <el-table-column label="医生" width="100">
+        <el-table-column label="兽医" width="100">
+          <template #header><TableFilterHeader label="兽医" :filter="filters.username" type="text" :active="isActive('username')" /></template>
           <template #default="{ row }">{{ row.username || '' }}</template>
         </el-table-column>
         <el-table-column label="状态" width="100">
+          <template #header><TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="detailStatusOptions" /></template>
           <template #default="{ row }">
             <el-tag size="small" :type="detailStatusTagType(row)" effect="plain">
               {{ detailStatusText(row) }}
@@ -122,8 +124,16 @@ const isDoctor = computed(() => hasRole(loginRole.value, ROLE.DOCTOR))
 const { filters, isActive, applyFilter } = useTableFilters({
   petName: { type: 'text' },
   summary: { type: 'text' },
+  username: { type: 'text' },
+  status: { type: 'enum' },
   createTime: { type: 'time' },
 })
+
+const detailStatusOptions = [
+  { label: '进行中', value: 'ACTIVE' },
+  { label: '已完成', value: 'COMPLETED' },
+  { label: '已废弃', value: 'DISCARD' },
+]
 
 const filteredRecords = computed(() => applyFilter(allRecords.value || []))
 

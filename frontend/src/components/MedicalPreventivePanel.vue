@@ -4,8 +4,10 @@
       <div class="profile-card-header">
         <strong>{{ isVaccineMode ? '疫苗接种' : '驱虫管理' }}</strong>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="Plus" @click="openAddDialog" />
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadAll" />
+          <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Sugar" @click="openAddDialog" />
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadAll" />
+          </el-button-group>
         </div>
       </div>
     </template>
@@ -20,6 +22,7 @@
           </template>
         </el-table-column>
         <el-table-column :label="isVaccineMode ? '疫苗' : '驱虫药'" min-width="160">
+          <template #header><TableFilterHeader :label="isVaccineMode ? '疫苗' : '驱虫药'" :filter="filters.drugName" type="text" :active="isActive('drugName')" /></template>
           <template #default="{ row }">
             <strong class="medical-preventive-name">{{ isVaccineMode ? row.vaccineName : row.dewormerName }}</strong>
             <span class="medical-preventive-subtext">{{ isVaccineMode ? row.vaccineIll : dewormerTypeText(row.dewormerType) }}</span>
@@ -31,10 +34,12 @@
         <el-table-column label="总次数" width="100">
           <template #default="{ row }">{{ isVaccineMode ? row.vaccineTotal : row.dewormerTotal }}</template>
         </el-table-column>
-        <el-table-column label="记录医生" min-width="120">
+        <el-table-column label="兽医" min-width="120">
+          <template #header><TableFilterHeader label="兽医" :filter="filters.username" type="text" :active="isActive('username')" /></template>
           <template #default="{ row }">{{ row.username || '' }}</template>
         </el-table-column>
         <el-table-column label="记录时间" min-width="160">
+          <template #header><TableFilterHeader label="记录时间" :filter="filters.recordTime" type="time" :active="isActive('recordTime')" /></template>
           <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
       </el-table>
@@ -54,12 +59,15 @@
           <template #default="{ row }">{{ row.name }}</template>
         </el-table-column>
         <el-table-column v-if="isVaccineMode" label="疾病" min-width="140">
+          <template #header><TableFilterHeader label="疾病" :filter="drugFilters.illness" type="text" :active="drugIsActive('illness')" /></template>
           <template #default="{ row }">{{ row.illness }}</template>
         </el-table-column>
         <el-table-column v-if="!isVaccineMode" label="类型" min-width="100">
+          <template #header><TableFilterHeader label="类型" :filter="drugFilters.drugType" type="text" :active="drugIsActive('drugType')" /></template>
           <template #default="{ row }">{{ dewormerTypeText(row.type) }}</template>
         </el-table-column>
         <el-table-column label="最小月龄" width="100">
+          <template #header><TableFilterHeader label="最小月龄" :filter="drugFilters.minAge" type="text" :active="drugIsActive('minAge')" /></template>
           <template #default="{ row }">{{ row.minAge ?? 0 }}</template>
         </el-table-column>
         <el-table-column :label="isVaccineMode ? '总针数' : '总次数'" width="90">
@@ -136,7 +144,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Plus, RefreshRight } from '@element-plus/icons-vue'
+import { Sugar, RefreshRight } from '@element-plus/icons-vue'
 import { createDewormerItem, createVaccineItem, getAllDeworms, getAllVaccines, getCategories, getDewormerOptions, getItems, getVaccineOptions } from '../api/services'
 import { useTableFilters } from '../composables/useTableFilters'
 import TableFilterHeader from './TableFilterHeader.vue'
@@ -156,6 +164,8 @@ const isVaccineMode = computed(() => props.type === 'vaccine')
 
 const { filters, isActive, applyFilter } = useTableFilters({
   petName: { type: 'text' },
+  drugName: { type: 'text' },
+  username: { type: 'text' },
   recordTime: { type: 'time' },
 })
 
@@ -170,6 +180,9 @@ const drugLoading = ref(false)
 const drugs = ref([])
 const { filters: drugFilters, isActive: drugIsActive, applyFilter: drugApplyFilter } = useTableFilters({
   name: { type: 'text' },
+  illness: { type: 'text' },
+  drugType: { type: 'text' },
+  minAge: { type: 'text' },
 })
 const filteredDrugs = computed(() => drugApplyFilter(drugs.value || []))
 

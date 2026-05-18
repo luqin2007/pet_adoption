@@ -187,8 +187,7 @@ onMounted(() => {
       <section class="action-form-hero">
         <div>
           <span class="hero-chip">物资捐赠</span>
-          <h1>登记可捐赠的救助物资</h1>
-          <p>捐赠食品、药品或转运用品时，先留下交付方式。</p>
+          <h1>捐赠</h1>
         </div>
         <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回首页</el-button>
       </section>

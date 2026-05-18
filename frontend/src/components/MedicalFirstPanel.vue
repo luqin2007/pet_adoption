@@ -20,17 +20,21 @@
           <template #default="{ row }">{{ row.age }} 月</template>
         </el-table-column>
         <el-table-column label="类型" width="80">
+          <template #header><TableFilterHeader label="类型" :filter="filters.type" type="text" :active="isActive('type')" /></template>
           <template #default="{ row }">{{ row.type || '—' }}</template>
         </el-table-column>
         <el-table-column label="性别" width="70">
+          <template #header><TableFilterHeader label="性别" :filter="filters.sex" type="text" :active="isActive('sex')" /></template>
           <template #default="{ row }">{{ row.sex || '—' }}</template>
         </el-table-column>
-        <el-table-column label="接诊人" min-width="120">
+        <el-table-column label="兽医" min-width="120">
+          <template #header><TableFilterHeader label="兽医" :filter="filters.username" type="text" :active="isActive('username')" /></template>
           <template #default="{ row }">{{ row.username || '—' }}</template>
         </el-table-column>
         <el-table-column label="登记时间" min-width="160">
+          <template #header><TableFilterHeader label="登记时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" /></template>
           <template #default="{ row }">
-            {{ row.createTime ? new Date(row.createTime).toLocaleString('zh-CN') : '—' }}
+            {{ formatDate(row.createTime) }}
           </template>
         </el-table-column>
         <el-table-column width="40" class-name="action-col">
@@ -73,6 +77,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { RefreshRight } from '@element-plus/icons-vue'
 import { getFirstVisitRegistrations, getMedicalRecords, getMedicalDetails, getRehabPlans } from '../api/services'
+import { formatDate } from '../utils/format'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useTableFilters } from '../composables/useTableFilters'
 import { ROLE, hasRole } from '../utils/roles'
@@ -97,7 +102,9 @@ const firstRegPage = reactive({ page: 1, size: 10 })
 
 const { filters, isActive, applyFilter } = useTableFilters({
   petName: { type: 'text' },
-  status: { type: 'enum' },
+  type: { type: 'text' },
+  sex: { type: 'text' },
+  username: { type: 'text' },
   createTime: { type: 'time' },
 })
 

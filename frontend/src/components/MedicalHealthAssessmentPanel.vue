@@ -31,12 +31,15 @@
           <template #default="{ row }">{{ row.weight ?? '' }} kg</template>
         </el-table-column>
         <el-table-column label="评估摘要" min-width="220" show-overflow-tooltip>
+          <template #header><TableFilterHeader label="评估摘要" :filter="filters.summary" type="text" :active="isActive('summary')" /></template>
           <template #default="{ row }">{{ row.summary || '' }}</template>
         </el-table-column>
-        <el-table-column label="评估人" min-width="120">
+        <el-table-column label="兽医" min-width="120">
+          <template #header><TableFilterHeader label="兽医" :filter="filters.username" type="text" :active="isActive('username')" /></template>
           <template #default="{ row }">{{ row.username || '' }}</template>
         </el-table-column>
         <el-table-column label="评估时间" min-width="160">
+          <template #header><TableFilterHeader label="评估时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" /></template>
           <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
         <el-table-column width="40" class-name="action-col">
@@ -64,6 +67,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { RefreshRight } from '@element-plus/icons-vue'
 import { getHealthAssessments } from '../api/services'
+import { formatDate } from '../utils/format'
 import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
@@ -76,7 +80,9 @@ const page = reactive({ page: 1, size: 10 })
 
 const { filters, isActive, applyFilter } = useTableFilters({
   petName: { type: 'text' },
-  assessmentTime: { type: 'time' },
+  summary: { type: 'text' },
+  username: { type: 'text' },
+  createTime: { type: 'time' },
 })
 
 const filteredAssessments = computed(() => applyFilter(rows.value || []))
@@ -85,13 +91,6 @@ const displayedRows = computed(() => {
   const start = (page.page - 1) * page.size
   return filteredAssessments.value.slice(start, start + page.size)
 })
-
-function formatDate(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleString('zh-CN')
-}
 
 function goDetail(row) {
   if (row?.id) router.push(`/console/medical/health/${row.id}`)
