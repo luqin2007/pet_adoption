@@ -3,9 +3,11 @@
     <template #header>
       <div class="profile-card-header">
         <strong>捐赠</strong>
-        <span>{{ isWorker ? '查看并处理全部物资捐赠' : '查看我的捐赠记录和使用状态' }}</span>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
+          <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="router.push('/donations/new')" />
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh" />
+          </el-button-group>
         </div>
       </div>
     </template>
@@ -152,7 +154,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { RefreshRight } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getDonation, getDonations, updateDonationStatus } from '../api/services'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'

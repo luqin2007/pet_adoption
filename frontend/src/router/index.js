@@ -260,7 +260,7 @@ const router = createRouter({
         { path: 'adoption/agreements/new-electronic', name: 'console-adoption-agreement-electronic-create', component: AgreementDraftPanel, props: { type: 'ELECTRONIC' }, meta: { guard: 'canManageUsers' } },
         { path: 'items/donations', name: 'console-items-donations', component: ItemDonationPanel },
         { path: 'items/stocks', name: 'console-items-stocks', component: ItemStockPanel, meta: { guard: 'canManageUsers' } },
-        { path: 'items/records', name: 'console-items-records', component: ItemStockRecordPanel, meta: { guard: 'canManageUsers' } },
+        { path: 'items/records', redirect: { name: 'console-items-stocks', query: { tab: 'records' } } },
         { path: 'volunteer', name: 'console-volunteer', component: VolunteerManagementPanel, props: { allowedSections: ['activities', 'rewards', 'profiles'] } },
         { path: 'volunteer/recruitments', name: 'console-volunteer-recruitments', component: VolunteerManagementPanel, props: { allowedSections: ['applications', 'recruitments'] } },
         { path: 'volunteer/applications/:id', name: 'console-volunteer-application-detail', component: VolunteerApplicationDetailPanel },

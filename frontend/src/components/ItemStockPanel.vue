@@ -3,9 +3,11 @@
     <template #header>
       <div class="profile-card-header">
         <strong>物资余量</strong>
-        <span>库存批次、出入库操作、物资分类和预警</span>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="stockLoading" @click="handleRefresh">刷新</el-button>
+          <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="handleStockPlusClick" />
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="stockLoading" @click="handleRefresh" />
+          </el-button-group>
         </div>
       </div>
     </template>
@@ -138,10 +140,6 @@
 
       <el-tab-pane label="库存预警" name="subscribes">
         <section class="pet-admin-section">
-        <div class="item-stock-block-head">
-          <strong>预警订阅</strong>
-          <el-button class="soft-btn" :icon="Plus" @click="openSubscribeDialog">添加预警</el-button>
-        </div>
         <el-table :data="filteredSubscribes" v-loading="subscribeLoading" class="user-admin-table">
           <el-table-column label="预警类型" min-width="150">
             <template #header>
@@ -169,8 +167,65 @@
         </el-table>
         </section>
       </el-tab-pane>
+
+      <el-tab-pane label="库存记录" name="records">
+        <section class="pet-admin-section">
+        <el-table :data="filteredRecords" v-loading="recordsLoading" class="user-admin-table">
+          <el-table-column label="物资" min-width="180">
+            <template #default="{ row }">
+              <button class="table-primary-link" type="button" @click="openStockRecord(row)">{{ row.itemName || '物资' }}</button>
+              <span class="item-record-subtext">{{ row.categoryName || '' }} · 批次 #{{ row.stockId }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="100">
+            <template #header>
+              <TableFilterHeader label="操作" :filter="recordsFilters.action" type="enum" :options="recordActionOptions" :active="isRecordsActive('action')" />
+            </template>
+            <template #default="{ row }">
+              <el-tag :type="recordActionTagType(row.action)" effect="plain">{{ recordActionText(row.action) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="数量" width="110">
+            <template #default="{ row }">{{ row.count }}</template>
+          </el-table-column>
+          <el-table-column label="剩余" width="110">
+            <template #default="{ row }">{{ row.remainCount }}</template>
+          </el-table-column>
+          <el-table-column label="来源" width="100">
+            <template #default="{ row }">{{ sourceText(row.sourceType) }}</template>
+          </el-table-column>
+          <el-table-column label="用途" min-width="180" show-overflow-tooltip>
+            <template #default="{ row }">{{ row.purpose || '' }}</template>
+          </el-table-column>
+          <el-table-column label="操作人" min-width="120">
+            <template #default="{ row }">{{ row.username || '' }}</template>
+          </el-table-column>
+          <el-table-column label="时间" min-width="160">
+            <template #header>
+              <TableFilterHeader label="时间" :filter="recordsFilters.createTime" type="time" :active="isRecordsActive('createTime')" />
+            </template>
+            <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
+          </el-table-column>
+        </el-table>
+
+        <div class="user-admin-pagination">
+          <el-pagination layout="prev, pager, next, total" :current-page="recordsPage.page" :page-size="recordsPage.size" :total="recordsTotal" @current-change="changeRecordsPage" />
+        </div>
+        </section>
+      </el-tab-pane>
     </el-tabs>
   </el-card>
+
+  <el-drawer v-model="stockRecordVisible" title="库存批次" size="520px">
+    <section v-if="stockRecordDetail" class="item-record-stock-detail">
+      <div><dt>物资</dt><dd>{{ stockRecordDetail.itemName }}</dd></div>
+      <div><dt>分类</dt><dd>{{ stockRecordDetail.categoryName }}</dd></div>
+      <div><dt>余量</dt><dd>{{ stockRecordDetail.count }}{{ stockRecordDetail.unit || '' }}</dd></div>
+      <div><dt>来源</dt><dd>{{ sourceText(stockRecordDetail.sourceType) }}</dd></div>
+      <div><dt>有效期</dt><dd>{{ formatDate(stockRecordDetail.expireTime) }}</dd></div>
+      <div><dt>创建时间</dt><dd>{{ formatDate(stockRecordDetail.createTime) }}</dd></div>
+    </section>
+  </el-drawer>
 
   <el-dialog v-model="stockDialogVisible" :title="stockActionText(stockForm.action)" width="620px" :close-on-click-modal="false">
     <el-form label-position="top" class="item-stock-form">
@@ -278,6 +333,8 @@ import {
   getCategories,
   getDonation,
   getItems,
+  getStockRecords,
+  getStock,
   getStocks,
   getSubscribes,
   updateCategory,
@@ -316,6 +373,24 @@ const stockForm = reactive(resetStockForm())
 const itemForm = reactive({ id: '', name: '', categoryId: '', unit: '', description: '' })
 const categoryForm = reactive({ id: '', name: '', description: '' })
 const subscribeForm = reactive({ action: 'ITEM_COUNT', elementId: '', count: '' })
+
+const recordsLoading = ref(false)
+const records = ref([])
+const recordsTotal = ref(0)
+const recordsPage = reactive({ page: 1, size: 10 })
+const stockRecordVisible = ref(false)
+const stockRecordDetail = ref(null)
+
+const { filters: recordsFilters, isActive: isRecordsActive, applyFilter: applyRecordsFilter } = useTableFilters({
+  createTime: { type: 'time' },
+  action: { type: 'enum' },
+})
+
+const recordActionOptions = [
+  { value: 'IN', label: '入库' },
+  { value: 'OUT', label: '出库' },
+  { value: 'DESTROY', label: '销毁' },
+]
 
 const { filters, isActive, applyFilter } = useTableFilters({
   itemName: { type: 'text' },
@@ -359,6 +434,17 @@ const subscribeActionOptions = [
 ]
 
 const filteredSubscribes = computed(() => applySubscribeFilter(subscribes.value || []))
+const filteredRecords = computed(() => applyRecordsFilter(records.value || []))
+
+function recordActionText(value) {
+  return { IN: '入库', OUT: '出库', DESTROY: '销毁' }[value] || value || ''
+}
+
+function recordActionTagType(value) {
+  if (value === 'IN') return 'success'
+  if (value === 'DESTROY') return 'danger'
+  return 'warning'
+}
 
 function resetStockForm() {
   return {
@@ -426,6 +512,14 @@ async function loadStocks() {
 function handleRefresh() {
   stockPage.page = 1
   loadStocks()
+}
+
+function handleStockPlusClick() {
+  if (activeTab.value === 'subscribes') {
+    openSubscribeDialog()
+  } else if (activeTab.value === 'records') {
+    openStockDialog()
+  }
 }
 
 function changeStockPage(value) {
@@ -662,6 +756,38 @@ async function prefillDonationStock() {
   }
 }
 
+function buildRecordsQuery() {
+  return { page: recordsPage.page, size: recordsPage.size }
+}
+
+async function loadRecords() {
+  recordsLoading.value = true
+  try {
+    const result = await getStockRecords(buildRecordsQuery())
+    records.value = Array.isArray(result?.records) ? result.records : []
+    recordsTotal.value = Number(result?.total || records.value.length)
+  } catch (error) {
+    ElMessage.warning(error?.message || '加载库存记录失败')
+  } finally {
+    recordsLoading.value = false
+  }
+}
+
+function changeRecordsPage(value) {
+  recordsPage.page = value
+  loadRecords()
+}
+
+async function openStockRecord(row) {
+  if (!row?.stockId) return
+  stockRecordVisible.value = true
+  try {
+    stockRecordDetail.value = await getStock(row.stockId)
+  } catch (error) {
+    ElMessage.warning(error?.message || '加载库存批次失败')
+  }
+}
+
 watch(activeTab, (value) => {
   router.replace({ query: { ...route.query, tab: value === 'stocks' ? undefined : value } })
   if (value === 'catalog') {
@@ -669,12 +795,14 @@ watch(activeTab, (value) => {
     handleRefreshItems()
   } else if (value === 'subscribes') {
     loadSubscribes()
+  } else if (value === 'records') {
+    loadRecords()
   }
 })
 
 onMounted(async () => {
   const tab = route.query.tab
-  if (tab && ['stocks', 'catalog', 'subscribes'].includes(tab)) {
+  if (tab && ['stocks', 'catalog', 'subscribes', 'records'].includes(tab)) {
     activeTab.value = tab
   }
   await loadCategories()
@@ -750,5 +878,32 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.item-record-subtext {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.item-record-stock-detail {
+  display: grid;
+  gap: 14px;
+}
+
+.item-record-stock-detail div {
+  border-bottom: 1px solid rgba(179, 124, 82, 0.18);
+  padding-bottom: 12px;
+}
+
+.item-record-stock-detail dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.item-record-stock-detail dd {
+  margin: 5px 0 0;
+  color: #3f2a1f;
 }
 </style>

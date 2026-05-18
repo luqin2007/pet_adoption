@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>库存管理</strong>
-        <span>跟踪和查找物资入库、出库、销毁记录</span>
         <div class="profile-actions">
           <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
         </div>
