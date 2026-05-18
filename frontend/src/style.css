@@ -3320,8 +3320,22 @@ main {
 }
 
 .action-form-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
   background: rgba(255, 253, 249, 0.94);
+  padding: 20px;
   box-shadow: 0 12px 30px rgba(151, 96, 56, 0.07);
+}
+
+.action-form-panel.application-detail-panel,
+.action-form-panel.follow-task-detail-panel,
+.action-form-panel.adoption-application-detail-panel,
+.action-form-panel.breading-application-detail-panel,
+.action-form-panel.agreement-draft-panel,
+.action-form-panel.adoption-follow-task-panel {
+  border: none;
+  border-radius: 0;
+  padding: 0;
 }
 
 .pet-apply-summary {
