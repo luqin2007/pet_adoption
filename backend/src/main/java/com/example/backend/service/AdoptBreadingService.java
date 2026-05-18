@@ -557,7 +557,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         Long volunteerId = request.getVolunteerId();
         User volunteer = userService.requireById(volunteerId, User::getRole);
         requirePermission(volunteer.isVolunteer());
-        Adopt adopt = requireById(adoptId, Adopt::getStatus);
+        Adopt adopt = requireById(adoptId, Adopt::getStatus, Adopt::getApplicantId);
         require(Set.of(AdoptBreadingStatus.AGREEMENT_SIGNED, AdoptBreadingStatus.TRACKING).contains(adopt.getStatus()),
                 "exception.invalidate.adopt.status_invalid");
 

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Check, Plus, Search } from '@element-plus/icons-vue'
+import { Check, MoreFilled, Plus, RefreshRight, Search } from '@element-plus/icons-vue'
 import {
   createRecruitment,
   createVolunteerReward,
@@ -71,8 +71,34 @@ const profileActionCollapsed = ref(false)
 const rewardActionCollapsed = ref(false)
 const shiftActionCollapsed = ref(false)
 const recordActionCollapsed = ref(false)
+const showConditionPanel = ref(false)
+const globalSearch = reactive({
+  keyword: '',
+})
 
 const activeSection = ref(props.section)
+
+const sectionLoadingMap = {
+  recruitments: recruitmentLoading,
+  applications: applicationLoading,
+  profiles: profileLoading,
+  rewards: rewardLoading,
+  activities: shiftLoading,
+  records: recordLoading,
+}
+const currentSectionLoading = computed(() => sectionLoadingMap[activeSection.value]?.value || false)
+
+const sectionSearchMap = {
+  recruitments: searchRecruitments,
+  applications: searchApplications,
+  profiles: searchProfiles,
+  rewards: searchRewards,
+  activities: searchShifts,
+  records: searchRecords,
+}
+function searchCurrentSection() {
+  sectionSearchMap[activeSection.value]?.() || searchRecruitments()
+}
 
 const recruitmentRows = ref([])
 const recruitmentTotal = ref(0)
@@ -1453,10 +1479,22 @@ onMounted(async () => {
   <el-card class="profile-card volunteer-admin-card">
     <template #header>
       <div class="profile-card-header">
-        <strong>志愿者管理</strong>
-        <span>招募、申请、激励和排班都在这里</span>
+        <strong>志愿者</strong>
+        <div class="profile-actions">
+          <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="router.push('/volunteers')" />
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="currentSectionLoading" @click="searchCurrentSection" />
+            <el-button class="warm-btn" :icon="MoreFilled" :class="{ 'is-active': showConditionPanel }" @click="showConditionPanel = !showConditionPanel" />
+          </el-button-group>
+        </div>
       </div>
     </template>
+
+    <div v-if="showConditionPanel" class="console-search-panel">
+      <div class="pet-filter-row pet-filter-row-primary">
+        <el-input v-model="globalSearch.keyword" class="filter-field-lg" placeholder="搜索姓名/标题/活动…" clearable @keyup.enter="searchCurrentSection" />
+      </div>
+    </div>
 
     <div class="volunteer-admin-shell">
       <el-tabs v-if="!props.hideTabs" v-model="activeSection" class="volunteer-tabs">
