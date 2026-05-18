@@ -35,5 +35,10 @@ public interface VaccineRecordMapper extends IBaseMapper<VaccineRecord> {
     default String getMissingMessage() {
         return "exception.not_found.vaccine_record";
     }
+
+    @Override
+    default Class<VaccineRecord> getEntityClass() {
+        return VaccineRecord.class;
+    }
 }
 
