@@ -251,9 +251,10 @@ export function signAgreement(id, file) {
   })
 }
 
-export function confirmAgreementSign(id) {
+export function confirmAgreementSign(id, payload) {
   return request(`/adopt/agreement/${id}/sign/confirm`, {
     method: 'PATCH',
+    body: payload,
   })
 }
 

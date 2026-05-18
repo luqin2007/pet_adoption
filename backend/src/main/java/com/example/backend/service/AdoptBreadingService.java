@@ -463,7 +463,7 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
      * 确认签署协议
      */
     @Transactional
-    public AgreementResponse confirmAgreementSign(Long agreementId) {
+    public AgreementResponse confirmAgreementSign(Long agreementId, ConfirmAgreementSignRequest request) {
         User login = requireLoginUser();
         requirePermission(login.isWorker());
         Agreement agreement = agreementMapper.requireById(agreementId);
@@ -471,17 +471,40 @@ public class AdoptBreadingService extends BaseService<AdoptMapper, Adopt> {
         requireAgreementStatus(agreement, AGREEMENT_PENDING_CONFIRM);
         require(StringUtils.hasText(agreement.getSign()), "exception.invalidate.agreement.status_abnormal");
 
-        Date now = new Date();
-        agreement.setSignTime(now);
-        agreement.setUpdateTime(now);
-        agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN_CONFIRM));
+        Long parentId = agreement.getParentId();
+        if (Boolean.TRUE.equals(request.getAgree())) { // 同意
+            Date now = new Date();
+            agreement.setSignTime(now);
+            agreement.setUpdateTime(now);
+            agreementUpdateRecordMapper.insert(new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN_CONFIRM));
 
-        agreementMapper.confirmSign(agreementId, now).update();
-        switch (agreement.getParentType()) {
-            case ADOPT -> baseMapper.updateStatus(agreement.getParentId(), AGREEMENT_SIGNED).update();
-            case BREADING -> breadingMapper.updateStatus(agreement.getParentId(), AGREEMENT_SIGNED).update();
-            default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+            agreementMapper.confirmSign(agreementId, now).update();
+            switch (agreement.getParentType()) {
+                case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
+                case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_SIGNED).update();
+                default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+            }
+        } else { // 拒绝：回退状态
+            String oldSign = agreement.getSign();
+            agreement.setSign(null);
+            agreement.setSignTime(null);
+            agreement.setUpdateTime(new Date());
+            AgreementUpdateRecord record = new AgreementUpdateRecord(agreement, AgreementUpdateType.SIGN_REFUSE);
+            record.setContent(request.getReason());
+            agreementUpdateRecordMapper.insert(record);
+
+            // 更新数据
+            agreementMapper.uploadSign(agreementId, null, null).update();
+            switch (agreement.getParentType()) {
+                case ADOPT -> baseMapper.updateStatus(parentId, AGREEMENT_DRAFT).update();
+                case BREADING -> breadingMapper.updateStatus(parentId, AGREEMENT_DRAFT).update();
+                default -> throw ServiceException.system("exception.system.agreement.parent_type_invalid");
+            }
+            if (oldSign != null) {
+                fileService.deleteFile(oldSign, agreementId, AGREEMENT);
+            }
         }
+
         eventPublisher.publishEvent(new AgreementUpdateEvent(agreement, login));
         return adoptBreadingFacade.buildAgreementResponse(agreement);
     }

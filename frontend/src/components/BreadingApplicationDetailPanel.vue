@@ -45,7 +45,6 @@
             </el-avatar>
             <div>
               <strong>{{ application.reviewerName || '待审核' }}</strong>
-              <span>{{ application.reviewerId ? '已分配审核人' : '暂无审核人' }}</span>
             </div>
           </div>
         </section>

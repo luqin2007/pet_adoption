@@ -219,8 +219,9 @@ public class AdoptBreadingController {
      * 确认签署
      */
     @PatchMapping("/agreement/{id}/sign/confirm")
-    public Result<AgreementResponse> confirmAgreementSign(@PathVariable("id") Long agreementId) {
-        AgreementResponse response = adoptBreadingService.confirmAgreementSign(agreementId);
+    public Result<AgreementResponse> confirmAgreementSign(@PathVariable("id") Long agreementId,
+                                                          @Valid @RequestBody ConfirmAgreementSignRequest request) {
+        AgreementResponse response = adoptBreadingService.confirmAgreementSign(agreementId, request);
         return Result.success(response);
     }
 

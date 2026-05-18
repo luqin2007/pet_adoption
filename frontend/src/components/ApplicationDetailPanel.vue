@@ -49,7 +49,6 @@
             </el-avatar>
             <div>
               <strong>{{ application.reviewerName || '待审核' }}</strong>
-              <span>{{ application.reviewerId ? '已分配审核人' : '暂无审核人' }}</span>
             </div>
           </div>
         </section>
@@ -83,10 +82,18 @@
               </el-tag>
             </div>
           </div>
-          <div v-if="currentAgreementType === 'ELECTRONIC'" class="adoption-agreement-text-box">
+          <div v-if="currentAgreementType === 'ELECTRONIC' && !isEditing" class="adoption-agreement-text-box">
             <p class="application-note">{{ currentAgreement.content || '暂无协议正文' }}</p>
           </div>
-          <div v-else-if="currentAgreementType === 'PAPER'" class="adoption-paper-grid">
+          <div v-if="currentAgreementType === 'ELECTRONIC' && isEditing">
+            <el-input
+              v-model="agreementEditContent"
+              type="textarea"
+              :autosize="{ minRows: 12, maxRows: 20 }"
+              placeholder="填写电子协议正文"
+            />
+          </div>
+          <div v-if="currentAgreementType === 'PAPER' && !isEditing" class="adoption-paper-grid">
             <button
               v-for="(file, index) in paperFiles"
               :key="file.id"
@@ -99,6 +106,39 @@
                 <span class="adoption-paper-page-banner">第 {{ file.page || index + 1 }} 页</span>
               </div>
             </button>
+          </div>
+          <div v-if="currentAgreementType === 'PAPER' && isEditing" class="agreement-editor-section">
+            <div class="agreement-editor-actions">
+              <input ref="agreementFileInputRef" class="profile-avatar-input" type="file" accept="image/*" @change="uploadAgreementPaperFile" />
+              <el-button class="soft-btn" :icon="Upload" :loading="agreementUploading" @click="chooseAgreementFile">添加扫描件</el-button>
+            </div>
+            <div v-if="agreementEditFiles.length" class="agreement-file-list">
+              <article v-for="(file, index) in agreementEditFiles" :key="file.id" class="agreement-file-card">
+                <a :href="file.assetUrl" target="_blank" rel="noreferrer">
+                  <img :src="file.assetUrl" :alt="`协议第 ${index + 1} 页`" />
+                </a>
+                <div class="agreement-file-card-body">
+                  <strong>第 {{ index + 1 }} 页</strong>
+                  <div class="agreement-file-actions">
+                    <el-button text :icon="ArrowUp" :disabled="index === 0" @click="agreementMoveFile(index, -1)">上移</el-button>
+                    <el-button text :icon="ArrowDown" :disabled="index === agreementEditFiles.length - 1" @click="agreementMoveFile(index, 1)">下移</el-button>
+                    <el-button text type="danger" :icon="Delete" @click="agreementRemoveFile(file)">删除</el-button>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+          <div class="agreement-footer-actions">
+            <template v-if="!isEditing">
+              <el-button v-if="canEdit" class="warm-btn" :icon="Edit" @click="startEditing">编辑</el-button>
+              <el-button v-if="canSign" class="warm-btn" :icon="Upload" @click="signDialogVisible = true">签订</el-button>
+            </template>
+            <template v-else>
+              <el-button class="soft-btn" @click="cancelEditing">取消</el-button>
+              <el-button class="warm-btn" :loading="agreementSaving" @click="saveAgreement">保存</el-button>
+            </template>
+            <el-button v-if="canConfirm" class="warm-btn" @click="submitConfirmAgreement">同意</el-button>
+            <el-button v-if="canConfirm" class="soft-btn" style="color: var(--danger)" @click="rejectDialogVisible = true">拒绝</el-button>
           </div>
         </section>
       </template>
@@ -123,18 +163,47 @@
     v-model:index="paperViewerIndex"
     :items="paperViewerItems"
   />
+
+  <el-dialog v-model="signDialogVisible" title="签署协议" width="520px" @closed="clearSignFile">
+    <section class="sign-dialog">
+      <input ref="signInputRef" class="profile-avatar-input" type="file" accept="image/*" @change="handleSignFileChange" />
+      <button class="sign-uploader" type="button" @click="chooseSignFile">
+        <img v-if="signPreviewUrl" :src="signPreviewUrl" alt="签名预览" />
+        <template v-else>
+          <el-icon><Upload /></el-icon>
+          <strong>选择签名图片</strong>
+          <span>支持图片格式，用于签署当前协议</span>
+        </template>
+      </button>
+    </section>
+    <template #footer>
+      <el-button @click="signDialogVisible = false">取消</el-button>
+      <el-button class="warm-btn" :icon="Check" :disabled="!signFile" :loading="signing" @click="submitSignAgreement">提交签名</el-button>
+    </template>
+  </el-dialog>
+
+  <el-dialog v-model="rejectDialogVisible" title="拒绝原因" width="460px">
+    <el-input v-model="rejectReason" type="textarea" :rows="4" placeholder="请输入拒绝原因" />
+    <template #footer>
+      <el-button @click="rejectDialogVisible = false">取消</el-button>
+      <el-button class="warm-btn" :loading="confirming" @click="submitRejectAgreement">确认拒绝</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { ArrowLeft, PictureFilled } from '@element-plus/icons-vue'
-import { getBreadingApplication, getAdoptApplication, getAgreements } from '../api/services'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Delete, Edit, PictureFilled, Upload } from '@element-plus/icons-vue'
+import { confirmAgreementSign, deleteAgreementFile, getAdoptApplication, getAgreements, getBreadingApplication, reorderAgreementFiles, signAgreement, updateAgreement, uploadAgreement } from '../api/services'
+import { useUserStore } from '../stores/user'
+import { ROLE, hasRole } from '../utils/roles'
 import ProtocolMediaViewer from './ProtocolMediaViewer.vue'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
 const loading = ref(false)
 const agreementLoading = ref(false)
@@ -142,10 +211,28 @@ const application = ref(null)
 const agreements = ref([])
 const paperViewerVisible = ref(false)
 const paperViewerIndex = ref(0)
+const isEditing = ref(false)
+const agreementEditContent = ref('')
+const agreementSaving = ref(false)
+const agreementUploading = ref(false)
+const agreementFileInputRef = ref(null)
+const signDialogVisible = ref(false)
+const signFile = ref(null)
+const signPreviewUrl = ref('')
+const signInputRef = ref(null)
+const signing = ref(false)
+const rejectDialogVisible = ref(false)
+const rejectReason = ref('')
+const confirming = ref(false)
 
 const applicationId = computed(() => String(route.params.id || ''))
+const loginUserId = computed(() => String(userStore.profile?.id || ''))
+const loginRole = computed(() => Number(userStore.profile?.role || 0))
 const isBreadingType = computed(() => route.path.includes('/breading/'))
 const isReject = computed(() => application.value?.status === 'REJECT')
+const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole(loginRole.value, ROLE.ADMIN))
+const isApplicant = computed(() => loginUserId.value && String(application.value?.applicantId) === loginUserId.value)
+const isReviewer = computed(() => loginUserId.value && String(application.value?.reviewerId) === loginUserId.value)
 
 const currentAgreement = computed(() => {
   if (!agreements.value.length) return null
@@ -160,6 +247,8 @@ const paperFiles = computed(() => {
   return files.slice().sort((a, b) => Number(a?.page || 0) - Number(b?.page || 0))
 })
 
+const agreementEditFiles = ref([])
+
 const currentAgreementType = computed(() => {
   const explicit = String(currentAgreement.value?.type || '')
   if (explicit === 'ELECTRONIC' || explicit === 'PAPER') return explicit
@@ -173,6 +262,18 @@ const hasAgreement = computed(() => {
   const statuses = ['AGREEMENT_DRAFT', 'AGREEMENT_PENDING_CONFIRM', 'AGREEMENT_SIGNED']
   return statuses.includes(application.value?.status) && Boolean(currentAgreement.value)
 })
+
+const canEdit = computed(() =>
+  application.value?.status === 'AGREEMENT_DRAFT' && (isApplicant.value || isReviewer.value)
+)
+
+const canSign = computed(() =>
+  application.value?.status === 'AGREEMENT_DRAFT' && isApplicant.value && Boolean(currentAgreement.value?.id) && !currentAgreement.value?.signTime
+)
+
+const canConfirm = computed(() =>
+  application.value?.status === 'AGREEMENT_PENDING_CONFIRM' && isWorker.value && isReviewer.value && Boolean(currentAgreement.value?.id)
+)
 
 const paperViewerItems = computed(() => paperFiles.value.map((file, index) => ({
   id: file.id,
@@ -238,6 +339,163 @@ function openPaperPreview(index) {
   paperViewerVisible.value = true
 }
 
+function startEditing() {
+  agreementEditContent.value = currentAgreement.value?.content || ''
+  agreementEditFiles.value = paperFiles.value.map((f) => ({ ...f }))
+  isEditing.value = true
+}
+
+function cancelEditing() {
+  isEditing.value = false
+  agreementEditContent.value = ''
+  agreementEditFiles.value = []
+}
+
+async function saveAgreement() {
+  if (!currentAgreement.value?.id) return
+  agreementSaving.value = true
+  try {
+    if (currentAgreementType.value === 'ELECTRONIC') {
+      await updateAgreement(currentAgreement.value.id, { content: agreementEditContent.value })
+    } else {
+      const fileOrder = agreementEditFiles.value.map((f) => f.id)
+      if (fileOrder.length) {
+        await reorderAgreementFiles(currentAgreement.value.id, fileOrder)
+      }
+    }
+    ElMessage.success('协议已保存')
+    isEditing.value = false
+    await loadAgreementsData()
+  } catch (error) {
+    ElMessage.warning(error?.message || '保存协议失败')
+  } finally {
+    agreementSaving.value = false
+  }
+}
+
+function chooseAgreementFile() {
+  agreementFileInputRef.value?.click()
+}
+
+async function uploadAgreementPaperFile(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    ElMessage.warning('请选择图片格式的扫描件')
+    return
+  }
+  agreementUploading.value = true
+  try {
+    await uploadAgreement(currentAgreement.value.id, { file, page: agreementEditFiles.value.length + 1 })
+    ElMessage.success('扫描件已上传')
+    await loadAgreementsData()
+    agreementEditFiles.value = paperFiles.value.map((f) => ({ ...f }))
+  } catch (error) {
+    ElMessage.warning(error?.message || '上传扫描件失败')
+  } finally {
+    agreementUploading.value = false
+  }
+}
+
+function agreementMoveFile(index, direction) {
+  const files = [...agreementEditFiles.value]
+  const target = index + direction
+  if (target < 0 || target >= files.length) return
+  ;[files[index], files[target]] = [files[target], files[index]]
+  agreementEditFiles.value = files
+}
+
+async function agreementRemoveFile(file) {
+  try {
+    await ElMessageBox.confirm('确认删除该扫描件吗？', '删除扫描件', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    await deleteAgreementFile(currentAgreement.value.id, file.id)
+    ElMessage.success('扫描件已删除')
+    await loadAgreementsData()
+    agreementEditFiles.value = paperFiles.value.map((f) => ({ ...f }))
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.warning(error?.message || '删除扫描件失败')
+    }
+  }
+}
+
+function chooseSignFile() {
+  signInputRef.value?.click()
+}
+
+function clearSignFile() {
+  if (signPreviewUrl.value) {
+    URL.revokeObjectURL(signPreviewUrl.value)
+  }
+  signPreviewUrl.value = ''
+  signFile.value = null
+  if (signInputRef.value) signInputRef.value.value = ''
+}
+
+function handleSignFileChange(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    ElMessage.warning('请选择图片格式的签名文件')
+    return
+  }
+  clearSignFile()
+  signFile.value = file
+  signPreviewUrl.value = URL.createObjectURL(file)
+}
+
+async function submitSignAgreement() {
+  if (!currentAgreement.value?.id || !signFile.value || signing.value) return
+  signing.value = true
+  try {
+    await signAgreement(currentAgreement.value.id, signFile.value)
+    ElMessage.success('签名已上传，等待工作人员确认')
+    signDialogVisible.value = false
+    clearSignFile()
+    await loadPage()
+  } catch (error) {
+    ElMessage.warning(error?.message || '签署协议失败')
+  } finally {
+    signing.value = false
+  }
+}
+
+async function submitConfirmAgreement() {
+  if (!currentAgreement.value?.id || confirming.value) return
+  confirming.value = true
+  try {
+    await confirmAgreementSign(currentAgreement.value.id, { agree: true })
+    ElMessage.success('协议已确认签署')
+    await loadPage()
+  } catch (error) {
+    ElMessage.warning(error?.message || '确认签署失败')
+  } finally {
+    confirming.value = false
+  }
+}
+
+async function submitRejectAgreement() {
+  if (!currentAgreement.value?.id || !rejectReason.value.trim() || confirming.value) return
+  confirming.value = true
+  try {
+    await confirmAgreementSign(currentAgreement.value.id, { agree: false, reason: rejectReason.value.trim() })
+    ElMessage.success('协议已拒绝')
+    rejectDialogVisible.value = false
+    rejectReason.value = ''
+    await loadPage()
+  } catch (error) {
+    ElMessage.warning(error?.message || '拒绝协议失败')
+  } finally {
+    confirming.value = false
+  }
+}
+
 async function loadApplication() {
   if (!applicationId.value) return
   loading.value = true
@@ -277,6 +535,7 @@ async function loadAgreementsData() {
 
 async function loadPage() {
   await Promise.all([loadApplication(), loadAgreementsData()])
+  isEditing.value = false
 }
 
 watch(() => route.params.id, loadPage, { immediate: true })
@@ -467,6 +726,117 @@ watch(() => route.params.id, loadPage, { immediate: true })
   font-weight: 800;
   line-height: 1.2;
   box-shadow: 0 8px 18px rgba(46, 24, 12, 0.18);
+}
+
+.agreement-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.agreement-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.agreement-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agreement-file-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 253, 249, 0.96);
+  padding: 10px 14px;
+}
+
+.agreement-file-card a {
+  flex: none;
+}
+
+.agreement-file-card img {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+  background: rgba(255, 248, 240, 0.92);
+}
+
+.agreement-file-card-body {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.agreement-file-card-body strong {
+  font-size: 13px;
+  color: #5d3927;
+  white-space: nowrap;
+}
+
+.agreement-file-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.sign-dialog {
+  display: grid;
+  gap: 14px;
+}
+
+.sign-uploader {
+  width: 100%;
+  min-height: 220px;
+  border: 1px dashed rgba(231, 122, 59, 0.58);
+  border-radius: 16px;
+  background: rgba(255, 248, 240, 0.88);
+  color: #6c4834;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.sign-uploader:hover {
+  border-color: rgba(231, 122, 59, 0.9);
+  background: rgba(255, 244, 232, 0.98);
+}
+
+.sign-uploader img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.sign-uploader :deep(.el-icon) {
+  color: var(--primary-strong);
+  font-size: 30px;
+}
+
+.sign-uploader strong {
+  font-size: 18px;
+}
+
+.sign-uploader span {
+  color: var(--muted);
+  font-size: 14px;
 }
 
 @media (max-width: 1024px) {
