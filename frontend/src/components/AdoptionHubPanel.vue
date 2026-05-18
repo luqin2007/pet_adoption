@@ -1204,8 +1204,13 @@ watch(activeTabName, (tab) => {
 })
 
 onMounted(() => {
-  loadAdoptRows()
-  loadedTabs.adopt = true
+  const tab = route.query.tab
+  if (tab && ['adopt', 'breading', 'follow', 'agreement'].includes(tab)) {
+    activeTabName.value = tab
+  }
+  const loaders = { adopt: loadAdoptRows, breading: loadBreadingRows, follow: loadFollowRows, agreement: loadAgreementRows }
+  loaders[activeTabName.value]?.()
+  loadedTabs[activeTabName.value] = true
 })
 </script>
 

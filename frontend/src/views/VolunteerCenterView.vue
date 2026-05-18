@@ -115,7 +115,6 @@ onMounted(() => {
         </div>
         <div class="directory-hero-side">
           <span class="directory-hero-count">{{ filteredRecruitments.length }} 个当前开放招募</span>
-          <el-button class="warm-btn directory-hero-action" :icon="Suitcase" @click="router.push('/tasks/new')">申请救助</el-button>
         </div>
       </section>
 

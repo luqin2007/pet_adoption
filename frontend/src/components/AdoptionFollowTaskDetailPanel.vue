@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>回访任务详情</strong>
-        <span>{{ application?.petName || '查看回访任务与回访记录' }}</span>
       </div>
     </template>
 
@@ -230,7 +229,7 @@ function formatDate(value) {
 }
 
 function goBack() {
-  router.push({ name: 'console-adoption-follow-tasks' })
+  router.push({ name: 'console-adoption', query: { tab: 'follow' } })
 }
 
 function goPetProfile() {

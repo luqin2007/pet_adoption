@@ -38,7 +38,7 @@ const route = useRoute()
 const props = defineProps({
   section: {
     type: String,
-    default: 'applications',
+    default: 'profiles',
   },
   hideTabs: {
     type: Boolean,
@@ -210,15 +210,18 @@ const activityVolunteerId = computed(() => String(route.query.volunteer || ''))
 const activityShiftId = computed(() => String(route.query.shift || ''))
 
 const sections = computed(() => {
+  if (!isVolunteer.value) {
+    return props.allowedSections
+      ? [{ label: '招募申请', value: 'applications' }].filter((item) => props.allowedSections.includes(item.value))
+      : [{ label: '招募申请', value: 'applications' }]
+  }
   const items = [{ label: '招募申请', value: 'applications' }]
   if (isWorker.value) {
     items.unshift({ label: '招募计划', value: 'recruitments' })
     items.push({ label: '志愿者档案', value: 'profiles' })
   }
-  if (isWorker.value || isVolunteer.value) {
-    items.push({ label: '志愿者激励', value: 'rewards' })
-    items.push({ label: '志愿活动', value: 'activities' })
-  }
+  items.push({ label: '志愿者激励', value: 'rewards' })
+  items.push({ label: '志愿活动', value: 'activities' })
   if (props.allowedSections) {
     return items.filter((item) => props.allowedSections.includes(item.value))
   }
@@ -1554,6 +1557,9 @@ onMounted(async () => {
       </el-tabs>
 
       <section v-if="activeSection === 'recruitments'" class="pet-admin-section">
+        <div v-if="isWorker" class="section-header-actions">
+          <el-button class="warm-btn" :icon="Plus" @click="openRecruitmentDialog()">新增招募计划</el-button>
+        </div>
         <el-table :data="filteredRecruitments" v-loading="recruitmentLoading" class="user-admin-table">
           <el-table-column min-width="220" show-overflow-tooltip>
             <template #header>
@@ -1735,6 +1741,9 @@ onMounted(async () => {
       </section>
 
       <section v-else-if="activeSection === 'rewards'" class="pet-admin-section">
+        <div class="section-header-actions">
+          <el-button class="warm-btn" :icon="Plus" @click="openRewardDialog()">新增激励</el-button>
+        </div>
         <el-table :data="filteredRewards" v-loading="rewardLoading" class="user-admin-table">
           <el-table-column min-width="160">
             <template #header>
@@ -1791,6 +1800,10 @@ onMounted(async () => {
       </section>
 
       <section v-else-if="activeSection === 'activities'" class="volunteer-activity-stack">
+        <div class="section-header-actions">
+          <el-button v-if="isWorker" class="warm-btn" :icon="Plus" @click="openShiftDialog()">安排排班</el-button>
+          <el-button v-else class="warm-btn" :icon="Plus" @click="openRecordDialog()">写服务报告</el-button>
+        </div>
         <div class="volunteer-activity-block">
           <div class="volunteer-block-head">
             <strong>志愿活动排班</strong>
@@ -2239,3 +2252,11 @@ onMounted(async () => {
     </template>
   </el-dialog>
 </template>
+
+<style scoped>
+.section-header-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+</style>

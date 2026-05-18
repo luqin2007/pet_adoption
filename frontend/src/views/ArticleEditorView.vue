@@ -58,7 +58,7 @@ async function loadArticle() {
     form.content = detail?.content || ''
   } catch (error) {
     ElMessage.warning(error?.message || '加载文章失败')
-    router.replace('/console?tab=article-mine')
+    router.replace('/console/articles')
   } finally {
     loading.value = false
   }
@@ -77,16 +77,21 @@ async function saveArticle(publish = false) {
         content: form.content.trim(),
       })
       ElMessage.success('文章已更新')
+      router.push('/console/articles')
     } else {
-      await createArticle({
+      const result = await createArticle({
         type: isWorker.value ? form.type : 'STORY',
         title: form.title.trim(),
         content: form.content.trim(),
         publish,
       })
       ElMessage.success(publish ? '文章已发布' : '草稿已保存')
+      if (publish) {
+        router.push(`/articles/${result.id}`)
+      } else {
+        router.push('/console/articles')
+      }
     }
-    router.push('/console?tab=article-mine')
   } catch (error) {
     if (error) {
       ElMessage.warning(error?.message || '保存文章失败')
@@ -97,7 +102,7 @@ async function saveArticle(publish = false) {
 }
 
 function goBack() {
-  router.push('/console?tab=article-mine')
+  router.push('/console/articles')
 }
 
 onMounted(() => {

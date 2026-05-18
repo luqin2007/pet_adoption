@@ -324,7 +324,7 @@ function formatDate(value) {
 }
 
 function goBack() {
-  router.push({ name: 'console-adoption' })
+  router.push({ name: 'console-adoption', query: { tab: isBreadingType.value ? 'breading' : 'adopt' } })
 }
 
 function goPetProfile() {

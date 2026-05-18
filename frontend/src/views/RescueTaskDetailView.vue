@@ -107,7 +107,7 @@ onMounted(() => {
         </div>
       </section>
 
-      <section v-if="task" class="action-form-panel">
+      <section v-if="task" class="action-form-panel" style="padding: 0 20px 20px;">
         <div class="pet-profile-panel-head">
           <h2>现场图片</h2>
         </div>
