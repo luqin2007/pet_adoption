@@ -393,6 +393,13 @@ export function getVaccineOptions() {
   })
 }
 
+export function createVaccineItem(payload) {
+  return request('/medical/vaccine/item', {
+    method: 'POST',
+    body: payload,
+  })
+}
+
 export function getAllVaccines() {
   return request('/medical/vaccine', {
     method: 'GET',
@@ -415,6 +422,13 @@ export function addVaccine(petId, payload) {
 export function getDewormerOptions() {
   return request('/medical/deworm/options', {
     method: 'GET',
+  })
+}
+
+export function createDewormerItem(payload) {
+  return request('/medical/dewormer/item', {
+    method: 'POST',
+    body: payload,
   })
 }
 

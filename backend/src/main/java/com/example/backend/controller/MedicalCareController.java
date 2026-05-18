@@ -230,6 +230,12 @@ public class MedicalCareController {
         return Result.success(response);
     }
 
+    @PostMapping("/vaccine/item")
+    public Result<VaccineOptionResponse> addVaccineItem(@Valid @RequestBody VaccineItemAddRequest request) {
+        VaccineOptionResponse response = medicalService.addVaccineItem(request);
+        return Result.success(response);
+    }
+
     @GetMapping("/vaccine")
     public Result<List<VaccineResponse>> getAllVaccines() {
         List<VaccineResponse> response = medicalService.getAllVaccines();
@@ -258,6 +264,12 @@ public class MedicalCareController {
     @GetMapping("/deworm/options")
     public Result<List<DewormerOptionResponse>> getDewormerOptions() {
         List<DewormerOptionResponse> response = medicalService.getDewormerOptions();
+        return Result.success(response);
+    }
+
+    @PostMapping("/dewormer/item")
+    public Result<DewormerOptionResponse> addDewormerItem(@Valid @RequestBody DewormerItemAddRequest request) {
+        DewormerOptionResponse response = medicalService.addDewormerItem(request);
         return Result.success(response);
     }
 
