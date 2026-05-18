@@ -59,7 +59,6 @@ import BreadingApplicationDetailPanel from '../components/BreadingApplicationDet
 import AgreementDraftPanel from '../components/AgreementDraftPanel.vue'
 import ItemDonationPanel from '../components/ItemDonationPanel.vue'
 import ItemStockPanel from '../components/ItemStockPanel.vue'
-import ItemStockRecordPanel from '../components/ItemStockRecordPanel.vue'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
 import VolunteerApplicationDetailPanel from '../components/VolunteerApplicationDetailPanel.vue'
 import VolunteerShiftDetailPanel from '../components/VolunteerShiftDetailPanel.vue'
