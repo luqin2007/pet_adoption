@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Check, MoreFilled, Plus, RefreshRight, Search } from '@element-plus/icons-vue'
+import { Check, Plus, RefreshRight } from '@element-plus/icons-vue'
 import {
   createRecruitment,
   createVolunteerReward,
@@ -25,8 +25,10 @@ import {
   updateVolunteerShiftStatus,
 } from '../api/volunteer'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
+import { useTableFilters } from '../composables/useTableFilters'
 import { useUserStore } from '../stores/user'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 import AuditRecordList from './AuditRecordList.vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -71,10 +73,6 @@ const profileActionCollapsed = ref(false)
 const rewardActionCollapsed = ref(false)
 const shiftActionCollapsed = ref(false)
 const recordActionCollapsed = ref(false)
-const showConditionPanel = ref(false)
-const globalSearch = reactive({
-  keyword: '',
-})
 
 const activeSection = ref(props.section)
 
@@ -113,6 +111,62 @@ const shiftTotal = ref(0)
 const recordRows = ref([])
 const recordTotal = ref(0)
 const volunteerOptions = ref([])
+
+const { filters: recruitmentFilters, isActive: isRecruitmentFilterActive, applyFilter: applyRecruitmentFilter } = useTableFilters({
+  title:    { type: 'text' },
+  location: { type: 'text' },
+  time:     { type: 'time' },
+  status:   { type: 'enum' },
+  applied:  { type: 'text' },
+})
+
+const { filters: applicationFilters, isActive: isApplicationFilterActive, applyFilter: applyApplicationFilter } = useTableFilters({
+  plan:      { type: 'text' },
+  applicant: { type: 'text' },
+  region:    { type: 'text' },
+  status:    { type: 'enum' },
+  review:    { type: 'text' },
+})
+
+const { filters: profileFilters, isActive: isProfileFilterActive, applyFilter: applyProfileFilter } = useTableFilters({
+  name:     { type: 'text' },
+  username: { type: 'text' },
+  region:   { type: 'text' },
+  skills:   { type: 'text' },
+  status:   { type: 'enum' },
+})
+
+const { filters: rewardFilters, isActive: isRewardFilterActive, applyFilter: applyRewardFilter } = useTableFilters({
+  volunteer: { type: 'text' },
+  period:    { type: 'time' },
+  type:      { type: 'enum' },
+  content:   { type: 'text' },
+  status:    { type: 'enum' },
+})
+
+const { filters: shiftFilters, isActive: isShiftFilterActive, applyFilter: applyShiftFilter } = useTableFilters({
+  title:    { type: 'text' },
+  volunteer: { type: 'text' },
+  taskType: { type: 'enum' },
+  time:     { type: 'time' },
+  status:   { type: 'enum' },
+  location: { type: 'text' },
+})
+
+const { filters: recordFilters, isActive: isRecordFilterActive, applyFilter: applyRecordFilter } = useTableFilters({
+  title:    { type: 'text' },
+  volunteer: { type: 'text' },
+  summary:  { type: 'text' },
+  status:   { type: 'enum' },
+  review:   { type: 'text' },
+})
+
+const filteredRecruitments = computed(() => applyRecruitmentFilter(recruitmentRows.value || []))
+const filteredApplications = computed(() => applyApplicationFilter(applicationRows.value || []))
+const filteredProfiles = computed(() => applyProfileFilter(profileRows.value || []))
+const filteredRewards = computed(() => applyRewardFilter(rewardRows.value || []))
+const filteredShifts = computed(() => applyShiftFilter(shiftRows.value || []))
+const filteredRecords = computed(() => applyRecordFilter(recordRows.value || []))
 
 const recruitmentDialogVisible = ref(false)
 const recruitmentStatusDialogVisible = ref(false)
@@ -1484,17 +1538,10 @@ onMounted(async () => {
           <el-button-group class="console-btn-group">
             <el-button class="warm-btn" :icon="Plus" @click="router.push('/volunteers')" />
             <el-button class="warm-btn" :icon="RefreshRight" :loading="currentSectionLoading" @click="searchCurrentSection" />
-            <el-button class="warm-btn" :icon="MoreFilled" :class="{ 'is-active': showConditionPanel }" @click="showConditionPanel = !showConditionPanel" />
           </el-button-group>
         </div>
       </div>
     </template>
-
-    <div v-if="showConditionPanel" class="console-search-panel">
-      <div class="pet-filter-row pet-filter-row-primary">
-        <el-input v-model="globalSearch.keyword" class="filter-field-lg" placeholder="搜索姓名/标题/活动…" clearable @keyup.enter="searchCurrentSection" />
-      </div>
-    </div>
 
     <div class="volunteer-admin-shell">
       <el-tabs v-if="!props.hideTabs" v-model="activeSection" class="volunteer-tabs">
@@ -1507,55 +1554,39 @@ onMounted(async () => {
       </el-tabs>
 
       <section v-if="activeSection === 'recruitments'" class="pet-admin-section">
-        <section class="filter-panel pet-directory-filter-panel">
-          <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-            <el-input v-model="recruitmentSearch.title" class="filter-field-md" clearable placeholder="招募标题" />
-            <div class="pet-cascader-group pet-cascader-group-2 filter-field-md">
-              <el-select v-model="recruitmentSearch.province" clearable filterable placeholder="省份" @change="handleRecruitmentSearchProvinceChange">
-                <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-              <el-select v-model="recruitmentSearch.city" clearable filterable placeholder="城市" :disabled="!recruitmentSearch.province">
-                <el-option v-for="item in recruitmentCityOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </div>
-            <el-select v-model="recruitmentSearch.status" class="filter-field-sm" clearable placeholder="状态">
-              <el-option v-for="item in recruitmentStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </div>
-          <div class="pet-filter-row pet-filter-row-secondary volunteer-filter-row-secondary">
-            <el-date-picker
-              v-model="recruitmentSearch.timeRange"
-              type="daterange"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-              class="filter-field-lg"
-            />
-            <div class="pet-filter-action">
-              <el-button class="soft-btn" :icon="Plus" @click="openRecruitmentDialog()">新增招募</el-button>
-              <el-button class="warm-btn" :icon="Search" :loading="recruitmentLoading" @click="searchRecruitments">搜索</el-button>
-            </div>
-          </div>
-        </section>
-
-        <el-table :data="recruitmentRows" v-loading="recruitmentLoading" class="user-admin-table">
-          <el-table-column label="招募标题" min-width="220" show-overflow-tooltip>
+        <el-table :data="filteredRecruitments" v-loading="recruitmentLoading" class="user-admin-table">
+          <el-table-column min-width="220" show-overflow-tooltip>
+            <template #header>
+              <TableFilterHeader label="招募标题" :filter="recruitmentFilters.title" type="text" :active="isRecruitmentFilterActive('title')" />
+            </template>
             <template #default="{ row }">
               <button class="table-primary-link" type="button" @click="goRecruitmentDetail(row.id)">{{ row.title || '未命名招募' }}</button>
             </template>
           </el-table-column>
-          <el-table-column label="地点" min-width="220">
+          <el-table-column min-width="220">
+            <template #header>
+              <TableFilterHeader label="地点" :filter="recruitmentFilters.location" type="text" :active="isRecruitmentFilterActive('location')" />
+            </template>
             <template #default="{ row }">{{ locationText(row) }}</template>
           </el-table-column>
-          <el-table-column label="时间" min-width="180">
+          <el-table-column min-width="180">
+            <template #header>
+              <TableFilterHeader label="时间" :filter="recruitmentFilters.time" type="time" :active="isRecruitmentFilterActive('time')" />
+            </template>
             <template #default="{ row }">{{ formatDate(row.startTime) }} - {{ formatDate(row.endTime) }}</template>
           </el-table-column>
-          <el-table-column label="状态" width="100">
+          <el-table-column width="100">
+            <template #header>
+              <TableFilterHeader label="状态" :filter="recruitmentFilters.status" type="enum" :options="recruitmentStatusOptions" :active="isRecruitmentFilterActive('status')" />
+            </template>
             <template #default="{ row }">
               <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ recruitmentStatusText(row.status) }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="报名" width="100">
+          <el-table-column width="100">
+            <template #header>
+              <TableFilterHeader label="报名" :filter="recruitmentFilters.applied" type="text" :active="isRecruitmentFilterActive('applied')" />
+            </template>
             <template #default="{ row }">{{ row.appliedCount || 0 }}/{{ row.headcount || 0 }}</template>
           </el-table-column>
           <el-table-column width="40" class-name="action-col">
@@ -1580,32 +1611,19 @@ onMounted(async () => {
       </section>
 
       <section v-else-if="activeSection === 'applications'" class="pet-admin-section">
-        <section class="filter-panel pet-directory-filter-panel">
-          <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-            <el-select v-model="applicationSearch.status" class="filter-field-sm" clearable placeholder="申请状态">
-              <el-option v-for="item in applicationStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-            <div class="pet-cascader-group pet-cascader-group-2 filter-field-md">
-              <el-select v-model="applicationSearch.province" clearable filterable placeholder="省份" @change="handleApplicationProvinceChange">
-                <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-              <el-select v-model="applicationSearch.city" clearable filterable placeholder="城市" :disabled="!applicationSearch.province">
-                <el-option v-for="item in applicationCityOptions" :key="item" :label="item" :value="item" />
-              </el-select>
-            </div>
-            <div class="pet-filter-action volunteer-inline-actions">
-              <el-button class="warm-btn" :icon="Search" :loading="applicationLoading" @click="searchApplications">搜索</el-button>
-            </div>
-          </div>
-        </section>
-
-        <el-table :data="applicationRows" v-loading="applicationLoading" class="user-admin-table">
-          <el-table-column label="招募计划" min-width="220" show-overflow-tooltip>
+        <el-table :data="filteredApplications" v-loading="applicationLoading" class="user-admin-table">
+          <el-table-column min-width="220" show-overflow-tooltip>
+            <template #header>
+              <TableFilterHeader label="招募计划" :filter="applicationFilters.plan" type="text" :active="isApplicationFilterActive('plan')" />
+            </template>
             <template #default="{ row }">
               <button class="table-primary-link" type="button" @click="goApplicationDetail(row)">{{ row.recruitmentTitle || '未命名招募' }}</button>
             </template>
           </el-table-column>
-          <el-table-column label="申请人" min-width="160">
+          <el-table-column min-width="160">
+            <template #header>
+              <TableFilterHeader label="申请人" :filter="applicationFilters.applicant" type="text" :active="isApplicationFilterActive('applicant')" />
+            </template>
             <template #default="{ row }">
               <div class="volunteer-person-cell">
                 <strong>{{ row.realName || row.username || '未命名' }}</strong>
@@ -1613,15 +1631,24 @@ onMounted(async () => {
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="地区" min-width="180">
+          <el-table-column min-width="180">
+            <template #header>
+              <TableFilterHeader label="地区" :filter="applicationFilters.region" type="text" :active="isApplicationFilterActive('region')" />
+            </template>
             <template #default="{ row }">{{ locationText(row) }}</template>
           </el-table-column>
-          <el-table-column label="状态" width="110">
+          <el-table-column width="110">
+            <template #header>
+              <TableFilterHeader label="状态" :filter="applicationFilters.status" type="enum" :options="applicationStatusOptions" :active="isApplicationFilterActive('status')" />
+            </template>
             <template #default="{ row }">
               <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ applicationStatusText(row.status) }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="审核意见" min-width="200" show-overflow-tooltip>
+          <el-table-column min-width="200" show-overflow-tooltip>
+            <template #header>
+              <TableFilterHeader label="审核意见" :filter="applicationFilters.review" type="text" :active="isApplicationFilterActive('review')" />
+            </template>
             <template #default="{ row }">{{ row.reviewComment || '暂无' }}</template>
           </el-table-column>
           <el-table-column width="40" class-name="action-col">
@@ -1646,20 +1673,11 @@ onMounted(async () => {
       </section>
 
       <section v-else-if="activeSection === 'profiles'" class="pet-admin-section">
-        <section class="filter-panel pet-directory-filter-panel">
-          <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-            <el-input v-model="profileSearch.keyword" class="filter-field-lg" clearable placeholder="姓名、用户名、电话或技能" />
-            <el-select v-model="profileSearch.status" class="filter-field-sm" clearable placeholder="档案状态">
-              <el-option v-for="item in profileStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-            <div class="pet-filter-action volunteer-inline-actions">
-              <el-button class="warm-btn" :icon="Search" :loading="profileLoading" @click="searchProfiles">搜索</el-button>
-            </div>
-          </div>
-        </section>
-
-        <el-table :data="profileRows" v-loading="profileLoading" class="user-admin-table">
-          <el-table-column label="志愿者" min-width="180">
+        <el-table :data="filteredProfiles" v-loading="profileLoading" class="user-admin-table">
+          <el-table-column min-width="180">
+            <template #header>
+              <TableFilterHeader label="志愿者" :filter="profileFilters.name" type="text" :active="isProfileFilterActive('name')" />
+            </template>
             <template #default="{ row }">
               <div class="volunteer-person-cell">
                 <strong>{{ row.realName || row.username || '未命名' }}</strong>
@@ -1667,16 +1685,28 @@ onMounted(async () => {
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="用户名" min-width="130">
+          <el-table-column min-width="130">
+            <template #header>
+              <TableFilterHeader label="用户名" :filter="profileFilters.username" type="text" :active="isProfileFilterActive('username')" />
+            </template>
             <template #default="{ row }">{{ row.username || '' }}</template>
           </el-table-column>
-          <el-table-column label="地区" min-width="180">
+          <el-table-column min-width="180">
+            <template #header>
+              <TableFilterHeader label="地区" :filter="profileFilters.region" type="text" :active="isProfileFilterActive('region')" />
+            </template>
             <template #default="{ row }">{{ locationText(row) }}</template>
           </el-table-column>
-          <el-table-column label="技能" min-width="220" show-overflow-tooltip>
+          <el-table-column min-width="220" show-overflow-tooltip>
+            <template #header>
+              <TableFilterHeader label="技能" :filter="profileFilters.skills" type="text" :active="isProfileFilterActive('skills')" />
+            </template>
             <template #default="{ row }">{{ row.skills || '' }}</template>
           </el-table-column>
-          <el-table-column label="状态" width="100">
+          <el-table-column width="100">
+            <template #header>
+              <TableFilterHeader label="状态" :filter="profileFilters.status" type="enum" :options="profileStatusOptions" :active="isProfileFilterActive('status')" />
+            </template>
             <template #default="{ row }">
               <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ profileStatusText(row.status) }}</el-tag>
             </template>
@@ -1705,45 +1735,37 @@ onMounted(async () => {
       </section>
 
       <section v-else-if="activeSection === 'rewards'" class="pet-admin-section">
-        <section class="filter-panel pet-directory-filter-panel">
-          <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-            <el-select v-model="rewardSearch.status" class="filter-field-sm" clearable placeholder="激励状态">
-              <el-option v-for="item in rewardStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-            <el-select v-model="rewardSearch.type" class="filter-field-sm" clearable placeholder="激励类型">
-              <el-option v-for="item in rewardTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-            <el-date-picker
-              v-model="rewardSearch.timeRange"
-              type="daterange"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              start-placeholder="开始时间"
-              end-placeholder="结束时间"
-              class="filter-field-lg"
-            />
-            <div class="pet-filter-action">
-              <el-button v-if="isWorker" class="soft-btn" :icon="Plus" @click="openRewardDialog">新增激励</el-button>
-              <el-button class="warm-btn" :icon="Search" :loading="rewardLoading" @click="searchRewards">搜索</el-button>
-            </div>
-          </div>
-        </section>
-
-        <el-table :data="rewardRows" v-loading="rewardLoading" class="user-admin-table">
-          <el-table-column label="志愿者" min-width="160">
+        <el-table :data="filteredRewards" v-loading="rewardLoading" class="user-admin-table">
+          <el-table-column min-width="160">
+            <template #header>
+              <TableFilterHeader label="志愿者" :filter="rewardFilters.volunteer" type="text" :active="isRewardFilterActive('volunteer')" />
+            </template>
             <template #default="{ row }">
               <button class="table-primary-link" type="button" @click="goVolunteerActivity(row)">{{ row.volunteerName || '未命名' }}</button>
             </template>
           </el-table-column>
-          <el-table-column label="统计周期" min-width="200">
+          <el-table-column min-width="200">
+            <template #header>
+              <TableFilterHeader label="统计周期" :filter="rewardFilters.period" type="time" :active="isRewardFilterActive('period')" />
+            </template>
             <template #default="{ row }">{{ formatDate(row.periodStart) }} - {{ formatDate(row.periodEnd) }}</template>
           </el-table-column>
-          <el-table-column label="类型" width="120">
+          <el-table-column width="120">
+            <template #header>
+              <TableFilterHeader label="类型" :filter="rewardFilters.type" type="enum" :options="rewardTypeOptions" :active="isRewardFilterActive('type')" />
+            </template>
             <template #default="{ row }">{{ rewardTypeText(row.rewardType) }}</template>
           </el-table-column>
-          <el-table-column label="内容" min-width="160" show-overflow-tooltip>
+          <el-table-column min-width="160" show-overflow-tooltip>
+            <template #header>
+              <TableFilterHeader label="内容" :filter="rewardFilters.content" type="text" :active="isRewardFilterActive('content')" />
+            </template>
             <template #default="{ row }">{{ row.rewardValue || row.rewardReason || '待补充' }}</template>
           </el-table-column>
-          <el-table-column label="状态" width="100">
+          <el-table-column width="100">
+            <template #header>
+              <TableFilterHeader label="状态" :filter="rewardFilters.status" type="enum" :options="rewardStatusOptions" :active="isRewardFilterActive('status')" />
+            </template>
             <template #default="{ row }">
               <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ rewardStatusText(row.status) }}</el-tag>
             </template>
@@ -1774,50 +1796,45 @@ onMounted(async () => {
             <strong>志愿活动排班</strong>
             <span>排班安排与确认</span>
           </div>
-          <section class="filter-panel pet-directory-filter-panel">
-            <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-              <el-select v-model="shiftSearch.status" class="filter-field-sm" clearable placeholder="排班状态">
-                <el-option v-for="item in shiftStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-              <el-select v-model="shiftSearch.taskType" class="filter-field-sm" clearable placeholder="任务类型">
-                <el-option v-for="item in taskTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-              <el-date-picker
-                v-model="shiftSearch.timeRange"
-                type="daterange"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                start-placeholder="开始时间"
-                end-placeholder="结束时间"
-                class="filter-field-lg"
-              />
-              <div class="pet-filter-action">
-                <el-button v-if="isWorker" class="soft-btn" :icon="Plus" @click="openShiftDialog()">安排排班</el-button>
-                <el-button class="warm-btn" :icon="Search" :loading="shiftLoading" @click="searchShifts">搜索</el-button>
-              </div>
-            </div>
-          </section>
-
-          <el-table :data="shiftRows" v-loading="shiftLoading" class="user-admin-table">
-            <el-table-column label="活动标题" min-width="140" show-overflow-tooltip>
+          <el-table :data="filteredShifts" v-loading="shiftLoading" class="user-admin-table">
+            <el-table-column min-width="140" show-overflow-tooltip>
+              <template #header>
+                <TableFilterHeader label="活动标题" :filter="shiftFilters.title" type="text" :active="isShiftFilterActive('title')" />
+              </template>
               <template #default="{ row }">
                 <button class="table-primary-link" type="button" @click="goShiftPage(row)">{{ row.title || '未命名活动' }}</button>
               </template>
             </el-table-column>
-            <el-table-column label="志愿者" min-width="100">
+            <el-table-column min-width="100">
+              <template #header>
+                <TableFilterHeader label="志愿者" :filter="shiftFilters.volunteer" type="text" :active="isShiftFilterActive('volunteer')" />
+              </template>
               <template #default="{ row }">{{ row.volunteerName || '待指派' }}</template>
             </el-table-column>
-            <el-table-column label="类型" width="100">
+            <el-table-column width="100">
+              <template #header>
+                <TableFilterHeader label="类型" :filter="shiftFilters.taskType" type="enum" :options="taskTypeOptions" :active="isShiftFilterActive('taskType')" />
+              </template>
               <template #default="{ row }">{{ taskTypeText(row.taskType) }}</template>
             </el-table-column>
-            <el-table-column label="时间" min-width="150">
+            <el-table-column min-width="150">
+              <template #header>
+                <TableFilterHeader label="时间" :filter="shiftFilters.time" type="time" :active="isShiftFilterActive('time')" />
+              </template>
               <template #default="{ row }">{{ formatDate(row.startTime, true) }} - {{ formatDate(row.endTime, true) }}</template>
             </el-table-column>
-            <el-table-column label="状态" width="100">
+            <el-table-column width="100">
+              <template #header>
+                <TableFilterHeader label="状态" :filter="shiftFilters.status" type="enum" :options="shiftStatusOptions" :active="isShiftFilterActive('status')" />
+              </template>
               <template #default="{ row }">
                 <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ shiftStatusText(row.status) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="地点" min-width="160" show-overflow-tooltip>
+            <el-table-column min-width="160" show-overflow-tooltip>
+              <template #header>
+                <TableFilterHeader label="地点" :filter="shiftFilters.location" type="text" :active="isShiftFilterActive('location')" />
+              </template>
               <template #default="{ row }">{{ locationText(row) }}</template>
             </el-table-column>
               <el-table-column width="40" class-name="action-col">
@@ -1849,41 +1866,38 @@ onMounted(async () => {
             <span>活动报告与审核</span>
           </div>
 
-          <section class="filter-panel pet-directory-filter-panel">
-            <div class="pet-filter-row pet-filter-row-primary volunteer-filter-row-primary">
-              <el-select v-model="recordSearch.status" class="filter-field-sm" clearable placeholder="报告状态">
-                <el-option v-for="item in recordStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
-              <el-date-picker
-                v-model="recordSearch.timeRange"
-                type="daterange"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                start-placeholder="开始时间"
-                end-placeholder="结束时间"
-                class="filter-field-lg"
-              />
-              <div class="pet-filter-action">
-                <el-button class="warm-btn" :icon="Search" :loading="recordLoading" @click="searchRecords">搜索</el-button>
-              </div>
-            </div>
-          </section>
-
-          <el-table :data="recordRows" v-loading="recordLoading" class="user-admin-table">
-            <el-table-column label="排班标题" min-width="140" show-overflow-tooltip>
+          <el-table :data="filteredRecords" v-loading="recordLoading" class="user-admin-table">
+            <el-table-column min-width="140" show-overflow-tooltip>
+              <template #header>
+                <TableFilterHeader label="排班标题" :filter="recordFilters.title" type="text" :active="isRecordFilterActive('title')" />
+              </template>
               <template #default="{ row }">
                 <button class="table-primary-link" type="button" @click="goRecordShift(row)">{{ row.shiftTitle || '未命名排班' }}</button>
               </template>
             </el-table-column>
-            <el-table-column label="志愿者" min-width="100">
+            <el-table-column min-width="100">
+              <template #header>
+                <TableFilterHeader label="志愿者" :filter="recordFilters.volunteer" type="text" :active="isRecordFilterActive('volunteer')" />
+              </template>
               <template #default="{ row }">{{ row.volunteerName || '未命名' }}</template>
             </el-table-column>
-            <el-table-column prop="summary" label="服务摘要" min-width="160" show-overflow-tooltip />
-            <el-table-column label="状态" width="100">
+            <el-table-column prop="summary" min-width="160" show-overflow-tooltip>
+              <template #header>
+                <TableFilterHeader label="服务摘要" :filter="recordFilters.summary" type="text" :active="isRecordFilterActive('summary')" />
+              </template>
+            </el-table-column>
+            <el-table-column width="100">
+              <template #header>
+                <TableFilterHeader label="状态" :filter="recordFilters.status" type="enum" :options="recordStatusOptions" :active="isRecordFilterActive('status')" />
+              </template>
               <template #default="{ row }">
                 <el-tag :type="tagTypeByStatus(row.status)" effect="plain">{{ recordStatusText(row.status) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="审核意见" min-width="140" show-overflow-tooltip>
+            <el-table-column min-width="140" show-overflow-tooltip>
+              <template #header>
+                <TableFilterHeader label="审核意见" :filter="recordFilters.review" type="text" :active="isRecordFilterActive('review')" />
+              </template>
               <template #default="{ row }">{{ row.reviewComment || '暂无' }}</template>
             </el-table-column>
               <el-table-column width="40" class-name="action-col">
