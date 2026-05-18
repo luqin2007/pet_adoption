@@ -21,7 +21,6 @@ const activeMenu = computed(() => {
   if (route.path.startsWith('/console/adoption')) return '/console/adoption'
   if (route.path.startsWith('/console/items/donations')) return '/console/items/donations'
   if (route.path.startsWith('/console/items/stocks')) return '/console/items/stocks'
-  if (route.path.startsWith('/console/items/records')) return '/console/items/records'
   if (route.path.startsWith('/console/medical/first/')) return '/console/medical/first'
   if (route.path.startsWith('/console/medical/records/')) return '/console/medical/records'
   if (route.path.startsWith('/console/medical/detail-list')) return '/console/medical/detail-list'
@@ -183,7 +182,6 @@ watch(
             </template>
             <el-menu-item index="/console/items/donations">捐赠</el-menu-item>
             <el-menu-item v-if="canManageUsers" index="/console/items/stocks">物资余量</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/items/records">库存管理</el-menu-item>
           </el-sub-menu>
           <el-sub-menu v-if="canViewMedical" index="/console/medical">
             <template #title>
