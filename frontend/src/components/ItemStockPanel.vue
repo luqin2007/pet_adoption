@@ -250,7 +250,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import {
@@ -274,6 +274,7 @@ import TableFilterHeader from './TableFilterHeader.vue'
 import { useTableFilters } from '../composables/useTableFilters'
 
 const route = useRoute()
+const router = useRouter()
 const activeTab = ref('stocks')
 const stockLoading = ref(false)
 const itemLoading = ref(false)
@@ -646,6 +647,7 @@ async function prefillDonationStock() {
 }
 
 watch(activeTab, (value) => {
+  router.replace({ query: { ...route.query, tab: value === 'stocks' ? undefined : value } })
   if (value === 'catalog') {
     loadCategories()
     handleRefreshItems()
@@ -655,6 +657,10 @@ watch(activeTab, (value) => {
 })
 
 onMounted(async () => {
+  const tab = route.query.tab
+  if (tab && ['stocks', 'catalog', 'subscribes'].includes(tab)) {
+    activeTab.value = tab
+  }
   await loadCategories()
   await handleRefreshItems()
   await loadStocks()

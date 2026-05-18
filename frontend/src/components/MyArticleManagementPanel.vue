@@ -4,13 +4,14 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { deleteArticle, getArticles, getFavoriteArticles, unfavoriteArticle, updateArticleStatus } from '../api/article'
 import { useUserStore } from '../stores/user'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import { useTableFilters } from '../composables/useTableFilters'
 import TableFilterHeader from './TableFilterHeader.vue'
 import { ROLE, hasRole } from '../utils/roles'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const activeTab = ref('favorites')
@@ -223,11 +224,18 @@ async function removeFavorite(row) {
 }
 
 watch(activeTab, () => {
+  router.replace({ query: { ...route.query, tab: activeTab.value === 'favorites' ? undefined : activeTab.value } })
   page.page = 1
   loadArticles()
 })
 
 onMounted(() => {
+  const tab = route.query.tab
+  if (tab === 'manage') {
+    activeTab.value = 'manage'
+  } else if (tab === 'favorites') {
+    activeTab.value = 'favorites'
+  }
   loadArticles()
 })
 </script>

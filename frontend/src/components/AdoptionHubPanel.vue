@@ -1203,6 +1203,10 @@ watch(activeTabName, (tab) => {
   loaders[tab]?.()
 })
 
+watch(activeTabName, (tab) => {
+  router.replace({ query: { ...route.query, tab: tab === 'adopt' ? undefined : tab } })
+})
+
 onMounted(() => {
   const tab = route.query.tab
   if (tab && ['adopt', 'breading', 'follow', 'agreement'].includes(tab)) {

@@ -1552,6 +1552,14 @@ watch(
 )
 
 watch(
+  activeSection,
+  (value) => {
+    const sectionsList = sections.value.map((s) => s.value)
+    router.replace({ query: { ...route.query, tab: sectionsList[0] === value ? undefined : value } })
+  },
+)
+
+watch(
   () => [route.query.volunteer, route.query.shift],
   () => {
     if (route.query.volunteer || route.query.shift) {
@@ -1566,7 +1574,10 @@ watch(
 )
 
 onMounted(async () => {
-  if (route.query.volunteer || route.query.shift) {
+  const tab = route.query.tab
+  if (tab && sections.value.some((s) => s.value === tab)) {
+    activeSection.value = tab
+  } else if (route.query.volunteer || route.query.shift) {
     activeSection.value = 'activities'
   }
   await ensureInformationCatalog()
