@@ -18,7 +18,6 @@ import {
   hasMoreRoles,
   MANAGED_ROLE_VALUES,
 } from '../utils/roles'
-import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
@@ -223,8 +222,6 @@ function changeUserPage(page) {
   userPage.page = page
   loadUsers()
 }
-
-useConsoleGuards()
 
 onMounted(() => {
   loadUsers()

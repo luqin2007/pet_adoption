@@ -2379,10 +2379,6 @@ main {
   font-size: 12px;
 }
 
-.notice-filter-panel .el-select {
-  min-width: 160px;
-}
-
 .notice-title-cell {
   display: inline-flex;
   align-items: center;
@@ -2403,13 +2399,6 @@ main {
   color: var(--muted);
 }
 
-.article-metrics-cell {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  color: var(--muted);
-  font-size: 13px;
-}
 
 .article-editor-form {
   display: grid;

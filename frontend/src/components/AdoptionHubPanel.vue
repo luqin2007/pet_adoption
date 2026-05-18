@@ -517,6 +517,7 @@ import {
 import { getVolunteerProfiles } from '../api/volunteer'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
+import { adoptionStatusText, adoptionStatusTagType, formatDate } from '../utils/format'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
 import { useTableFilters } from '../composables/useTableFilters'
@@ -533,34 +534,6 @@ const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole
 const isAdmin = computed(() => hasRole(loginRole.value, ROLE.ADMIN))
 const isVolunteerRole = computed(() => hasRole(loginRole.value, ROLE.VOLUNTEER))
 const canManageUsers = computed(() => isAdmin.value || hasRole(loginRole.value, ROLE.WORKER))
-
-const statusOptions = [
-  { label: '已提交', value: 'CREATE' },
-  { label: '审核通过', value: 'PASS' },
-  { label: '审核拒绝', value: 'REJECT' },
-  { label: '协议草拟中', value: 'AGREEMENT_DRAFT' },
-  { label: '待确认', value: 'AGREEMENT_PENDING_CONFIRM' },
-  { label: '协议已签署', value: 'AGREEMENT_SIGNED' },
-  { label: '回访中', value: 'TRACKING' },
-  { label: '流程完成', value: 'FINISH' },
-  { label: '已取消', value: 'CANCEL' },
-]
-const statusMap = Object.fromEntries(statusOptions.map((item) => [item.value, item.label]))
-
-function formatDate(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleString('zh-CN')
-}
-
-function statusTagType(value) {
-  if (value === 'PASS' || value === 'AGREEMENT_SIGNED' || value === 'FINISH') return 'success'
-  if (value === 'REJECT' || value === 'CANCEL') return 'info'
-  if (value === 'AGREEMENT_DRAFT' || value === 'TRACKING') return 'primary'
-  if (value === 'AGREEMENT_PENDING_CONFIRM') return 'warning'
-  return 'warning'
-}
 
 const activeTabLoading = computed(() => {
   const map = { adopt: adoptLoading, breading: breadingLoading, follow: followLoading, agreement: agreementLoading }
@@ -609,8 +582,8 @@ const adoptStatusFilterOptions = [
 
 const adoptFilteredRows = computed(() => adoptApplyFilter(adoptRows.value || []))
 
-function adoptStatusText(value) { return statusMap[value] || value || '' }
-function adoptStatusTagType(value) { return statusTagType(value) }
+function adoptStatusText(value) { return adoptionStatusText(value) }
+function adoptStatusTagType(value) { return adoptionStatusTagType(value) }
 
 function adoptBuildQuery() {
   return {
@@ -762,8 +735,8 @@ const breadingStatusFilterOptions = [
 ]
 
 const breadingFilteredRows = computed(() => breadingApplyFilter(breadingRows.value || []))
-function breadingStatusText(value) { return statusMap[value] || value || '' }
-function breadingStatusTagType(value) { return statusTagType(value) }
+function breadingStatusText(value) { return adoptionStatusText(value) }
+function breadingStatusTagType(value) { return adoptionStatusTagType(value) }
 
 function breadingBuildQuery() {
   return {

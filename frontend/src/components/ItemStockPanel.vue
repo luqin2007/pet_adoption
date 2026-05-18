@@ -340,6 +340,7 @@ import {
   updateCategory,
   updateItem,
 } from '../api/services'
+import { formatDate } from '../utils/format'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
 import { useTableFilters } from '../composables/useTableFilters'
@@ -462,13 +463,6 @@ function resetStockForm() {
 
 function assignStockForm(values = {}) {
   Object.assign(stockForm, resetStockForm(), values)
-}
-
-function formatDate(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleString('zh-CN')
 }
 
 function sourceText(value) {

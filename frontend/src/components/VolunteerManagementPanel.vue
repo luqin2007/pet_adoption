@@ -31,6 +31,7 @@ import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
 import AuditRecordList from './AuditRecordList.vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ROLE, hasRole } from '../utils/roles'
 
 const router = useRouter()
 const route = useRoute()
@@ -51,14 +52,6 @@ const props = defineProps({
 })
 
 const userStore = useUserStore()
-
-const ROLE = {
-  VOLUNTEER: 1,
-  WORKER: 2,
-  DONOR: 4,
-  DOCTOR: 8,
-  ADMIN: 16,
-}
 
 const recruitmentLoading = ref(false)
 const applicationLoading = ref(false)
@@ -212,10 +205,6 @@ const savingShift = ref(false)
 const savingShiftStatus = ref(false)
 const savingRecord = ref(false)
 const savingRecordReview = ref(false)
-
-function hasRole(role, bit) {
-  return (Number(role || 0) & bit) === bit
-}
 
 const loginRole = computed(() => Number(userStore.profile.role || 0))
 const isAdmin = computed(() => hasRole(loginRole.value, ROLE.ADMIN))

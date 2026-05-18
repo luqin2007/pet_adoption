@@ -158,6 +158,7 @@ import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getDonation, getDonations, updateDonationStatus } from '../api/services'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
+import { formatDate } from '../utils/format'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
 import { useTableFilters } from '../composables/useTableFilters'
@@ -207,13 +208,6 @@ const transitions = {
   RECEIVED: ['STOCKED', 'REFUSED'],
   REFUSED: ['BACKING'],
   BACKING: ['CLOSED'],
-}
-
-function formatDate(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleString('zh-CN')
 }
 
 function deliveryText(value) {
