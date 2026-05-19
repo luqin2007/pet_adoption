@@ -170,6 +170,11 @@ const editForm = reactive({
   id: '', type: '', status: '', startTime: '', endTime: '', price: '', cost: '', ownerPhone: '',
 })
 
+const editRules = {
+  type: [{ required: true, message: '请选择就诊类型', trigger: 'change' }],
+  status: [{ required: true, message: '请选择就诊状态', trigger: 'change' }],
+}
+
 const recordStatusOptions = [
   { label: '待接诊', value: 'WAITING' },
   { label: '接诊中', value: 'PROCESSING' },
@@ -245,8 +250,72 @@ function goCreateRecord() {
   createDialogVisible.value = true
 }
 
+function openEditDialog(row) {
+  Object.assign(editForm, {
+    id: row.id, type: row.type || '', status: row.status || '',
+    startTime: row.startTime || '', endTime: row.endTime || '',
+    price: row.price || '', cost: row.cost || '', ownerPhone: row.ownerPhone || '',
+  })
+  editDialogVisible.value = true
+}
+
 function onPetSelected(pet) {
   router.push(`/console/medical/records?pet=${pet.id}&name=${encodeURIComponent(pet.name || '')}`)
+}
+
+async function loadRecords() {
+  loadingRecords.value = true
+  try {
+    const params = {}
+    if (petId.value) params.pet = petId.value
+    const result = await getMedicalRecords(params)
+    recordRows.value = Array.isArray(result?.records) ? result.records : []
+    page.page = 1
+  } catch (error) {
+    ElMessage.warning(error?.message || '加载就诊记录失败')
+  } finally {
+    loadingRecords.value = false
+  }
+}
+
+function onRecordCreated() {
+  createDialogVisible.value = false
+  loadRecords()
+}
+
+async function cancelRecord(row) {
+  try {
+    await ElMessageBox.confirm('确认取消该就诊记录？', '取消就诊', { type: 'warning', confirmButtonText: '确认', cancelButtonText: '取消' })
+    await updateMedicalRecord(row.id, { status: 'CANCELED' })
+    ElMessage.success('就诊记录已取消')
+    await loadRecords()
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') ElMessage.warning(error?.message || '取消就诊记录失败')
+  }
+}
+
+async function saveEdit() {
+  if (!editFormRef.value || saving.value) return
+  saving.value = true
+  try {
+    await editFormRef.value.validate()
+    await updateMedicalRecord(editForm.id, {
+      type: editForm.type,
+      status: editForm.status,
+      startTime: editForm.startTime || null,
+      endTime: editForm.endTime || null,
+      price: editForm.price || null,
+      cost: editForm.cost || null,
+      ownerPhone: editForm.ownerPhone || null,
+    })
+    ElMessage.success('就诊记录已更新')
+    editDialogVisible.value = false
+    await loadRecords()
+  } catch (error) {
+    ElMessage.warning(error?.message || '更新就诊记录失败')
+  } finally {
+    saving.value = false
+  }
 }
 
 onMounted(() => { loadRecords() })
