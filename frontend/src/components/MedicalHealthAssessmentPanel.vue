@@ -66,7 +66,7 @@
   <PetPickerDialog v-model:visible="petPickerVisible" @select="onPetSelected" />
 
   <el-dialog v-model="createDialogVisible" :title="'健康评估：' + targetPetName" width="520px">
-    <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-position="top" class="pet-admin-form">
+    <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-position="top" class="pet-admin-form assessment-create-form">
       <el-row :gutter="16">
         <el-col :span="12">
           <el-form-item label="年龄（月）" prop="age">
@@ -200,6 +200,10 @@ onMounted(() => {
 <style scoped>
 .medical-health-cols-search {
   grid-template-columns: 1fr auto;
+}
+
+.assessment-create-form {
+  grid-template-columns: 1fr !important;
 }
 
 .medical-health-subtext {
