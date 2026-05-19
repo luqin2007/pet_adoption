@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>康复计划详情</strong>
-        <span>{{ plan?.title || '查看计划内容与执行记录' }}</span>
       </div>
     </template>
 

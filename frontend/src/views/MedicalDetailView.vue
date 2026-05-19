@@ -494,6 +494,7 @@ onMounted(() => { loadDetail() })
   border-radius: 16px;
   background: rgba(255, 248, 240, 0.72);
   padding: 14px;
+  margin-top: 14px;
 }
 
 .medical-edit-section-wide {

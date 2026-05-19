@@ -83,13 +83,6 @@
                   <el-button v-if="canManageUsers" text type="primary" @click="openPetDialog(row)">审核</el-button>
                   <el-button v-if="canEditPet(row)" text type="warning" @click="openPetEditor(row)">编辑</el-button>
                   <el-button v-if="canEditPet(row)" text type="danger" @click="removePet(row)">删除</el-button>
-                  <template v-if="showMedicalActions(row)">
-                    <el-button v-if="canManageMedical && !petFirstRegIds.has(row.id)" text type="success" @click="goCreateFirstReg(row)">初诊</el-button>
-                    <el-button v-if="petFirstRegIds.has(row.id) && canManageMedical" text type="primary" @click="goMedicalRecord(row)">就诊</el-button>
-                    <el-button v-if="canManageMedical" text type="success" @click="openVaccineDialog(row)">疫苗</el-button>
-                    <el-button v-if="canManageMedical" text type="primary" @click="openDewormDialog(row)">驱虫</el-button>
-                    <el-button v-if="isDoctor" text type="warning" @click="openAssessmentDialog(row)">评估</el-button>
-                  </template>
                 </div>
               </div>
             </template>
@@ -172,88 +165,6 @@
       <AuditRecordList :records="petAuditRecords" :loading="petAuditLoading" type="pet" :target-id="petEditForm.id" :status-labels="petStatusLabelMap" />
     </el-dialog>
 
-    <el-dialog v-model="vaccineDialogVisible" title="添加疫苗记录" width="560px" :close-on-click-modal="false">
-      <el-form label-position="top" class="pet-review-form">
-        <el-form-item label="宠物">
-          <el-input :model-value="medicalTargetPet?.name || '未命名'" disabled />
-        </el-form-item>
-        <el-form-item label="疫苗">
-          <el-select v-model="vaccineForm.vaccineId" filterable class="full-width-control" placeholder="选择疫苗">
-            <el-option
-              v-for="item in vaccineOptions"
-              :key="item.id"
-              :label="`${item.name || '疫苗'} · ${item.illness || '适应症待补充'}`"
-              :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="宠物月龄">
-          <el-input-number v-model="vaccineForm.petAge" :min="0" class="full-width-control" />
-        </el-form-item>
-        <el-form-item label="针次">
-          <el-input-number v-model="vaccineForm.times" :min="1" class="full-width-control" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="vaccineDialogVisible = false">取消</el-button>
-        <el-button class="warm-btn" :loading="savingMedicalRecord" @click="submitVaccine">保存</el-button>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="dewormDialogVisible" title="添加驱虫记录" width="560px" :close-on-click-modal="false">
-      <el-form label-position="top" class="pet-review-form">
-        <el-form-item label="宠物">
-          <el-input :model-value="medicalTargetPet?.name || '未命名'" disabled />
-        </el-form-item>
-        <el-form-item label="驱虫药">
-          <el-select v-model="dewormForm.dewormerId" filterable class="full-width-control" placeholder="选择驱虫药">
-            <el-option
-              v-for="item in dewormerOptions"
-              :key="item.id"
-              :label="`${item.name || '驱虫药'} · ${dewormerTypeText(item.type)}`"
-              :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="次数">
-          <el-input-number v-model="dewormForm.times" :min="1" class="full-width-control" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dewormDialogVisible = false">取消</el-button>
-        <el-button class="warm-btn" :loading="savingMedicalRecord" @click="submitDeworm">保存</el-button>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="assessmentDialogVisible" title="添加健康评估" width="680px" :close-on-click-modal="false">
-      <el-form label-position="top" class="pet-review-form pet-health-assessment-form">
-        <el-form-item label="宠物">
-          <el-input :model-value="medicalTargetPet?.name || '未命名'" disabled />
-        </el-form-item>
-        <el-form-item label="月龄">
-          <el-input-number v-model="assessmentForm.age" :min="0" class="full-width-control" />
-        </el-form-item>
-        <el-form-item label="体重（kg）">
-          <el-input-number v-model="assessmentForm.weight" :min="0" :precision="2" class="full-width-control" />
-        </el-form-item>
-        <el-form-item label="体况评分">
-          <el-slider v-model="assessmentForm.scoreBcs" :min="0" :max="100" show-input />
-        </el-form-item>
-        <el-form-item label="精神状态评分">
-          <el-slider v-model="assessmentForm.scoreMental" :min="0" :max="100" show-input />
-        </el-form-item>
-        <el-form-item label="食欲评分">
-          <el-slider v-model="assessmentForm.scoreAppetite" :min="0" :max="100" show-input />
-        </el-form-item>
-        <el-form-item label="评估摘要" class="pet-admin-span-2">
-          <el-input v-model="assessmentForm.summary" type="textarea" :rows="4" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="assessmentDialogVisible = false">取消</el-button>
-        <el-button class="warm-btn" :loading="savingMedicalRecord" @click="submitAssessment">保存</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -263,7 +174,6 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { MoreFilled, Plus, Upload, RefreshRight } from '@element-plus/icons-vue'
 import { createPet, deletePetById, getPets, updatePetStatus, uploadPetMedia, getPetStatusRecords } from '../api/pets'
-import { addDeworm, addHealthAssessment, addVaccine, getDewormerOptions, getFirstVisitRegistrations, getVaccineOptions } from '../api/services'
 import { resolveCatalogValue, splitCatalogValue, useInformationCatalog } from '../composables/useInformationCatalog'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useTableFilters } from '../composables/useTableFilters'
@@ -313,19 +223,11 @@ const uploadingPetMedia = ref(false)
 const petActionCollapsed = ref(false)
 const petCreateDialogVisible = ref(false)
 const petDialogVisible = ref(false)
-const vaccineDialogVisible = ref(false)
-const dewormDialogVisible = ref(false)
-const assessmentDialogVisible = ref(false)
 const petRows = ref([])
 const petTotal = ref(0)
 const petPage = reactive({ page: 1, size: 10 })
 const petAuditRecords = ref([])
 const petAuditLoading = ref(false)
-const petFirstRegIds = ref(new Set())
-const vaccineOptions = ref([])
-const dewormerOptions = ref([])
-const medicalTargetPet = ref(null)
-const savingMedicalRecord = ref(false)
 
 const { filters, isActive, applyFilter } = useTableFilters({
   name: { type: 'text' },
@@ -363,9 +265,6 @@ const petEditForm = reactive({
   id: '', name: '', age: 0, sex: '', type: '', typeInput: '', breed: '', breedInput: '',
   health: '', description: '', status: '', reason: '',
 })
-const vaccineForm = reactive({ vaccineId: '', petAge: 0, times: 1 })
-const dewormForm = reactive({ dewormerId: '', times: 1 })
-const assessmentForm = reactive({ age: 0, weight: 0, scoreBcs: 80, scoreMental: 80, scoreAppetite: 80, summary: '' })
 
 // Computed catalog options
 const petFormCityOptions = computed(() => getCityOptions(petForm.province))
@@ -374,7 +273,6 @@ const petFormBreedOptions = computed(() => getBreedOptions(resolveCatalogValue(p
 
 const filteredPets = computed(() => applyFilter(petRows.value || []))
 const currentUserId = computed(() => String(userStore.profile?.id || ''))
-const isDoctor = computed(() => hasRole(userStore.profile?.role, ROLE.DOCTOR))
 
 // --- Helpers ---
 function resolvePetType(form) { return resolveCatalogValue(form.type, form.typeInput) }
@@ -396,14 +294,6 @@ function isOwnPet(row) {
 
 function canEditPet(row) {
   return canManageUsers.value || (isOwnPet(row) && ['WAITING', 'AGAINST'].includes(String(row?.status || '')))
-}
-function showMedicalActions(row) {
-  return ['SHELTERED', 'HEALTH'].includes(row?.status)
-}
-
-function dewormerTypeText(value) {
-  const map = { INTERNAL: '体内驱虫', EXTERNAL: '体外驱虫', OTHER: '其他驱虫' }
-  return map[value] || value || ''
 }
 
 // --- Validation rules ---
@@ -456,31 +346,12 @@ async function loadPets() {
     })
     petRows.value = Array.isArray(result?.records) ? result.records : []
     petTotal.value = Number(result?.total || petRows.value.length)
-    loadPetFirstRegIds()
   } catch (error) { ElMessage.warning(error?.message || '加载宠物列表失败') }
   finally { loadingPets.value = false }
 }
 
-async function loadPetFirstRegIds() {
-  if (!canManageUsers.value && !canManageMedical.value) {
-    petFirstRegIds.value = new Set()
-    return
-  }
-  const ids = new Set()
-  const petIds = petRows.value.map((r) => r.id).filter(Boolean)
-  for (const petId of petIds) {
-    try {
-      const res = await getFirstVisitRegistrations({ pet: petId, page: 1, size: 1 })
-      if (res?.records?.length) ids.add(petId)
-    } catch { /* ignore */ }
-  }
-  petFirstRegIds.value = ids
-}
-
 function goPetProfile(row) { router.push(`/pets/${row.id}`) }
-function openPetEditor(row) { router.push(`/pets/${row.id}/edit`) }
-
-function openPetDialog(row) {
+function openPetEditor(row) {
   Object.assign(petEditForm, { id: String(row.id || ''), name: row.name || '', age: Number(row.age || 0), sex: row.sex || '', type: '', typeInput: '', breed: '', breedInput: '', health: row.health || '', description: row.description || '', status: row.status || 'WAITING', reason: '' })
   petDialogVisible.value = true
   loadPetAuditRecords(row.id)
@@ -545,98 +416,6 @@ async function uploadPetFiles(event) {
   finally { uploadingPetMedia.value = false }
 }
 
-function goCreateFirstReg(row) { router.push(`/medical/first-registration/new?petId=${row.id}`) }
-function goMedicalRecord(row) { router.push(`/console/medical/records?pet=${row.id}&name=${encodeURIComponent(row.name || '')}`) }
-
-async function ensureVaccineOptions() {
-  if (vaccineOptions.value.length) return
-  try { vaccineOptions.value = await getVaccineOptions() }
-  catch (error) { ElMessage.warning(error?.message || '加载疫苗选项失败') }
-}
-
-async function ensureDewormerOptions() {
-  if (dewormerOptions.value.length) return
-  try { dewormerOptions.value = await getDewormerOptions() }
-  catch (error) { ElMessage.warning(error?.message || '加载驱虫药选项失败') }
-}
-
-async function openVaccineDialog(row) {
-  medicalTargetPet.value = row
-  Object.assign(vaccineForm, { vaccineId: '', petAge: Number(row?.age || 0), times: 1 })
-  vaccineDialogVisible.value = true
-  await ensureVaccineOptions()
-}
-
-async function openDewormDialog(row) {
-  medicalTargetPet.value = row
-  Object.assign(dewormForm, { dewormerId: '', times: 1 })
-  dewormDialogVisible.value = true
-  await ensureDewormerOptions()
-}
-
-function openAssessmentDialog(row) {
-  medicalTargetPet.value = row
-  Object.assign(assessmentForm, {
-    age: Number(row?.age || 0),
-    weight: 0,
-    scoreBcs: 80,
-    scoreMental: 80,
-    scoreAppetite: 80,
-    summary: '',
-  })
-  assessmentDialogVisible.value = true
-}
-
-async function submitVaccine() {
-  if (!medicalTargetPet.value?.id || savingMedicalRecord.value) return
-  if (!vaccineForm.vaccineId) { ElMessage.warning('请选择疫苗'); return }
-  savingMedicalRecord.value = true
-  try {
-    await addVaccine(medicalTargetPet.value.id, {
-      vaccineId: vaccineForm.vaccineId,
-      petAge: Number(vaccineForm.petAge || 0),
-      times: Number(vaccineForm.times || 1),
-    })
-    ElMessage.success('疫苗记录已添加')
-    vaccineDialogVisible.value = false
-  } catch (error) { ElMessage.warning(error?.message || '添加疫苗记录失败') }
-  finally { savingMedicalRecord.value = false }
-}
-
-async function submitDeworm() {
-  if (!medicalTargetPet.value?.id || savingMedicalRecord.value) return
-  if (!dewormForm.dewormerId) { ElMessage.warning('请选择驱虫药'); return }
-  savingMedicalRecord.value = true
-  try {
-    await addDeworm(medicalTargetPet.value.id, {
-      dewormerId: dewormForm.dewormerId,
-      times: Number(dewormForm.times || 1),
-    })
-    ElMessage.success('驱虫记录已添加')
-    dewormDialogVisible.value = false
-  } catch (error) { ElMessage.warning(error?.message || '添加驱虫记录失败') }
-  finally { savingMedicalRecord.value = false }
-}
-
-async function submitAssessment() {
-  if (!medicalTargetPet.value?.id || savingMedicalRecord.value) return
-  if (!assessmentForm.summary.trim()) { ElMessage.warning('请填写评估摘要'); return }
-  savingMedicalRecord.value = true
-  try {
-    await addHealthAssessment(medicalTargetPet.value.id, {
-      age: Number(assessmentForm.age || 0),
-      weight: Number(assessmentForm.weight || 0),
-      scoreBcs: Number(assessmentForm.scoreBcs || 0),
-      scoreMental: Number(assessmentForm.scoreMental || 0),
-      scoreAppetite: Number(assessmentForm.scoreAppetite || 0),
-      summary: assessmentForm.summary.trim(),
-    })
-    ElMessage.success('健康评估已添加')
-    assessmentDialogVisible.value = false
-  } catch (error) { ElMessage.warning(error?.message || '添加健康评估失败') }
-  finally { savingMedicalRecord.value = false }
-}
-
 onMounted(async () => { await ensureInformationCatalog(); loadPets() })
 </script>
 
@@ -654,7 +433,4 @@ onMounted(async () => { await ensureInformationCatalog(); loadPets() })
   justify-content: flex-end;
 }
 
-.pet-health-assessment-form {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
 </style>

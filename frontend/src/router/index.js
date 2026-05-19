@@ -256,7 +256,7 @@ const router = createRouter({
         { path: 'adoption/agreements/new-paper', name: 'console-adoption-agreement-paper-create', component: AgreementDraftPanel, props: { type: 'PAPER' }, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-electronic', name: 'console-adoption-agreement-electronic-create', component: AgreementDraftPanel, props: { type: 'ELECTRONIC' }, meta: { guard: 'canManageUsers' } },
         { path: 'items/donations', name: 'console-items-donations', component: ItemDonationPanel },
-        { path: 'items/stocks', name: 'console-items-stocks', component: ItemStockPanel, meta: { guard: 'canManageUsers' } },
+        { path: 'items/stocks', name: 'console-items-stocks', component: ItemStockPanel, meta: { guard: 'canViewStocks' } },
         { path: 'items/records', redirect: { name: 'console-items-stocks', query: { tab: 'records' } } },
         { path: 'volunteer', name: 'console-volunteer', component: VolunteerManagementPanel, props: { allowedSections: ['activities', 'rewards', 'profiles'] } },
         { path: 'volunteer/recruitments', name: 'console-volunteer-recruitments', component: VolunteerManagementPanel, props: { allowedSections: ['applications', 'recruitments'] } },
@@ -308,6 +308,7 @@ router.beforeEach(async (to) => {
     const guard = to.meta.guard
     let allowed = false
     if (guard === 'canManageUsers') allowed = isAdmin || isWorker
+    else if (guard === 'canViewStocks') allowed = isAdmin || isWorker || isVolunteer || !!userStore.profile?.id
     else if (guard === 'canManageMedical') allowed = isAdmin || isWorker || isDoctor
     else if (guard === 'canManageAdoptFollow') allowed = isWorker
     else if (guard === 'canManageRehab') allowed = isDoctor || isVolunteer

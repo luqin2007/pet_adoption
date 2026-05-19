@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>添加回访任务</strong>
-        <span>{{ headerSubtitle }}</span>
       </div>
     </template>
 

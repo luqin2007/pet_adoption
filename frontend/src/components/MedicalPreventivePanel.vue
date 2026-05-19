@@ -5,6 +5,7 @@
         <strong>{{ isVaccineMode ? '疫苗接种' : '驱虫管理' }}</strong>
         <div class="profile-actions">
           <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="petPickerVisible = true"/>
             <el-button class="warm-btn" :icon="Sugar" @click="openAddDialog" />
             <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadAll" />
           </el-button-group>
@@ -138,16 +139,19 @@
       <el-button v-else :loading="submitting" class="warm-btn" @click="submitDrug">确认添加</el-button>
     </template>
   </el-dialog>
+
+  <PetPickerDialog v-model:visible="petPickerVisible" @select="onPetSelected" />
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Sugar, RefreshRight } from '@element-plus/icons-vue'
+import { Plus, Sugar, RefreshRight } from '@element-plus/icons-vue'
 import { createDewormerItem, createVaccineItem, getAllDeworms, getAllVaccines, getCategories, getDewormerOptions, getItems, getVaccineOptions } from '../api/services'
 import { useTableFilters } from '../composables/useTableFilters'
 import TableFilterHeader from './TableFilterHeader.vue'
+import PetPickerDialog from './PetPickerDialog.vue'
 
 const props = defineProps({
   type: {
@@ -239,6 +243,7 @@ const itemKeyword = ref('')
 const categoryLoading = ref(false)
 const itemLoading = ref(false)
 const submitting = ref(false)
+const petPickerVisible = ref(false)
 const drugForm = reactive({
   type: 'INTERNAL',
   illness: '',
@@ -336,6 +341,10 @@ async function submitDrug() {
   } finally {
     submitting.value = false
   }
+}
+
+function onPetSelected(pet) {
+  router.push(`/console/medical/records?pet=${pet.id}&name=${encodeURIComponent(pet.name || '')}`)
 }
 
 watch(() => props.type, () => {

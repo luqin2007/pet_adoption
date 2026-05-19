@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>领养申请详情</strong>
-        <span>{{ application?.petName || '查看申请信息、协议和回访记录' }}</span>
       </div>
     </template>
 

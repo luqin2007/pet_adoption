@@ -115,7 +115,6 @@ onMounted(() => {
     <template #header>
       <div class="profile-card-header">
         <strong>就诊记录详情</strong>
-        <span>{{ record?.petName || '就诊信息' }}</span>
       </div>
     </template>
 

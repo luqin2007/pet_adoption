@@ -5,7 +5,7 @@ import { ArrowLeft, Check, Delete, Plus, Upload } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { beginDonation, createDonation, deleteDonationFile, getCategories, uploadDonationFile } from '../api/services'
+import { beginDonation, createDonation, deleteDonationFile, getCategories, getItems, uploadDonationFile } from '../api/services'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const router = useRouter()
@@ -25,6 +25,8 @@ const form = reactive({
   description: '',
 })
 
+const itemsByCategory = ref({})
+
 const rules = {
   delivery: [{ required: true, message: '请选择交付方式', trigger: 'change' }],
 }
@@ -41,6 +43,7 @@ const requiresTracking = computed(() => form.delivery === 'EXPRESS')
 
 function createBlankItem() {
   return {
+    itemId: null,
     itemName: '',
     itemUnit: '件',
     categoryId: '',
@@ -61,6 +64,39 @@ async function loadCategories() {
   } catch {
     categories.value = []
   }
+}
+
+async function loadItemsByCategory(categoryId) {
+  if (!categoryId || itemsByCategory.value[categoryId]) return
+  try {
+    const result = await getItems({ size: 200, category: [String(categoryId)] })
+    itemsByCategory.value[categoryId] = Array.isArray(result?.records) ? result.records : []
+  } catch {
+    itemsByCategory.value[categoryId] = []
+  }
+}
+
+function onCategoryChange(item) {
+  item.itemId = null
+  item.itemName = ''
+  item.itemUnit = ''
+  loadItemsByCategory(item.categoryId)
+}
+
+function onItemNameChange(item, val) {
+  const list = itemsByCategory.value[item.categoryId] || []
+  const matched = list.find((i) => i.name === val)
+  if (matched) {
+    item.itemId = matched.id
+    item.itemUnit = matched.unit
+  } else {
+    item.itemId = null
+  }
+}
+
+function onItemNameClear(item) {
+  item.itemId = null
+  item.itemUnit = ''
 }
 
 async function ensureDonationUuid() {
@@ -115,10 +151,24 @@ function removeItem(index) {
 }
 
 function validateItems() {
-  const invalidIndex = form.items.findIndex((item) => !item.itemName.trim() || !item.itemUnit.trim() || !item.categoryId || !item.count || !item.expireTime)
-  if (invalidIndex >= 0) {
-    ElMessage.warning(`请补全第 ${invalidIndex + 1} 项物资信息`)
-    return false
+  for (let i = 0; i < form.items.length; i++) {
+    const item = form.items[i]
+    if (!item.categoryId) {
+      ElMessage.warning(`请选择第 ${i + 1} 项物资的分类`)
+      return false
+    }
+    if (!item.itemName.trim()) {
+      ElMessage.warning(`请输入第 ${i + 1} 项物资名称`)
+      return false
+    }
+    if (!item.itemId && !item.itemUnit.trim()) {
+      ElMessage.warning(`请输入第 ${i + 1} 项物资的单位`)
+      return false
+    }
+    if (!item.expireTime) {
+      ElMessage.warning(`请选择第 ${i + 1} 项物资的有效期`)
+      return false
+    }
   }
   return true
 }
@@ -153,16 +203,19 @@ async function submitForm() {
       address: form.address.trim(),
       trackingNumber: form.trackingNumber.trim(),
       description: form.description.trim(),
-      items: form.items.map((item) => ({
-        name: item.itemName.trim(),
-        itemId: null,
-        itemName: item.itemName.trim(),
-        itemUnit: item.itemUnit.trim(),
-        categoryId: item.categoryId,
-        description: item.description.trim() || form.description.trim(),
-        count: String(item.count),
-        expireTime: item.expireTime,
-      })),
+      items: form.items.map((item) => {
+        const base = {
+          name: item.itemName.trim(),
+          categoryId: item.categoryId,
+          description: item.description.trim() || form.description.trim(),
+          count: String(item.count),
+          expireTime: item.expireTime,
+        }
+        if (item.itemId) {
+          return { ...base, itemId: item.itemId }
+        }
+        return { ...base, itemId: null, itemName: item.itemName.trim(), itemUnit: item.itemUnit.trim() }
+      }),
     })
     ElMessage.success('物资捐赠已提交')
     router.push('/console/items/donations')
@@ -205,16 +258,19 @@ onMounted(() => {
                 <el-button text type="danger" :icon="Delete" @click="removeItem(index)">删除</el-button>
               </div>
               <div class="donation-item-grid">
-                <el-form-item label="物资名称">
-                  <el-input v-model="item.itemName" clearable />
-                </el-form-item>
-                <el-form-item label="单位">
-                  <el-input v-model="item.itemUnit" clearable />
-                </el-form-item>
                 <el-form-item label="物资分类">
-                  <el-select v-model="item.categoryId" placeholder="选择已有分类" filterable clearable>
+                  <el-select v-model="item.categoryId" placeholder="先选择分类" filterable clearable @change="onCategoryChange(item)">
                     <el-option v-for="category in categories" :key="category.id" :label="category.name" :value="String(category.id)" />
                   </el-select>
+                </el-form-item>
+                <el-form-item label="物资名称">
+                  <el-select v-model="item.itemName" placeholder="选择或输入物品" filterable allow-create default-first-option clearable :disabled="!item.categoryId" @change="(val) => onItemNameChange(item, val)" @clear="onItemNameClear(item)">
+                    <el-option v-for="option in (itemsByCategory[item.categoryId] || [])" :key="option.id" :label="option.name" :value="option.name" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="单位">
+                  <el-input v-model="item.itemUnit" :readonly="!!item.itemId" :class="{ 'is-readonly-unit': !!item.itemId }" clearable />
+                  <span v-if="item.itemId" class="donation-unit-hint">来自已有物品</span>
                 </el-form-item>
                 <el-form-item label="数量">
                   <el-input-number v-model="item.count" :min="1" :controls="false" />
@@ -306,5 +362,16 @@ onMounted(() => {
   .donation-item-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.donation-unit-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.is-readonly-unit :deep(.el-input__wrapper) {
+  background: rgba(179, 124, 82, 0.06);
 }
 </style>

@@ -73,7 +73,6 @@
           <span>当前状态</span>
           <strong>{{ statusText(detail.status) }}</strong>
         </div>
-        <el-button v-if="isWorker && detail.status === 'RECEIVED'" class="warm-btn" @click="goStockIn">入库登记</el-button>
       </div>
 
       <section class="item-detail-block">
@@ -101,6 +100,11 @@
           </el-table-column>
           <el-table-column label="说明" min-width="160" show-overflow-tooltip>
             <template #default="{ row }">{{ row.description || '' }}</template>
+          </el-table-column>
+          <el-table-column v-if="isWorker && detail.status === 'RECEIVED'" label="操作" width="90" fixed="right">
+            <template #default="{ row }">
+              <el-button class="warm-btn" size="small" @click="openStockInDialog(row)">入库</el-button>
+            </template>
           </el-table-column>
         </el-table>
       </section>
@@ -148,6 +152,29 @@
       <el-button class="warm-btn" :loading="acting" @click="submitStatus">保存</el-button>
     </template>
   </el-dialog>
+
+  <el-dialog v-model="stockInDialogVisible" title="入库登记" width="440px" :close-on-click-modal="false">
+    <section v-if="stockInItem">
+      <el-form label-position="top">
+        <el-form-item label="物资名称">
+          <el-input :model-value="stockInItem.itemName" disabled />
+        </el-form-item>
+        <el-form-item label="数量">
+          <el-input :model-value="`${stockInItem.count}${stockInItem.itemUnit || ''}`" disabled />
+        </el-form-item>
+        <el-form-item v-if="!stockInItem.itemId" label="物资类型">
+          <el-tag type="warning">该物资不在现有目录中，将自动新建物资类型</el-tag>
+        </el-form-item>
+        <el-form-item label="有效期">
+          <el-input :model-value="formatDate(stockInItem.expireTime)" disabled />
+        </el-form-item>
+      </el-form>
+    </section>
+    <template #footer>
+      <el-button @click="stockInDialogVisible = false">取消</el-button>
+      <el-button class="warm-btn" :loading="stockInLoading" @click="submitStockIn">确认入库</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -155,7 +182,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Plus, RefreshRight } from '@element-plus/icons-vue'
-import { getDonation, getDonations, updateDonationStatus } from '../api/services'
+import { getDonation, getDonations, updateDonationStatus, createStockRecord, createItem } from '../api/services'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 import { formatDate } from '../utils/format'
@@ -314,6 +341,45 @@ async function submitStatus() {
 function goStockIn() {
   if (!detail.value?.id) return
   router.push({ name: 'console-items-stocks', query: { donationId: String(detail.value.id) } })
+}
+
+const stockInLoading = ref(false)
+const stockInDialogVisible = ref(false)
+const stockInItem = ref(null)
+
+function openStockInDialog(item) {
+  stockInItem.value = item
+  stockInDialogVisible.value = true
+}
+
+async function submitStockIn() {
+  if (!stockInItem.value || stockInLoading.value) return
+  const item = stockInItem.value
+  stockInLoading.value = true
+  try {
+    let itemId = item.itemId
+    if (!itemId) {
+      const created = await createItem({ name: item.itemName, categoryId: item.categoryId, unit: item.itemUnit })
+      itemId = created.id
+    }
+    await createStockRecord({
+      itemId,
+      count: String(item.count),
+      action: 'IN',
+      sourceType: 'DONATION',
+      expireTime: item.expireTime,
+      purpose: `捐赠 #${detail.value?.id} 入库`,
+    })
+    ElMessage.success('入库成功')
+    stockInDialogVisible.value = false
+    if (detail.value?.id) {
+      detail.value = await getDonation(detail.value.id)
+    }
+  } catch (error) {
+    ElMessage.warning(error?.message || '入库失败')
+  } finally {
+    stockInLoading.value = false
+  }
 }
 
 onMounted(() => {

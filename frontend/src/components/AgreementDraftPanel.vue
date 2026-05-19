@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>{{ isPaper ? '创建纸质协议' : '起草电子协议' }}</strong>
-        <span>{{ draftSubtitle }}</span>
       </div>
     </template>
 

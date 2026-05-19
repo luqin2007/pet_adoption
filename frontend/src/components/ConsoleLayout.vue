@@ -12,7 +12,7 @@ import { medicalRecordOwnerExists } from '../api/services'
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
-const { loginRole, isLoginAdmin, canManageUsers, canManageMedical, canManageRehab, canManageArticles } = useConsoleGuards()
+const { loginRole, isLoginAdmin, canManageUsers, canViewStocks, canManageMedical, canManageRehab, canManageArticles } = useConsoleGuards()
 const hasOwnedMedicalRecords = ref(false)
 const { unreadCount: noticeUnreadCount, check: checkNoticeCount } = useNoticeSse()
 
@@ -181,7 +181,7 @@ watch(
               <span>物资管理</span>
             </template>
             <el-menu-item index="/console/items/donations">捐赠</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/items/stocks">物资管理</el-menu-item>
+            <el-menu-item v-if="canViewStocks" index="/console/items/stocks">物资管理</el-menu-item>
           </el-sub-menu>
           <el-sub-menu v-if="canViewMedical" index="/console/medical">
             <template #title>

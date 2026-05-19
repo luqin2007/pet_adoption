@@ -4,7 +4,10 @@
       <div class="profile-card-header">
         <strong>健康评估</strong>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadAssessments"/>
+          <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="petPickerVisible = true"/>
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadAssessments"/>
+          </el-button-group>
         </div>
       </div>
     </template>
@@ -59,24 +62,28 @@
       </div>
     </section>
   </el-card>
+
+  <PetPickerDialog v-model:visible="petPickerVisible" @select="onPetSelected" />
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { RefreshRight } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getHealthAssessments } from '../api/services'
 import { formatDate } from '../utils/format'
 import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
+import PetPickerDialog from './PetPickerDialog.vue'
 
 const router = useRouter()
 const loading = ref(false)
 const rows = ref([])
 const actionCollapsed = ref(false)
 const page = reactive({ page: 1, size: 10 })
+const petPickerVisible = ref(false)
 
 const { filters, isActive, applyFilter } = useTableFilters({
   petName: { type: 'text' },
@@ -106,6 +113,10 @@ async function loadAssessments() {
   } finally {
     loading.value = false
   }
+}
+
+function onPetSelected(pet) {
+  router.push(`/console/medical/records?pet=${pet.id}&name=${encodeURIComponent(pet.name || '')}`)
 }
 
 onMounted(() => {

@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>健康评估详情</strong>
-        <span>{{ assessment?.petName || '查看健康评分与摘要' }}</span>
       </div>
     </template>
 

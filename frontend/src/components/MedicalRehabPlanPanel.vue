@@ -5,7 +5,7 @@
         <strong>康复计划</strong>
         <div class="profile-actions">
           <el-button-group class="console-btn-group">
-            <el-button class="warm-btn" :icon="Plus" @click="goCreatePlan"/>
+            <el-button class="warm-btn" :icon="Plus" @click="petPickerVisible = true"/>
             <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadPlans"/>
           </el-button-group>
         </div>
@@ -59,6 +59,8 @@
       </div>
     </section>
   </el-card>
+
+  <PetPickerDialog v-model:visible="petPickerVisible" @select="onPetSelected" />
 </template>
 
 <script setup>
@@ -73,6 +75,7 @@ import { ROLE, hasRole } from '../utils/roles'
 import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
+import PetPickerDialog from './PetPickerDialog.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -80,6 +83,7 @@ const loading = ref(false)
 const rows = ref([])
 const actionCollapsed = ref(false)
 const page = reactive({ page: 1, size: 10 })
+const petPickerVisible = ref(false)
 
 const statusOptions = [
   { label: '进行中', value: 'ACTIVE' },
@@ -117,10 +121,6 @@ function goPet(row) {
   if (row?.petId) router.push(`/pets/${row.petId}`)
 }
 
-function goCreatePlan() {
-  router.push({ path: '/console/medical/rehab/new' })
-}
-
 function canUpdatePlan(row) {
   return hasRole(userStore.profile?.role, ROLE.DOCTOR) && String(row?.doctorId || '') === String(userStore.profile?.id || '')
 }
@@ -143,6 +143,17 @@ async function loadPlans() {
   } finally {
     loading.value = false
   }
+}
+
+function onPetSelected(pet) {
+  router.push({
+    path: '/console/medical/rehab/new',
+    query: {
+      pet: pet.id,
+      name: pet.name || '',
+      age: pet.age ?? 0,
+    },
+  })
 }
 
 onMounted(() => {

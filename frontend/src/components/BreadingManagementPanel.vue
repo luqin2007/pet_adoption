@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>寄养管理</strong>
-        <span>{{ isWorker ? '查看与审核全部寄养申请' : '查看我的寄养申请' }}</span>
         <div class="profile-actions">
           <el-button class="soft-btn" :icon="Plus" @click="goCreateBreading">申请寄养</el-button>
           <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>

@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>回访任务</strong>
-        <span>{{ subtitle }}</span>
         <div class="profile-actions">
           <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
         </div>

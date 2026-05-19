@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>领养管理</strong>
-        <span>{{ isWorker ? '查看与审核全部领养申请' : '查看我的领养申请' }}</span>
         <div class="profile-actions">
           <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
         </div>
@@ -186,7 +185,6 @@ function buildQuery() {
     order: 'desc',
     applicant: isWorker.value ? undefined : [loginUserId.value],
   }
-}
 }
 
 async function loadRows() {

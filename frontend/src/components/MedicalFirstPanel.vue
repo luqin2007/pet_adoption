@@ -4,7 +4,10 @@
       <div class="profile-card-header">
         <strong>初诊登记</strong>
         <div class="profile-actions">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingFirstReg" @click="loadFirstRegistrations" />
+          <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="petPickerVisible = true"/>
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingFirstReg" @click="loadFirstRegistrations" />
+          </el-button-group>
         </div>
       </div>
     </template>
@@ -69,13 +72,15 @@
     :pet-age="createDialogPetAge"
     @created="onRecordCreated"
   />
+
+  <PetPickerDialog v-model:visible="petPickerVisible" @select="onPetSelected" />
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { RefreshRight } from '@element-plus/icons-vue'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getFirstVisitRegistrations, getMedicalRecords, getMedicalDetails, getRehabPlans } from '../api/services'
 import { formatDate } from '../utils/format'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
@@ -84,6 +89,7 @@ import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
 import MedicalRecordCreateDialog from './MedicalRecordCreateDialog.vue'
+import PetPickerDialog from './PetPickerDialog.vue'
 
 const router = useRouter()
 const { canManageMedical, loginRole } = useConsoleGuards()
@@ -95,6 +101,7 @@ const createDialogVisible = ref(false)
 const createDialogPetId = ref('')
 const createDialogPetName = ref('')
 const createDialogPetAge = ref(null)
+const petPickerVisible = ref(false)
 
 const loadingFirstReg = ref(false)
 const firstRegRows = ref([])
@@ -232,6 +239,10 @@ async function goRehab(row) {
   } catch (error) {
     ElMessage.warning(error?.message || '查找康复计划失败')
   }
+}
+
+function onPetSelected(pet) {
+  router.push(`/medical/first-registration/new?petId=${pet.id}`)
 }
 
 onMounted(() => {
