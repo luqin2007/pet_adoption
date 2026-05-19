@@ -785,7 +785,6 @@ CREATE TABLE `order` (
   `parent_type` varchar(20) NOT NULL COMMENT '关联类型',
   `type` varchar(20) NOT NULL COMMENT '处方类型',
   `count` decimal(10,5) NOT NULL COMMENT '数量',
-  `unit` varchar(10) NOT NULL COMMENT '单位',
   `price` decimal(10,2) NOT NULL COMMENT '价格',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
