@@ -64,6 +64,44 @@
   </el-card>
 
   <PetPickerDialog v-model:visible="petPickerVisible" @select="onPetSelected" />
+
+  <el-dialog v-model="createDialogVisible" title="新建健康评估" width="520px">
+    <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-position="top" class="pet-admin-form">
+      <el-form-item label="宠物">
+        <el-input :model-value="targetPetName" disabled />
+      </el-form-item>
+      <el-form-item label="年龄（月）" prop="age">
+        <el-input-number v-model="createForm.age" :min="0" controls-position="right" class="full-width-control" />
+      </el-form-item>
+      <el-form-item label="体重（kg）" prop="weight">
+        <el-input-number v-model="createForm.weight" :min="0" :precision="1" controls-position="right" class="full-width-control" />
+      </el-form-item>
+      <el-row :gutter="16">
+        <el-col :span="8">
+          <el-form-item label="体况评分" prop="scoreBcs">
+            <el-slider v-model="createForm.scoreBcs" :min="0" :max="100" show-input />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="精神评分" prop="scoreMental">
+            <el-slider v-model="createForm.scoreMental" :min="0" :max="100" show-input />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="食欲评分" prop="scoreAppetite">
+            <el-slider v-model="createForm.scoreAppetite" :min="0" :max="100" show-input />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-form-item label="评估摘要" prop="summary">
+        <el-input v-model="createForm.summary" type="textarea" :rows="3" placeholder="请填写评估摘要" />
+      </el-form-item>
+    </el-form>
+    <div class="dialog-footer">
+      <el-button @click="createDialogVisible = false">取消</el-button>
+      <el-button type="warning" :loading="saving" @click="submitCreate">保存</el-button>
+    </div>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -71,7 +109,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Plus, RefreshRight } from '@element-plus/icons-vue'
-import { getHealthAssessments } from '../api/services'
+import { addHealthAssessment, getHealthAssessments } from '../api/services'
 import { formatDate } from '../utils/format'
 import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
@@ -84,6 +122,19 @@ const rows = ref([])
 const actionCollapsed = ref(false)
 const page = reactive({ page: 1, size: 10 })
 const petPickerVisible = ref(false)
+const createDialogVisible = ref(false)
+const saving = ref(false)
+const targetPetId = ref('')
+const targetPetName = ref('')
+const createFormRef = ref()
+
+const createForm = reactive({
+  age: 0, weight: 0, scoreBcs: 80, scoreMental: 80, scoreAppetite: 80, summary: '',
+})
+
+const createRules = {
+  summary: [{ required: true, message: '请填写评估摘要', trigger: 'blur' }],
+}
 
 const { filters, isActive, applyFilter } = useTableFilters({
   petName: { type: 'text' },
@@ -116,7 +167,34 @@ async function loadAssessments() {
 }
 
 function onPetSelected(pet) {
-  router.push(`/console/medical/records?pet=${pet.id}&name=${encodeURIComponent(pet.name || '')}`)
+  petPickerVisible.value = false
+  targetPetId.value = pet.id
+  targetPetName.value = pet.name || ''
+  Object.assign(createForm, {
+    age: Number(pet?.age || 0),
+    weight: 0,
+    scoreBcs: 80,
+    scoreMental: 80,
+    scoreAppetite: 80,
+    summary: '',
+  })
+  createDialogVisible.value = true
+}
+
+async function submitCreate() {
+  if (!createFormRef.value || saving.value) return
+  saving.value = true
+  try {
+    await createFormRef.value.validate()
+    await addHealthAssessment(targetPetId.value, { ...createForm })
+    ElMessage.success('健康评估已添加')
+    createDialogVisible.value = false
+    await loadAssessments()
+  } catch (error) {
+    if (error?.message) ElMessage.warning(error.message)
+  } finally {
+    saving.value = false
+  }
 }
 
 onMounted(() => {
