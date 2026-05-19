@@ -34,7 +34,7 @@ public class RehabPlanAddRequest implements IRequest {
     @NotNull(message = "request.medical.rehab.task.end_time")
     private Date endTime;
 
-    private List<OrderRequest> orders;
+    private List<OrderAddRequest> orders;
 
     public RehabPlan create(Long doctorId, Long petId) {
         return new RehabPlan(null,

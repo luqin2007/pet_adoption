@@ -42,7 +42,7 @@ public class OrderResponse implements IResponse {
         return new OrderResponse(order.getId(),
                 order.getType(),
                 String.valueOf(order.getCount()),
-                order.getUnit(),
+                item.getUnit(),
                 String.valueOf(order.getPrice()),
                 order.getCreateTime(),
                 order.getParentId(),
