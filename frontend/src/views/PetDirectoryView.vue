@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
-import { ArrowRight, Filter, Plus, RefreshRight } from '@element-plus/icons-vue'
+import { Filter, Plus, RefreshRight } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
@@ -228,25 +228,19 @@ onMounted(async () => {
     <main class="subpage-main">
       <section class="directory-hero">
         <div>
-          <span class="hero-chip">领养大厅</span>
-          <h1>把一只流浪生命，接回一个真正的家</h1>
-          <p>
-            按类型、年龄和位置筛一筛，找到想见面的毛孩子。
-          </p>
+          <h1>领养大厅</h1>
         </div>
         <div class="directory-hero-side">
-          <span class="directory-hero-count">{{ filteredPets.length }} 份领养档案</span>
           <div class="directory-hero-actions">
             <el-badge :value="activeFilterCount" :hidden="activeFilterCount === 0">
               <el-button class="warm-btn" :icon="Filter" @click="filterDialogVisible = true">筛选条件</el-button>
             </el-badge>
-            <el-button class="warm-btn directory-hero-action" :icon="Plus" @click="router.push('/pets/new')">发现宠物</el-button>
           </div>
         </div>
       </section>
 
       <section class="directory-grid" v-loading="loading">
-        <article v-for="pet in filteredPets" :key="pet.id" class="directory-card">
+        <article v-for="pet in filteredPets" :key="pet.id" class="directory-card" style="cursor:pointer" @click="openPetProfile(pet.id)">
           <div class="directory-cover">
             <img v-if="pet.cover" :src="pet.cover" :alt="pet.name" loading="lazy" />
             <div v-else class="directory-cover-placeholder">暂无封面</div>
@@ -270,11 +264,6 @@ onMounted(async () => {
               <span><Icon icon="mdi:map-marker-radius-outline" />{{ formatLocation(pet) }}</span>
               <span><Icon icon="mdi:account-heart-outline" />{{ pet.username || '暖窝救助站' }}</span>
             </div>
-
-            <el-button text type="warning" class="card-link" @click="openPetProfile(pet.id)">
-              查看宠物档案
-              <el-icon><ArrowRight /></el-icon>
-            </el-button>
           </div>
         </article>
 
