@@ -116,6 +116,12 @@ onMounted(async () => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main">
+      <section class="directory-hero">
+        <div>
+          <h1>走失宠物</h1>
+        </div>
+      </section>
+
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row lost-filter-grid-top">
           <el-input v-model="searchForm.name" class="filter-field-md" placeholder="宠物名称" clearable />

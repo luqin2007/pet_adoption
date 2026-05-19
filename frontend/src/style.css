@@ -1757,6 +1757,7 @@ main {
     radial-gradient(circle at top right, rgba(47, 157, 143, 0.16), transparent 30%),
     linear-gradient(155deg, rgba(255, 253, 249, 0.96) 0%, rgba(255, 244, 232, 0.92) 100%);
   box-shadow: var(--shadow);
+  margin-bottom: 18px;
 }
 
 .hero-chip {

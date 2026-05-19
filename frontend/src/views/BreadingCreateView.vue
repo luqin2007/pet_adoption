@@ -103,15 +103,6 @@ onMounted(() => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main action-form-page">
-      <section class="action-form-hero">
-        <div>
-          <span class="hero-chip">宠物寄养</span>
-          <h1>申请临时寄养宠物</h1>
-          <p>需要临时托管时，把时间和宠物情况告诉我们。</p>
-        </div>
-        <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回首页</el-button>
-      </section>
-
       <section class="action-form-panel">
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
           <el-form-item label="宠物名称" prop="petName">

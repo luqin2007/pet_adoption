@@ -120,7 +120,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 User::getId, User::getUsername, User::getAvatar);
 
         // 病历
-        Set<Long> detailIds = medicalRecordMapper.selectByPet(registration.getPetId())
+        Set<Long> detailIds = medicalRecordMapper.queryByPet(registration.getPetId())
                 .list(MedicalRecord::getId)
                 .collect(Collectors.toSet());
         List<MedicalDetail> details = listById(detailIds,
@@ -149,6 +149,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         User login = requireLoginUser();
         requirePermission(login.isDoctor());
         firstRegistrationMapper.selectByPet(petId).requireExist();
+        require(!medicalRecordMapper.queryActiveByPet(petId).exists(), "request.exist");
 
         // 存储数据
         MedicalRecord record = request.createEntity(petId, login.getId());

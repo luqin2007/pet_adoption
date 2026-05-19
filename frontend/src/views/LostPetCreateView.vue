@@ -338,7 +338,6 @@ watch(
             <div class="lost-pet-similar-panel" v-loading="loadingSimilarLostPets">
               <div class="lost-pet-similar-head">
                 <strong>相近走失记录</strong>
-                <span>按类型和地点帮你找一找</span>
               </div>
 
               <div v-if="similarLostPets.length" class="lost-pet-similar-list">

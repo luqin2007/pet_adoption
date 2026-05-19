@@ -155,8 +155,8 @@
             <el-option v-for="item in lostPetEditDistrictOptions" :key="item" :label="item" :value="item" />
           </el-select>
         </el-form-item>
-        <el-form-item label="明显特征"><el-input v-model="lostPetEditForm.features" /></el-form-item>
         <el-form-item label="详细地点" prop="detailAddress" class="pet-admin-span-2"><el-input v-model="lostPetEditForm.detailAddress" placeholder="请输入详细地点" /></el-form-item>
+        <el-form-item label="特征" class="pet-admin-span-2"><el-input v-model="lostPetEditForm.features" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" /></el-form-item>
         <el-form-item label="补充说明" class="pet-admin-span-2"><el-input v-model="lostPetEditForm.description" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" /></el-form-item>
       </el-form>
       <template #footer>

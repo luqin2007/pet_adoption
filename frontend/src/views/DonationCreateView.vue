@@ -237,14 +237,6 @@ onMounted(() => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main action-form-page">
-      <section class="action-form-hero">
-        <div>
-          <span class="hero-chip">物资捐赠</span>
-          <h1>捐赠</h1>
-        </div>
-        <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回首页</el-button>
-      </section>
-
       <section class="action-form-panel">
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
           <div class="donation-item-list action-form-span-2">

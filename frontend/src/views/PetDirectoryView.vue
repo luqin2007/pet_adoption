@@ -233,16 +233,9 @@ onMounted(async () => {
         <div>
           <h1>领养大厅</h1>
         </div>
-        <div class="directory-hero-side">
-          <div class="directory-hero-actions">
-            <el-badge :value="activeFilterCount" :hidden="activeFilterCount === 0">
-              <el-button class="warm-btn" :icon="MoreFilled" :class="{ 'is-active': showFilterPanel }" @click="showFilterPanel = !showFilterPanel" />
-            </el-badge>
-          </div>
-        </div>
       </section>
 
-      <div v-if="showFilterPanel" class="console-search-panel pet-directory-filter-panel" @keyup.enter="applyFilters">
+      <section class="filter-panel pet-directory-filter-panel" @keyup.enter="applyFilters">
         <div class="pet-filter-row pet-filter-row-primary">
           <el-select v-model="filters.type" class="filter-field-sm" placeholder="宠物类型" clearable filterable @change="handleFilterTypeChange">
             <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
@@ -277,7 +270,7 @@ onMounted(async () => {
           <el-button @click="resetFilters">重置</el-button>
           <el-button class="warm-btn" :icon="RefreshRight" @click="applyFilters">搜索</el-button>
         </div>
-      </div>
+      </section>
 
       <section class="directory-grid" v-loading="loading">
         <article v-for="pet in filteredPets" :key="pet.id" class="directory-card" style="cursor:pointer" @click="openPetProfile(pet.id)">

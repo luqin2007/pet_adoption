@@ -274,7 +274,7 @@ onMounted(() => {
           <div class="pet-profile-topbar">
             <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回领养大厅</el-button>
             <div class="pet-profile-actions">
-              <el-button class="warm-btn" :disabled="!canApplyAdopt" @click="openAdoptFlow">领养</el-button>
+              <el-button class="soft-btn" :disabled="!canApplyAdopt" @click="openAdoptFlow">领养</el-button>
               <el-button class="soft-btn" :disabled="!canApplyClaim" @click="openClaimFlow">认领</el-button>
               <el-button v-if="canEditCurrentPet" class="soft-btn" :icon="EditPen" @click="openBasicEditor">编辑</el-button>
               <el-tag :type="statusTone" effect="dark">{{ statusText }}</el-tag>
