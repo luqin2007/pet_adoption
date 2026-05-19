@@ -260,7 +260,11 @@ function openEditDialog(row) {
 }
 
 function onPetSelected(pet) {
-  router.push(`/console/medical/records?pet=${pet.id}&name=${encodeURIComponent(pet.name || '')}`)
+  petPickerVisible.value = false
+  createDialogPetId.value = pet.id
+  createDialogPetName.value = pet.name || ''
+  createDialogPetAge.value = pet.age || null
+  createDialogVisible.value = true
 }
 
 async function loadRecords() {
