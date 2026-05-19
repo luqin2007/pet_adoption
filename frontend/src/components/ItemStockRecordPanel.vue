@@ -176,10 +176,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.item-record-filter-row {
-  grid-template-columns: minmax(120px, 0.8fr) minmax(120px, 0.8fr) minmax(130px, 0.8fr) minmax(160px, 1fr) minmax(220px, 1.2fr) auto;
-}
-
 .item-record-subtext {
   display: block;
   margin-top: 3px;
@@ -207,9 +203,4 @@ onMounted(() => {
   color: #3f2a1f;
 }
 
-@media (max-width: 1100px) {
-  .item-record-filter-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 </style>

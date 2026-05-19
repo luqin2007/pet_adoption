@@ -112,7 +112,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Plus, RefreshRight } from '@element-plus/icons-vue'
-import { getMedicalRecords, updateMedicalRecord, getMedicalDetails, getFirstVisitRegistrations } from '../api/services'
+import { getMedicalRecords, updateMedicalRecord, getFirstVisitRegistrations } from '../api/services'
 import { formatDate } from '../utils/format'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useTableFilters } from '../composables/useTableFilters'
@@ -312,7 +312,5 @@ onMounted(() => { loadRecords() })
 </script>
 
 <style scoped>
-.medical-record-cols-search {
-  grid-template-columns: 1fr auto;
-}
+
 </style>

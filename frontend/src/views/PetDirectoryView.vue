@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
-import { MoreFilled, Plus, RefreshRight } from '@element-plus/icons-vue'
+import { RefreshRight } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'

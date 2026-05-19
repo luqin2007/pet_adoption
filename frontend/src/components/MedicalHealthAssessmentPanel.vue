@@ -198,10 +198,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.medical-health-cols-search {
-  grid-template-columns: 1fr auto;
-}
-
 .assessment-create-form {
   grid-template-columns: 1fr !important;
 }

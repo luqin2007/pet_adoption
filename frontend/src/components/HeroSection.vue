@@ -1,6 +1,5 @@
 <script setup>
 import {
-  ArrowRight,
   Bell,
   Box,
   DataLine,
@@ -8,7 +7,6 @@ import {
   Location,
   LocationInformation,
   Plus,
-  StarFilled,
   Suitcase,
   User,
 } from '@element-plus/icons-vue'

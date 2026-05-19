@@ -1,7 +1,7 @@
 <script setup>
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Delete, RefreshRight, User } from '@element-plus/icons-vue'
+import { RefreshRight } from '@element-plus/icons-vue'
 import { getUsers, removeUserById, updateUserById } from '../api/user'
 import { sendNotice } from '../api/notice'
 import { useUserStore } from '../stores/user'
@@ -13,10 +13,8 @@ import {
   expandRoleValues,
   normalizeRoleValues,
   buildRoleValue,
-  visibleRoleLabels,
   primaryRoleLabel,
   hasMoreRoles,
-  MANAGED_ROLE_VALUES,
 } from '../utils/roles'
 import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'

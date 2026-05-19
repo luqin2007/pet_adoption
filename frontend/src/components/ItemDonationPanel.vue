@@ -388,10 +388,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.item-donation-filter-row {
-  grid-template-columns: minmax(240px, 1fr) auto;
-}
-
 .item-donation-subtext {
   display: block;
   margin-top: 3px;

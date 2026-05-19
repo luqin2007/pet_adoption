@@ -297,10 +297,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.adoption-filter-row {
-  grid-template-columns: minmax(180px, 240px) auto;
-}
-
 .adoption-person-cell {
   display: grid;
   gap: 3px;
@@ -365,7 +361,6 @@ onMounted(() => {
 }
 
 @media (max-width: 720px) {
-  .adoption-filter-row,
   .agreement-type-grid {
     grid-template-columns: 1fr;
   }

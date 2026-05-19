@@ -251,7 +251,5 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.medical-first-cols-search {
-  grid-template-columns: 1fr 1fr auto;
-}
+
 </style>

@@ -593,10 +593,6 @@ onMounted(async () => {
   justify-content: flex-end;
 }
 
-.claim-filter-row {
-  grid-template-columns: minmax(160px, 0.6fr) minmax(240px, 1fr) auto;
-}
-
 .lost-claim-subtext {
   display: block;
   margin-top: 3px;
@@ -658,8 +654,7 @@ onMounted(async () => {
 
 @media (max-width: 900px) {
   .pet-directory-filter-panel .pet-filter-cols-4,
-  .pet-directory-filter-panel .lost-filter-cols-row2,
-  .claim-filter-row {
+  .pet-directory-filter-panel .lost-filter-cols-row2 {
     grid-template-columns: 1fr;
   }
 }

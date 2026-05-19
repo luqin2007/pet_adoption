@@ -335,10 +335,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.adoption-filter-row {
-  grid-template-columns: minmax(180px, 240px) auto;
-}
-
 .adoption-pet-cell {
   display: inline-flex;
   align-items: center;
@@ -402,7 +398,6 @@ onMounted(() => {
 }
 
 @media (max-width: 720px) {
-  .adoption-filter-row,
   .agreement-type-grid {
     grid-template-columns: 1fr;
   }

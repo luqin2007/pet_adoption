@@ -162,10 +162,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.medical-rehab-cols-search {
-  grid-template-columns: 1fr 180px auto;
-}
-
 .medical-rehab-subtext {
   display: block;
   margin-top: 3px;

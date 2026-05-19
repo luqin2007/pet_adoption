@@ -178,7 +178,7 @@ import { resolveCatalogValue, splitCatalogValue, useInformationCatalog } from '.
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useTableFilters } from '../composables/useTableFilters'
 import { useUserStore } from '../stores/user'
-import { ROLE, hasRole, petStatusOptions, petStatusLabelMap, petStatusText, petLocationText } from '../utils/roles'
+import { petStatusOptions, petStatusLabelMap, petStatusText, petLocationText } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'
 import AuditRecordList from './AuditRecordList.vue'

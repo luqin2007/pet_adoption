@@ -4,7 +4,7 @@ import { ArrowLeft, Message } from '@element-plus/icons-vue'
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { checkEmailExists, forgetPassword } from '../api/user'
+import { forgetPassword } from '../api/user'
 
 const router = useRouter()
 const formRef = ref()

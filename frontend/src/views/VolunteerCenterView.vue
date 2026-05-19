@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Calendar, Location, Suitcase, Search, UserFilled } from '@element-plus/icons-vue'
+import { Calendar, Location, Search, UserFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
