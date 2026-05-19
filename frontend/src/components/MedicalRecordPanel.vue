@@ -49,7 +49,6 @@
             <div class="table-action-cell">
               <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
                 <el-button v-if="canEditRecord(row)" text type="warning" @click="openEditDialog(row)">编辑</el-button>
-                <el-button v-if="canCancelRecord(row)" text type="danger" @click="cancelRecord(row)">取消</el-button>
                 <el-button v-if="canViewMedicalDetail(row)" text type="primary" @click="goMedicalDetail(row)">病历</el-button>
                 <el-button text type="primary" @click="goFirstRegistration(row)">初诊</el-button>
               </div>
@@ -111,7 +110,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { Plus, RefreshRight } from '@element-plus/icons-vue'
 import { getMedicalRecords, updateMedicalRecord, getMedicalDetails, getFirstVisitRegistrations } from '../api/services'
 import { formatDate } from '../utils/format'
@@ -201,9 +200,7 @@ function recordStatusTagType(v) {
   if (v === 'PROCESSING') return 'primary'
   return 'warning'
 }
-function formatDateTime(v) { return formatDate(v) }
 function canEditRecord(row) { return canManageMedical.value && row.status !== 'COMPLETED' && row.status !== 'CANCELED' }
-function canCancelRecord(row) { return canManageMedical.value && row.status !== 'COMPLETED' && row.status !== 'CANCELED' }
 
 function canViewMedicalDetail(row) {
   if (row.status === 'WAITING') return false
@@ -285,17 +282,6 @@ async function loadRecords() {
 function onRecordCreated() {
   createDialogVisible.value = false
   loadRecords()
-}
-
-async function cancelRecord(row) {
-  try {
-    await ElMessageBox.confirm('确认取消该就诊记录？', '取消就诊', { type: 'warning', confirmButtonText: '确认', cancelButtonText: '取消' })
-    await updateMedicalRecord(row.id, { status: 'CANCELED' })
-    ElMessage.success('就诊记录已取消')
-    await loadRecords()
-  } catch (error) {
-    if (error !== 'cancel' && error !== 'close') ElMessage.warning(error?.message || '取消就诊记录失败')
-  }
 }
 
 async function saveEdit() {

@@ -65,36 +65,31 @@
 
   <PetPickerDialog v-model:visible="petPickerVisible" @select="onPetSelected" />
 
-  <el-dialog v-model="createDialogVisible" title="新建健康评估" width="520px">
+  <el-dialog v-model="createDialogVisible" :title="'健康评估：' + targetPetName" width="520px">
     <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-position="top" class="pet-admin-form">
-      <el-form-item label="宠物">
-        <el-input :model-value="targetPetName" disabled />
-      </el-form-item>
-      <el-form-item label="年龄（月）" prop="age">
-        <el-input-number v-model="createForm.age" :min="0" controls-position="right" class="full-width-control" />
-      </el-form-item>
-      <el-form-item label="体重（kg）" prop="weight">
-        <el-input-number v-model="createForm.weight" :min="0" :precision="1" controls-position="right" class="full-width-control" />
-      </el-form-item>
       <el-row :gutter="16">
-        <el-col :span="8">
-          <el-form-item label="体况评分" prop="scoreBcs">
-            <el-slider v-model="createForm.scoreBcs" :min="0" :max="100" show-input />
+        <el-col :span="12">
+          <el-form-item label="年龄（月）" prop="age">
+            <el-input-number v-model="createForm.age" :min="0" controls-position="right" class="full-width-control" />
           </el-form-item>
         </el-col>
-        <el-col :span="8">
-          <el-form-item label="精神评分" prop="scoreMental">
-            <el-slider v-model="createForm.scoreMental" :min="0" :max="100" show-input />
-          </el-form-item>
-        </el-col>
-        <el-col :span="8">
-          <el-form-item label="食欲评分" prop="scoreAppetite">
-            <el-slider v-model="createForm.scoreAppetite" :min="0" :max="100" show-input />
+        <el-col :span="12">
+          <el-form-item label="体重（kg）" prop="weight">
+            <el-input-number v-model="createForm.weight" :min="0" :precision="1" controls-position="right" class="full-width-control" />
           </el-form-item>
         </el-col>
       </el-row>
       <el-form-item label="评估摘要" prop="summary">
         <el-input v-model="createForm.summary" type="textarea" :rows="3" placeholder="请填写评估摘要" />
+      </el-form-item>
+      <el-form-item label="体况评分" prop="scoreBcs">
+        <el-slider v-model="createForm.scoreBcs" :min="0" :max="100" show-input />
+      </el-form-item>
+      <el-form-item label="精神评分" prop="scoreMental">
+        <el-slider v-model="createForm.scoreMental" :min="0" :max="100" show-input />
+      </el-form-item>
+      <el-form-item label="食欲评分" prop="scoreAppetite">
+        <el-slider v-model="createForm.scoreAppetite" :min="0" :max="100" show-input />
       </el-form-item>
     </el-form>
     <div class="dialog-footer">
