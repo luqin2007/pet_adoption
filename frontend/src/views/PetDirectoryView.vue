@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
-import { Filter, Plus, RefreshRight } from '@element-plus/icons-vue'
+import { MoreFilled, Plus, RefreshRight } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
@@ -12,7 +12,7 @@ import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 const router = useRouter()
 const loading = ref(false)
 const pets = ref([])
-const filterDialogVisible = ref(false)
+const showFilterPanel = ref(false)
 const filters = ref({
   type: '',
   breed: '',
@@ -60,7 +60,7 @@ const activeFilterCount = computed(() => {
 })
 
 function applyFilters() {
-  filterDialogVisible.value = false
+  showFilterPanel.value = false
   loadPets()
 }
 
@@ -178,6 +178,7 @@ function openPetProfile(id) {
 
 function handleFilterTypeChange() {
   filters.value.breed = ''
+  applyFilters()
 }
 
 function handleFilterProvinceChange() {
@@ -186,6 +187,7 @@ function handleFilterProvinceChange() {
   if (filters.value.province) {
     ensureCityOptions(filters.value.province)
   }
+  applyFilters()
 }
 
 function handleFilterCityChange() {
@@ -193,6 +195,7 @@ function handleFilterCityChange() {
   if (filters.value.province && filters.value.city) {
     ensureDistrictOptions(filters.value.province, filters.value.city)
   }
+  applyFilters()
 }
 
 watch(
@@ -233,11 +236,48 @@ onMounted(async () => {
         <div class="directory-hero-side">
           <div class="directory-hero-actions">
             <el-badge :value="activeFilterCount" :hidden="activeFilterCount === 0">
-              <el-button class="warm-btn" :icon="Filter" @click="filterDialogVisible = true">筛选条件</el-button>
+              <el-button class="warm-btn" :icon="MoreFilled" :class="{ 'is-active': showFilterPanel }" @click="showFilterPanel = !showFilterPanel" />
             </el-badge>
           </div>
         </div>
       </section>
+
+      <div v-if="showFilterPanel" class="console-search-panel pet-directory-filter-panel" @keyup.enter="applyFilters">
+        <div class="pet-filter-row pet-filter-row-primary">
+          <el-select v-model="filters.type" class="filter-field-sm" placeholder="宠物类型" clearable filterable @change="handleFilterTypeChange">
+            <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="filters.breed" class="filter-field-sm" placeholder="品种" clearable filterable :disabled="!activeType" @change="applyFilters">
+            <el-option v-for="item in breedOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="filters.sex" class="filter-field-sm" placeholder="性别" clearable @change="applyFilters">
+            <el-option label="未知" value="未知" />
+            <el-option label="公" value="公" />
+            <el-option label="母" value="母" />
+          </el-select>
+          <div class="pet-age-range filter-field-lg">
+            <el-input-number v-model="filters.age0" :min="0" :controls="false" placeholder="最小月龄" @change="applyFilters" />
+            <span>至</span>
+            <el-input-number v-model="filters.age1" :min="0" :controls="false" placeholder="最大月龄" @change="applyFilters" />
+          </div>
+          <el-input v-model="filters.name" class="filter-field-md" placeholder="名称" clearable @change="applyFilters" />
+        </div>
+
+        <div class="pet-filter-row pet-filter-row-primary" style="margin-top:8px">
+          <el-select v-model="filters.province" class="filter-field-sm" placeholder="省" clearable filterable @change="handleFilterProvinceChange">
+            <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="filters.city" class="filter-field-sm" placeholder="市" clearable filterable :disabled="!filters.province" @change="handleFilterCityChange">
+            <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="filters.district" class="filter-field-sm" placeholder="县 / 县级市" clearable filterable :disabled="!filters.city" @change="applyFilters">
+            <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-input v-model="filters.address" class="filter-field-lg" placeholder="地址" clearable @change="applyFilters" />
+          <el-button @click="resetFilters">重置</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" @click="applyFilters">搜索</el-button>
+        </div>
+      </div>
 
       <section class="directory-grid" v-loading="loading">
         <article v-for="pet in filteredPets" :key="pet.id" class="directory-card" style="cursor:pointer" @click="openPetProfile(pet.id)">
@@ -270,60 +310,6 @@ onMounted(async () => {
         <el-empty v-if="!loading && filteredPets.length === 0" description="没有找到合适的领养档案" />
       </section>
     </main>
-
-    <el-dialog v-model="filterDialogVisible" title="筛选条件" width="680px">
-      <div class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row pet-filter-row-primary">
-          <el-select v-model="filters.type" class="filter-field-sm" placeholder="宠物类型" clearable filterable @change="handleFilterTypeChange">
-            <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-          <el-select v-model="filters.breed" class="filter-field-sm" placeholder="品种" clearable filterable :disabled="!activeType">
-            <el-option v-for="item in breedOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-          <el-select v-model="filters.sex" class="filter-field-sm" placeholder="性别" clearable>
-            <el-option label="未知" value="未知" />
-            <el-option label="公" value="公" />
-            <el-option label="母" value="母" />
-          </el-select>
-          <div class="pet-age-range filter-field-lg">
-            <el-input-number
-              v-model="filters.age0"
-              :min="0"
-              :controls="false"
-              placeholder="最小月龄"
-            />
-            <span>至</span>
-            <el-input-number
-              v-model="filters.age1"
-              :min="hasValue(filters.age0) ? Number(filters.age0) : 0"
-              :controls="false"
-              placeholder="最大月龄"
-            />
-          </div>
-          <el-input v-model="filters.name" class="filter-field-md" placeholder="名称" clearable />
-        </div>
-
-        <div class="pet-filter-row pet-filter-row-secondary">
-          <div class="pet-cascader-group pet-cascader-group-3 filter-field-lg">
-            <el-select v-model="filters.province" placeholder="省" clearable filterable @change="handleFilterProvinceChange">
-              <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <el-select v-model="filters.city" placeholder="市" clearable filterable :disabled="!filters.province" @change="handleFilterCityChange">
-              <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <el-select v-model="filters.district" placeholder="县 / 县级市" clearable filterable :disabled="!filters.city">
-              <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-          </div>
-          <el-input v-model="filters.address" class="filter-field-xl" placeholder="地址" clearable />
-        </div>
-      </div>
-
-      <template #footer>
-        <el-button @click="resetFilters">重置</el-button>
-        <el-button class="warm-btn" :icon="RefreshRight" @click="applyFilters">应用筛选</el-button>
-      </template>
-    </el-dialog>
 
     <AppFooter />
   </div>
