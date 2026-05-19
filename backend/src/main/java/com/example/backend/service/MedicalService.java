@@ -66,6 +66,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         petService.requireExist(request.getPetId());
         User login = requireLoginUser();
         requirePermission(login.isDoctor() || login.isWorker());
+        require(!firstRegistrationMapper.selectByPet(request.getPetId()).exists(), "request.exist");
 
         // 添加
         FirstRegistration registration = request.createEntity(login.getId());
