@@ -34,6 +34,10 @@ public enum ParentType {
         return folder;
     }
 
+    public boolean isPet() {
+        return this == PET || this == LOST_PET;
+    }
+
     public static ParentType get(String name) {
         try {
             return ParentType.valueOf(name.toUpperCase(Locale.ROOT));

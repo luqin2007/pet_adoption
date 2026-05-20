@@ -34,6 +34,7 @@ public interface LostPetMapper extends IBaseMapper<LostPet> {
                 .eq(Location::getParentType, ParentType.LOST_PET)
                 .eq(Location::getProvince, params.getProvince())
                 .eq(Location::getCity, params.getCity())
+                .eq(Location::getDistrict, params.getDistrict())
                 .like(Location::getDetailAddress, params.getAddress());
     }
 

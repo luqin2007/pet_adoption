@@ -24,20 +24,23 @@ const searchForm = reactive({
   breed: '',
   province: '',
   city: '',
-  address: '',
+  district: '',
   lostDate: '',
 })
 
 const {
   ensureInformationCatalog,
   ensureCityOptions,
+  ensureDistrictOptions,
   provinceOptions,
   typeOptions,
   getCityOptions,
+  getDistrictOptions,
   getBreedOptions,
 } = useInformationCatalog()
 
 const cityOptions = computed(() => getCityOptions(searchForm.province))
+const districtOptions = computed(() => getDistrictOptions(searchForm.province, searchForm.city))
 const breedOptions = computed(() => getBreedOptions(searchForm.type))
 const visibleRecords = computed(() => lostPets.value.filter((item) => item.status === 'SEARCHING'))
 
@@ -47,8 +50,16 @@ function handleTypeChange() {
 
 function handleProvinceChange() {
   searchForm.city = ''
+  searchForm.district = ''
   if (searchForm.province) {
     ensureCityOptions(searchForm.province)
+  }
+}
+
+function handleCityChange() {
+  searchForm.district = ''
+  if (searchForm.province && searchForm.city) {
+    ensureDistrictOptions(searchForm.province, searchForm.city)
   }
 }
 
@@ -62,7 +73,7 @@ function buildQuery() {
     bread: searchForm.breed ? [searchForm.breed] : undefined,
     province: searchForm.province || undefined,
     city: searchForm.city || undefined,
-    address: searchForm.address.trim() || undefined,
+    district: searchForm.district || undefined,
     time0: searchForm.lostDate || undefined,
   }
 }
@@ -92,17 +103,19 @@ function changePage(nextPage) {
 }
 
 function openLostPetDetail(id) {
-  if (!id) {
-    return
-  }
+  if (!id) return
   router.push(`/lost/${id}`)
 }
 
 function formatDate(value) {
-  if (!value) {
-    return '时间待补充'
-  }
+  if (!value) return '时间待补充'
   return String(value).slice(0, 10)
+}
+
+function formatLocation(item) {
+  const loc = item.location
+  if (!loc) return '地点待补充'
+  return [loc.province, loc.city, loc.district].filter(Boolean).join(' · ') || '地点待补充'
 }
 
 onMounted(async () => {
@@ -134,12 +147,15 @@ onMounted(async () => {
         </div>
 
         <div class="pet-filter-row lost-filter-grid-bottom">
-          <div class="pet-cascader-group pet-cascader-group-2 filter-field-md">
+          <div class="pet-cascader-group pet-cascader-group-3 filter-field-lg">
             <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
               <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
             </el-select>
-            <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province">
+            <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province" @change="handleCityChange">
               <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-select v-model="searchForm.district" placeholder="区县" clearable filterable :disabled="!searchForm.city">
+              <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </div>
           <el-date-picker
@@ -149,7 +165,6 @@ onMounted(async () => {
             value-format="YYYY-MM-DD"
             placeholder="走失日期"
           />
-          <el-input v-model="searchForm.address" class="filter-field-xl" placeholder="详细地点" clearable />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" @click="handleSearch">搜索</el-button>
           </div>
@@ -183,7 +198,7 @@ onMounted(async () => {
             <p class="directory-desc">{{ item.description || '走失经过待补充' }}</p>
 
             <div class="volunteer-meta">
-              <span><Icon icon="mdi:map-marker-radius-outline" />{{ item.location?.city }} {{ item.location?.detailAddress }}</span>
+              <span><Icon icon="mdi:map-marker-radius-outline" />{{ formatLocation(item) }}</span>
               <span v-if="item.features"><Icon icon="mdi:star-four-points-outline" />{{ item.features }}</span>
               <span><Icon icon="mdi:phone-outline" />{{ item.ownerName }} · {{ item.contactPhone }}</span>
             </div>
@@ -210,3 +225,36 @@ onMounted(async () => {
     <AppFooter />
   </div>
 </template>
+
+<style scoped>
+.lost-card {
+  display: flex;
+  gap: 16px;
+}
+.lost-cover {
+  width: 140px;
+  min-width: 140px;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.lost-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lost-cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+}
+.lost-body {
+  flex: 1;
+  min-width: 0;
+}
+</style>

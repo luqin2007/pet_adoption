@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Box, Document, Flag, House, Link, Message, Plus, Search, Setting, Stamp, SwitchButton, User } from '@element-plus/icons-vue'
+import { Aim, ArrowLeft, Box, Document, Flag, House, Link, Message, Plus, Search, Setting, Stamp, SwitchButton, User } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
@@ -146,6 +146,10 @@ watch(
           <el-menu-item v-if="canManageUsers" index="/console/users">
             <el-icon><Setting /></el-icon>
             <span>用户管理</span>
+          </el-menu-item>
+          <el-menu-item v-if="canManageUsers" index="/console/ai">
+            <el-icon><Aim /></el-icon>
+            <span>AI 匹配</span>
           </el-menu-item>
           <el-menu-item index="/console/pets">
             <el-icon><House /></el-icon>

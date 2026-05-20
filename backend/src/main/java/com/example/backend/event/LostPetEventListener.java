@@ -5,7 +5,9 @@ import com.example.backend.entity.LostPet;
 import com.example.backend.entity.LostPetClaim;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.property.NoticeSource;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.mapper.LostPetMapper;
+import com.example.backend.service.AiMatchService;
 import com.example.backend.service.LostPetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -21,6 +23,7 @@ public class LostPetEventListener extends BaseEventListener {
 
     private final LostPetMapper lostPetMapper;
     private final LostPetService lostPetService;
+    private final AiMatchService aiMatchService;
 
     @TransactionalEventListener
     public void onClaimAdd(LostPetClaimAddEvent event) {
@@ -47,6 +50,7 @@ public class LostPetEventListener extends BaseEventListener {
     @Async
     @TransactionalEventListener
     public void onLostPetUpdate(LostPetUpdateEvent event) {
+        aiMatchService.invalidateCache(ParentType.LOST_PET, event.data().getId());
         compareLostPet(event.data(), event.location());
     }
 

@@ -328,11 +328,11 @@ watch(
               <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
-          <el-form-item label="明显特征">
-            <el-input v-model="form.features" clearable />
-          </el-form-item>
           <el-form-item label="详细地点" prop="detailAddress" class="action-form-span-2">
             <el-input v-model="form.detailAddress" clearable />
+          </el-form-item>
+          <el-form-item class="action-form-span-2" label="特征">
+            <el-input v-model="form.features" clearable />
           </el-form-item>
           <el-form-item class="action-form-span-2 lost-pet-similar-form-item">
             <div class="lost-pet-similar-panel" v-loading="loadingSimilarLostPets">

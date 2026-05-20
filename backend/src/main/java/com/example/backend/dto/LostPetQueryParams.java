@@ -32,6 +32,8 @@ public class LostPetQueryParams implements IParam, IValidatedRequest {
 
     private String city;
 
+    private String district;
+
     private String address;
 
     @Override
@@ -41,7 +43,7 @@ public class LostPetQueryParams implements IParam, IValidatedRequest {
     }
 
     public boolean noLocation() {
-        return province == null && city == null && address == null;
+        return province == null && city == null && district == null && address == null;
     }
 
     public boolean noPet() {

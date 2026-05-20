@@ -726,3 +726,62 @@ export function createBreadingApplication(payload) {
     body: payload,
   })
 }
+
+// --- AI 匹配 ---
+
+export function aiMatchLostPet(lostPetId, limit = 10) {
+  return request(`/ai/match/lost/${lostPetId}`, {
+    method: 'GET',
+    query: { limit },
+  })
+}
+
+export function aiMatchPetToLost(petId, limit = 10) {
+  return request(`/ai/match/pet/${petId}`, {
+    method: 'GET',
+    query: { limit },
+  })
+}
+
+// --- 系统配置 ---
+
+export function getAllConfig() {
+  return request('/config', {
+    method: 'GET',
+  })
+}
+
+export function getSysConfig(key) {
+  return request(`/config/sys/${key}`, {
+    method: 'GET',
+  })
+}
+
+export function setSysConfig(key, value) {
+  return request('/config/sys', {
+    method: 'PUT',
+    body: { key, value },
+  })
+}
+
+export function batchSetConfig(configs) {
+  return request('/config/batch', {
+    method: 'POST',
+    body: configs,
+  })
+}
+
+// --- 用户 AI 设置 ---
+
+export function getUserAiConfig(userId) {
+  return request(`/config/user/${userId}`, {
+    method: 'GET',
+  })
+}
+
+export function setUserAiConfig(userId, payload) {
+  return request(`/config/user/${userId}`, {
+    method: 'PUT',
+    body: payload,
+  })
+}

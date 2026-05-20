@@ -8,6 +8,7 @@ import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
 import { getPetHealthAssessments } from '../api/services'
 import { addPetLocation, getPetById } from '../api/pets'
+import { aiMatchPetToLost } from '../api/services'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 import { useUserStore } from '../stores/user'
@@ -19,9 +20,12 @@ const userStore = useUserStore()
 
 const loading = ref(false)
 const savingLocation = ref(false)
+const loadingAiMatch = ref(false)
 const locationDialogVisible = ref(false)
 const locationFormRef = ref(null)
 const pet = ref(null)
+const aiMatchResults = ref([])
+const aiMatchDialogVisible = ref(false)
 const locationForm = ref({
   province: '',
   city: '',
@@ -159,6 +163,21 @@ function openClaimFlow() {
   router.push(`/pets/${petId.value}/claim`)
 }
 
+async function handleAiMatch() {
+  if (!petId.value) return
+  loadingAiMatch.value = true
+  aiMatchResults.value = []
+  try {
+    const results = await aiMatchPetToLost(petId.value)
+    aiMatchResults.value = Array.isArray(results) ? results : []
+    aiMatchDialogVisible.value = true
+  } catch (e) {
+    ElMessage.warning(e?.message || 'AI 匹配失败')
+  } finally {
+    loadingAiMatch.value = false
+  }
+}
+
 function resetLocationForm() {
   locationForm.value = {
     province: primaryLocation.value?.province || '',
@@ -276,6 +295,7 @@ onMounted(() => {
             <div class="pet-profile-actions">
               <el-button class="soft-btn" :disabled="!canApplyAdopt" @click="openAdoptFlow">领养</el-button>
               <el-button class="soft-btn" :disabled="!canApplyClaim" @click="openClaimFlow">认领</el-button>
+              <el-button class="soft-btn" :loading="loadingAiMatch" @click="handleAiMatch">AI 匹配</el-button>
               <el-button v-if="canEditCurrentPet" class="soft-btn" :icon="EditPen" @click="openBasicEditor">编辑</el-button>
               <el-tag :type="statusTone" effect="dark">{{ statusText }}</el-tag>
             </div>
@@ -363,6 +383,23 @@ onMounted(() => {
         </el-empty>
       </section>
 
+      <el-dialog v-model="aiMatchDialogVisible" title="AI 匹配结果" width="640px" top="8vh">
+        <div v-if="!aiMatchResults.length" class="ai-match-empty">未找到可能的走失匹配</div>
+        <div v-else class="ai-match-list">
+          <div v-for="(item, i) in aiMatchResults" :key="i" class="ai-match-item" @click="router.push(`/lost/${item.lostPetId}`)">
+            <div class="ai-match-header">
+              <span class="ai-match-rank">#{{ i + 1 }}</span>
+              <el-tag :type="item.isMatch ? 'success' : 'warning'" effect="plain">
+                {{ (item.confidence * 100).toFixed(0) }}% 匹配
+              </el-tag>
+            </div>
+            <ul v-if="item.reasons?.length" class="ai-match-reasons">
+              <li v-for="(r, j) in item.reasons" :key="j">{{ r }}</li>
+            </ul>
+          </div>
+        </div>
+      </el-dialog>
+
       <el-dialog v-model="locationDialogVisible" title="补充出现位置" width="560px">
         <el-form ref="locationFormRef" :model="locationForm" :rules="locationRules" label-position="top" class="location-add-form">
           <el-form-item label="省份" prop="province">
@@ -394,3 +431,41 @@ onMounted(() => {
     <AppFooter />
   </div>
 </template>
+
+<style scoped>
+.ai-match-empty {
+  text-align: center;
+  color: var(--el-text-color-secondary);
+  padding: 32px 0;
+}
+.ai-match-item {
+  cursor: pointer;
+  padding: 12px 16px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: background .15s;
+}
+.ai-match-item:hover {
+  background: var(--el-fill-color-light);
+}
+.ai-match-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.ai-match-rank {
+  font-weight: 600;
+  font-size: 14px;
+}
+.ai-match-reasons {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+}
+.ai-match-reasons li + li {
+  margin-top: 2px;
+}
+</style>
