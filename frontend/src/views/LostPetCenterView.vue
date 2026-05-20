@@ -1,10 +1,10 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Icon } from '@iconify/vue'
 import { Search } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
+import PetCard from '../components/PetCard.vue'
 import { getLostPets } from '../api/lost'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
@@ -43,6 +43,23 @@ const cityOptions = computed(() => getCityOptions(searchForm.province))
 const districtOptions = computed(() => getDistrictOptions(searchForm.province, searchForm.city))
 const breedOptions = computed(() => getBreedOptions(searchForm.type))
 const visibleRecords = computed(() => lostPets.value.filter((item) => item.status === 'SEARCHING'))
+
+const petLikeRecords = computed(() =>
+  visibleRecords.value.map((item) => ({
+    id: item.id,
+    cover: item.petCover,
+    name: item.name,
+    type: item.type,
+    breed: item.breed,
+    sex: item.sex,
+    age: item.age,
+    description: item.description,
+    tags: item.features ? [{ tag: item.features }] : [],
+    locations: item.location ? [item.location] : [],
+    username: item.ownerName,
+    _lostTime: item.lostTime,
+  })),
+)
 
 function handleTypeChange() {
   searchForm.breed = ''
@@ -112,12 +129,6 @@ function formatDate(value) {
   return String(value).slice(0, 10)
 }
 
-function formatLocation(item) {
-  const loc = item.location
-  if (!loc) return '地点待补充'
-  return [loc.province, loc.city, loc.district].filter(Boolean).join(' · ') || '地点待补充'
-}
-
 onMounted(async () => {
   await ensureInformationCatalog()
   loadLostPets()
@@ -171,39 +182,13 @@ onMounted(async () => {
         </div>
       </section>
 
-      <section class="lost-grid" v-loading="loading">
-        <article
-          v-for="item in visibleRecords"
-          :key="item.id"
-          class="lost-card"
-          tabindex="0"
-          role="button"
+      <section class="directory-grid" v-loading="loading">
+        <PetCard
+          v-for="item in petLikeRecords" :key="item.id"
+          :pet="item"
+          :badge-text="formatDate(item._lostTime)"
           @click="openLostPetDetail(item.id)"
-          @keyup.enter="openLostPetDetail(item.id)"
-          @keyup.space="openLostPetDetail(item.id)"
-        >
-          <div class="lost-cover">
-            <img v-if="item.petCover" :src="item.petCover" :alt="item.name" loading="lazy" />
-            <div v-else class="lost-cover-placeholder">暂无图片</div>
-          </div>
-          <div class="lost-body">
-            <div class="directory-head">
-              <div>
-                <h3>{{ item.name }}</h3>
-                <p>{{ item.type }} · {{ item.breed || '品种待补充' }} · {{ item.sex }}</p>
-              </div>
-              <span class="directory-type">{{ formatDate(item.lostTime) }}</span>
-            </div>
-
-            <p class="directory-desc">{{ item.description || '走失经过待补充' }}</p>
-
-            <div class="volunteer-meta">
-              <span><Icon icon="mdi:map-marker-radius-outline" />{{ formatLocation(item) }}</span>
-              <span v-if="item.features"><Icon icon="mdi:star-four-points-outline" />{{ item.features }}</span>
-              <span><Icon icon="mdi:phone-outline" />{{ item.ownerName }} · {{ item.contactPhone }}</span>
-            </div>
-          </div>
-        </article>
+        />
         <el-empty
           v-if="!loading && visibleRecords.length === 0"
           class="grid-empty"
@@ -227,34 +212,4 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.lost-card {
-  display: flex;
-  gap: 16px;
-}
-.lost-cover {
-  width: 140px;
-  min-width: 140px;
-  height: 120px;
-  border-radius: 8px;
-  overflow: hidden;
-}
-.lost-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.lost-cover-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--el-fill-color-light);
-  color: var(--el-text-color-secondary);
-  font-size: 12px;
-}
-.lost-body {
-  flex: 1;
-  min-width: 0;
-}
 </style>

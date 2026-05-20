@@ -57,7 +57,6 @@ onMounted(loadConfig)
     <el-form label-width="180px" class="ai-config-form">
       <el-form-item label="全局开关">
         <el-switch v-model="form['ai.enabled']" active-value="true" inactive-value="false" />
-        <span class="form-help">关闭后所有 AI 匹配接口均不可用</span>
       </el-form-item>
 
       <el-divider />
