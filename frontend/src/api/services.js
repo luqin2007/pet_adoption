@@ -727,19 +727,11 @@ export function createBreadingApplication(payload) {
   })
 }
 
-// --- AI 匹配 ---
+// --- AI 缓存管理 ---
 
-export function aiMatchLostPet(lostPetId, limit = 10) {
-  return request(`/ai/match/lost/${lostPetId}`, {
-    method: 'GET',
-    query: { limit },
-  })
-}
-
-export function aiMatchPetToLost(petId, limit = 10) {
-  return request(`/ai/match/pet/${petId}`, {
-    method: 'GET',
-    query: { limit },
+export function deleteCachedFeatures() {
+  return request('/ai/cached-features', {
+    method: 'DELETE',
   })
 }
 

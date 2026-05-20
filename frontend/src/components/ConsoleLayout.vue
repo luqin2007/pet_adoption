@@ -196,7 +196,7 @@ watch(
             <el-menu-item v-if="canManageRehab" index="/console/medical/rehab">康复计划</el-menu-item>
             <el-menu-item v-if="canManageMedical" index="/console/medical/health">健康评估</el-menu-item>
           </el-sub-menu>
-          <el-menu-item v-if="canManageUsers" index="/console/ai">
+          <el-menu-item v-if="canManageUsers" index="/console/settings">
             <el-icon><Aim /></el-icon>
             <span>系统设置</span>
           </el-menu-item>

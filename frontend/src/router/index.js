@@ -45,7 +45,7 @@ import MedicalRehabPlanDetailPanel from '../components/MedicalRehabPlanDetailPan
 import MedicalRehabPlanCreatePanel from '../components/MedicalRehabPlanCreatePanel.vue'
 import MedicalHealthAssessmentPanel from '../components/MedicalHealthAssessmentPanel.vue'
 import MedicalHealthAssessmentDetailPanel from '../components/MedicalHealthAssessmentDetailPanel.vue'
-import AiSettingsPanel from '../components/AiSettingsPanel.vue'
+import SystemSettingsPanel from '../components/SystemSettingsPanel.vue'
 import FirstRegistrationDetailPanel from '../components/FirstRegistrationDetailPanel.vue'
 import MedicalRecordDetailPanel from '../components/MedicalRecordDetailPanel.vue'
 import FirstRegistrationDetailView from '../views/FirstRegistrationDetailView.vue'
@@ -275,7 +275,7 @@ const router = createRouter({
         { path: 'medical/rehab/:id', name: 'console-medical-rehab-detail', component: MedicalRehabPlanDetailPanel, meta: { guard: 'canManageRehab' } },
         { path: 'medical/health', name: 'console-medical-health', component: MedicalHealthAssessmentPanel, meta: { guard: 'canManageMedical' } },
         { path: 'medical/health/:id', name: 'console-medical-health-detail', component: MedicalHealthAssessmentDetailPanel, meta: { guard: 'canManageMedical' } },
-        { path: 'ai', name: 'console-ai', component: AiSettingsPanel, meta: { guard: 'canManageUsers' } },
+        { path: 'settings', name: 'console-settings', component: SystemSettingsPanel, meta: { guard: 'canManageUsers' } },
       ],
     },
     {

@@ -72,6 +72,16 @@ public class RedisHelper {
     }
 
     /**
+     * 批量删除匹配 pattern 的键
+     */
+    public void deletePattern(String pattern) {
+        var keys = redisTemplateString.keys(pattern);
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplateString.delete(keys);
+        }
+    }
+
+    /**
      * 删除字符串
      */
     public void deleteString(String key) {

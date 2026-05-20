@@ -68,6 +68,13 @@ public class PetFeatureService extends BaseService<PetFeatureCacheMapper, PetFea
     }
 
     /**
+     * 删除所有缓存
+     */
+    public void deleteAll() {
+        baseMapper.lambdaQuery().delete();
+    }
+
+    /**
      * 获取所有未缓存的特征（缺少缓存的 parentId 集合）
      */
     public Set<Long> getUncachedIds(ParentType parentType, Set<Long> parentIds, String modelVersion) {

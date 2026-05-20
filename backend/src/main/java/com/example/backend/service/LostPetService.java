@@ -11,6 +11,7 @@ import com.example.backend.event.LostPetClaimAddEvent;
 import com.example.backend.event.LostPetClaimApproveEvent;
 import com.example.backend.event.LostPetUpdateEvent;
 import com.example.backend.mapper.*;
+import com.example.backend.util.RedisHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +39,7 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
     private final PetMapper petMapper;
     private final LocationMapper locationMapper;
     private final InformationService informationService;
+    private final RedisHelper redisHelper;
     private final SystemConfigService configService;
     private final UserSettingService userSettingService;
 
@@ -389,8 +391,24 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         boolean isAiEnable = login.isPresent()
                 && configService.isAiEnabled()
                 && Boolean.TRUE.equals(userSettingService.getOrCreate(login.get().getId()).getEnableAi());
+
+        // 尝试从 Redis 读取缓存的结果
+        String resultKey = "ai:match:result:lost:" + lostPet.getId();
+        String cachedIds = redisHelper.getString(resultKey);
+        if (isAiEnable && cachedIds != null) {
+            Set<Long> passedIds = Arrays.stream(cachedIds.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Long::valueOf)
+                    .collect(Collectors.toSet());
+            return pets.stream().filter(p -> passedIds.contains(p.getId())).toList();
+        }
+
         if (isAiEnable) {
             pets = aiMatchService.matchLostPet(lostPet, pets);
+            // 缓存 AI 过滤结果到 Redis（ttl 30min）
+            String ids = pets.stream().map(Pet::getId).map(String::valueOf).collect(Collectors.joining(","));
+            redisHelper.putStringSec(resultKey, ids, 1800);
         }
 
         return pets;

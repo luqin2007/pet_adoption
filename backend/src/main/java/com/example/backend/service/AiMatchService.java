@@ -169,4 +169,8 @@ public class AiMatchService extends BaseServiceWithoutMapper {
     public void setLostPetService(LostPetService lostPetService) {
         this.lostPetService = lostPetService;
     }
+
+    public LostPetService getLostPetService() {
+        return lostPetService;
+    }
 }

@@ -1,10 +1,18 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { getAllConfig, batchSetConfig } from '../api/services'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getAllConfig, batchSetConfig, deleteCachedFeatures } from '../api/services'
+import { useUserStore } from '../stores/user'
+import { ROLE, hasRole } from '../utils/roles'
 
+const userStore = useUserStore()
 const loading = ref(false)
 const saving = ref(false)
+const clearingCache = ref(false)
+
+const canManageUsers = computed(() => hasRole(Number(userStore.profile?.role || 0), ROLE.ADMIN) || hasRole(Number(userStore.profile?.role || 0), ROLE.WORKER))
+
+import { computed } from 'vue'
 
 const form = reactive({
   'ai.enabled': 'false',
@@ -43,6 +51,28 @@ async function handleSave() {
   }
 }
 
+async function handleClearCache() {
+  try {
+    await ElMessageBox.confirm('确定要清空所有 AI 缓存吗？此操作将清除所有已缓存的特征数据，下次匹配将重新调用 AI 接口。', '确认清空', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
+
+  clearingCache.value = true
+  try {
+    await deleteCachedFeatures()
+    ElMessage.success('AI 缓存已清空')
+  } catch (e) {
+    ElMessage.warning(e?.message || '清空缓存失败')
+  } finally {
+    clearingCache.value = false
+  }
+}
+
 onMounted(loadConfig)
 </script>
 
@@ -50,7 +80,7 @@ onMounted(loadConfig)
   <el-card class="profile-card" v-loading="loading">
     <template #header>
       <div class="profile-card-header">
-        <strong>AI 匹配设置</strong>
+        <strong>系统设置</strong>
       </div>
     </template>
 
@@ -89,6 +119,17 @@ onMounted(loadConfig)
       </el-form-item>
     </el-form>
   </el-card>
+
+  <el-card v-if="canManageUsers" class="profile-card" style="margin-top:16px">
+    <template #header>
+      <div class="profile-card-header">
+        <strong>系统维护</strong>
+      </div>
+    </template>
+    <div class="profile-actions">
+      <el-button :loading="clearingCache" @click="handleClearCache">清空 AI 缓存</el-button>
+    </div>
+  </el-card>
 </template>
 
 <style scoped>
@@ -99,5 +140,9 @@ onMounted(loadConfig)
   margin-left: 12px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
+}
+.profile-actions {
+  display: flex;
+  gap: 12px;
 }
 </style>

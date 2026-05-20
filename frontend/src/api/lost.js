@@ -85,6 +85,12 @@ export function markPetMismatch(lostPetId, petId) {
   })
 }
 
+export function deleteCachedResult(lostPetId) {
+  return request(`/ai/cached-result/${lostPetId}`, {
+    method: 'DELETE',
+  })
+}
+
 export function uploadLostPetMedia(id, file, name = '') {
   const formData = new FormData()
   formData.append('file', file)

@@ -6,8 +6,7 @@ import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getLostPet, getSimilarPets, markPetMismatch } from '../api/lost'
-import { aiMatchLostPet } from '../api/services'
+import { getLostPet, getSimilarPets, markPetMismatch, deleteCachedResult } from '../api/lost'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole, petStatusText } from '../utils/roles'
@@ -17,11 +16,9 @@ const router = useRouter()
 const userStore = useUserStore()
 const loading = ref(false)
 const loadingSimilarPets = ref(false)
-const loadingAiMatch = ref(false)
+const refreshingSimilarPets = ref(false)
 const record = ref(null)
 const similarPets = ref([])
-const aiMatchResults = ref([])
-const aiMatchDialogVisible = ref(false)
 const previewVisible = ref(false)
 const previewIndex = ref(0)
 const previewThumbsVisible = ref(true)
@@ -168,18 +165,21 @@ async function dismissSimilarPet(pet) {
   }
 }
 
-async function handleAiMatch() {
+async function refreshSimilarPets() {
   if (!lostPetId.value) return
-  loadingAiMatch.value = true
-  aiMatchResults.value = []
+  refreshingSimilarPets.value = true
   try {
-    const results = await aiMatchLostPet(lostPetId.value)
-    aiMatchResults.value = Array.isArray(results) ? results : []
-    aiMatchDialogVisible.value = true
+    await deleteCachedResult(lostPetId.value)
+    await loadSimilarPets()
+    ElMessage.success('已刷新匹配结果')
   } catch (e) {
-    ElMessage.warning(e?.message || 'AI 匹配失败')
+    if (e?.status === 429) {
+      ElMessage.warning('操作过于频繁，请稍后再试')
+    } else {
+      ElMessage.warning(e?.message || '刷新失败')
+    }
   } finally {
-    loadingAiMatch.value = false
+    refreshingSimilarPets.value = false
   }
 }
 
@@ -284,7 +284,7 @@ onBeforeUnmount(() => {
 
         <div v-if="canViewSimilarPets" class="lost-detail-section lost-detail-section-wide">
           <h2>相似流浪宠物
-            <el-button size="small" :loading="loadingAiMatch" type="primary" plain @click="handleAiMatch" style="margin-left:12px">AI 智能匹配</el-button>
+            <el-button size="small" :loading="refreshingSimilarPets" plain @click="refreshSimilarPets" style="margin-left:12px">刷新</el-button>
           </h2>
           <div v-loading="loadingSimilarPets" class="lost-similar-grid">
             <article v-for="pet in similarPets" :key="pet.id" class="lost-similar-card">
@@ -346,61 +346,9 @@ onBeforeUnmount(() => {
       </div>
     </Transition>
 
-    <el-dialog v-model="aiMatchDialogVisible" title="AI 匹配结果" width="640px" top="8vh">
-      <div v-if="!aiMatchResults.length" class="ai-match-empty">未找到可能的匹配宠物</div>
-      <div v-else class="ai-match-list">
-        <div v-for="(item, i) in aiMatchResults" :key="i" class="ai-match-item" @click="goPet({ id: item.petId })">
-          <div class="ai-match-header">
-            <span class="ai-match-rank">#{{ i + 1 }}</span>
-            <el-tag :type="item.isMatch ? 'success' : 'warning'" effect="plain">
-              {{ (item.confidence * 100).toFixed(0) }}% 匹配
-            </el-tag>
-          </div>
-          <ul v-if="item.reasons?.length" class="ai-match-reasons">
-            <li v-for="(r, j) in item.reasons" :key="j">{{ r }}</li>
-          </ul>
-        </div>
-      </div>
-    </el-dialog>
-
     <AppFooter />
   </div>
 </template>
 
 <style scoped>
-.ai-match-empty {
-  text-align: center;
-  color: var(--el-text-color-secondary);
-  padding: 32px 0;
-}
-.ai-match-item {
-  cursor: pointer;
-  padding: 12px 16px;
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
-  margin-bottom: 8px;
-  transition: background .15s;
-}
-.ai-match-item:hover {
-  background: var(--el-fill-color-light);
-}
-.ai-match-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.ai-match-rank {
-  font-weight: 600;
-  font-size: 14px;
-}
-.ai-match-reasons {
-  margin: 0;
-  padding-left: 20px;
-  font-size: 13px;
-  color: var(--el-text-color-regular);
-}
-.ai-match-reasons li + li {
-  margin-top: 2px;
-}
 </style>
