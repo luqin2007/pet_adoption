@@ -1,18 +1,17 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.AIMatchResult;
+import com.example.backend.dto.ai.AIMatchResult;
 import com.example.backend.entity.LostPet;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetFeatureCache;
 import com.example.backend.entity.User;
-import com.example.backend.entity.property.LostPetStatus;
 import com.example.backend.entity.property.ParentType;
-import com.example.backend.entity.property.PetStatus;
-import com.example.backend.mapper.PetMapper;
 import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.JsonNode;
 
@@ -28,12 +27,11 @@ public class AiMatchService extends BaseServiceWithoutMapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiMatchService.class);
 
     private final SystemConfigService configService;
+    private final UserSettingService userSettingService;
     private final PetFeatureService petFeatureService;
     private final AiChatService aiChatService;
-    private final UserSettingService userSettingService;
-    private final PetMapper petMapper;
-    private final LostPetService lostPetService;
     private final PetService petService;
+    private LostPetService lostPetService;
 
     /**
      * 为单个实体提取特征并缓存
@@ -82,16 +80,10 @@ public class AiMatchService extends BaseServiceWithoutMapper {
     /**
      * 为走失宠物匹配流浪宠物（Top-N）
      */
-    public List<AIMatchResult> matchLostPet(Long lostPetId, int limit) {
+    public List<Pet> matchLostPet(LostPet lostPet, List<Pet> pets) {
         requireAi(ParentType.LOST_PET);
-        String lostFeatures = ensureFeaturesCached(ParentType.LOST_PET, lostPetId);
-
-        // 获取所有可领养的流浪宠物
-        List<Pet> pets = petMapper.lambdaQuery()
-                .eq(Pet::getIsDiscard, false)
-                .in(Pet::getStatus, Set.of(PetStatus.SHELTERED, PetStatus.HEALTH))
-                .list();
         if (pets.isEmpty()) return List.of();
+        String lostFeatures = ensureFeaturesCached(ParentType.LOST_PET, lostPet.getId());
         batchCacheFeatures(ParentType.PET, pets.stream().map(Pet::getId).collect(Collectors.toSet()));
 
         String modelVersion = configService.getAiVersion();
@@ -102,49 +94,39 @@ public class AiMatchService extends BaseServiceWithoutMapper {
 
             try {
                 String judgement = aiChatService.judgeMatch(lostFeatures, cache.getFeatures());
-                results.add(parseMatchResult(lostPetId, pet.getId(), judgement));
+                results.add(parseMatchResult(lostPet, pet, judgement));
             } catch (Exception e) {
-                LOGGER.warn("Failed to match pet {} with lost {}: {}", pet.getId(), lostPetId, e.getMessage());
+                LOGGER.warn("Failed to match pet {} with lost {}: {}", pet.getId(), lostPet.getId(), e.getMessage());
             }
         }
-
-        results.sort((a, b) -> Double.compare(b.getConfidence(), a.getConfidence()));
-        return results.size() > limit ? results.subList(0, limit) : results;
+        return results.stream()
+                .sorted()
+                .map(AIMatchResult::getPet).toList();
     }
 
     /**
      * 为流浪宠物匹配走失宠物（Top-N）
      */
-    public List<AIMatchResult> matchPetToLost(Long petId, int limit) {
+    public List<LostPet> matchPetToLost(Pet pet, List<LostPet> lostPets) {
         requireAi(ParentType.PET);
-        String petFeatures = ensureFeaturesCached(ParentType.PET, petId);
-
-        // 获取所有搜索中的走失宠物
-        List<LostPet> lostPets = lostPetService.getBaseMapper().lambdaQuery()
-                .eq(LostPet::getStatus, LostPetStatus.SEARCHING)
-                .list();
         if (lostPets.isEmpty()) return List.of();
-
-        batchCacheFeatures(ParentType.LOST_PET,
-                lostPets.stream().map(LostPet::getId).collect(Collectors.toSet()));
+        String petFeatures = ensureFeaturesCached(ParentType.PET, pet.getId());
+        batchCacheFeatures(ParentType.LOST_PET, lostPets.stream().map(LostPet::getId).collect(Collectors.toSet()));
 
         String modelVersion = configService.getAiVersion();
         List<AIMatchResult> results = new ArrayList<>();
-
         for (LostPet lost : lostPets) {
             PetFeatureCache cache = petFeatureService.getCache(ParentType.LOST_PET, lost.getId(), modelVersion);
             if (cache == null || cache.getFeatures() == null) continue;
 
             try {
                 String judgement = aiChatService.judgeMatch(cache.getFeatures(), petFeatures);
-                results.add(parseMatchResult(lost.getId(), petId, judgement));
+                results.add(parseMatchResult(lost, pet, judgement));
             } catch (Exception e) {
-                LOGGER.warn("Failed to match lost {} with pet {}: {}", lost.getId(), petId, e.getMessage());
+                LOGGER.warn("Failed to match lost {} with pet {}: {}", lost.getId(), pet.getId(), e.getMessage());
             }
         }
-
-        results.sort((a, b) -> Double.compare(b.getConfidence(), a.getConfidence()));
-        return results.size() > limit ? results.subList(0, limit) : results;
+        return results.stream().sorted().map(AIMatchResult::getLostPet).toList();
     }
 
     /**
@@ -154,10 +136,10 @@ public class AiMatchService extends BaseServiceWithoutMapper {
         petFeatureService.deleteByParent(parentType, parentId);
     }
 
-    private AIMatchResult parseMatchResult(Long lostPetId, Long petId, String json) {
+    private AIMatchResult parseMatchResult(LostPet lostPet, Pet pet, String json) {
         AIMatchResult result = new AIMatchResult();
-        result.setLostPetId(lostPetId);
-        result.setPetId(petId);
+        result.setLostPet(lostPet);
+        result.setPet(pet);
         try {
             JsonNode root = objectMapper.readTree(json);
             result.setIsMatch(root.path("is_match").asBoolean(false));
@@ -180,5 +162,11 @@ public class AiMatchService extends BaseServiceWithoutMapper {
                 && Boolean.TRUE.equals(userSettingService.getOrCreate(login.getId()).getEnableAi());
         require(isAiEnable, "AI 匹配功能未启用");
         require(parentType.isPet(), "无效匹配类型");
+    }
+
+    @Autowired
+    @Lazy
+    public void setLostPetService(LostPetService lostPetService) {
+        this.lostPetService = lostPetService;
     }
 }

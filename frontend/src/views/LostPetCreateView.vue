@@ -379,18 +379,6 @@ watch(
           <el-button class="warm-btn" :icon="Check" :loading="submitting" @click="submitForm">提交登记</el-button>
         </div>
       </section>
-
-      <section v-if="similarLostPets.length" class="action-form-similar">
-        <h3>相近走失记录</h3>
-        <div class="lost-grid">
-          <PetCard
-            v-for="item in similarPetLikeRecords" :key="item.id"
-            :pet="item"
-            :badge-text="formatDate(item._lostTime)"
-            @click="openLostPetDetail(item.id)"
-          />
-        </div>
-      </section>
     </main>
 
     <AppFooter />

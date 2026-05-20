@@ -17,10 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,6 +38,9 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
     private final PetMapper petMapper;
     private final LocationMapper locationMapper;
     private final InformationService informationService;
+    private final SystemConfigService configService;
+    private final UserSettingService userSettingService;
+    private AiMatchService aiMatchService;
 
     private FileService fileService;
     private UserService userService;
@@ -381,14 +381,19 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
                 .list(Location::getParentId)
                 .filter(id -> !ignoredPetIds.contains(id))
                 .collect(Collectors.toSet());
+        if (petIds.isEmpty()) return List.of();
+        List<Pet> pets = petMapper.matchLostPet(petIds, lostPet).list();
 
-        if (petIds.isEmpty()) {
-            return List.of();
+        // AI 检查
+        Optional<User> login = getLoginUser();
+        boolean isAiEnable = login.isPresent()
+                && configService.isAiEnabled()
+                && Boolean.TRUE.equals(userSettingService.getOrCreate(login.get().getId()).getEnableAi());
+        if (isAiEnable) {
+            pets = aiMatchService.matchLostPet(lostPet, pets);
         }
 
-        return petMapper.selectList(petIds).stream()
-                .filter(lostPet::matchPet)
-                .toList();
+        return pets;
     }
 
     public List<LostPet> listMatchedLostPets(Pet pet, Location location) {
@@ -408,16 +413,23 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
                 .list(Location::getParentId)
                 .filter(id -> !ignoredIds.contains(id))
                 .collect(Collectors.toSet());
+        if (lostPetIds.isEmpty()) return List.of();
+        List<LostPet> lostPets = baseMapper.matchPet(lostPetIds, pet).list();
 
         if (lostPetIds.isEmpty()) {
             return List.of();
         }
 
-        // 可能宠物
-        return baseMapper.filterLostPet(lostPetIds, location.getCreateTime())
-                .list().stream()
-                .filter(pet::matchPet)
-                .toList();
+        // AI 检查
+        Optional<User> login = getLoginUser();
+        boolean isAiEnable = login.isPresent()
+                && configService.isAiEnabled()
+                && Boolean.TRUE.equals(userSettingService.getOrCreate(login.get().getId()).getEnableAi());
+        if (isAiEnable) {
+            lostPets = aiMatchService.matchPetToLost(pet, lostPets);
+        }
+
+        return lostPets;
     }
 
     private List<PetResponse> buildSimilarPetResponses(LostPet lostPet, Location location) {
@@ -434,5 +446,10 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
         this.fileService = fileService;
         this.userService = userService;
         this.petService = petService;
+    }
+
+    @Autowired
+    public void setAiMatchService(AiMatchService aiMatchService) {
+        this.aiMatchService = aiMatchService;
     }
 }
