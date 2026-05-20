@@ -80,14 +80,7 @@ const locationCityOptions = computed(() => getCityOptions(locationForm.value.pro
 const locationDistrictOptions = computed(() => getDistrictOptions(locationForm.value.province, locationForm.value.city))
 
 function mapStatusText(status) {
-  const map = {
-    HEALTH: '可预约见面',
-    SHELTERED: '等待领养',
-    ADOPTED: '已完成领养',
-    TREATING: '治疗观察中',
-    RESCUED: '已救助建档',
-  }
-  return map[status] || status || '状态待补充'
+  return status || '状态待补充'
 }
 
 function mapStatusTone(status) {

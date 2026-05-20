@@ -13,9 +13,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AiTokenUsageService extends BaseService<AiTokenUsageMapper, AiTokenUsage> {
 
-    public void recordUsage(String operation, String model, int promptTokens, int completionTokens) {
-        AiTokenUsage usage = new AiTokenUsage(null, new Date(), operation, model,
-                promptTokens, completionTokens, promptTokens + completionTokens, new Date());
+    public void recordUsage(String operation, String model, Integer promptTokens, Integer completionTokens) {
+        AiTokenUsage usage = new AiTokenUsage(null,
+                new Date(),
+                operation,
+                model,
+                promptTokens,
+                completionTokens,
+                promptTokens + completionTokens,
+                new Date());
         baseMapper.insert(usage);
     }
 

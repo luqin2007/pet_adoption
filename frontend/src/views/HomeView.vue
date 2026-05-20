@@ -46,9 +46,7 @@ function formatPetAge(age) {
 }
 
 function petStatusText(status) {
-  if (status === 'HEALTH') return '可预约见面'
-  if (status === 'SHELTERED') return '等待领养'
-  return '待完善'
+  return status || '待完善'
 }
 
 function articleCategory(type) {
