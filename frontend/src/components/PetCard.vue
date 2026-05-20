@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 
 const props = defineProps({
@@ -7,6 +8,11 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['click'])
+
+const badgeClass = computed(() => {
+  if (props.badgeText) return ''
+  return props.pet.status === 'HEALTH' ? 'badge-green' : 'badge-yellow'
+})
 
 function formatAge(age) {
   if (!age && age !== 0) return '年龄待补充'
@@ -43,7 +49,7 @@ function getStatusText(pet) {
     <div class="directory-cover">
       <img v-if="pet.cover" :src="pet.cover" :alt="pet.name" loading="lazy" />
       <div v-else class="directory-cover-placeholder">暂无封面</div>
-      <span class="directory-badge">{{ getStatusText(pet) }}</span>
+      <span class="directory-badge" :class="badgeClass">{{ getStatusText(pet) }}</span>
     </div>
     <div class="directory-body">
       <div class="directory-head">
@@ -74,5 +80,11 @@ function getStatusText(pet) {
 .directory-footer {
   border-top: 1px solid var(--el-border-color-lighter);
   padding: 8px 16px;
+}
+.badge-green {
+  background: #67c23a !important;
+}
+.badge-yellow {
+  background: #e6a23c !important;
 }
 </style>
