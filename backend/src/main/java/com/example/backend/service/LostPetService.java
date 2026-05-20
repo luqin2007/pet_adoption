@@ -40,8 +40,8 @@ public class LostPetService extends BaseService<LostPetMapper, LostPet> {
     private final InformationService informationService;
     private final SystemConfigService configService;
     private final UserSettingService userSettingService;
-    private AiMatchService aiMatchService;
 
+    private AiMatchService aiMatchService;
     private FileService fileService;
     private UserService userService;
     private PetService petService;
