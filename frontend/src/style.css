@@ -400,7 +400,9 @@ main {
   gap: 16px;
 }
 
-.progress-card.el-card,
+.progress-card.el-card {
+  background: transparent;
+}
 
 .progress-card .el-card__body,
 .story-card .el-card__body {
