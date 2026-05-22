@@ -4,15 +4,15 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { getAllConfig, batchSetConfig, deleteCachedFeatures } from '../api/services'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
+import { computed } from 'vue'
 
 const userStore = useUserStore()
 const loading = ref(false)
 const saving = ref(false)
 const clearingCache = ref(false)
+const testing = ref(false)
 
 const canManageUsers = computed(() => hasRole(Number(userStore.profile?.role || 0), ROLE.ADMIN) || hasRole(Number(userStore.profile?.role || 0), ROLE.WORKER))
-
-import { computed } from 'vue'
 
 const form = reactive({
   'ai.enabled': 'false',
@@ -53,7 +53,7 @@ async function handleSave() {
 
 async function handleClearCache() {
   try {
-    await ElMessageBox.confirm('确定要清空所有 AI 缓存吗？此操作将清除所有已缓存的特征数据，下次匹配将重新调用 AI 接口。', '确认清空', {
+    await ElMessageBox.confirm('确定要清除所有缓存吗？此操作将清除所有已缓存的特征数据，下次匹配将重新调用 AI 接口。', '确认清除', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
@@ -65,11 +65,85 @@ async function handleClearCache() {
   clearingCache.value = true
   try {
     await deleteCachedFeatures()
-    ElMessage.success('AI 缓存已清空')
+    ElMessage.success('缓存已清除')
   } catch (e) {
-    ElMessage.warning(e?.message || '清空缓存失败')
+    ElMessage.warning(e?.message || '清除缓存失败')
   } finally {
     clearingCache.value = false
+  }
+}
+
+// 1x1 透明 PNG，用于多模态测试
+const TEST_IMAGE_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+
+async function handleTestConnection() {
+  const endpoint = form['ai.endpoint']?.trim()
+  const key = form['ai.key']?.trim()
+  const model = form['ai.model']?.trim()
+
+  if (!endpoint) return ElMessage.warning('请先填写 API 接入点')
+  if (!key) return ElMessage.warning('请先填写 API Key')
+  if (!model) return ElMessage.warning('请先填写模型名称')
+
+  testing.value = true
+  const baseUrl = endpoint.replace(/\/+$/, '')
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${key}`,
+  }
+
+  try {
+    // 1) 文本能力测试
+    const textRes = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: 'Reply with exactly: OK' }],
+        max_tokens: 10,
+      }),
+    })
+
+    if (!textRes.ok) {
+      const errBody = await textRes.text().catch(() => '')
+      throw new Error(`文本测试失败 (HTTP ${textRes.status})${errBody ? ': ' + errBody.slice(0, 200) : ''}`)
+    }
+
+    const textData = await textRes.json()
+    const textReply = textData?.choices?.[0]?.message?.content?.trim() || ''
+    ElMessage.success(`文本能力正常 — 模型回复: "${textReply.slice(0, 50)}"`)
+
+    // 2) 多模态能力测试（仅在启用多模态时执行）
+    if (form['ai.multimodal'] === 'true') {
+      const mmRes = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'text', text: 'Describe this image in one word.' },
+              { type: 'image_url', image_url: { url: `data:image/png;base64,${TEST_IMAGE_B64}` } },
+            ],
+          }],
+          max_tokens: 20,
+        }),
+      })
+
+      if (!mmRes.ok) {
+        const errBody = await mmRes.text().catch(() => '')
+        ElMessage.warning(`多模态测试失败 (HTTP ${mmRes.status})${errBody ? ': ' + errBody.slice(0, 200) : ''}`)
+      } else {
+        const mmData = await mmRes.json()
+        const mmReply = mmData?.choices?.[0]?.message?.content?.trim() || ''
+        ElMessage.success(`多模态能力正常 — 模型回复: "${mmReply.slice(0, 50)}"`)
+      }
+    }
+  } catch (e) {
+    ElMessage.error(e?.message || '连接测试失败，请检查配置')
+  } finally {
+    testing.value = false
   }
 }
 
@@ -85,7 +159,7 @@ onMounted(loadConfig)
     </template>
 
     <el-form label-width="180px" class="ai-config-form">
-      <el-form-item label="全局开关">
+      <el-form-item label="AI筛选开关">
         <el-switch v-model="form['ai.enabled']" active-value="true" inactive-value="false" />
       </el-form-item>
 
@@ -115,20 +189,11 @@ onMounted(loadConfig)
       <el-divider />
 
       <el-form-item>
+        <el-button :loading="testing" @click="handleTestConnection">连接测试</el-button>
         <el-button type="primary" :loading="saving" @click="handleSave">保存配置</el-button>
+        <el-button v-if="canManageUsers" :loading="clearingCache" @click="handleClearCache">清除缓存</el-button>
       </el-form-item>
     </el-form>
-  </el-card>
-
-  <el-card v-if="canManageUsers" class="profile-card" style="margin-top:16px">
-    <template #header>
-      <div class="profile-card-header">
-        <strong>系统维护</strong>
-      </div>
-    </template>
-    <div class="profile-actions">
-      <el-button :loading="clearingCache" @click="handleClearCache">清空 AI 缓存</el-button>
-    </div>
   </el-card>
 </template>
 
@@ -140,9 +205,5 @@ onMounted(loadConfig)
   margin-left: 12px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
-}
-.profile-actions {
-  display: flex;
-  gap: 12px;
 }
 </style>
