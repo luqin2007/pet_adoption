@@ -78,7 +78,6 @@ onMounted(() => {
     <template #header>
       <div class="profile-card-header">
         <strong>招募申请详情</strong>
-        <span>{{ application?.recruitmentTitle || '申请信息' }}</span>
       </div>
     </template>
 

@@ -7,8 +7,9 @@ export function useConsoleGuards() {
   const loginRole = computed(() => Number(userStore.profile.role || 0))
   const isLoginAdmin = computed(() => (loginRole.value & ROLE.ADMIN) === ROLE.ADMIN)
   const canManageUsers = computed(() => isLoginAdmin.value || hasRole(loginRole.value, ROLE.WORKER))
+  const canViewStocks = computed(() => !!userStore.profile?.id)
   const canManageMedical = computed(() => canManageUsers.value || hasRole(loginRole.value, ROLE.DOCTOR))
   const canManageRehab = computed(() => hasRole(loginRole.value, ROLE.DOCTOR) || hasRole(loginRole.value, ROLE.VOLUNTEER))
   const canManageArticles = computed(() => canManageUsers.value || hasRole(loginRole.value, ROLE.VOLUNTEER))
-  return { loginRole, isLoginAdmin, canManageUsers, canManageMedical, canManageRehab, canManageArticles }
+  return { loginRole, isLoginAdmin, canManageUsers, canViewStocks, canManageMedical, canManageRehab, canManageArticles }
 }

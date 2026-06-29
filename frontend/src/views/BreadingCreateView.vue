@@ -5,7 +5,7 @@ import { ArrowLeft, Check } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { createBreadingApplication } from '../api/services'
+import { createBreadingApplication } from '../api/adoption'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
@@ -103,15 +103,6 @@ onMounted(() => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main action-form-page">
-      <section class="action-form-hero">
-        <div>
-          <span class="hero-chip">宠物寄养</span>
-          <h1>申请临时寄养宠物</h1>
-          <p>需要临时托管时，把时间和宠物情况告诉我们。</p>
-        </div>
-        <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回首页</el-button>
-      </section>
-
       <section class="action-form-panel">
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
           <el-form-item label="宠物名称" prop="petName">
@@ -131,7 +122,7 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="联系方式" prop="applicantPhone">
-            <el-input v-model="form.applicantPhone" placeholder="手机号或微信号" clearable />
+            <el-input v-model="form.applicantPhone" clearable />
           </el-form-item>
           <el-form-item label="寄养时间" prop="timeRange">
             <el-date-picker
@@ -143,7 +134,7 @@ onMounted(() => {
             />
           </el-form-item>
           <el-form-item label="宠物情况说明" class="action-form-span-2">
-            <el-input v-model="form.petDescription" type="textarea" :rows="5" placeholder="写下性格、饮食习惯、健康情况和寄养原因" />
+            <el-input v-model="form.petDescription" type="textarea" :rows="5" />
           </el-form-item>
         </el-form>
 

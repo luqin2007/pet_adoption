@@ -5,6 +5,7 @@ import { ArrowLeft, Check, Delete, Upload } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
+import PetCard from '../components/PetCard.vue'
 import { beginLostPet, createLostPet, deleteLostPetUpload, getLostPets, uploadLostPetMedia } from '../api/lost'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
@@ -63,10 +64,31 @@ const {
 const breedOptions = computed(() => getBreedOptions(form.type))
 const cityOptions = computed(() => getCityOptions(form.province))
 const districtOptions = computed(() => getDistrictOptions(form.province, form.city))
-const hasSimilarQuery = computed(() => Boolean(String(form.type || '').trim()) && Boolean(String(form.city || form.detailAddress || '').trim()))
+const hasSimilarQuery = computed(() => Boolean(String(form.type || '').trim()) && Boolean(String(form.city || '').trim()))
+const similarPetLikeRecords = computed(() =>
+  similarLostPets.value.map((item) => ({
+    id: item.id,
+    cover: item.petCover,
+    name: item.name,
+    type: item.type,
+    breed: item.breed,
+    sex: item.sex,
+    age: item.age,
+    description: item.description,
+    tags: item.features ? [{ tag: item.features }] : [],
+    locations: item.location ? [item.location] : [],
+    username: item.ownerName,
+    _lostTime: item.lostTime,
+  })),
+)
 
 function goBack() {
   router.push('/lost')
+}
+
+function openLostPetDetail(id) {
+  if (!id) return
+  router.push(`/lost/${id}`)
 }
 
 function handleTypeChange() {
@@ -96,7 +118,7 @@ function formatDate(value) {
 }
 
 function lostPetLocationText(item) {
-  return [item.location?.province, item.location?.city, item.location?.district, item.location?.detailAddress].filter(Boolean).join(' · ') || '位置待补充'
+  return [item.location?.province, item.location?.city, item.location?.district].filter(Boolean).join(' · ') || '位置待补充'
 }
 
 async function loadSimilarLostPets() {
@@ -112,7 +134,7 @@ async function loadSimilarLostPets() {
       type: [form.type.trim()],
       province: form.province || undefined,
       city: form.city || undefined,
-      address: form.detailAddress.trim() || undefined,
+      district: form.district || undefined,
       status: ['SEARCHING'],
     })
     similarLostPets.value = Array.isArray(result?.records) ? result.records : []
@@ -255,7 +277,7 @@ onBeforeUnmount(() => {
 })
 
 watch(
-  () => [form.type, form.province, form.city, form.detailAddress],
+  () => [form.type, form.province, form.city, form.district],
   () => {
     scheduleSimilarLostPetsSearch()
   },
@@ -328,37 +350,14 @@ watch(
               <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </el-form-item>
-          <el-form-item label="明显特征">
-            <el-input v-model="form.features" placeholder="例如：红色项圈、尾巴尖是白色" clearable />
-          </el-form-item>
           <el-form-item label="详细地点" prop="detailAddress" class="action-form-span-2">
-            <el-input v-model="form.detailAddress" placeholder="例如：小区北门、地铁口、便利店门口" clearable />
+            <el-input v-model="form.detailAddress" clearable />
           </el-form-item>
-          <el-form-item class="action-form-span-2 lost-pet-similar-form-item">
-            <div class="lost-pet-similar-panel" v-loading="loadingSimilarLostPets">
-              <div class="lost-pet-similar-head">
-                <strong>相近走失记录</strong>
-                <span>按类型和地点帮你找一找</span>
-              </div>
-
-              <div v-if="similarLostPets.length" class="lost-pet-similar-list">
-                <article v-for="item in similarLostPets" :key="item.id">
-                  <div class="lost-pet-similar-card-head">
-                    <strong>{{ item.name || '未命名' }}</strong>
-                    <span>{{ formatDate(item.lostTime) }}</span>
-                  </div>
-                  <p>{{ item.type || '宠物' }} · {{ item.breed || '品种待补充' }} · {{ item.sex || '未知' }}</p>
-                  <small>{{ lostPetLocationText(item) }}</small>
-                </article>
-              </div>
-
-              <p v-else class="lost-pet-similar-empty">
-                {{ hasSimilarQuery ? '没有查到相近走失记录。' : '填好类型和地点后，这里会显示相近记录。' }}
-              </p>
-            </div>
+          <el-form-item class="action-form-span-2" label="特征">
+            <el-input v-model="form.features" clearable />
           </el-form-item>
           <el-form-item label="补充说明" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="5" placeholder="写下走失经过、习惯、是否怕生" />
+            <el-input v-model="form.description" type="textarea" :rows="5" />
           </el-form-item>
           <el-form-item label="宠物照片" class="action-form-span-2">
             <input ref="fileInputRef" class="profile-avatar-input" type="file" accept="image/*" multiple @change="handleImageChange" />
@@ -385,3 +384,14 @@ watch(
     <AppFooter />
   </div>
 </template>
+
+<style scoped>
+.action-form-similar {
+  margin-top: 24px;
+}
+.action-form-similar h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #4f3324;
+}
+</style>

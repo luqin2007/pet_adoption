@@ -46,6 +46,18 @@ public class Agreement implements IId {
     private AgreementType type;
 
     /**
+     * 签署用户
+     * *外键:user(id) 非空 bigint*
+     */
+    private Long applicantId;
+
+    /**
+     * 审核用户
+     * *外键:user(id) 非空 bigint*
+     */
+    private Long reviewerId;
+
+    /**
      * 签名图片
      * *varchar(20)*
      */

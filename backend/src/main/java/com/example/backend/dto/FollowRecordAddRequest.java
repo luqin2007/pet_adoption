@@ -26,10 +26,11 @@ public class FollowRecordAddRequest implements IRequest {
     @NotBlank(message = "request.adopt_breading.follow_record.suggestion")
     private String suggestion;
 
-    public FollowRecord create(Long taskId, Long volunteerId) {
+    public FollowRecord create(Long taskId, Long adopterId, Long volunteerId) {
         return new FollowRecord(null,
                 taskId,
                 volunteerId,
+                adopterId,
                 summary,
                 visitTime == null ? new Date() : visitTime,
                 lifeStatus,

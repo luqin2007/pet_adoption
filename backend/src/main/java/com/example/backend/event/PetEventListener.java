@@ -5,8 +5,10 @@ import com.example.backend.entity.LostPet;
 import com.example.backend.entity.Pet;
 import com.example.backend.entity.PetStatusRecord;
 import com.example.backend.entity.property.NoticeSource;
+import com.example.backend.entity.property.ParentType;
 import com.example.backend.mapper.LocationMapper;
 import com.example.backend.mapper.PetMapper;
+import com.example.backend.service.AiMatchService;
 import com.example.backend.service.LostPetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,7 @@ public class PetEventListener extends BaseEventListener {
     private final PetMapper petMapper;
     private final LocationMapper locationMapper;
     private final LostPetService lostPetService;
+    private final AiMatchService aiMatchService;
 
     @TransactionalEventListener
     public void onPetAdd(PetAddEvent event) {
@@ -37,11 +40,12 @@ public class PetEventListener extends BaseEventListener {
     public void onPetStatus(PetStatusChangeEvent event) {
         PetStatusRecord record = event.data();
         String petName = petMapper.requireById(record.getPetId(), Pet::getName).getName("");
-        notifyWorkers(null, event, petName);
+        notify(event.user(), List.of(event.pet().getDiscoverId()), event, petName);
     }
 
     @TransactionalEventListener
     public void onPetUpdate(PetUpdateEvent event) {
+        aiMatchService.invalidateCache(ParentType.PET, event.data().getId());
         Location location = locationMapper.queryByParent(PET, event.data().getId())
                 .desc(Location::getCreateTime)
                 .one();

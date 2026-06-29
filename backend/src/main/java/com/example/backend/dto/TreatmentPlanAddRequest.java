@@ -16,7 +16,7 @@ public class TreatmentPlanAddRequest implements IRequest {
     @NotEmpty(message = "request.medical.treatment_plan.plan")
     private String plan;
 
-    private List<OrderRequest> orders;
+    private List<OrderAddRequest> orders;
 
     @NotNull(message = "request.start_time")
     private Date startTime;

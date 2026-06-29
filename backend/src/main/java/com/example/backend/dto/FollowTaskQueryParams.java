@@ -16,6 +16,9 @@ public class FollowTaskQueryParams implements IParam, IValidatedRequest {
     private Date time0;
     private Date time1;
 
+    // 权限限制
+    private Long requireAdopter, requireVolunteer;
+
     @Override
     public void validate(Errors errors) {
         validateEnums(errors, FollowTaskQueryParams::getStatus, FollowTaskStatus.class, "request.adopt_breading.follow_task.status");

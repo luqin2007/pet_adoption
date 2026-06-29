@@ -313,7 +313,6 @@ onBeforeUnmount(() => {
                 v-model="uploadForm.description"
                 type="textarea"
                 :rows="3"
-                placeholder="补充拍摄位置、状态或备注"
                 clearable
               />
             </el-form-item>
@@ -368,7 +367,6 @@ onBeforeUnmount(() => {
               v-model="editForm.description"
               type="textarea"
               :rows="3"
-              placeholder="补充拍摄位置、状态或备注"
               clearable
             />
           </el-form-item>

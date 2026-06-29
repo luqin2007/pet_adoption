@@ -32,9 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-/src/test/
-/checks/**
-/src/main/resources/application.properties
-/testImages/**
-/upload_files/**
-/temp_files/**
+src/test/
+upload_files/**
+temp_files/**
+**/.env

@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>健康评估详情</strong>
-        <span>{{ assessment?.petName || '查看健康评分与摘要' }}</span>
       </div>
     </template>
 
@@ -65,7 +64,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
-import { getHealthAssessment } from '../api/services'
+import { getHealthAssessment } from '../api/medical'
 
 const route = useRoute()
 const router = useRouter()

@@ -95,10 +95,6 @@ function validateEmailCode(_rule, value, callback) {
     callback(new Error('请输入邮箱验证码'))
     return
   }
-  if (!/^\d{6}$/.test(value)) {
-    callback(new Error('验证码应为 6 位数字'))
-    return
-  }
   callback()
 }
 

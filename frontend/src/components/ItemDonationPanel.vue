@@ -3,28 +3,17 @@
     <template #header>
       <div class="profile-card-header">
         <strong>捐赠</strong>
-        <span>{{ isWorker ? '查看并处理全部物资捐赠' : '查看我的捐赠记录和使用状态' }}</span>
+        <div class="profile-actions">
+          <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="router.push('/donations/new')" />
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh" />
+          </el-button-group>
+        </div>
       </div>
     </template>
 
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row item-donation-filter-row">
-          <el-date-picker
-            v-model="timeRange"
-            type="daterange"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            class="filter-field-lg"
-          />
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
-          </div>
-        </div>
-      </section>
-
-      <el-table :data="rows" v-loading="loading" class="user-admin-table">
+      <el-table :data="filteredRows" v-loading="loading" class="user-admin-table">
         <el-table-column label="捐赠物资" min-width="220" show-overflow-tooltip>
           <template #default="{ row }">
             <button class="table-primary-link" type="button" @click="openDetail(row)">
@@ -34,17 +23,26 @@
           </template>
         </el-table-column>
         <el-table-column label="捐赠人" min-width="130">
+          <template #header>
+            <TableFilterHeader label="捐赠人" :filter="filters.username" type="text" :active="isActive('username')" />
+          </template>
           <template #default="{ row }">{{ row.username || '未命名用户' }}</template>
         </el-table-column>
         <el-table-column label="交付方式" width="110">
           <template #default="{ row }">{{ deliveryText(row.delivery) }}</template>
         </el-table-column>
         <el-table-column label="状态" width="120">
+          <template #header>
+            <TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="statusOptions" />
+          </template>
           <template #default="{ row }">
             <el-tag :type="statusTagType(row.status)" effect="plain">{{ statusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="登记时间" min-width="160">
+          <template #header>
+            <TableFilterHeader label="时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" />
+          </template>
           <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
         <el-table-column width="40" class-name="action-col">
@@ -75,7 +73,6 @@
           <span>当前状态</span>
           <strong>{{ statusText(detail.status) }}</strong>
         </div>
-        <el-button v-if="isWorker && detail.status === 'RECEIVED'" class="warm-btn" @click="goStockIn">入库登记</el-button>
       </div>
 
       <section class="item-detail-block">
@@ -103,6 +100,11 @@
           </el-table-column>
           <el-table-column label="说明" min-width="160" show-overflow-tooltip>
             <template #default="{ row }">{{ row.description || '' }}</template>
+          </el-table-column>
+          <el-table-column v-if="isWorker && detail.status === 'RECEIVED'" label="操作" width="90" fixed="right">
+            <template #default="{ row }">
+              <el-button class="warm-btn" size="small" @click="openStockInDialog(row)">入库</el-button>
+            </template>
           </el-table-column>
         </el-table>
       </section>
@@ -150,17 +152,43 @@
       <el-button class="warm-btn" :loading="acting" @click="submitStatus">保存</el-button>
     </template>
   </el-dialog>
+
+  <el-dialog v-model="stockInDialogVisible" title="入库登记" width="440px" :close-on-click-modal="false">
+    <section v-if="stockInItem">
+      <el-form label-position="top">
+        <el-form-item label="物资名称">
+          <el-input :model-value="stockInItem.itemName" disabled />
+        </el-form-item>
+        <el-form-item label="数量">
+          <el-input :model-value="`${stockInItem.count}${stockInItem.itemUnit || ''}`" disabled />
+        </el-form-item>
+        <el-form-item v-if="!stockInItem.itemId" label="物资类型">
+          <el-tag type="warning">该物资不在现有目录中，将自动新建物资类型</el-tag>
+        </el-form-item>
+        <el-form-item label="有效期">
+          <el-input :model-value="formatDate(stockInItem.expireTime)" disabled />
+        </el-form-item>
+      </el-form>
+    </section>
+    <template #footer>
+      <el-button @click="stockInDialogVisible = false">取消</el-button>
+      <el-button class="warm-btn" :loading="stockInLoading" @click="submitStockIn">确认入库</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
-import { getDonation, getDonations, updateDonationStatus } from '../api/services'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
+import { getDonation, getDonations, updateDonationStatus, createStockRecord, createItem } from '../api/inventory'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
+import { formatDate } from '../utils/format'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
+import { useTableFilters } from '../composables/useTableFilters'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -169,7 +197,6 @@ const acting = ref(false)
 const actionCollapsed = ref(false)
 const rows = ref([])
 const total = ref(0)
-const timeRange = ref([])
 const detailVisible = ref(false)
 const detail = ref(null)
 const statusDialogVisible = ref(false)
@@ -180,6 +207,14 @@ const statusForm = reactive({ status: '', reason: '' })
 const loginRole = computed(() => Number(userStore.profile?.role || 0))
 const loginUserId = computed(() => String(userStore.profile?.id || ''))
 const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole(loginRole.value, ROLE.ADMIN))
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  username: { type: 'text' },
+  status: { type: 'enum' },
+  createTime: { type: 'time' },
+})
+
+const filteredRows = computed(() => applyFilter(rows.value || []))
 
 const statusOptions = [
   { label: '已创建', value: 'CREATED' },
@@ -200,13 +235,6 @@ const transitions = {
   RECEIVED: ['STOCKED', 'REFUSED'],
   REFUSED: ['BACKING'],
   BACKING: ['CLOSED'],
-}
-
-function formatDate(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleString('zh-CN')
 }
 
 function deliveryText(value) {
@@ -238,8 +266,6 @@ function buildQuery() {
     page: page.page,
     size: page.size,
     user: isWorker.value ? undefined : [loginUserId.value],
-    date0: timeRange.value?.[0],
-    date1: timeRange.value?.[1],
   }
 }
 
@@ -257,7 +283,7 @@ async function loadRows() {
   }
 }
 
-function searchRows() {
+function handleRefresh() {
   page.page = 1
   loadRows()
 }
@@ -317,16 +343,51 @@ function goStockIn() {
   router.push({ name: 'console-items-stocks', query: { donationId: String(detail.value.id) } })
 }
 
+const stockInLoading = ref(false)
+const stockInDialogVisible = ref(false)
+const stockInItem = ref(null)
+
+function openStockInDialog(item) {
+  stockInItem.value = item
+  stockInDialogVisible.value = true
+}
+
+async function submitStockIn() {
+  if (!stockInItem.value || stockInLoading.value) return
+  const item = stockInItem.value
+  stockInLoading.value = true
+  try {
+    let itemId = item.itemId
+    if (!itemId) {
+      const created = await createItem({ name: item.itemName, categoryId: item.categoryId, unit: item.itemUnit })
+      itemId = created.id
+    }
+    await createStockRecord({
+      itemId,
+      count: String(item.count),
+      action: 'IN',
+      sourceType: 'DONATION',
+      expireTime: item.expireTime,
+      purpose: `捐赠 #${detail.value?.id} 入库`,
+    })
+    ElMessage.success('入库成功')
+    stockInDialogVisible.value = false
+    if (detail.value?.id) {
+      detail.value = await getDonation(detail.value.id)
+    }
+  } catch (error) {
+    ElMessage.warning(error?.message || '入库失败')
+  } finally {
+    stockInLoading.value = false
+  }
+}
+
 onMounted(() => {
   loadRows()
 })
 </script>
 
 <style scoped>
-.item-donation-filter-row {
-  grid-template-columns: minmax(240px, 1fr) auto;
-}
-
 .item-donation-subtext {
   display: block;
   margin-top: 3px;

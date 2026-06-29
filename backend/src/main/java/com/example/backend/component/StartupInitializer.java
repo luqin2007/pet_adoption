@@ -33,6 +33,12 @@ public class StartupInitializer implements ApplicationRunner {
     @Value("${application.admin_user}")
     private String adminUsername;
 
+    @Value("${application.admin_password}")
+    private String adminPassword;
+
+    @Value("${spring.mail.username}")
+    private String adminMail;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         createAdminAccount();
@@ -43,14 +49,15 @@ public class StartupInitializer implements ApplicationRunner {
             return;
         }
 
-        String password = StringUtils.generateRandomString(12);
-        String email = adminUsername + "@" + resolveHost();
+        String password = StringUtils.hasText(adminPassword)
+                ? adminPassword
+                : StringUtils.generateRandomString(12);
         Date now = new Date();
         User admin = new User(
                 null,
                 adminUsername,
                 passwordEncoder.encode(password),
-                email,
+                adminMail,
                 UserRole.rezip(UserRole.ADMIN.getMask()),
                 null,
                 null,

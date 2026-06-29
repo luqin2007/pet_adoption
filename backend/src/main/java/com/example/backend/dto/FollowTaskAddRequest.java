@@ -18,11 +18,12 @@ public class FollowTaskAddRequest implements IRequest {
 
     private String remark;
 
-    public FollowTask create(Long adoptId, Long workerId) {
+    public FollowTask create(Long adoptId, Long adopterId, Long workerId) {
         Date now = new Date();
         return new FollowTask(null,
                 adoptId,
                 workerId,
+                adopterId,
                 volunteerId,
                 FollowTaskStatus.CREATE,
                 remark,

@@ -18,6 +18,7 @@ public class DonationItemResponse implements IResponse {
     private Long donationId;
     private BigDecimal count;
     private String description;
+    private Date expireTime;
     private Date createTime;
 
     // item
@@ -38,6 +39,7 @@ public class DonationItemResponse implements IResponse {
                 donationItem.getDonationId(),
                 donationItem.getCount(),
                 donationItem.getDescription(),
+                donationItem.getExpireTime(),
                 donationItem.getCreateTime(),
                 item != null ? item.getId() : null,
                 item != null ? item.getName() : donationItem.getItemName(),

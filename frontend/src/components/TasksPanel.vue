@@ -2,19 +2,20 @@
   <div>
     <el-card class="profile-card pet-admin-card">
       <template #header>
-        <div class="profile-card-header"><strong>救助任务</strong><span>处理现场任务和进度</span></div>
+        <div class="profile-card-header">
+          <strong>救助任务</strong>
+          <div class="profile-actions">
+            <el-button-group class="console-btn-group">
+              <el-button class="warm-btn" :icon="Plus" @click="router.push('/tasks/new')" />
+              <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingTasks" @click="handleRefresh" />
+            </el-button-group>
+          </div>
+        </div>
       </template>
       <section class="pet-admin-section">
-        <section class="filter-panel pet-directory-filter-panel">
-          <div class="pet-filter-row pet-filter-row-primary">
-            <el-input v-model="taskKeyword" class="filter-field-lg" clearable placeholder="按标题、类型、位置或状态搜索" />
-            <div class="pet-filter-action">
-              <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingTasks" @click="loadTasks">刷新</el-button>
-            </div>
-          </div>
-        </section>
-        <el-table :data="visibleTasks" v-loading="loadingTasks" class="user-admin-table">
-          <el-table-column label="任务" min-width="220">
+        <el-table :data="filteredTasks" v-loading="loadingTasks" class="user-admin-table">
+          <el-table-column min-width="220">
+            <template #header><TableFilterHeader label="任务" :filter="filters.summary" type="text" :active="isActive('summary')" /></template>
             <template #default="{ row }">
               <div class="rescue-task-admin-title">
                 <button class="table-primary-link" type="button" @click="goTaskDetail(row)">{{ row.summary || '未命名任务' }}</button>
@@ -22,13 +23,17 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="状态" width="120">
+          <el-table-column width="120">
+            <template #header><TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="statusOptions" /></template>
             <template #default="{ row }"><el-tag type="warning" effect="plain">{{ rescueTaskStatusText(row.status) }}</el-tag></template>
           </el-table-column>
           <el-table-column label="位置" min-width="240">
             <template #default="{ row }">{{ rescueTaskLocationText(row) }}</template>
           </el-table-column>
-          <el-table-column prop="description" label="描述" min-width="220" show-overflow-tooltip />
+          <el-table-column min-width="220" show-overflow-tooltip>
+            <template #header><TableFilterHeader label="描述" :filter="filters.description" type="text" :active="isActive('description')" /></template>
+            <template #default="{ row }">{{ row.description }}</template>
+          </el-table-column>
           <el-table-column width="40" class-name="action-col">
             <template #header><TableActionColumnHeader title="操作" :collapsed="taskActionCollapsed" @toggle="taskActionCollapsed = !taskActionCollapsed" /></template>
             <template #default="{ row }">
@@ -72,7 +77,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="详细位置" prop="detailAddress"><el-input v-model="taskEditForm.detailAddress" placeholder="请输入救助位置" clearable /></el-form-item>
-        <el-form-item label="情况描述" prop="description" class="pet-admin-span-2"><el-input v-model="taskEditForm.description" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="描述现场情况、动物状态和风险" /></el-form-item>
+        <el-form-item label="情况描述" prop="description" class="pet-admin-span-2"><el-input v-model="taskEditForm.description" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="taskEditDialogVisible = false">取消</el-button>
@@ -88,7 +93,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态原因" prop="reason">
-          <el-input v-model="taskReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" placeholder="例如：资料审核通过，安排志愿者跟进" />
+          <el-input v-model="taskReviewForm.reason" type="textarea" :autosize="{ minRows: 4, maxRows: 7 }" />
         </el-form-item>
       </el-form>
       <div class="dialog-footer">
@@ -104,13 +109,15 @@
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { RefreshRight } from '@element-plus/icons-vue'
-import { deleteRescueTask, getRescueTasks, updateRescueTask, updateRescueTaskStatus, getRescueTaskRecords } from '../api/services'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
+import { deleteRescueTask, getRescueTasks, updateRescueTask, updateRescueTaskStatus, getRescueTaskRecords } from '../api/rescue'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { useTableFilters } from '../composables/useTableFilters'
 import { useUserStore } from '../stores/user'
 import { rescueTaskTypeOptions, rescueTaskStatusOptions, rescueTaskStatusText, rescueTaskTypeText, rescueTaskLocationText, taskStatusLabelMap } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 import AuditRecordList from './AuditRecordList.vue'
 
 const userStore = useUserStore()
@@ -131,7 +138,21 @@ const taskTotal = ref(0)
 const taskPage = reactive({ page: 1, size: 10 })
 const taskAuditRecords = ref([])
 const taskAuditLoading = ref(false)
-const taskKeyword = ref('')
+const { filters, isActive, applyFilter } = useTableFilters({
+  summary: { type: 'text' },
+  status: { type: 'enum' },
+  description: { type: 'text' },
+})
+
+const statusOptions = [
+  { value: 'CREATED', label: '已创建' },
+  { value: 'APPROVED', label: '已通过' },
+  { value: 'IN_PROGRESS', label: '进行中' },
+  { value: 'FINISH', label: '已完成' },
+  { value: 'CANCEL', label: '已取消' },
+]
+
+const filteredTasks = computed(() => applyFilter(taskRows.value || []))
 
 const taskEditForm = reactive({ id: '', summary: '', description: '', type: 'FIND', province: '', city: '', district: '', detailAddress: '' })
 const taskReviewForm = reactive({ id: '', status: '', reason: '' })
@@ -139,13 +160,6 @@ const taskReviewForm = reactive({ id: '', status: '', reason: '' })
 const taskEditCityOptions = computed(() => getCityOptions(taskEditForm.province))
 const taskEditDistrictOptions = computed(() => getDistrictOptions(taskEditForm.province, taskEditForm.city))
 const currentUserId = computed(() => String(userStore.profile?.id || ''))
-const visibleTasks = computed(() => {
-  const text = taskKeyword.value.trim().toLowerCase()
-  if (!text) return taskRows.value
-  return taskRows.value.filter((item) =>
-    [item.summary, item.type, item.status, rescueTaskLocationText(item)].filter(Boolean).some((s) => String(s).toLowerCase().includes(text))
-  )
-})
 
 // --- Validation rules ---
 const taskEditRules = {
@@ -161,6 +175,8 @@ const taskReviewRules = {
   status: [{ required: true, message: '请选择审核状态', trigger: 'change' }],
   reason: [{ required: true, message: '请输入审核原因', trigger: 'blur' }],
 }
+
+const handleRefresh = () => { taskPage.page = 1; loadTasks() }
 
 // --- Functions ---
 function handleTaskEditProvinceChange() { taskEditForm.city = ''; taskEditForm.district = ''; if (taskEditForm.province) ensureCityOptions(taskEditForm.province) }
@@ -188,7 +204,7 @@ async function loadTasks() {
       sort: 'update_time',
       order: 'desc',
       user: canManageUsers.value ? undefined : [currentUserId.value],
-      keyword: taskKeyword.value.trim() || undefined,
+      keyword: undefined,
     })
     taskRows.value = Array.isArray(result?.records) ? result.records : []
     taskTotal.value = Number(result?.total || taskRows.value.length)

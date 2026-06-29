@@ -67,4 +67,16 @@ public class Location implements IId {
      * *非空 datetime*
      */
     private Date createTime;
+
+    public Location copy(ParentType parentType, Long parentId, Long userId) {
+        return new Location(null,
+                parentId,
+                parentType,
+                userId,
+                this.province,
+                this.city,
+                this.district,
+                this.detailAddress,
+                new Date());
+    }
 }

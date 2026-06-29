@@ -2,7 +2,7 @@
 import { ref, reactive, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getPetById } from '../api/pets'
-import { addMedicalRecord } from '../api/services'
+import { addMedicalRecord } from '../api/medical'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
@@ -116,7 +116,7 @@ async function submitForm() {
           <el-input-number v-model="form.petAge" :min="0" style="width: 100%" />
         </el-form-item>
         <el-form-item label="就诊类型" prop="type" class="record-create-half">
-          <el-select v-model="form.type" placeholder="请选择" style="width: 100%">
+          <el-select v-model="form.type" style="width: 100%">
             <el-option v-for="item in recordTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>

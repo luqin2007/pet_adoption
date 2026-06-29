@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>寄养申请详情</strong>
-        <span>{{ application?.petName || '查看寄养申请信息' }}</span>
       </div>
     </template>
 
@@ -46,7 +45,6 @@
             </el-avatar>
             <div>
               <strong>{{ application.reviewerName || '待审核' }}</strong>
-              <span>{{ application.reviewerId ? '已分配审核人' : '暂无审核人' }}</span>
             </div>
           </div>
         </section>
@@ -89,7 +87,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, PictureFilled } from '@element-plus/icons-vue'
-import { getBreadingApplication } from '../api/services'
+import { getBreadingApplication } from '../api/adoption'
 
 const route = useRoute()
 const router = useRouter()
@@ -136,7 +134,7 @@ function avatarInitial(value) {
 }
 
 function goBack() {
-  router.push({ name: 'console-adoption-breading' })
+  router.push({ name: 'console-adoption' })
 }
 
 async function loadDetail() {

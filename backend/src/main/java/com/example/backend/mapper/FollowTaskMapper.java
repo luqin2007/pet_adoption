@@ -35,6 +35,13 @@ public interface FollowTaskMapper extends IBaseMapper<FollowTask> {
 
     default MPLambdaQuery<FollowTask> queryByRequest(FollowTaskQueryParams params) {
         return lambdaQuery()
+                // 非工作人员过滤领养人/志愿者
+                .or(params.getRequireAdopter() != null || params.getRequireVolunteer() != null,
+                        wrapper ->
+                                wrapper.eq(params.getRequireAdopter() != null, FollowTask::getAdopterId, params.getRequireAdopter()),
+                        wrapper ->
+                                wrapper.eq(params.getRequireVolunteer() != null, FollowTask::getVolunteerId, params.getRequireVolunteer()))
+                // 其他条件
                 .eq(FollowTask::getAdoptId, params.getAdopt())
                 .eq(FollowTask::getVolunteerId, params.getVolunteer())
                 .in(FollowTask::getStatus, FollowTaskStatus::get, params.getStatus())

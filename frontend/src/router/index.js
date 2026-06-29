@@ -7,7 +7,6 @@ import ArticleEditorView from '../views/ArticleEditorView.vue'
 import AuthView from '../views/AuthView.vue'
 import ForgotPasswordView from '../views/ForgotPasswordView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
-import ApiCoverageView from '../views/ApiCoverageView.vue'
 import BreadingCreateView from '../views/BreadingCreateView.vue'
 import DonationCreateView from '../views/DonationCreateView.vue'
 import HomeView from '../views/HomeView.vue'
@@ -46,27 +45,23 @@ import MedicalRehabPlanDetailPanel from '../components/MedicalRehabPlanDetailPan
 import MedicalRehabPlanCreatePanel from '../components/MedicalRehabPlanCreatePanel.vue'
 import MedicalHealthAssessmentPanel from '../components/MedicalHealthAssessmentPanel.vue'
 import MedicalHealthAssessmentDetailPanel from '../components/MedicalHealthAssessmentDetailPanel.vue'
+import SystemSettingsPanel from '../components/SystemSettingsPanel.vue'
 import FirstRegistrationDetailPanel from '../components/FirstRegistrationDetailPanel.vue'
 import MedicalRecordDetailPanel from '../components/MedicalRecordDetailPanel.vue'
 import FirstRegistrationDetailView from '../views/FirstRegistrationDetailView.vue'
 import MedicalDetailListPanel from '../components/MedicalDetailListPanel.vue'
 import MyArticleManagementPanel from '../components/MyArticleManagementPanel.vue'
-import AdoptionManagementPanel from '../components/AdoptionManagementPanel.vue'
-import AdoptionApplicationDetailPanel from '../components/AdoptionApplicationDetailPanel.vue'
+import AdoptionHubPanel from '../components/AdoptionHubPanel.vue'
+import ApplicationDetailPanel from '../components/ApplicationDetailPanel.vue'
 import AdoptionFollowTaskCreatePanel from '../components/AdoptionFollowTaskCreatePanel.vue'
 import AdoptionFollowTaskDetailPanel from '../components/AdoptionFollowTaskDetailPanel.vue'
-import AdoptionFollowRecordPanel from '../components/AdoptionFollowRecordPanel.vue'
-import BreadingManagementPanel from '../components/BreadingManagementPanel.vue'
-import BreadingApplicationDetailPanel from '../components/BreadingApplicationDetailPanel.vue'
 import AgreementDraftPanel from '../components/AgreementDraftPanel.vue'
-import AgreementManagementPanel from '../components/AgreementManagementPanel.vue'
 import ItemDonationPanel from '../components/ItemDonationPanel.vue'
 import ItemStockPanel from '../components/ItemStockPanel.vue'
-import ItemStockRecordPanel from '../components/ItemStockRecordPanel.vue'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
 import VolunteerApplicationDetailPanel from '../components/VolunteerApplicationDetailPanel.vue'
 import VolunteerShiftDetailPanel from '../components/VolunteerShiftDetailPanel.vue'
-import { medicalRecordOwnerExists } from '../api/services'
+import { medicalRecordOwnerExists } from '../api/medical'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -253,29 +248,20 @@ const router = createRouter({
         { path: 'pets', name: 'console-pets', component: PetsPanel },
         { path: 'lost-pets', name: 'console-lost-pets', component: LostPetsPanel },
         { path: 'tasks', name: 'console-tasks', component: TasksPanel },
-        { path: 'articles/mine', name: 'console-article-mine', component: MyArticleManagementPanel, props: { mode: 'mine' } },
-        { path: 'articles/favorites', name: 'console-article-favorites', component: MyArticleManagementPanel, props: { mode: 'favorites' } },
-        { path: 'articles/manage', name: 'console-article-manage', component: MyArticleManagementPanel, props: { mode: 'manage' }, meta: { guard: 'canManageUsers' } },
-        { path: 'adoption/adopts', name: 'console-adoption-adopts', component: AdoptionManagementPanel },
-        { path: 'adoption/breading', name: 'console-adoption-breading', component: BreadingManagementPanel },
-        { path: 'adoption/breading/:id', name: 'console-adoption-breading-detail', component: BreadingApplicationDetailPanel },
-        { path: 'adoption/follow-records', redirect: { name: 'console-adoption-follow-tasks' } },
-        { path: 'adoption/follow-tasks', name: 'console-adoption-follow-tasks', component: AdoptionFollowRecordPanel },
+        { path: 'articles', name: 'console-articles', component: MyArticleManagementPanel },
+        { path: 'adoption', name: 'console-adoption', component: AdoptionHubPanel },
+        { path: 'adoption/breading/:id', name: 'console-adoption-breading-detail', component: ApplicationDetailPanel },
         { path: 'adoption/follow-tasks/:id', name: 'console-adoption-follow-task-detail', component: AdoptionFollowTaskDetailPanel },
-        { path: 'adoption/adopts/:id', name: 'console-adoption-adopt-detail', component: AdoptionApplicationDetailPanel },
+        { path: 'adoption/adopts/:id', name: 'console-adoption-adopt-detail', component: ApplicationDetailPanel },
         { path: 'adoption/adopts/:id/follow', name: 'console-adoption-follow-create', component: AdoptionFollowTaskCreatePanel, meta: { guard: 'canManageAdoptFollow' } },
-        { path: 'adoption/agreements', name: 'console-adoption-agreements', component: AgreementManagementPanel, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-paper', name: 'console-adoption-agreement-paper-create', component: AgreementDraftPanel, props: { type: 'PAPER' }, meta: { guard: 'canManageUsers' } },
         { path: 'adoption/agreements/new-electronic', name: 'console-adoption-agreement-electronic-create', component: AgreementDraftPanel, props: { type: 'ELECTRONIC' }, meta: { guard: 'canManageUsers' } },
         { path: 'items/donations', name: 'console-items-donations', component: ItemDonationPanel },
-        { path: 'items/stocks', name: 'console-items-stocks', component: ItemStockPanel, meta: { guard: 'canManageUsers' } },
-        { path: 'items/records', name: 'console-items-records', component: ItemStockRecordPanel, meta: { guard: 'canManageUsers' } },
-        { path: 'volunteer/recruitments', name: 'console-volunteer-recruitments', component: VolunteerManagementPanel, props: { section: 'recruitments', hideTabs: true }, meta: { guard: 'canManageUsers' } },
-        { path: 'volunteer/applications', name: 'console-volunteer-applications', component: VolunteerManagementPanel, props: { section: 'applications', hideTabs: true } },
+        { path: 'items/stocks', name: 'console-items-stocks', component: ItemStockPanel, meta: { guard: 'canViewStocks' } },
+        { path: 'items/records', redirect: { name: 'console-items-stocks', query: { tab: 'records' } } },
+        { path: 'volunteer', name: 'console-volunteer', component: VolunteerManagementPanel, props: { allowedSections: ['activities', 'rewards', 'profiles'] } },
+        { path: 'volunteer/recruitments', name: 'console-volunteer-recruitments', component: VolunteerManagementPanel, props: { allowedSections: ['applications', 'recruitments'] } },
         { path: 'volunteer/applications/:id', name: 'console-volunteer-application-detail', component: VolunteerApplicationDetailPanel },
-        { path: 'volunteer/profiles', name: 'console-volunteer-profiles', component: VolunteerManagementPanel, props: { section: 'profiles', hideTabs: true }, meta: { guard: 'canManageUsers' } },
-        { path: 'volunteer/rewards', name: 'console-volunteer-rewards', component: VolunteerManagementPanel, props: { section: 'rewards', hideTabs: true }, meta: { guard: 'canManageUsersOrVolunteer' } },
-        { path: 'volunteer/activities', name: 'console-volunteer-activities', component: VolunteerManagementPanel, props: { section: 'activities', hideTabs: true }, meta: { guard: 'canManageUsersOrVolunteer' } },
         { path: 'volunteer/activities/:id', name: 'console-volunteer-activity-detail', component: VolunteerShiftDetailPanel, meta: { guard: 'canManageUsersOrVolunteer' } },
         { path: 'medical/first', name: 'console-medical-first', component: MedicalFirstPanel, meta: { guard: 'canViewMedical' } },
         { path: 'medical/first/:id', name: 'console-medical-first-detail', component: FirstRegistrationDetailPanel, meta: { guard: 'canViewMedical' } },
@@ -289,18 +275,13 @@ const router = createRouter({
         { path: 'medical/rehab/:id', name: 'console-medical-rehab-detail', component: MedicalRehabPlanDetailPanel, meta: { guard: 'canManageRehab' } },
         { path: 'medical/health', name: 'console-medical-health', component: MedicalHealthAssessmentPanel, meta: { guard: 'canManageMedical' } },
         { path: 'medical/health/:id', name: 'console-medical-health-detail', component: MedicalHealthAssessmentDetailPanel, meta: { guard: 'canManageMedical' } },
+        { path: 'settings', name: 'console-settings', component: SystemSettingsPanel, meta: { guard: 'canManageUsers' } },
       ],
     },
     {
       path: '/console/audit-history',
       name: 'audit-history',
       component: AuditHistoryView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/api-coverage',
-      name: 'api-coverage',
-      component: ApiCoverageView,
       meta: { requiresAuth: true },
     },
   ],
@@ -329,6 +310,7 @@ router.beforeEach(async (to) => {
     const guard = to.meta.guard
     let allowed = false
     if (guard === 'canManageUsers') allowed = isAdmin || isWorker
+    else if (guard === 'canViewStocks') allowed = isAdmin || isWorker || isVolunteer || !!userStore.profile?.id
     else if (guard === 'canManageMedical') allowed = isAdmin || isWorker || isDoctor
     else if (guard === 'canManageAdoptFollow') allowed = isWorker
     else if (guard === 'canManageRehab') allowed = isDoctor || isVolunteer

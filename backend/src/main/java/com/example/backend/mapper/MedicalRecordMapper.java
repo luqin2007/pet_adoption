@@ -14,8 +14,14 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface MedicalRecordMapper extends IBaseMapper<MedicalRecord> {
 
-    default MPLambdaQuery<MedicalRecord> selectByPet(Long petId) {
+    default MPLambdaQuery<MedicalRecord> queryByPet(Long petId) {
         return lambdaQuery().eq(MedicalRecord::getPetId, petId);
+    }
+
+    default MPLambdaQuery<MedicalRecord> queryActiveByPet(Long petId) {
+        return lambdaQuery()
+                .eq(MedicalRecord::getPetId, petId)
+                .eq(MedicalRecord::getStatus, MedicalRecordStatus.PROCESSING);
     }
 
     default MPLambdaQuery<MedicalRecord> queryByOwnerId(Long ownerId) {

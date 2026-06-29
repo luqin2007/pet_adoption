@@ -14,6 +14,7 @@ public class AgreementQueryParams implements IParam, IValidatedRequest {
     private Boolean signed;
     private Date time0;
     private Date time1;
+    private Long user;
 
     @Override
     public void validate(Errors errors) {

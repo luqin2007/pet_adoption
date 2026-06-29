@@ -112,11 +112,9 @@ onMounted(() => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main">
-      <section class="content-hero article-hero-simple">
-        <div class="content-hero-copy article-hero-copy-full">
-          <span class="hero-chip">公益文章</span>
-          <h1>把一线救助经验，变成看得见也读得懂的内容</h1>
-          <p>这里有救助故事、活动消息和养护知识，随时翻一翻。</p>
+      <section class="directory-hero article-hero-simple">
+        <div>
+          <h1>公益文章</h1>
         </div>
       </section>
 

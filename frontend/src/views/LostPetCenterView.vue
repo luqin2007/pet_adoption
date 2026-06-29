@@ -1,10 +1,10 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Icon } from '@iconify/vue'
 import { Search } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
+import PetCard from '../components/PetCard.vue'
 import { getLostPets } from '../api/lost'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
@@ -24,22 +24,42 @@ const searchForm = reactive({
   breed: '',
   province: '',
   city: '',
-  address: '',
+  district: '',
   lostDate: '',
 })
 
 const {
   ensureInformationCatalog,
   ensureCityOptions,
+  ensureDistrictOptions,
   provinceOptions,
   typeOptions,
   getCityOptions,
+  getDistrictOptions,
   getBreedOptions,
 } = useInformationCatalog()
 
 const cityOptions = computed(() => getCityOptions(searchForm.province))
+const districtOptions = computed(() => getDistrictOptions(searchForm.province, searchForm.city))
 const breedOptions = computed(() => getBreedOptions(searchForm.type))
 const visibleRecords = computed(() => lostPets.value.filter((item) => item.status === 'SEARCHING'))
+
+const petLikeRecords = computed(() =>
+  visibleRecords.value.map((item) => ({
+    id: item.id,
+    cover: item.petCover,
+    name: item.name,
+    type: item.type,
+    breed: item.breed,
+    sex: item.sex,
+    age: item.age,
+    description: item.description,
+    tags: item.features ? [{ tag: item.features }] : [],
+    locations: item.location ? [item.location] : [],
+    username: item.ownerName,
+    _lostTime: item.lostTime,
+  })),
+)
 
 function handleTypeChange() {
   searchForm.breed = ''
@@ -47,8 +67,16 @@ function handleTypeChange() {
 
 function handleProvinceChange() {
   searchForm.city = ''
+  searchForm.district = ''
   if (searchForm.province) {
     ensureCityOptions(searchForm.province)
+  }
+}
+
+function handleCityChange() {
+  searchForm.district = ''
+  if (searchForm.province && searchForm.city) {
+    ensureDistrictOptions(searchForm.province, searchForm.city)
   }
 }
 
@@ -62,7 +90,7 @@ function buildQuery() {
     bread: searchForm.breed ? [searchForm.breed] : undefined,
     province: searchForm.province || undefined,
     city: searchForm.city || undefined,
-    address: searchForm.address.trim() || undefined,
+    district: searchForm.district || undefined,
     time0: searchForm.lostDate || undefined,
   }
 }
@@ -92,16 +120,12 @@ function changePage(nextPage) {
 }
 
 function openLostPetDetail(id) {
-  if (!id) {
-    return
-  }
+  if (!id) return
   router.push(`/lost/${id}`)
 }
 
 function formatDate(value) {
-  if (!value) {
-    return '时间待补充'
-  }
+  if (!value) return '时间待补充'
   return String(value).slice(0, 10)
 }
 
@@ -116,6 +140,12 @@ onMounted(async () => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main">
+      <section class="directory-hero">
+        <div>
+          <h1>走失宠物</h1>
+        </div>
+      </section>
+
       <section class="filter-panel pet-directory-filter-panel">
         <div class="pet-filter-row lost-filter-grid-top">
           <el-input v-model="searchForm.name" class="filter-field-md" placeholder="宠物名称" clearable />
@@ -128,12 +158,15 @@ onMounted(async () => {
         </div>
 
         <div class="pet-filter-row lost-filter-grid-bottom">
-          <div class="pet-cascader-group pet-cascader-group-2 filter-field-md">
+          <div class="pet-cascader-group pet-cascader-group-3 filter-field-lg">
             <el-select v-model="searchForm.province" placeholder="省份" clearable filterable @change="handleProvinceChange">
               <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
             </el-select>
-            <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province">
+            <el-select v-model="searchForm.city" placeholder="城市" clearable filterable :disabled="!searchForm.province" @change="handleCityChange">
               <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+            </el-select>
+            <el-select v-model="searchForm.district" placeholder="区县" clearable filterable :disabled="!searchForm.city">
+              <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
             </el-select>
           </div>
           <el-date-picker
@@ -143,46 +176,19 @@ onMounted(async () => {
             value-format="YYYY-MM-DD"
             placeholder="走失日期"
           />
-          <el-input v-model="searchForm.address" class="filter-field-xl" placeholder="详细地点" clearable />
           <div class="pet-filter-action">
             <el-button class="warm-btn" :icon="Search" @click="handleSearch">搜索</el-button>
           </div>
         </div>
       </section>
 
-      <section class="lost-grid" v-loading="loading">
-        <article
-          v-for="item in visibleRecords"
-          :key="item.id"
-          class="lost-card"
-          tabindex="0"
-          role="button"
+      <section class="directory-grid" v-loading="loading">
+        <PetCard
+          v-for="item in petLikeRecords" :key="item.id"
+          :pet="item"
+          :badge-text="formatDate(item._lostTime)"
           @click="openLostPetDetail(item.id)"
-          @keyup.enter="openLostPetDetail(item.id)"
-          @keyup.space="openLostPetDetail(item.id)"
-        >
-          <div class="lost-cover">
-            <img v-if="item.petCover" :src="item.petCover" :alt="item.name" loading="lazy" />
-            <div v-else class="lost-cover-placeholder">暂无图片</div>
-          </div>
-          <div class="lost-body">
-            <div class="directory-head">
-              <div>
-                <h3>{{ item.name }}</h3>
-                <p>{{ item.type }} · {{ item.breed || '品种待补充' }} · {{ item.sex }}</p>
-              </div>
-              <span class="directory-type">{{ formatDate(item.lostTime) }}</span>
-            </div>
-
-            <p class="directory-desc">{{ item.description || '走失经过待补充' }}</p>
-
-            <div class="volunteer-meta">
-              <span><Icon icon="mdi:map-marker-radius-outline" />{{ item.location?.city }} {{ item.location?.detailAddress }}</span>
-              <span v-if="item.features"><Icon icon="mdi:star-four-points-outline" />{{ item.features }}</span>
-              <span><Icon icon="mdi:phone-outline" />{{ item.ownerName }} · {{ item.contactPhone }}</span>
-            </div>
-          </div>
-        </article>
+        />
         <el-empty
           v-if="!loading && visibleRecords.length === 0"
           class="grid-empty"
@@ -204,3 +210,6 @@ onMounted(async () => {
     <AppFooter />
   </div>
 </template>
+
+<style scoped>
+</style>

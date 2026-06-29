@@ -571,6 +571,8 @@ CREATE TABLE `agreement` (
   `parent_type` varchar(20) NOT NULL COMMENT '申请类型 (ADOPT / BREADING)',
   `content` text COMMENT '电子协议正文，null 表示纸质协议扫描',
   `type` varchar(20) NOT NULL COMMENT '协议类型',
+  `applicant_id` bigint not null COMMENT '签署用户',
+  `reviewer_id` bigint not null COMMENT '审核用户',
   `sign` varchar(255) COMMENT '签名图片',
   `sign_time` datetime COMMENT '签署时间',
   `create_time` datetime NOT NULL COMMENT '创建时间',
@@ -604,6 +606,7 @@ CREATE TABLE `follow_task` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '领养跟踪任务',
   `adopt_id` bigint NOT NULL COMMENT '申请 id',
   `worker_id` bigint NOT NULL COMMENT '安排人员',
+  `adopter_id` bigint NOT NULL COMMENT '领养人员',
   `volunteer_id` bigint COMMENT '志愿者 id',
   `status` varchar(20) NOT NULL COMMENT '状态',
   `remark` text COMMENT '备注（如节假日顺延等）',
@@ -615,6 +618,8 @@ CREATE TABLE `follow_task` (
   CONSTRAINT `fk_follow_task_adopt_id` FOREIGN KEY (`adopt_id`) REFERENCES `adopt` (`id`),
   KEY `idx_follow_task_worker_id` (`worker_id`),
   CONSTRAINT `fk_follow_task_worker_id` FOREIGN KEY (`worker_id`) REFERENCES `user` (`id`),
+  KEY `idx_follow_task_adopter_id` (`adopter_id`),
+  CONSTRAINT `fk_follow_task_adopter_id` FOREIGN KEY (`adopter_id`) REFERENCES `user` (`id`),
   KEY `idx_follow_task_volunteer_id` (`volunteer_id`),
   CONSTRAINT `fk_follow_task_volunteer_id` FOREIGN KEY (`volunteer_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='领养跟踪任务';
@@ -623,6 +628,7 @@ CREATE TABLE `follow_record` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '领养跟踪记录',
   `task_id` bigint NOT NULL COMMENT '跟踪任务 id',
   `volunteer_id` bigint NOT NULL COMMENT '志愿者 id',
+  `adopter_id` bigint NOT NULL COMMENT '领养人员',
   `summary` varchar(255) NOT NULL COMMENT '简介状况',
   `visit_time` datetime NOT NULL COMMENT '回访时间',
   `life_status` text COMMENT '生活状态',
@@ -634,7 +640,9 @@ CREATE TABLE `follow_record` (
   KEY `idx_follow_record_task_id` (`task_id`),
   CONSTRAINT `fk_follow_record_task_id` FOREIGN KEY (`task_id`) REFERENCES `follow_task` (`id`),
   KEY `idx_follow_record_volunteer_id` (`volunteer_id`),
-  CONSTRAINT `fk_follow_record_volunteer_id` FOREIGN KEY (`volunteer_id`) REFERENCES `user` (`id`)
+  CONSTRAINT `fk_follow_record_volunteer_id` FOREIGN KEY (`volunteer_id`) REFERENCES `user` (`id`),
+      KEY `idx_follow_record_adopter_id` (`adopter_id`),
+  CONSTRAINT `fk_follow_record_adopter_id` FOREIGN KEY (`adopter_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='领养跟踪记录';
 
 CREATE TABLE `category` (
@@ -777,7 +785,6 @@ CREATE TABLE `order` (
   `parent_type` varchar(20) NOT NULL COMMENT '关联类型',
   `type` varchar(20) NOT NULL COMMENT '处方类型',
   `count` decimal(10,5) NOT NULL COMMENT '数量',
-  `unit` varchar(10) NOT NULL COMMENT '单位',
   `price` decimal(10,2) NOT NULL COMMENT '价格',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),

@@ -58,7 +58,7 @@ async function loadArticle() {
     form.content = detail?.content || ''
   } catch (error) {
     ElMessage.warning(error?.message || '加载文章失败')
-    router.replace('/console?tab=article-mine')
+    router.replace('/console/articles')
   } finally {
     loading.value = false
   }
@@ -77,16 +77,21 @@ async function saveArticle(publish = false) {
         content: form.content.trim(),
       })
       ElMessage.success('文章已更新')
+      router.push('/console/articles')
     } else {
-      await createArticle({
+      const result = await createArticle({
         type: isWorker.value ? form.type : 'STORY',
         title: form.title.trim(),
         content: form.content.trim(),
         publish,
       })
       ElMessage.success(publish ? '文章已发布' : '草稿已保存')
+      if (publish) {
+        router.push(`/articles/${result.id}`)
+      } else {
+        router.push('/console/articles')
+      }
     }
-    router.push('/console?tab=article-mine')
   } catch (error) {
     if (error) {
       ElMessage.warning(error?.message || '保存文章失败')
@@ -97,7 +102,7 @@ async function saveArticle(publish = false) {
 }
 
 function goBack() {
-  router.push('/console?tab=article-mine')
+  router.push('/console/articles')
 }
 
 onMounted(() => {
@@ -142,7 +147,6 @@ onMounted(() => {
                 v-model="form.content"
                 type="textarea"
                 :autosize="{ minRows: 14, maxRows: 24 }"
-                placeholder="在这里写下救助经过、活动信息或养护知识。"
               />
             </el-form-item>
           </el-form>
@@ -150,7 +154,7 @@ onMounted(() => {
           <div class="article-editor-actions">
             <el-button class="soft-btn" @click="goBack">取消</el-button>
             <template v-if="isEditMode">
-              <el-button class="soft-btn article-search-btn" :loading="saving" @click="saveArticle(false)">保存修改</el-button>
+              <el-button class="soft-btn article-search-btn" :loading="saving" @click="saveArticle(false)">保存</el-button>
             </template>
             <template v-else>
               <el-button class="soft-btn" :loading="saving" @click="saveArticle(false)">保存草稿</el-button>

@@ -15,6 +15,7 @@ public enum AgreementUpdateType {
     UPDATE, // 更新内容
     SIGN_UPLOAD, // 上传签名
     SIGN_CONFIRM, // 确认签署
+    SIGN_REFUSE, // 拒绝签署
     SIGN; // 签订
 
     public static AgreementUpdateType get(String name) {

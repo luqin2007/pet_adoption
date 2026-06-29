@@ -3,31 +3,29 @@
     <template #header>
       <div class="profile-card-header">
         <strong>病例</strong>
-        <span>{{ petName ? `${petName} 的病例` : '所有病例记录' }}</span>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadRecords" />
+        </div>
       </div>
     </template>
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row medical-first-cols-search">
-          <el-input v-model="searchKeyword" class="filter-field-lg" clearable placeholder="按摘要搜索" @keyup.enter="searchRecords" />
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRecords">搜索</el-button>
-          </div>
-        </div>
-      </section>
       <el-table :data="displayedRecords" v-loading="loading" class="user-admin-table">
-        <el-table-column label="摘要" min-width="180" show-overflow-tooltip>
+        <el-table-column min-width="180" show-overflow-tooltip>
+          <template #header><TableFilterHeader label="摘要" :filter="filters.summary" type="text" :active="isActive('summary')" /></template>
           <template #default="{ row }">
             <button class="table-primary-link" type="button" @click="goDetail(row)">{{ row.summary || '未命名病例' }}</button>
           </template>
         </el-table-column>
-        <el-table-column label="宠物" width="120">
+        <el-table-column width="120">
+          <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" /></template>
           <template #default="{ row }">{{ row.petName || '' }}</template>
         </el-table-column>
-        <el-table-column label="医生" width="100">
+        <el-table-column label="兽医" width="100">
+          <template #header><TableFilterHeader label="兽医" :filter="filters.username" type="text" :active="isActive('username')" /></template>
           <template #default="{ row }">{{ row.username || '' }}</template>
         </el-table-column>
         <el-table-column label="状态" width="100">
+          <template #header><TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="detailStatusOptions" /></template>
           <template #default="{ row }">
             <el-tag size="small" :type="detailStatusTagType(row)" effect="plain">
               {{ detailStatusText(row) }}
@@ -56,7 +54,7 @@
           :current-page="page.page"
           :page-size="page.size"
           :total="filteredTotal"
-          @current-change="changePage"
+          @current-change="(p) => page.page = p"
         />
       </div>
     </section>
@@ -93,12 +91,14 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
-import { completeMedicalDetail, discardMedicalDetail, getMedicalRecords, getMedicalDetails, updateMedicalDetail } from '../api/services'
+import { RefreshRight } from '@element-plus/icons-vue'
+import { completeMedicalDetail, discardMedicalDetail, getMedicalRecords, getMedicalDetails, updateMedicalDetail } from '../api/medical'
 import { getUsers } from '../api/user'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
+import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -109,7 +109,6 @@ const loadingDoctors = ref(false)
 const transferring = ref(false)
 const allRecords = ref([])
 const doctorOptions = ref([])
-const searchKeyword = ref('')
 const actionCollapsed = ref(false)
 const actingId = ref('')
 const transferDialogVisible = ref(false)
@@ -122,21 +121,28 @@ const loginRole = computed(() => Number(userStore.profile?.role || 0))
 const loginUserId = computed(() => String(userStore.profile?.id || ''))
 const isDoctor = computed(() => hasRole(loginRole.value, ROLE.DOCTOR))
 
-const displayedRecords = computed(() => {
-  let list = allRecords.value
-  if (searchKeyword.value.trim()) {
-    const kw = searchKeyword.value.trim().toLowerCase()
-    list = list.filter((r) => (r.summary || '').toLowerCase().includes(kw))
-  }
-  const start = (page.page - 1) * page.size
-  return list.slice(start, start + page.size)
+const { filters, isActive, applyFilter } = useTableFilters({
+  petName: { type: 'text' },
+  summary: { type: 'text' },
+  username: { type: 'text' },
+  status: { type: 'enum' },
+  createTime: { type: 'time' },
 })
 
-const filteredTotal = computed(() => {
-  if (!searchKeyword.value.trim()) return allRecords.value.length
-  const kw = searchKeyword.value.trim().toLowerCase()
-  return allRecords.value.filter((r) => (r.summary || '').toLowerCase().includes(kw)).length
+const detailStatusOptions = [
+  { label: '进行中', value: 'ACTIVE' },
+  { label: '已完成', value: 'COMPLETED' },
+  { label: '已废弃', value: 'DISCARD' },
+]
+
+const filteredRecords = computed(() => applyFilter(allRecords.value || []))
+
+const displayedRecords = computed(() => {
+  const start = (page.page - 1) * page.size
+  return filteredRecords.value.slice(start, start + page.size)
 })
+
+const filteredTotal = computed(() => filteredRecords.value.length)
 
 function formatDate(value) {
   if (!value) return ''
@@ -147,14 +153,6 @@ function formatDate(value) {
 
 function goDetail(row) {
   if (row?.id) router.push(`/medical/detail/${row.id}`)
-}
-
-function searchRecords() {
-  page.page = 1
-}
-
-function changePage(p) {
-  page.page = p
 }
 
 function isOwnedByLoginDoctor(row) {

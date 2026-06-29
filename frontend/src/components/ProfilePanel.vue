@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, Lock, Upload, User } from '@element-plus/icons-vue'
+import { Check, Delete, Lock, Upload, User } from '@element-plus/icons-vue'
 import { getUserById, updateUserById, uploadUserAvatar, deleteUserAvatar } from '../api/user'
 import { useUserStore } from '../stores/user'
 
@@ -236,8 +236,10 @@ onMounted(() => {
   <el-card class="profile-card" v-loading="loadingProfile">
     <template #header>
       <div class="profile-card-header">
-        <strong>个人信息修改</strong>
-        <span>修改后将同步到你的登录资料</span>
+        <strong>个人信息</strong>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="Check" :loading="submitting" @click="submitProfile" />
+        </div>
       </div>
     </template>
 
@@ -291,17 +293,13 @@ onMounted(() => {
       </el-form-item>
 
       <el-form-item label="确认新密码" prop="confirmPassword">
-        <el-input v-model="profileForm.confirmPassword" placeholder="请再次输入新密码" show-password>
+        <el-input v-model="profileForm.confirmPassword" show-password>
           <template #prefix>
             <el-icon><Lock /></el-icon>
           </template>
         </el-input>
       </el-form-item>
 
-      <div class="profile-actions">
-        <el-button @click="resetForm">重置</el-button>
-        <el-button type="warning" :loading="submitting" @click="submitProfile">保存修改</el-button>
-      </div>
     </el-form>
   </el-card>
 </template>

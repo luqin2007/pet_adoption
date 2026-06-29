@@ -5,7 +5,7 @@ import { ArrowLeft, Check, Delete, Plus, Upload } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { beginDonation, createDonation, deleteDonationFile, getCategories, uploadDonationFile } from '../api/services'
+import { beginDonation, createDonation, deleteDonationFile, getCategories, getItems, uploadDonationFile } from '../api/inventory'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const router = useRouter()
@@ -25,6 +25,8 @@ const form = reactive({
   description: '',
 })
 
+const itemsByCategory = ref({})
+
 const rules = {
   delivery: [{ required: true, message: '请选择交付方式', trigger: 'change' }],
 }
@@ -41,6 +43,7 @@ const requiresTracking = computed(() => form.delivery === 'EXPRESS')
 
 function createBlankItem() {
   return {
+    itemId: null,
     itemName: '',
     itemUnit: '件',
     categoryId: '',
@@ -61,6 +64,39 @@ async function loadCategories() {
   } catch {
     categories.value = []
   }
+}
+
+async function loadItemsByCategory(categoryId) {
+  if (!categoryId || itemsByCategory.value[categoryId]) return
+  try {
+    const result = await getItems({ size: 200, category: [String(categoryId)] })
+    itemsByCategory.value[categoryId] = Array.isArray(result?.records) ? result.records : []
+  } catch {
+    itemsByCategory.value[categoryId] = []
+  }
+}
+
+function onCategoryChange(item) {
+  item.itemId = null
+  item.itemName = ''
+  item.itemUnit = ''
+  loadItemsByCategory(item.categoryId)
+}
+
+function onItemNameChange(item, val) {
+  const list = itemsByCategory.value[item.categoryId] || []
+  const matched = list.find((i) => i.name === val)
+  if (matched) {
+    item.itemId = matched.id
+    item.itemUnit = matched.unit
+  } else {
+    item.itemId = null
+  }
+}
+
+function onItemNameClear(item) {
+  item.itemId = null
+  item.itemUnit = ''
 }
 
 async function ensureDonationUuid() {
@@ -115,10 +151,24 @@ function removeItem(index) {
 }
 
 function validateItems() {
-  const invalidIndex = form.items.findIndex((item) => !item.itemName.trim() || !item.itemUnit.trim() || !item.categoryId || !item.count || !item.expireTime)
-  if (invalidIndex >= 0) {
-    ElMessage.warning(`请补全第 ${invalidIndex + 1} 项物资信息`)
-    return false
+  for (let i = 0; i < form.items.length; i++) {
+    const item = form.items[i]
+    if (!item.categoryId) {
+      ElMessage.warning(`请选择第 ${i + 1} 项物资的分类`)
+      return false
+    }
+    if (!item.itemName.trim()) {
+      ElMessage.warning(`请输入第 ${i + 1} 项物资名称`)
+      return false
+    }
+    if (!item.itemId && !item.itemUnit.trim()) {
+      ElMessage.warning(`请输入第 ${i + 1} 项物资的单位`)
+      return false
+    }
+    if (!item.expireTime) {
+      ElMessage.warning(`请选择第 ${i + 1} 项物资的有效期`)
+      return false
+    }
   }
   return true
 }
@@ -153,16 +203,19 @@ async function submitForm() {
       address: form.address.trim(),
       trackingNumber: form.trackingNumber.trim(),
       description: form.description.trim(),
-      items: form.items.map((item) => ({
-        name: item.itemName.trim(),
-        itemId: null,
-        itemName: item.itemName.trim(),
-        itemUnit: item.itemUnit.trim(),
-        categoryId: item.categoryId,
-        description: item.description.trim() || form.description.trim(),
-        count: String(item.count),
-        expireTime: item.expireTime,
-      })),
+      items: form.items.map((item) => {
+        const base = {
+          name: item.itemName.trim(),
+          categoryId: item.categoryId,
+          description: item.description.trim() || form.description.trim(),
+          count: String(item.count),
+          expireTime: item.expireTime,
+        }
+        if (item.itemId) {
+          return { ...base, itemId: item.itemId }
+        }
+        return { ...base, itemId: null, itemName: item.itemName.trim(), itemUnit: item.itemUnit.trim() }
+      }),
     })
     ElMessage.success('物资捐赠已提交')
     router.push('/console/items/donations')
@@ -184,15 +237,6 @@ onMounted(() => {
     <AppHeader :nav-items="navItems" />
 
     <main class="subpage-main action-form-page">
-      <section class="action-form-hero">
-        <div>
-          <span class="hero-chip">物资捐赠</span>
-          <h1>登记可捐赠的救助物资</h1>
-          <p>捐赠食品、药品或转运用品时，先留下交付方式。</p>
-        </div>
-        <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回首页</el-button>
-      </section>
-
       <section class="action-form-panel">
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
           <div class="donation-item-list action-form-span-2">
@@ -206,16 +250,19 @@ onMounted(() => {
                 <el-button text type="danger" :icon="Delete" @click="removeItem(index)">删除</el-button>
               </div>
               <div class="donation-item-grid">
-                <el-form-item label="物资名称">
-                  <el-input v-model="item.itemName" placeholder="例如：幼猫粮、尿垫、航空箱" clearable />
-                </el-form-item>
-                <el-form-item label="单位">
-                  <el-input v-model="item.itemUnit" placeholder="袋 / 箱 / 个" clearable />
-                </el-form-item>
                 <el-form-item label="物资分类">
-                  <el-select v-model="item.categoryId" placeholder="选择已有分类" filterable clearable>
+                  <el-select v-model="item.categoryId" placeholder="先选择分类" filterable clearable @change="onCategoryChange(item)">
                     <el-option v-for="category in categories" :key="category.id" :label="category.name" :value="String(category.id)" />
                   </el-select>
+                </el-form-item>
+                <el-form-item label="物资名称">
+                  <el-select v-model="item.itemName" placeholder="选择或输入物品" filterable allow-create default-first-option clearable :disabled="!item.categoryId" @change="(val) => onItemNameChange(item, val)" @clear="onItemNameClear(item)">
+                    <el-option v-for="option in (itemsByCategory[item.categoryId] || [])" :key="option.id" :label="option.name" :value="option.name" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="单位">
+                  <el-input v-model="item.itemUnit" :readonly="!!item.itemId" :class="{ 'is-readonly-unit': !!item.itemId }" clearable />
+                  <span v-if="item.itemId" class="donation-unit-hint">来自已有物品</span>
                 </el-form-item>
                 <el-form-item label="数量">
                   <el-input-number v-model="item.count" :min="1" :controls="false" />
@@ -224,7 +271,7 @@ onMounted(() => {
                   <el-date-picker v-model="item.expireTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" placeholder="选择有效期" />
                 </el-form-item>
                 <el-form-item label="物资说明">
-                  <el-input v-model="item.description" placeholder="新旧程度、规格、包装状态等" clearable />
+                  <el-input v-model="item.description" clearable />
                 </el-form-item>
               </div>
             </section>
@@ -235,13 +282,13 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="取货地址">
-            <el-input v-model="form.address" :disabled="!requiresAddress" placeholder="定点取货时填写" clearable />
+            <el-input v-model="form.address" :disabled="!requiresAddress" clearable />
           </el-form-item>
           <el-form-item label="快递单号">
-            <el-input v-model="form.trackingNumber" :disabled="!requiresTracking" placeholder="快递寄送时填写" clearable />
+            <el-input v-model="form.trackingNumber" :disabled="!requiresTracking" clearable />
           </el-form-item>
           <el-form-item label="备注" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="4" placeholder="补充物资状态、交付时间、联系方式等" />
+            <el-input v-model="form.description" type="textarea" :rows="4" />
           </el-form-item>
           <el-form-item label="捐赠影像" class="action-form-span-2">
             <input ref="fileInputRef" class="profile-avatar-input" type="file" accept="image/*,video/*" multiple @change="uploadFiles" />
@@ -307,5 +354,16 @@ onMounted(() => {
   .donation-item-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.donation-unit-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.is-readonly-unit :deep(.el-input__wrapper) {
+  background: rgba(179, 124, 82, 0.06);
 }
 </style>

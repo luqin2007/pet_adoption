@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Calendar, Location, Suitcase, Search, UserFilled } from '@element-plus/icons-vue'
+import { Calendar, Location, Search, UserFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
@@ -107,15 +107,10 @@ onMounted(() => {
     <main class="subpage-main">
       <section class="directory-hero volunteer-directory-hero">
         <div>
-          <span class="hero-chip">志愿者中心</span>
-          <h1>把一份热心，送到真正需要的地方</h1>
-          <p>
-            按地点、时间和招募状态筛一筛，找到适合参与的志愿任务。
-          </p>
+          <h1>志愿者中心</h1>
         </div>
         <div class="directory-hero-side">
           <span class="directory-hero-count">{{ filteredRecruitments.length }} 个当前开放招募</span>
-          <el-button class="warm-btn directory-hero-action" :icon="Suitcase" @click="router.push('/tasks/new')">申请救助</el-button>
         </div>
       </section>
 
@@ -181,7 +176,6 @@ onMounted(() => {
             </div>
             <div class="volunteer-card-footer">
               <span>查看招募详情并申请</span>
-              <el-button class="soft-btn" plain @click.stop="openRecruitmentDetail(item.id)">查看</el-button>
             </div>
           </div>
         </article>

@@ -61,12 +61,6 @@ public class Order implements IId {
     private BigDecimal count;
 
     /**
-     * 单位
-     * *非空 varchar(10)*
-     */
-    private String unit;
-
-    /**
      * 价格
      * *非空 decimal(10,2)*
      */

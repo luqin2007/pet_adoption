@@ -3,32 +3,18 @@
     <template #header>
       <div class="profile-card-header">
         <strong>领养管理</strong>
-        <span>{{ isWorker ? '查看与审核全部领养申请' : '查看我的领养申请' }}</span>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
+        </div>
       </div>
     </template>
 
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row adoption-filter-row">
-          <el-select v-model="statusFilter" class="filter-field-sm" clearable placeholder="申请状态">
-            <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-          <el-date-picker
-            v-model="timeRange"
-            type="daterange"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            start-placeholder="申请开始"
-            end-placeholder="申请结束"
-            class="filter-field-lg"
-          />
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
-          </div>
-        </div>
-      </section>
-
-      <el-table :data="rows" v-loading="loading" class="user-admin-table">
-        <el-table-column label="宠物" min-width="180" show-overflow-tooltip>
+      <el-table :data="filteredRows" v-loading="loading" class="user-admin-table">
+        <el-table-column min-width="180" show-overflow-tooltip>
+          <template #header>
+            <TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" />
+          </template>
           <template #default="{ row }">
             <button class="table-primary-link adoption-pet-cell" type="button" @click="goPet(row)">
               <el-avatar :size="34" :src="row.petCover">
@@ -39,6 +25,9 @@
           </template>
         </el-table-column>
         <el-table-column label="申请人" min-width="160">
+          <template #header>
+            <TableFilterHeader label="申请人" :filter="filters.applicantName" type="text" :active="isActive('applicantName')" />
+          </template>
           <template #default="{ row }">
             <div class="adoption-person-cell">
               <strong>{{ row.applicantName || '未命名用户' }}</strong>
@@ -46,7 +35,10 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="120">
+        <el-table-column width="120">
+          <template #header>
+            <TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="adoptStatusFilterOptions" />
+          </template>
           <template #default="{ row }">
             <el-tag :type="statusTagType(row.status)" effect="plain">{{ statusText(row.status) }}</el-tag>
           </template>
@@ -54,7 +46,10 @@
         <el-table-column label="审核人" min-width="120">
           <template #default="{ row }">{{ row.reviewerName || '' }}</template>
         </el-table-column>
-        <el-table-column label="申请时间" min-width="160">
+        <el-table-column min-width="160">
+          <template #header>
+            <TableFilterHeader label="申请时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" />
+          </template>
           <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
         <el-table-column width="40" class-name="action-col">
@@ -135,11 +130,14 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
-import { getAdoptApplication, getAdoptApplications, updateAdoptStatus } from '../api/services'
+import { RefreshRight } from '@element-plus/icons-vue'
+import { getAdoptApplication, getAdoptApplications, updateAdoptStatus } from '../api/adoption'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
+import { adoptionStatusText as statusText, adoptionStatusTagType as statusTagType, formatDate } from '../utils/format'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
+import { useTableFilters } from '../composables/useTableFilters'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -149,8 +147,6 @@ const acting = ref(false)
 const actionCollapsed = ref(false)
 const rows = ref([])
 const total = ref(0)
-const statusFilter = ref('')
-const timeRange = ref([])
 const reviewDialogVisible = ref(false)
 const reviewTarget = ref(null)
 const reviewStatus = ref('PASS')
@@ -160,54 +156,34 @@ const agreementType = ref('ELECTRONIC')
 const followLoadingId = ref('')
 const page = reactive({ page: 1, size: 10 })
 
+const { filters, isActive, applyFilter } = useTableFilters({
+  applicantName: { type: 'text' },
+  petName: { type: 'text' },
+  status: { type: 'enum' },
+  createTime: { type: 'time' },
+})
+
+const adoptStatusFilterOptions = [
+  { value: 'CREATE', label: '已创建' },
+  { value: 'PASS', label: '已通过' },
+  { value: 'REJECT', label: '已拒绝' },
+  { value: 'FINISH', label: '已完成' },
+  { value: 'CANCEL', label: '已取消' },
+]
+
+const filteredRows = computed(() => applyFilter(rows.value || []))
+
 const loginRole = computed(() => Number(userStore.profile?.role || 0))
 const loginUserId = computed(() => String(userStore.profile?.id || ''))
 const isWorker = computed(() => hasRole(loginRole.value, ROLE.WORKER) || hasRole(loginRole.value, ROLE.ADMIN))
 
-const statusOptions = [
-  { label: '已提交', value: 'CREATE' },
-  { label: '审核通过', value: 'PASS' },
-  { label: '审核拒绝', value: 'REJECT' },
-  { label: '协议草拟中', value: 'AGREEMENT_DRAFT' },
-  { label: '待确认', value: 'AGREEMENT_PENDING_CONFIRM' },
-  { label: '协议已签署', value: 'AGREEMENT_SIGNED' },
-  { label: '回访中', value: 'TRACKING' },
-  { label: '流程完成', value: 'FINISH' },
-  { label: '已取消', value: 'CANCEL' },
-]
-
-const statusMap = Object.fromEntries(statusOptions.map((item) => [item.value, item.label]))
-
-function statusText(value) {
-  return statusMap[value] || value || ''
-}
-
-function statusTagType(value) {
-  if (value === 'PASS' || value === 'AGREEMENT_SIGNED' || value === 'FINISH') return 'success'
-  if (value === 'REJECT' || value === 'CANCEL') return 'info'
-  if (value === 'AGREEMENT_DRAFT' || value === 'TRACKING') return 'primary'
-  if (value === 'AGREEMENT_PENDING_CONFIRM') return 'warning'
-  return 'warning'
-}
-
-function formatDate(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return String(value)
-  return date.toLocaleString('zh-CN')
-}
-
 function buildQuery() {
-  const [time0, time1] = timeRange.value || []
   return {
     page: page.page,
     size: page.size,
     sort: 'create_time',
     order: 'desc',
-    user: isWorker.value ? undefined : [loginUserId.value],
-    status: statusFilter.value ? [statusFilter.value] : undefined,
-    time0: time0 || undefined,
-    time1: time1 || undefined,
+    applicant: isWorker.value ? undefined : [loginUserId.value],
   }
 }
 
@@ -225,7 +201,7 @@ async function loadRows() {
   }
 }
 
-function searchRows() {
+function handleRefresh() {
   page.page = 1
   loadRows()
 }
@@ -359,10 +335,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.adoption-filter-row {
-  grid-template-columns: minmax(180px, 240px) auto;
-}
-
 .adoption-pet-cell {
   display: inline-flex;
   align-items: center;
@@ -426,7 +398,6 @@ onMounted(() => {
 }
 
 @media (max-width: 720px) {
-  .adoption-filter-row,
   .agreement-type-grid {
     grid-template-columns: 1fr;
   }

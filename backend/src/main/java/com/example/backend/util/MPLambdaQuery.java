@@ -11,6 +11,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -101,10 +102,15 @@ public class MPLambdaQuery<T extends IId> {
 
     @SafeVarargs
     public final MPLambdaQuery<T> like(SFunction<T, ?> column, String text, SFunction<T, ?>... otherColumns) {
-        query.like(!ObjectUtils.isEmpty(text), column, text);
-        for (SFunction<T, ?> c : otherColumns) {
-            query.or();
-            query.like(!ObjectUtils.isEmpty(text), c, text);
+        if (otherColumns == null || otherColumns.length == 0) {
+            query.like(text != null, column, text);
+        } else {
+            query.or(text != null, wrapper -> {
+                wrapper.like(column, text);
+                for (SFunction<T, ?> otherColumn : otherColumns) {
+                    wrapper.like(otherColumn, text);
+                }
+            });
         }
         return this;
     }
@@ -132,6 +138,26 @@ public class MPLambdaQuery<T extends IId> {
         return this;
     }
 
+    public <V> MPLambdaQuery<T> lt(SFunction<T, V> column, V value) {
+        query.lt(column, value);
+        return this;
+    }
+
+    public <V> MPLambdaQuery<T> le(SFunction<T, V> column, V value) {
+        query.le(column, value);
+        return this;
+    }
+
+    public <V> MPLambdaQuery<T> gt(SFunction<T, V> column, V value) {
+        query.gt(column, value);
+        return this;
+    }
+
+    public <V> MPLambdaQuery<T> ge(SFunction<T, V> column, V value) {
+        query.ge(column, value);
+        return this;
+    }
+
     public <V> MPLambdaQuery<T> desc(SFunction<T, V> column) {
         query.orderByDesc(column);
         return this;
@@ -139,6 +165,19 @@ public class MPLambdaQuery<T extends IId> {
 
     public <V> MPLambdaQuery<T> asc(SFunction<T, V> column) {
         query.orderByAsc(column);
+        return this;
+    }
+
+    @SafeVarargs
+    public final MPLambdaQuery<T> or(boolean condition, Consumer<LambdaQueryWrapper<T>>... conditions) {
+        if (conditions.length == 0 || !condition) return this;
+        query.and(wrapper -> {
+            conditions[0].accept(wrapper);
+            for (int i = 1; i < conditions.length; i++) {
+                wrapper.or();
+                conditions[i].accept(wrapper);
+            }
+        });
         return this;
     }
 

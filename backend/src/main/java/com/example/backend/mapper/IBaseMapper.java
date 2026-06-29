@@ -86,7 +86,19 @@ public interface IBaseMapper<T extends IId> extends MPJBaseMapper<T>, IValidates
     @SuppressWarnings("unchecked")
     default Map<Long, T> groupById(Set<Long> ids, SFunction<T, ?>... columns) {
         if (ids.isEmpty()) return Map.of();
-        return selectList(ids, columns).stream().collect(Collectors.toMap(T::getId, Function.identity()));
+        if (columns.length == 0) return selectList(ids).stream()
+                .collect(Collectors.toMap(T::getId, Function.identity()));
+        return selectList(Wrappers.lambdaQuery(getEntityClass()).in(T::getId, ids)
+                .select(concat(T::getId, columns))).stream()
+                .collect(Collectors.toMap(T::getId, Function.identity()));
+    }
+
+    @SuppressWarnings("unchecked")
+    private SFunction<T, ?>[] concat(SFunction<T, ?> first, SFunction<T, ?>... rest) {
+        SFunction<T, ?>[] result = new SFunction[rest.length + 1];
+        result[0] = first;
+        System.arraycopy(rest, 0, result, 1, rest.length);
+        return result;
     }
 
     @SuppressWarnings("unchecked")

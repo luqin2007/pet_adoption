@@ -174,10 +174,10 @@ onMounted(async () => {
             </el-select>
           </el-form-item>
           <el-form-item label="健康状况" prop="health">
-            <el-input v-model="form.health" placeholder="请输入健康状况" clearable />
+            <el-input v-model="form.health" clearable />
           </el-form-item>
           <el-form-item label="情况描述" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :rows="4" placeholder="写下状态、性格和救助注意事项" />
+            <el-input v-model="form.description" type="textarea" :rows="4" />
           </el-form-item>
         </el-form>
 

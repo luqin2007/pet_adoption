@@ -3,39 +3,14 @@
     <template #header>
       <div class="profile-card-header">
         <strong>库存管理</strong>
-        <span>跟踪和查找物资入库、出库、销毁记录</span>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
+        </div>
       </div>
     </template>
 
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row item-record-filter-row">
-          <el-select v-model="search.action" class="filter-field-sm" clearable placeholder="操作类型">
-            <el-option label="入库" value="IN" />
-            <el-option label="出库" value="OUT" />
-            <el-option label="销毁" value="DESTROY" />
-          </el-select>
-          <el-select v-model="search.sourceType" class="filter-field-sm" clearable placeholder="来源">
-            <el-option label="捐赠" value="DONATION" />
-            <el-option label="采购" value="PURCHASE" />
-          </el-select>
-          <el-input v-model="search.stockId" class="filter-field-sm" clearable placeholder="库存批次 ID" @input="normalizeStockId" />
-          <el-input v-model="search.purpose" class="filter-field-xl" clearable placeholder="用途/说明" @keyup.enter="searchRows" />
-          <el-date-picker
-            v-model="search.timeRange"
-            type="daterange"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            class="filter-field-lg"
-          />
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="Search" :loading="loading" @click="searchRows">搜索</el-button>
-          </div>
-        </div>
-      </section>
-
-      <el-table :data="rows" v-loading="loading" class="user-admin-table">
+      <el-table :data="filteredRecords" v-loading="loading" class="user-admin-table">
         <el-table-column label="物资" min-width="180">
           <template #default="{ row }">
             <button class="table-primary-link" type="button" @click="openStock(row)">{{ row.itemName || '物资' }}</button>
@@ -43,6 +18,9 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" width="100">
+          <template #header>
+            <TableFilterHeader label="操作" :filter="filters.action" type="enum" :active="isActive('action')" :options="actionOptions" />
+          </template>
           <template #default="{ row }">
             <el-tag :type="actionTagType(row.action)" effect="plain">{{ actionText(row.action) }}</el-tag>
           </template>
@@ -63,6 +41,9 @@
           <template #default="{ row }">{{ row.username || '' }}</template>
         </el-table-column>
         <el-table-column label="时间" min-width="160">
+          <template #header>
+            <TableFilterHeader label="时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" />
+          </template>
           <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
       </el-table>
@@ -86,15 +67,17 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
-import { getStock, getStockRecords } from '../api/services'
+import { RefreshRight } from '@element-plus/icons-vue'
+import { getStock, getStockRecords } from '../api/inventory'
+import TableFilterHeader from './TableFilterHeader.vue'
+import { useTableFilters } from '../composables/useTableFilters'
 
 const route = useRoute()
 const loading = ref(false)
-const rows = ref([])
+const records = ref([])
 const total = ref(0)
 const stockVisible = ref(false)
 const stockDetail = ref(null)
@@ -104,8 +87,20 @@ const search = reactive({
   sourceType: '',
   stockId: '',
   purpose: '',
-  timeRange: [],
 })
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  createTime: { type: 'time' },
+  action: { type: 'enum' },
+})
+
+const actionOptions = [
+  { value: 'IN', label: '入库' },
+  { value: 'OUT', label: '出库' },
+  { value: 'DESTROY', label: '销毁' },
+]
+
+const filteredRecords = computed(() => applyFilter(records.value || []))
 
 function formatDate(value) {
   if (!value) return ''
@@ -128,10 +123,6 @@ function sourceText(value) {
   return { DONATION: '捐赠', PURCHASE: '采购' }[value] || value || ''
 }
 
-function normalizeStockId(value) {
-  search.stockId = String(value || '').replace(/\D/g, '')
-}
-
 function buildQuery() {
   return {
     page: page.page,
@@ -140,17 +131,15 @@ function buildQuery() {
     action: search.action ? [search.action] : undefined,
     source: search.sourceType ? [search.sourceType] : undefined,
     purpose: search.purpose.trim() || undefined,
-    time0: search.timeRange?.[0],
-    time1: search.timeRange?.[1],
   }
 }
 
-async function loadRows() {
+async function loadRecords() {
   loading.value = true
   try {
     const result = await getStockRecords(buildQuery())
-    rows.value = Array.isArray(result?.records) ? result.records : []
-    total.value = Number(result?.total || rows.value.length)
+    records.value = Array.isArray(result?.records) ? result.records : []
+    total.value = Number(result?.total || records.value.length)
   } catch (error) {
     ElMessage.warning(error?.message || '加载库存记录失败')
   } finally {
@@ -158,14 +147,14 @@ async function loadRows() {
   }
 }
 
-function searchRows() {
+function handleRefresh() {
   page.page = 1
-  loadRows()
+  loadRecords()
 }
 
 function changePage(value) {
   page.page = value
-  loadRows()
+  loadRecords()
 }
 
 async function openStock(row) {
@@ -182,15 +171,11 @@ onMounted(() => {
   if (route.query.stockId) {
     search.stockId = String(route.query.stockId)
   }
-  loadRows()
+  loadRecords()
 })
 </script>
 
 <style scoped>
-.item-record-filter-row {
-  grid-template-columns: minmax(120px, 0.8fr) minmax(120px, 0.8fr) minmax(130px, 0.8fr) minmax(160px, 1fr) minmax(220px, 1.2fr) auto;
-}
-
 .item-record-subtext {
   display: block;
   margin-top: 3px;
@@ -218,9 +203,4 @@ onMounted(() => {
   color: #3f2a1f;
 }
 
-@media (max-width: 1100px) {
-  .item-record-filter-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
 </style>

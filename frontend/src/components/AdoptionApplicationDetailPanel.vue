@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>领养申请详情</strong>
-        <span>{{ application?.petName || '查看申请信息、协议和回访记录' }}</span>
       </div>
     </template>
 
@@ -201,7 +200,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Check, PictureFilled, Upload } from '@element-plus/icons-vue'
-import { confirmAgreementSign, getAdoptApplication, getAgreements, signAgreement } from '../api/services'
+import { confirmAgreementSign, getAdoptApplication, getAgreements, signAgreement } from '../api/adoption'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 import ProtocolMediaViewer from './ProtocolMediaViewer.vue'

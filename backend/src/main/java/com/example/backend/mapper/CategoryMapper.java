@@ -1,8 +1,8 @@
 package com.example.backend.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.backend.entity.Category;
+import com.example.backend.util.MPLambdaQuery;
+import com.example.backend.util.MPLambdaUpdate;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Date;
@@ -10,15 +10,15 @@ import java.util.Date;
 @Mapper
 public interface CategoryMapper extends IBaseMapper<Category> {
 
-    default LambdaUpdateWrapper<Category> discard(Long categoryId) {
-        return new LambdaUpdateWrapper<Category>()
+    default MPLambdaUpdate<Category> discard(Long categoryId) {
+        return lambdaUpdate()
                 .eq(Category::getId, categoryId)
                 .set(Category::getIsDiscard, true)
                 .set(Category::getUpdateTime, new Date());
     }
 
-    default LambdaQueryWrapper<Category> queryName(String name) {
-        return new LambdaQueryWrapper<Category>()
+    default MPLambdaQuery<Category> queryName(String name) {
+        return lambdaQuery()
                 .like(Category::getName, name)
                 .eq(Category::getIsDiscard, false);
     }

@@ -66,6 +66,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         petService.requireExist(request.getPetId());
         User login = requireLoginUser();
         requirePermission(login.isDoctor() || login.isWorker());
+        require(!firstRegistrationMapper.selectByPet(request.getPetId()).exists(), "request.exist");
 
         // 添加
         FirstRegistration registration = request.createEntity(login.getId());
@@ -119,7 +120,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 User::getId, User::getUsername, User::getAvatar);
 
         // 病历
-        Set<Long> detailIds = medicalRecordMapper.selectByPet(registration.getPetId())
+        Set<Long> detailIds = medicalRecordMapper.queryByPet(registration.getPetId())
                 .list(MedicalRecord::getId)
                 .collect(Collectors.toSet());
         List<MedicalDetail> details = listById(detailIds,
@@ -148,6 +149,7 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         User login = requireLoginUser();
         requirePermission(login.isDoctor());
         firstRegistrationMapper.selectByPet(petId).requireExist();
+        require(!medicalRecordMapper.queryActiveByPet(petId).exists(), "request.exist");
 
         // 存储数据
         MedicalRecord record = request.createEntity(petId, login.getId());
@@ -651,6 +653,16 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
                 .toList();
     }
 
+    public VaccineOptionResponse addVaccineItem(VaccineItemAddRequest request) {
+        User login = requireLoginUser();
+        requirePermission(login.isDoctor() || login.isWorker());
+        itemMapper.requireExist(request.getItemId());
+        Vaccine vaccine = request.create();
+        vaccineMapper.insert(vaccine);
+        Item item = itemMapper.requireById(vaccine.getItemId(), Item::getId, Item::getName);
+        return VaccineOptionResponse.create(vaccine, item);
+    }
+
     public List<VaccineResponse> getAllVaccines() {
         List<VaccineRecord> vaccines = vaccineRecordMapper.lambdaQuery().desc(VaccineRecord::getCreateTime).list();
         Map<Long, Vaccine> vaccineMap = vaccineMapper.groupById(vaccines.stream().map(VaccineRecord::getVaccineId));
@@ -743,6 +755,16 @@ public class MedicalService extends BaseService<MedicalDetailMapper, MedicalDeta
         return dewormers.stream()
                 .map(dewormer -> DewormerOptionResponse.create(dewormer, items.get(dewormer.getItemId())))
                 .toList();
+    }
+
+    public DewormerOptionResponse addDewormerItem(DewormerItemAddRequest request) {
+        User login = requireLoginUser();
+        requirePermission(login.isDoctor() || login.isWorker());
+        itemMapper.requireExist(request.getItemId());
+        Dewormer dewormer = request.create();
+        dewormerMapper.insert(dewormer);
+        Item item = itemMapper.requireById(dewormer.getItemId(), Item::getId, Item::getName);
+        return DewormerOptionResponse.create(dewormer, item);
     }
 
     public List<DewormResponse> getAllDeworms() {

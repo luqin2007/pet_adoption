@@ -3,7 +3,6 @@
     <template #header>
       <div class="profile-card-header">
         <strong>{{ isPaper ? '创建纸质协议' : '起草电子协议' }}</strong>
-        <span>{{ draftSubtitle }}</span>
       </div>
     </template>
 
@@ -47,7 +46,6 @@
               v-model="content"
               type="textarea"
               :autosize="{ minRows: 14, maxRows: 22 }"
-              placeholder="填写领养协议正文、双方权责、回访约定、医疗说明和违约处理"
             />
           </el-form-item>
         </el-form>
@@ -71,7 +69,7 @@ import {
   beginAgreement,
   deleteAgreementWhenAdd,
   uploadAgreementWhenAdd,
-} from '../api/services'
+} from '../api/adoption'
 
 const props = defineProps({
   type: {

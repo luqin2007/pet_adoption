@@ -91,7 +91,6 @@ watch(shiftId, loadShift, { immediate: true })
     <template #header>
       <div class="profile-card-header">
         <strong>排班详情</strong>
-        <span>{{ shift?.title || '查看志愿活动排班信息' }}</span>
       </div>
     </template>
 

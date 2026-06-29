@@ -3,23 +3,19 @@
     <template #header>
       <div class="profile-card-header">
         <strong>就诊记录</strong>
-        <span>{{ petName ? `${petName}的就诊历史` : '查看就诊历史' }}</span>
+        <div class="profile-actions">
+          <el-button-group class="console-btn-group">
+            <el-button class="warm-btn" :icon="Plus" @click="petPickerVisible = true"/>
+            <el-button v-if="canManageMedical && petId" class="soft-btn" :icon="Plus" @click="goCreateRecord" />
+            <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingRecords" @click="loadRecords" />
+          </el-button-group>
+        </div>
       </div>
     </template>
     <section class="pet-admin-section">
-      <section class="filter-panel pet-directory-filter-panel">
-        <div class="pet-filter-row medical-record-cols-search">
-          <el-select v-model="statusFilter" class="filter-field-sm" clearable placeholder="就诊状态">
-            <el-option v-for="item in recordStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="Search" circle :loading="loadingRecords" @click="searchRecords" />
-            <el-button v-if="canManageMedical && petId" class="soft-btn" :icon="Plus" @click="goCreateRecord" />
-          </div>
-        </div>
-      </section>
-      <el-table :data="recordRows" v-loading="loadingRecords" class="user-admin-table">
-        <el-table-column label="宠物" min-width="120">
+      <el-table :data="displayedRecords" v-loading="loadingRecords" class="user-admin-table">
+        <el-table-column min-width="120">
+          <template #header><TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" /></template>
           <template #default="{ row }">
             <div>
               <button class="pet-admin-name-button" type="button" @click="goMedicalRecordDetail(row)">{{ row.petName || '未命名' }}</button>
@@ -28,19 +24,24 @@
           </template>
         </el-table-column>
         <el-table-column label="类型" width="100">
+          <template #header><TableFilterHeader label="类型" :filter="filters.type" type="enum" :active="isActive('type')" :options="recordTypeOptions" /></template>
           <template #default="{ row }"><el-tag effect="plain" type="warning">{{ recordTypeText(row.type) }}</el-tag></template>
         </el-table-column>
         <el-table-column label="状态" width="110">
+          <template #header><TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="recordStatusOptions" /></template>
           <template #default="{ row }"><el-tag effect="plain" :type="recordStatusTagType(row.status)">{{ recordStatusText(row.status) }}</el-tag></template>
         </el-table-column>
-        <el-table-column label="接诊医生" min-width="120">
+        <el-table-column label="兽医" min-width="120">
+          <template #header><TableFilterHeader label="兽医" :filter="filters.username" type="text" :active="isActive('username')" /></template>
           <template #default="{ row }">{{ row.username || '—' }}</template>
         </el-table-column>
         <el-table-column label="就诊时间" min-width="160">
-          <template #default="{ row }">{{ formatDateTime(row.startTime) }}</template>
+          <template #header><TableFilterHeader label="就诊时间" :filter="filters.startTime" type="time" :active="isActive('startTime')" /></template>
+          <template #default="{ row }">{{ formatDate(row.startTime) }}</template>
         </el-table-column>
         <el-table-column label="创建时间" min-width="160">
-          <template #default="{ row }">{{ formatDateTime(row.createTime) }}</template>
+          <template #header><TableFilterHeader label="创建时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" /></template>
+          <template #default="{ row }">{{ formatDate(row.createTime) }}</template>
         </el-table-column>
         <el-table-column width="40" class-name="action-col">
           <template #header><TableActionColumnHeader title="操作" :collapsed="actionCollapsed" @toggle="actionCollapsed = !actionCollapsed" /></template>
@@ -48,7 +49,6 @@
             <div class="table-action-cell">
               <div class="table-action-panel" :class="{ 'is-collapsed': actionCollapsed }">
                 <el-button v-if="canEditRecord(row)" text type="warning" @click="openEditDialog(row)">编辑</el-button>
-                <el-button v-if="canCancelRecord(row)" text type="danger" @click="cancelRecord(row)">取消</el-button>
                 <el-button v-if="canViewMedicalDetail(row)" text type="primary" @click="goMedicalDetail(row)">病历</el-button>
                 <el-button text type="primary" @click="goFirstRegistration(row)">初诊</el-button>
               </div>
@@ -57,7 +57,7 @@
         </el-table-column>
       </el-table>
       <div class="user-admin-pagination">
-        <el-pagination layout="prev, pager, next, total" :current-page="page.page" :page-size="page.size" :total="total" @current-change="changePage" />
+        <el-pagination layout="prev, pager, next, total" :current-page="page.page" :page-size="page.size" :total="total" @current-change="(p) => page.page = p" />
       </div>
     </section>
 
@@ -102,19 +102,25 @@
       :pet-age="createDialogPetAge"
       @created="onRecordCreated"
     />
+
+    <PetPickerDialog v-model:visible="petPickerVisible" @select="onPetSelected" />
   </el-card>
 </template>
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search } from '@element-plus/icons-vue'
-import { getMedicalRecords, updateMedicalRecord, getMedicalDetails, getFirstVisitRegistrations } from '../api/services'
+import { ElMessage } from 'element-plus'
+import { Plus, RefreshRight } from '@element-plus/icons-vue'
+import { getMedicalRecords, updateMedicalRecord, getFirstVisitRegistrations } from '../api/medical'
+import { formatDate } from '../utils/format'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { useTableFilters } from '../composables/useTableFilters'
 import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 import MedicalRecordCreateDialog from './MedicalRecordCreateDialog.vue'
+import PetPickerDialog from './PetPickerDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -130,8 +136,6 @@ const saving = ref(false)
 const actionCollapsed = ref(false)
 const editDialogVisible = ref(false)
 const recordRows = ref([])
-const total = ref(0)
-const statusFilter = ref('')
 const page = reactive({ page: 1, size: 10 })
 const editFormRef = ref()
 
@@ -141,10 +145,34 @@ const createDialogVisible = ref(false)
 const createDialogPetId = ref('')
 const createDialogPetName = ref('')
 const createDialogPetAge = ref(null)
+const petPickerVisible = ref(false)
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  petName: { type: 'text' },
+  type: { type: 'enum' },
+  status: { type: 'enum' },
+  username: { type: 'text' },
+  startTime: { type: 'time' },
+  createTime: { type: 'time' },
+})
+
+const filteredRecords = computed(() => applyFilter(recordRows.value || []))
+
+const displayedRecords = computed(() => {
+  const start = (page.page - 1) * page.size
+  return filteredRecords.value.slice(start, start + page.size)
+})
+
+const total = computed(() => filteredRecords.value.length)
 
 const editForm = reactive({
   id: '', type: '', status: '', startTime: '', endTime: '', price: '', cost: '', ownerPhone: '',
 })
+
+const editRules = {
+  type: [{ required: true, message: '请选择就诊类型', trigger: 'change' }],
+  status: [{ required: true, message: '请选择就诊状态', trigger: 'change' }],
+}
 
 const recordStatusOptions = [
   { label: '待接诊', value: 'WAITING' },
@@ -172,9 +200,7 @@ function recordStatusTagType(v) {
   if (v === 'PROCESSING') return 'primary'
   return 'warning'
 }
-function formatDateTime(v) { return v ? new Date(v).toLocaleString('zh-CN') : '—' }
 function canEditRecord(row) { return canManageMedical.value && row.status !== 'COMPLETED' && row.status !== 'CANCELED' }
-function canCancelRecord(row) { return canManageMedical.value && row.status !== 'COMPLETED' && row.status !== 'CANCELED' }
 
 function canViewMedicalDetail(row) {
   if (row.status === 'WAITING') return false
@@ -215,61 +241,47 @@ async function goFirstRegistration(row) {
 }
 
 function goCreateRecord() {
-  createDialogPetId.value = petId.value
-  createDialogPetName.value = petName.value
+  createDialogPetId.value = petId.value || ''
+  createDialogPetName.value = petName.value || ''
   createDialogPetAge.value = null
   createDialogVisible.value = true
 }
 
-function onRecordCreated() {
-  loadRecords()
+function openEditDialog(row) {
+  Object.assign(editForm, {
+    id: row.id, type: row.type || '', status: row.status || '',
+    startTime: row.startTime || '', endTime: row.endTime || '',
+    price: row.price || '', cost: row.cost || '', ownerPhone: row.ownerPhone || '',
+  })
+  editDialogVisible.value = true
 }
 
-const editRules = {
-  type: [{ required: true, message: '请选择就诊类型', trigger: 'change' }],
-  status: [{ required: true, message: '请选择就诊状态', trigger: 'change' }],
+function onPetSelected(pet) {
+  petPickerVisible.value = false
+  createDialogPetId.value = pet.id
+  createDialogPetName.value = pet.name || ''
+  createDialogPetAge.value = pet.age || null
+  createDialogVisible.value = true
 }
 
 async function loadRecords() {
   loadingRecords.value = true
   try {
-    const query = { page: page.page, size: page.size, sort: 'create_time', order: 'desc' }
-    if (petId.value) query.pet = petId.value
-    if (statusFilter.value) query.status = statusFilter.value
-    const result = await getMedicalRecords(query)
+    const params = {}
+    if (petId.value) params.pet = petId.value
+    const result = await getMedicalRecords(params)
     recordRows.value = Array.isArray(result?.records) ? result.records : []
-    total.value = Number(result?.total || recordRows.value.length)
-    loadDetailExistence()
-  } catch (error) { ElMessage.warning(error?.message || '加载就诊记录失败') }
-  finally { loadingRecords.value = false }
+    page.page = 1
+  } catch (error) {
+    ElMessage.warning(error?.message || '加载就诊记录失败')
+  } finally {
+    loadingRecords.value = false
+  }
 }
 
-async function loadDetailExistence() {
-  const recordIds = recordRows.value
-    .filter((r) => r.status !== 'WAITING' && r.id)
-    .map((r) => r.id)
-  if (!recordIds.length) { detailIdMap.value = {}; return }
-  try {
-    const res = await getMedicalDetails({ record: recordIds, page: 1, size: 100 })
-    const details = res?.records || []
-    const map = {}
-    for (const d of details) {
-      if (d.recordId) map[d.recordId] = d.id
-    }
-    detailIdMap.value = map
-  } catch { /* ignore */ }
-}
-
-function searchRecords() { page.page = 1; loadRecords() }
-function changePage(p) { page.page = p; loadRecords() }
-
-function openEditDialog(row) {
-  Object.assign(editForm, {
-    id: String(row.id), type: row.type || '', status: row.status || '',
-    startTime: row.startTime || '', endTime: row.endTime || '',
-    price: row.price || '', cost: row.cost || '', ownerPhone: row.ownerPhone || '',
-  })
-  editDialogVisible.value = true
+function onRecordCreated() {
+  createDialogVisible.value = false
+  loadRecords()
 }
 
 async function saveEdit() {
@@ -277,34 +289,28 @@ async function saveEdit() {
   saving.value = true
   try {
     await editFormRef.value.validate()
-    const payload = { type: editForm.type, status: editForm.status }
-    if (editForm.startTime) payload.startTime = editForm.startTime
-    if (editForm.endTime) payload.endTime = editForm.endTime
-    if (editForm.price) payload.price = editForm.price
-    if (editForm.cost) payload.cost = editForm.cost
-    if (editForm.ownerPhone) payload.ownerPhone = editForm.ownerPhone
-    await updateMedicalRecord(editForm.id, payload)
+    await updateMedicalRecord(editForm.id, {
+      type: editForm.type,
+      status: editForm.status,
+      startTime: editForm.startTime || null,
+      endTime: editForm.endTime || null,
+      price: editForm.price || null,
+      cost: editForm.cost || null,
+      ownerPhone: editForm.ownerPhone || null,
+    })
     ElMessage.success('就诊记录已更新')
     editDialogVisible.value = false
     await loadRecords()
-  } catch (error) { ElMessage.warning(error?.message || '保存失败') }
-  finally { saving.value = false }
-}
-
-async function cancelRecord(row) {
-  try {
-    await ElMessageBox.confirm(`确认取消「${row.petName || row.id}」的就诊记录？`, '取消就诊', { type: 'warning', confirmButtonText: '确认取消', cancelButtonText: '返回' })
-    await updateMedicalRecord(row.id, { type: row.type, status: 'CANCELED' })
-    ElMessage.success('就诊记录已取消')
-    await loadRecords()
-  } catch (error) { if (error !== 'cancel' && error !== 'close') ElMessage.warning(error?.message || '取消失败') }
+  } catch (error) {
+    ElMessage.warning(error?.message || '更新就诊记录失败')
+  } finally {
+    saving.value = false
+  }
 }
 
 onMounted(() => { loadRecords() })
 </script>
 
 <style scoped>
-.medical-record-cols-search {
-  grid-template-columns: 1fr auto;
-}
+
 </style>

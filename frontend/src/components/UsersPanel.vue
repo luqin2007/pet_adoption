@@ -1,7 +1,7 @@
 <script setup>
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Delete, RefreshRight, User } from '@element-plus/icons-vue'
+import { RefreshRight } from '@element-plus/icons-vue'
 import { getUsers, removeUserById, updateUserById } from '../api/user'
 import { sendNotice } from '../api/notice'
 import { useUserStore } from '../stores/user'
@@ -13,13 +13,12 @@ import {
   expandRoleValues,
   normalizeRoleValues,
   buildRoleValue,
-  visibleRoleLabels,
   primaryRoleLabel,
   hasMoreRoles,
-  MANAGED_ROLE_VALUES,
 } from '../utils/roles'
-import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 
 const emit = defineEmits(['profile-updated'])
 
@@ -31,7 +30,6 @@ const userDialogVisible = ref(false)
 const noticeDialogVisible = ref(false)
 const savingUser = ref(false)
 const sendingNotice = ref(false)
-const userKeyword = ref('')
 const userRows = ref([])
 const userTotal = ref(0)
 const noticeFormRef = ref()
@@ -39,6 +37,20 @@ const userPage = reactive({
   page: 1,
   size: 10,
 })
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  username: { type: 'text' },
+  email: { type: 'text' },
+  phone: { type: 'text' },
+  role: { type: 'enum' },
+})
+
+const visibleUsers = computed(() =>
+  applyFilter(userRows.value, {
+    role: (rowValue, filterValues) =>
+      filterValues.some((v) => (Number(rowValue || 0) & v) === v),
+  }),
+)
 
 const userForm = reactive({
   id: '',
@@ -89,20 +101,6 @@ const canManageUsers = computed(() => isLoginAdmin.value || hasRole(loginRole.va
 function canEditUser(row) {
   return isLoginAdmin.value || !hasRole(row?.role, ROLE.ADMIN)
 }
-
-const visibleUsers = computed(() => {
-  const text = userKeyword.value.trim().toLowerCase()
-  if (!text) {
-    return userRows.value
-  }
-  return userRows.value.filter((item) =>
-    [item.username, item.email, item.phone, roleText(item.role)]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-      .includes(text),
-  )
-})
 
 async function loadUsers() {
   if (!canManageUsers.value) {
@@ -223,8 +221,6 @@ function changeUserPage(page) {
   loadUsers()
 }
 
-useConsoleGuards()
-
 onMounted(() => {
   loadUsers()
 })
@@ -236,29 +232,36 @@ defineExpose({ loadUsers })
   <el-card class="profile-card user-admin-card">
     <template #header>
       <div class="profile-card-header">
-        <strong>用户账号管理</strong>
-        <span>维护用户资料和角色</span>
+        <strong>用户管理</strong>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingUsers" @click="loadUsers" />
+        </div>
       </div>
     </template>
 
-    <section class="filter-panel pet-directory-filter-panel">
-      <div class="pet-filter-row pet-filter-row-primary">
-        <el-input v-model="userKeyword" class="filter-field-lg" clearable placeholder="按用户名、邮箱、联系方式或角色搜索" />
-        <div class="pet-filter-action">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loadingUsers" @click="loadUsers">刷新</el-button>
-        </div>
-      </div>
-    </section>
-
     <el-table :data="visibleUsers" v-loading="loadingUsers" class="user-admin-table">
-      <el-table-column prop="username" label="用户名" min-width="130" />
-      <el-table-column prop="email" label="邮箱" min-width="190" />
-      <el-table-column prop="phone" label="联系方式" min-width="130">
+      <el-table-column prop="username" min-width="130">
+        <template #header>
+          <TableFilterHeader label="用户名" :filter="filters.username" type="text" :active="isActive('username')" />
+        </template>
+      </el-table-column>
+      <el-table-column prop="email" min-width="190">
+        <template #header>
+          <TableFilterHeader label="邮箱" :filter="filters.email" type="text" :active="isActive('email')" />
+        </template>
+      </el-table-column>
+      <el-table-column prop="phone" min-width="130">
+        <template #header>
+          <TableFilterHeader label="联系方式" :filter="filters.phone" type="text" :active="isActive('phone')" />
+        </template>
         <template #default="{ row }">
           {{ row.phone || '未填写' }}
         </template>
       </el-table-column>
-      <el-table-column label="角色" min-width="150">
+      <el-table-column min-width="150">
+        <template #header>
+          <TableFilterHeader label="角色" :filter="filters.role" type="enum" :options="roleOptions" :active="isActive('role')" />
+        </template>
         <template #default="{ row }">
           <el-tooltip :content="roleText(row.role)" placement="top" :disabled="!hasMoreRoles(row.role)">
             <span class="user-role-cell">
@@ -270,27 +273,27 @@ defineExpose({ loadUsers })
           </el-tooltip>
         </template>
       </el-table-column>
-        <el-table-column width="40" class-name="action-col">
-          <template #header>
-            <TableActionColumnHeader title="操作" :collapsed="userActionCollapsed" @toggle="userActionCollapsed = !userActionCollapsed" />
-          </template>
-          <template #default="{ row }">
-            <div class="table-action-cell">
-              <div class="table-action-panel" :class="{ 'is-collapsed': userActionCollapsed }">
-                <el-button text type="warning" :disabled="!canEditUser(row)" @click="openUserDialog(row)">编辑</el-button>
-                <el-button text type="primary" @click="openNoticeDialog(row)">通知</el-button>
-                <el-button
-                  text
-                  type="danger"
-                  :disabled="String(row.id) === profileId || !canEditUser(row)"
-                  @click="deleteUser(row)"
-                >
-                  删除
-                </el-button>
-              </div>
+      <el-table-column width="40" class-name="action-col">
+        <template #header>
+          <TableActionColumnHeader title="操作" :collapsed="userActionCollapsed" @toggle="userActionCollapsed = !userActionCollapsed" />
+        </template>
+        <template #default="{ row }">
+          <div class="table-action-cell">
+            <div class="table-action-panel" :class="{ 'is-collapsed': userActionCollapsed }">
+              <el-button text type="warning" :disabled="!canEditUser(row)" @click="openUserDialog(row)">编辑</el-button>
+              <el-button text type="primary" @click="openNoticeDialog(row)">通知</el-button>
+              <el-button
+                text
+                type="danger"
+                :disabled="String(row.id) === profileId || !canEditUser(row)"
+                @click="deleteUser(row)"
+              >
+                删除
+              </el-button>
             </div>
-          </template>
-        </el-table-column>
+          </div>
+        </template>
+      </el-table-column>
     </el-table>
 
     <div class="user-admin-pagination">

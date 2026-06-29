@@ -6,7 +6,7 @@ import { ArrowLeft, Check, Plus, Delete } from '@element-plus/icons-vue'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
 import { getPetById } from '../api/pets'
-import { createFirstVisitRegistration } from '../api/services'
+import { createFirstVisitRegistration } from '../api/medical'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const LS_IMMUNITY_KEY = 'pet_first_reg_immunity_history'
@@ -184,7 +184,7 @@ function goBack() {
           <div class="form-group-title action-form-span-2">基础生命体征</div>
 
           <el-form-item label="宠物名称" prop="name">
-            <el-input v-model="form.name" placeholder="例如：西湖小橘" clearable />
+            <el-input v-model="form.name" clearable />
           </el-form-item>
 
           <el-form-item label="年龄 (月)" prop="age">
@@ -218,7 +218,7 @@ function goBack() {
                 </el-select>
               </el-form-item>
               <el-form-item label="预防疾病" class="field-illness">
-                <el-input v-model="item.illness" placeholder="例如：猫瘟" />
+                <el-input v-model="item.illness" />
               </el-form-item>
               <el-form-item label="接种进度" class="field-progress">
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -231,7 +231,7 @@ function goBack() {
                 <el-date-picker v-model="item.immunityTime" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width: 100%" />
               </el-form-item>
               <div class="item-actions">
-                <el-button border circle type="danger" :icon="Delete" @click="removeImmunity(index)" />
+                <el-button circle type="danger" :icon="Delete" @click="removeImmunity(index)" />
               </div>
             </div>
           </div>
@@ -259,10 +259,10 @@ function goBack() {
                 <el-date-picker v-model="item.discoveryTime" type="date" placeholder="选择日期" value-format="YYYY-MM-DD" style="width: 100%" />
               </el-form-item>
               <el-form-item label="反应症状" class="field-reaction">
-                <el-input v-model="item.reaction" placeholder="描述过敏现象" />
+                <el-input v-model="item.reaction" />
               </el-form-item>
               <div class="item-actions">
-                <el-button border circle type="danger" :icon="Delete" @click="removeAllergy(index)" />
+                <el-button circle type="danger" :icon="Delete" @click="removeAllergy(index)" />
               </div>
             </div>
           </div>

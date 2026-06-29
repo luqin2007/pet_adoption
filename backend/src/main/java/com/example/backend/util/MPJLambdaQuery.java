@@ -33,12 +33,12 @@ public class MPJLambdaQuery<BASE extends IId, QUERY, DTO> {
     }
 
     public <V> MPJLambdaQuery<BASE, QUERY, DTO> in(SFunction<QUERY, V> column, Collection<V> values) {
-        if (values == null) return this;
+        if (values == null || values.isEmpty()) return this;
 
         // 去重
         Set<?> set = values instanceof Set
                 ? (Set<?>) values
-                : Set.of(values);
+                : new HashSet<>(values);
         query
                 .eq(set.size() == 1, column, set.iterator().next())
                 .in(set.size() != 1, column, set);
@@ -88,10 +88,15 @@ public class MPJLambdaQuery<BASE extends IId, QUERY, DTO> {
 
     @SafeVarargs
     public final MPJLambdaQuery<BASE, QUERY, DTO> like(SFunction<QUERY, ?> column, String text, SFunction<QUERY, ?>... otherColumns) {
-        query.like(text != null, column, text);
-        for (SFunction<QUERY, ?> c : otherColumns) {
-            query.or();
-            query.like(text != null, c, text);
+        if (otherColumns == null || otherColumns.length == 0) {
+            query.like(text != null, column, text);
+        } else {
+            query.or(text != null, wrapper -> {
+                wrapper.like(column, text);
+                for (SFunction<QUERY, ?> otherColumn : otherColumns) {
+                    wrapper.like(otherColumn, text);
+                }
+            });
         }
         return this;
     }

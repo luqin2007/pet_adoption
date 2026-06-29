@@ -6,7 +6,7 @@ import { ArrowLeft, Check } from '@element-plus/icons-vue'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
 import { getPetById } from '../api/pets'
-import { addMedicalRecord } from '../api/services'
+import { addMedicalRecord } from '../api/medical'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const router = useRouter()

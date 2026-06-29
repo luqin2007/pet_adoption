@@ -6,7 +6,7 @@ import { ArrowLeft, EditPen, LocationInformation, Plus } from '@element-plus/ico
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getPetHealthAssessments } from '../api/services'
+import { getPetHealthAssessments } from '../api/medical'
 import { addPetLocation, getPetById } from '../api/pets'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
@@ -80,14 +80,7 @@ const locationCityOptions = computed(() => getCityOptions(locationForm.value.pro
 const locationDistrictOptions = computed(() => getDistrictOptions(locationForm.value.province, locationForm.value.city))
 
 function mapStatusText(status) {
-  const map = {
-    HEALTH: '可预约见面',
-    SHELTERED: '等待领养',
-    ADOPTED: '已完成领养',
-    TREATING: '治疗观察中',
-    RESCUED: '已救助建档',
-  }
-  return map[status] || status || '状态待补充'
+  return status || '状态待补充'
 }
 
 function mapStatusTone(status) {
@@ -274,7 +267,7 @@ onMounted(() => {
           <div class="pet-profile-topbar">
             <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回领养大厅</el-button>
             <div class="pet-profile-actions">
-              <el-button class="warm-btn" :disabled="!canApplyAdopt" @click="openAdoptFlow">领养</el-button>
+              <el-button class="soft-btn" :disabled="!canApplyAdopt" @click="openAdoptFlow">领养</el-button>
               <el-button class="soft-btn" :disabled="!canApplyClaim" @click="openClaimFlow">认领</el-button>
               <el-button v-if="canEditCurrentPet" class="soft-btn" :icon="EditPen" @click="openBasicEditor">编辑</el-button>
               <el-tag :type="statusTone" effect="dark">{{ statusText }}</el-tag>
@@ -381,7 +374,7 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="详细位置" prop="detailAddress" class="location-add-span-2">
-            <el-input v-model="locationForm.detailAddress" placeholder="例如：小区东门、公交站旁" clearable />
+            <el-input v-model="locationForm.detailAddress" clearable />
           </el-form-item>
         </el-form>
         <template #footer>

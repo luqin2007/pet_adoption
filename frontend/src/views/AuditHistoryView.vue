@@ -3,7 +3,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { getPetStatusRecords } from '../api/pets'
-import { getRescueTaskRecords } from '../api/services'
+import { getRescueTaskRecords } from '../api/rescue'
 import { getVolunteerShifts } from '../api/volunteer'
 import AuditRecordList from '../components/AuditRecordList.vue'
 

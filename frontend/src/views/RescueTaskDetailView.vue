@@ -5,7 +5,7 @@ import { ArrowLeft, PictureFilled } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getRescueTask, getRescueTaskMedia } from '../api/services'
+import { getRescueTask, getRescueTaskMedia } from '../api/rescue'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const route = useRoute()
@@ -108,18 +108,20 @@ onMounted(() => {
       </section>
 
       <section v-if="task" class="action-form-panel">
-        <div class="pet-profile-panel-head">
-          <h2>现场图片</h2>
+        <div style="padding: 0 20px 20px;">
+          <div class="pet-profile-panel-head">
+            <h2>现场图片</h2>
+          </div>
+          <div v-if="mediaItems.length" class="rescue-detail-media-grid">
+            <article v-for="item in mediaItems" :key="item.id">
+              <img :src="item.assetUrl" :alt="item.name" loading="lazy" />
+              <strong>{{ item.name || '现场图片' }}</strong>
+            </article>
+          </div>
+          <el-empty v-else description="暂未上传现场图片">
+            <el-icon><PictureFilled /></el-icon>
+          </el-empty>
         </div>
-        <div v-if="mediaItems.length" class="rescue-detail-media-grid">
-          <article v-for="item in mediaItems" :key="item.id">
-            <img :src="item.assetUrl" :alt="item.name" loading="lazy" />
-            <strong>{{ item.name || '现场图片' }}</strong>
-          </article>
-        </div>
-        <el-empty v-else description="暂未上传现场图片">
-          <el-icon><PictureFilled /></el-icon>
-        </el-empty>
       </section>
 
       <section v-else-if="!loading" class="pet-profile-empty">

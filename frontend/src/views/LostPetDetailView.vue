@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getLostPet, getSimilarPets, markPetMismatch } from '../api/lost'
+import { getLostPet, getSimilarPets, markPetMismatch, deleteCachedResult } from '../api/lost'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole, petStatusText } from '../utils/roles'
@@ -16,6 +16,7 @@ const router = useRouter()
 const userStore = useUserStore()
 const loading = ref(false)
 const loadingSimilarPets = ref(false)
+const refreshingSimilarPets = ref(false)
 const record = ref(null)
 const similarPets = ref([])
 const previewVisible = ref(false)
@@ -164,6 +165,24 @@ async function dismissSimilarPet(pet) {
   }
 }
 
+async function refreshSimilarPets() {
+  if (!lostPetId.value) return
+  refreshingSimilarPets.value = true
+  try {
+    await deleteCachedResult(lostPetId.value)
+    await loadSimilarPets()
+    ElMessage.success('已刷新匹配结果')
+  } catch (e) {
+    if (e?.status === 429) {
+      ElMessage.warning('操作过于频繁，请稍后再试')
+    } else {
+      ElMessage.warning(e?.message || '刷新失败')
+    }
+  } finally {
+    refreshingSimilarPets.value = false
+  }
+}
+
 async function loadLostPet() {
   if (!lostPetId.value) {
     record.value = null
@@ -264,7 +283,9 @@ onBeforeUnmount(() => {
         </div>
 
         <div v-if="canViewSimilarPets" class="lost-detail-section lost-detail-section-wide">
-          <h2>相似流浪宠物</h2>
+          <h2>相似流浪宠物
+            <el-button size="small" :loading="refreshingSimilarPets" plain @click="refreshSimilarPets" style="margin-left:12px">刷新</el-button>
+          </h2>
           <div v-loading="loadingSimilarPets" class="lost-similar-grid">
             <article v-for="pet in similarPets" :key="pet.id" class="lost-similar-card">
               <div class="lost-similar-cover">
@@ -328,3 +349,6 @@ onBeforeUnmount(() => {
     <AppFooter />
   </div>
 </template>
+
+<style scoped>
+</style>

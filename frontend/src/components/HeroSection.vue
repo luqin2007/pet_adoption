@@ -1,6 +1,5 @@
 <script setup>
 import {
-  ArrowRight,
   Bell,
   Box,
   DataLine,
@@ -8,7 +7,6 @@ import {
   Location,
   LocationInformation,
   Plus,
-  StarFilled,
   Suitcase,
   User,
 } from '@element-plus/icons-vue'
@@ -62,20 +60,7 @@ function openAction(path) {
 <template>
   <section class="hero-section" id="home">
     <div class="hero-copy">
-      <el-tag class="hero-tag" type="warning" effect="plain">城市联合救助计划</el-tag>
       <h1>让每一次相遇，都成为被温柔接住的开始</h1>
-      <p>
-        连接居民、志愿者、医院与公益组织，让求助更快抵达，领养更安心。
-      </p>
-      <div class="hero-buttons">
-        <el-button class="warm-btn" type="warning" size="large" @click="handleNavigate('adoption')">
-          领养专区
-          <el-icon><ArrowRight /></el-icon>
-        </el-button>
-        <el-button class="soft-btn" size="large" @click="handleNavigate('news')">
-          近期活动
-        </el-button>
-      </div>
       <ul class="hero-list">
         <li><el-icon><LocationInformation /></el-icon> 覆盖 12 个城区联动响应</li>
         <li><el-icon><Bell /></el-icon> 重要事件实时通知与回访</li>
@@ -99,17 +84,6 @@ function openAction(path) {
             </span>
           </button>
         </div>
-      </el-card>
-
-      <el-card class="story-card" shadow="hover">
-        <div class="story-head">
-          <el-icon><StarFilled /></el-icon>
-          <span>今日暖心故事</span>
-        </div>
-        <p>
-          志愿者在地铁口发现受伤的“奶盖”，3 小时内完成转运、检查与临时安置。
-          目前恢复情况稳定，已开放领养申请。
-        </p>
       </el-card>
     </div>
   </section>

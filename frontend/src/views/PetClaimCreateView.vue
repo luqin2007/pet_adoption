@@ -127,7 +127,7 @@ onMounted(() => {
 
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
           <el-form-item label="选择走失记录" prop="lostPetId" class="action-form-span-2">
-            <el-select v-model="form.lostPetId" placeholder="选择你登记过的走失宠物" filterable clearable>
+            <el-select v-model="form.lostPetId" filterable clearable>
               <el-option
                 v-for="item in lostPetOptions"
                 :key="item.id"
@@ -137,10 +137,10 @@ onMounted(() => {
             </el-select>
           </el-form-item>
           <el-form-item label="联系电话" prop="applicantPhone">
-            <el-input v-model="form.applicantPhone" placeholder="请输入可联系到你的电话" clearable />
+            <el-input v-model="form.applicantPhone" clearable />
           </el-form-item>
           <el-form-item label="认领说明" prop="reason" class="action-form-span-2">
-            <el-input v-model="form.reason" type="textarea" :rows="5" placeholder="写下毛色、项圈、走失时间地点等线索" />
+            <el-input v-model="form.reason" type="textarea" :rows="5" />
           </el-form-item>
         </el-form>
 

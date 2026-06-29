@@ -1,11 +1,12 @@
 package com.example.backend.event;
 
-import com.example.backend.entity.*;
+import com.example.backend.entity.Adopt;
+import com.example.backend.entity.FollowTask;
+import com.example.backend.entity.Pet;
 import com.example.backend.mapper.AdoptMapper;
 import com.example.backend.mapper.BreadingMapper;
 import com.example.backend.mapper.FollowTaskMapper;
 import com.example.backend.mapper.PetMapper;
-import com.example.backend.util.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -55,16 +56,16 @@ public class AdoptBreadingEventListener extends BaseEventListener {
 
     @TransactionalEventListener
     public void onAgreementAdd(AgreementAddEvent event) {
-        Long userId = getApplicantId(event.data());
+        Long userId = event.data().getApplicantId();
         notify(userId, event);
         sendEmail(userId, event);
     }
 
     @TransactionalEventListener
     public void onAgreementUpdate(AgreementUpdateEvent event) {
-        Long applicantId = getApplicantId(event.data());
+        Long applicantId = event.data().getApplicantId();
         if (event.user().is(applicantId)) { // 申请人回复
-            Long reviewerId = getReviewerId(event.data());
+            Long reviewerId = event.data().getReviewerId();
             if (reviewerId == null) {
                 Set<Long> userIds = notifyWorkers(null, event);
                 sendEmail(userIds, event);
@@ -76,24 +77,6 @@ public class AdoptBreadingEventListener extends BaseEventListener {
             notify(applicantId, event);
             sendEmail(applicantId, event);
         }
-    }
-
-    private Long getApplicantId(Agreement agreement) {
-        return switch (agreement.getParentType()) {
-            case ADOPT -> adoptMapper.selectById(agreement.getParentId(), Adopt::getApplicantId).getApplicantId();
-            case BREADING ->
-                    breadingMapper.selectById(agreement.getParentId(), Breading::getApplicantId).getApplicantId();
-            default -> throw ServiceException.system("Never HERE!");
-        };
-    }
-
-    private Long getReviewerId(Agreement agreement) {
-        return switch (agreement.getParentType()) {
-            case ADOPT -> adoptMapper.selectById(agreement.getParentId(), Adopt::getReviewerId).getReviewerId();
-            case BREADING ->
-                    breadingMapper.selectById(agreement.getParentId(), Breading::getReviewerId).getReviewerId();
-            default -> throw ServiceException.system("Never HERE!");
-        };
     }
 
     @TransactionalEventListener

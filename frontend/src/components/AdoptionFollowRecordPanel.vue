@@ -3,13 +3,18 @@
     <template #header>
       <div class="profile-card-header">
         <strong>回访任务</strong>
-        <span>{{ subtitle }}</span>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh">刷新</el-button>
+        </div>
       </div>
     </template>
 
     <section class="pet-admin-section">
-      <el-table :data="rows" v-loading="loading" class="user-admin-table">
-        <el-table-column label="宠物" min-width="180" show-overflow-tooltip>
+      <el-table :data="filteredTasks" v-loading="loading" class="user-admin-table">
+        <el-table-column min-width="180" show-overflow-tooltip>
+          <template #header>
+            <TableFilterHeader label="宠物" :filter="filters.petName" type="text" :active="isActive('petName')" />
+          </template>
           <template #default="{ row }">
             <button class="table-primary-link adoption-pet-cell" type="button" @click="goTaskDetail(row)">
               <div class="adoption-person-cell">
@@ -20,6 +25,9 @@
           </template>
         </el-table-column>
         <el-table-column label="领养人" min-width="160">
+          <template #header>
+            <TableFilterHeader label="领养人" :filter="filters.applicantName" type="text" :active="isActive('applicantName')" />
+          </template>
           <template #default="{ row }">
             <div class="adoption-person-cell">
               <strong>{{ row.applicantName || '未命名申请人' }}</strong>
@@ -27,10 +35,16 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="计划时间" min-width="160">
+        <el-table-column min-width="160">
+          <template #header>
+            <TableFilterHeader label="计划时间" :filter="filters.planTime" type="time" :active="isActive('planTime')" />
+          </template>
           <template #default="{ row }">{{ formatDate(row.planTime) }}</template>
         </el-table-column>
-        <el-table-column label="任务状态" width="120">
+        <el-table-column width="120">
+          <template #header>
+            <TableFilterHeader label="状态" :filter="filters.status" type="enum" :active="isActive('status')" :options="followStatusFilterOptions" />
+          </template>
           <template #default="{ row }">
             <el-tag :type="taskStatusTagType(row.status)" effect="plain">{{ taskStatusText(row.status) }}</el-tag>
           </template>
@@ -110,7 +124,7 @@
     </el-form>
     <template #footer>
       <el-button @click="modifyDialogVisible = false">取消</el-button>
-      <el-button class="warm-btn" :loading="actionLoadingId === 'modify'" @click="submitModify">保存修改</el-button>
+      <el-button class="warm-btn" :loading="actionLoadingId === 'modify'" @click="submitModify">保存</el-button>
     </template>
   </el-dialog>
 </template>
@@ -119,11 +133,14 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getVisibleFollowTasks, updateFollowTask } from '../api/services'
+import { RefreshRight } from '@element-plus/icons-vue'
+import { getFollowTasks, updateFollowTask } from '../api/adoption'
 import { getVolunteerProfiles } from '../api/volunteer'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
+import { useTableFilters } from '../composables/useTableFilters'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -143,6 +160,23 @@ const modifyForm = reactive({
   planTime: '',
   remark: '',
 })
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  petName: { type: 'text' },
+  applicantName: { type: 'text' },
+  status: { type: 'enum' },
+  planTime: { type: 'time' },
+})
+
+const followStatusFilterOptions = [
+  { value: 'CREATE', label: '已创建' },
+  { value: 'NOTIFIED', label: '已通知' },
+  { value: 'IN_PROGRESS', label: '进行中' },
+  { value: 'DELAY', label: '已延迟' },
+  { value: 'FINISH', label: '已完成' },
+]
+
+const filteredTasks = computed(() => applyFilter(rows.value || []))
 
 const loginRole = computed(() => Number(userStore.profile?.role || 0))
 const loginUserId = computed(() => String(userStore.profile?.id || ''))
@@ -343,7 +377,7 @@ async function submitModify() {
 async function loadRows() {
   loading.value = true
   try {
-    const result = await getVisibleFollowTasks({
+    const result = await getFollowTasks({
       page: page.page,
       size: page.size,
       sort: 'plan_time',
@@ -356,6 +390,11 @@ async function loadRows() {
   } finally {
     loading.value = false
   }
+}
+
+function handleRefresh() {
+  page.page = 1
+  loadRows()
 }
 
 function changePage(value) {

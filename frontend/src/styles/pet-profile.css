@@ -1,0 +1,332 @@
+﻿.pet-profile-page {
+  display: grid;
+  gap: 18px;
+}
+
+.pet-profile-hero {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.08fr);
+  gap: 20px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at top right, rgba(47, 157, 143, 0.14), transparent 28%),
+    linear-gradient(155deg, rgba(255, 253, 249, 0.97) 0%, rgba(255, 244, 232, 0.92) 100%);
+  box-shadow: var(--shadow);
+}
+
+.pet-profile-media {
+  min-height: 420px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  background: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+.pet-profile-media:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(151, 96, 56, 0.12);
+}
+
+.pet-profile-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pet-profile-cover-placeholder {
+  width: 100%;
+  min-height: 420px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(243, 223, 204, 0.9), rgba(255, 244, 232, 0.95));
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.pet-profile-main {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.pet-profile-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pet-profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pet-profile-main h1 {
+  margin: -2px 0 0;
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  font-size: clamp(32px, 4vw, 46px);
+  line-height: 1.15;
+}
+
+.pet-profile-summary {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.85;
+  font-size: 15px;
+}
+
+.pet-profile-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #6c4834;
+  font-weight: 700;
+  flex-wrap: wrap;
+}
+
+.pet-profile-location .el-icon {
+  color: var(--accent);
+}
+
+.pet-profile-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pet-profile-facts article {
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.pet-profile-facts span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.pet-profile-facts strong {
+  color: #5d3927;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.pet-profile-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.pet-profile-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 253, 249, 0.94);
+  box-shadow: 0 12px 30px rgba(151, 96, 56, 0.07);
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.pet-profile-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.pet-profile-panel-head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+}
+
+.pet-profile-panel-head span {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
+}
+
+.pet-profile-health-status {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 14px;
+}
+
+.pet-profile-health-status .iconify {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-size: 22px;
+}
+
+.pet-profile-health-status strong {
+  color: #5d3927;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.pet-profile-list {
+  display: grid;
+  gap: 12px;
+}
+
+.pet-profile-list article {
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.pet-profile-list strong {
+  color: #5d3927;
+  line-height: 1.65;
+}
+
+.pet-profile-list span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.pet-profile-location-list {
+  gap: 8px;
+}
+
+.pet-profile-list .pet-profile-location-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.pet-profile-location-item strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.pet-profile-location-item span {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.pet-profile-section {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+.pet-profile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 253, 249, 0.94);
+  box-shadow: 0 8px 24px rgba(151, 96, 56, 0.06);
+  flex-wrap: wrap;
+}
+
+.pet-profile-name {
+  margin: 0;
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  font-size: clamp(26px, 3vw, 36px);
+  color: #5d3927;
+  line-height: 1.2;
+}
+
+.pet-profile-breed {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pet-profile-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pet-profile-pet-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 244, 232, 0.85);
+  color: #6c4834;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.pet-profile-pet-button:hover {
+  background: rgba(255, 235, 215, 0.95);
+  border-color: var(--accent);
+}
+
+.pet-profile-meta {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+
+.pet-profile-meta-item {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.pet-profile-meta-label {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.pet-profile-meta-value {
+  color: var(--el-text-color-primary);
+  font-weight: 600;
+}
+
+.location-add-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 14px;
+}
+
+.location-add-form .el-select,
+.location-add-form .el-input {
+  width: 100%;
+}
+
+.location-add-span-2 {
+  grid-column: span 2;
+}
+

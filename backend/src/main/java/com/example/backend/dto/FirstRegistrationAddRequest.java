@@ -49,11 +49,13 @@ public class FirstRegistrationAddRequest implements IRequest, IValidatedRequest 
     }
 
     public List<ImmunityHistory> createImmunityHistories(Long registrationId) {
-        return immunities.stream().map(request -> request.createEntity(registrationId)).toList();
+        return immunities == null ? List.of()
+                : immunities.stream().map(request -> request.createEntity(registrationId)).toList();
     }
 
     public List<AllergyHistory> createAllergyHistories(Long registrationId) {
-        return allergies.stream().map(request -> request.build(registrationId)).toList();
+        return allergies == null ? List.of()
+                : allergies.stream().map(request -> request.build(registrationId)).toList();
     }
 
     @Override

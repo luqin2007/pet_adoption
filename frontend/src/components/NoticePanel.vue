@@ -3,7 +3,9 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { RefreshRight } from '@element-plus/icons-vue'
 import { getNotices, markNoticeRead, markNoticeUnread } from '../api/notice'
+import { useTableFilters } from '../composables/useTableFilters'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
+import TableFilterHeader from './TableFilterHeader.vue'
 
 const NOTICE_SOURCE_LABELS = {
   SYSTEM: '系统通知',
@@ -27,11 +29,16 @@ const page = reactive({
   page: 1,
   size: 10,
 })
-const filters = reactive({
-  read: '',
-  source: '',
-  timeRange: [],
+
+const { filters, isActive, applyFilter } = useTableFilters({
+  title: { type: 'text' },
+  content: { type: 'text' },
+  source: { type: 'enum' },
+  createTime: { type: 'time' },
+  read: { type: 'enum' },
 })
+
+const filteredNotices = computed(() => applyFilter(notices.value))
 
 const sourceOptions = computed(() =>
   Object.entries(NOTICE_SOURCE_LABELS).map(([value, label]) => ({
@@ -40,18 +47,19 @@ const sourceOptions = computed(() =>
   })),
 )
 
+const readOptions = [
+  { value: true, label: '已读' },
+  { value: false, label: '未读' },
+]
+
 function sourceText(source) {
   return NOTICE_SOURCE_LABELS[source] || source || '通知'
 }
 
 function formatTime(value) {
-  if (!value) {
-    return ''
-  }
+  if (!value) return ''
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return String(value)
-  }
+  if (Number.isNaN(date.getTime())) return String(value)
   return date.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
@@ -68,7 +76,6 @@ function dispatchNoticeUpdated() {
 }
 
 async function loadNotices() {
-  const [time0, time1] = filters.timeRange || []
   loading.value = true
   try {
     const result = await getNotices({
@@ -76,10 +83,6 @@ async function loadNotices() {
       size: page.size,
       sort: 'create_time',
       order: 'desc',
-      read: filters.read === '' ? undefined : filters.read,
-      source: filters.source ? [filters.source] : undefined,
-      time0: time0 || undefined,
-      time1: time1 || undefined,
     })
     notices.value = Array.isArray(result?.records) ? result.records : []
     total.value = Number(result?.total || notices.value.length)
@@ -88,11 +91,6 @@ async function loadNotices() {
   } finally {
     loading.value = false
   }
-}
-
-function resetPageAndLoad() {
-  page.page = 1
-  loadNotices()
 }
 
 async function setRead(row, read) {
@@ -116,6 +114,12 @@ function changePage(nextPage) {
   loadNotices()
 }
 
+function handleRefresh() {
+  page.page = 1
+  loadNotices()
+  dispatchNoticeUpdated()
+}
+
 onMounted(() => {
   loadNotices()
   dispatchNoticeUpdated()
@@ -127,41 +131,25 @@ onMounted(() => {
     <template #header>
       <div class="profile-card-header">
         <strong>站内信</strong>
-        <span>查看系统通知和工作人员发送的消息</span>
+        <div class="profile-actions">
+          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="handleRefresh" />
+        </div>
       </div>
     </template>
 
-    <section class="filter-panel pet-directory-filter-panel notice-filter-panel">
-      <div class="pet-filter-row pet-filter-row-primary">
-        <el-select v-model="filters.read" class="filter-field-sm" clearable placeholder="阅读状态" @change="resetPageAndLoad">
-          <el-option label="未读" :value="false" />
-          <el-option label="已读" :value="true" />
-        </el-select>
-        <el-select v-model="filters.source" class="filter-field-sm" clearable filterable placeholder="通知来源" @change="resetPageAndLoad">
-          <el-option
-            v-for="item in sourceOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-        <el-date-picker
-          v-model="filters.timeRange"
-          type="daterange"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
-          class="filter-field-lg"
-          @change="resetPageAndLoad"
-        />
-        <div class="pet-filter-action">
-          <el-button class="warm-btn" :icon="RefreshRight" :loading="loading" @click="loadNotices">刷新</el-button>
-        </div>
-      </div>
-    </section>
-
-    <el-table :data="notices" v-loading="loading" class="notice-table" row-key="id">
+    <el-table :data="filteredNotices" v-loading="loading" class="notice-table" row-key="id">
+      <el-table-column label="来源" width="120">
+        <template #header>
+          <TableFilterHeader label="来源" :filter="filters.source" type="enum" :options="sourceOptions" :active="isActive('source')" />
+        </template>
+        <template #default="{ row }">
+          <el-tag type="warning" effect="plain">{{ sourceText(row.source) }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="标题" min-width="180">
+        <template #header>
+          <TableFilterHeader label="标题" :filter="filters.title" type="text" :active="isActive('title')" />
+        </template>
         <template #default="{ row }">
           <div class="notice-title-cell">
             <strong>{{ row.title || '通知' }}</strong>
@@ -169,22 +157,26 @@ onMounted(() => {
           </div>
         </template>
       </el-table-column>
-      <el-table-column label="来源" width="120">
-        <template #default="{ row }">
-          <el-tag type="warning" effect="plain">{{ sourceText(row.source) }}</el-tag>
-        </template>
-      </el-table-column>
       <el-table-column label="内容" min-width="280">
+        <template #header>
+          <TableFilterHeader label="内容" :filter="filters.content" type="text" :active="isActive('content')" />
+        </template>
         <template #default="{ row }">
           <div class="notice-content-cell">{{ row.content }}</div>
         </template>
       </el-table-column>
       <el-table-column label="时间" width="170">
+        <template #header>
+          <TableFilterHeader label="时间" :filter="filters.createTime" type="time" :active="isActive('createTime')" />
+        </template>
         <template #default="{ row }">
           {{ formatTime(row.createTime) }}
         </template>
       </el-table-column>
       <el-table-column label="状态" width="100">
+        <template #header>
+          <TableFilterHeader label="状态" :filter="filters.read" type="enum" :options="readOptions" :active="isActive('read')" />
+        </template>
         <template #default="{ row }">
           <el-tag :type="row.read ? 'info' : 'success'" effect="plain">{{ row.read ? '已读' : '未读' }}</el-tag>
         </template>

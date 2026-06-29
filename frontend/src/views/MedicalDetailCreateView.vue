@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 import { ArrowLeft, Check } from '@element-plus/icons-vue'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { addMedicalDetail } from '../api/services'
+import { addMedicalDetail } from '../api/medical'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const router = useRouter()
@@ -93,19 +93,19 @@ function goBack() { router.back() }
 
         <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="action-form-grid">
           <el-form-item label="摘要" prop="summary" class="action-form-span-2">
-            <el-input v-model="form.summary" placeholder="简要概括本次就诊情况" />
+            <el-input v-model="form.summary" />
           </el-form-item>
           <el-form-item label="主诉" prop="description" class="action-form-span-2">
-            <el-input v-model="form.description" type="textarea" :autosize="{ minRows: 2 }" placeholder="宠物主人的主要诉求" />
+            <el-input v-model="form.description" type="textarea" :autosize="{ minRows: 2 }" />
           </el-form-item>
           <el-form-item label="现病史" prop="history" class="action-form-span-2">
-            <el-input v-model="form.history" type="textarea" :autosize="{ minRows: 2 }" placeholder="发病经过、持续时间、症状变化" />
+            <el-input v-model="form.history" type="textarea" :autosize="{ minRows: 2 }" />
           </el-form-item>
           <el-form-item label="既往史" prop="pastHistory" class="action-form-span-2">
-            <el-input v-model="form.pastHistory" type="textarea" :autosize="{ minRows: 2 }" placeholder="过往疾病、手术、过敏等" />
+            <el-input v-model="form.pastHistory" type="textarea" :autosize="{ minRows: 2 }" />
           </el-form-item>
           <el-form-item label="生活习惯" prop="lifeHabit" class="action-form-span-2">
-            <el-input v-model="form.lifeHabit" type="textarea" :autosize="{ minRows: 2 }" placeholder="饮食、活动、环境等" />
+            <el-input v-model="form.lifeHabit" type="textarea" :autosize="{ minRows: 2 }" />
           </el-form-item>
 
           <el-form-item label="体重 (kg)" prop="weight">
@@ -121,7 +121,7 @@ function goBack() { router.back() }
             <el-input-number v-model="form.respiratoryRate" :min="0" style="width: 100%" />
           </el-form-item>
           <el-form-item label="体格检查" class="action-form-span-2">
-            <el-input v-model="form.physicalExam" type="textarea" :autosize="{ minRows: 2 }" placeholder="其他体格检查发现" />
+            <el-input v-model="form.physicalExam" type="textarea" :autosize="{ minRows: 2 }" />
           </el-form-item>
         </el-form>
 
@@ -145,16 +145,5 @@ function goBack() { router.back() }
   font-weight: 600;
   color: #333;
   margin: 0;
-}
-.form-group-title {
-  display: flex;
-  align-items: center;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--el-color-warning);
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #eee;
-  margin-top: 16px;
-  margin-bottom: 12px;
 }
 </style>

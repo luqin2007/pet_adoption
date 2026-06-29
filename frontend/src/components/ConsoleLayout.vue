@@ -1,33 +1,26 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Connection, Message, SwitchButton, User } from '@element-plus/icons-vue'
+import { Aim, ArrowLeft, Box, Document, Flag, House, Link, Message, Plus, Search, Setting, Stamp, SwitchButton, User } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '../stores/user'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
+import { useNoticeSse } from '../composables/useNoticeSse'
 import { ROLE, hasRole } from '../utils/roles'
-import { medicalRecordOwnerExists } from '../api/services'
-import { getUnreadNoticeCount } from '../api/notice'
+import { medicalRecordOwnerExists } from '../api/medical'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
-const { loginRole, isLoginAdmin, canManageUsers, canManageMedical, canManageRehab, canManageArticles } = useConsoleGuards()
+const { loginRole, isLoginAdmin, canManageUsers, canViewStocks, canManageMedical, canManageRehab, canManageArticles } = useConsoleGuards()
 const hasOwnedMedicalRecords = ref(false)
-const noticeUnreadCount = ref(0)
+const { unreadCount: noticeUnreadCount, check: checkNoticeCount } = useNoticeSse()
 
 const activeMenu = computed(() => {
-  if (route.path.startsWith('/console/volunteer/applications/')) return '/console/volunteer/applications'
-  if (route.path.startsWith('/console/volunteer/profiles')) return '/console/volunteer/profiles'
-  if (route.path.startsWith('/console/volunteer/activities/')) return '/console/volunteer/activities'
-  if (route.path.startsWith('/console/adoption/agreements')) return '/console/adoption/agreements'
-  if (route.path.startsWith('/console/adoption/breading')) return '/console/adoption/breading'
-  if (route.path.startsWith('/console/adoption/follow-records')) return '/console/adoption/follow-tasks'
-  if (route.path.startsWith('/console/adoption/follow-tasks')) return '/console/adoption/follow-tasks'
-  if (route.path.startsWith('/console/adoption/adopts')) return '/console/adoption/adopts'
+  if (route.path.startsWith('/console/volunteer')) return route.path.startsWith('/console/volunteer/recruitments') ? '/console/volunteer/recruitments' : '/console/volunteer'
+  if (route.path.startsWith('/console/adoption')) return '/console/adoption'
   if (route.path.startsWith('/console/items/donations')) return '/console/items/donations'
   if (route.path.startsWith('/console/items/stocks')) return '/console/items/stocks'
-  if (route.path.startsWith('/console/items/records')) return '/console/items/records'
   if (route.path.startsWith('/console/medical/first/')) return '/console/medical/first'
   if (route.path.startsWith('/console/medical/records/')) return '/console/medical/records'
   if (route.path.startsWith('/console/medical/detail-list')) return '/console/medical/detail-list'
@@ -38,31 +31,15 @@ const activeMenu = computed(() => {
 const canViewMedical = computed(() => canManageMedical.value || canManageRehab.value || hasOwnedMedicalRecords.value)
 
 function handleMenuSelect(index) {
-  if (index === 'api-coverage') {
-    router.push('/api-coverage')
-  } else {
-    router.push(index)
-  }
+  router.push(index)
 }
 
 function goHome() {
   router.push('/')
 }
 
-async function loadUnreadNoticeCount() {
-  if (!userStore.isLoggedIn) {
-    noticeUnreadCount.value = 0
-    return
-  }
-  try {
-    noticeUnreadCount.value = Number(await getUnreadNoticeCount() || 0)
-  } catch {
-    noticeUnreadCount.value = 0
-  }
-}
-
 function handleNoticeUpdated() {
-  loadUnreadNoticeCount()
+  checkNoticeCount()
 }
 
 async function handleLogout() {
@@ -90,9 +67,9 @@ async function handleLogout() {
 const TAB_REDIRECTS = {
   'medical-first': '/console/medical/first',
   'articles': null,
-  'article-mine': '/console/articles/mine',
-  'article-manage': '/console/articles/manage',
-  'article-favorites': '/console/articles/favorites',
+  'article-mine': '/console/articles',
+  'article-manage': '/console/articles',
+  'article-favorites': '/console/articles',
   'lost-pets': '/console/lost-pets',
   'volunteer': null,
 }
@@ -101,14 +78,13 @@ onMounted(() => {
   const tab = route.query.tab
   if (tab) {
     if (tab === 'articles') {
-      router.replace(canManageArticles.value ? '/console/articles/mine' : '/console/articles/favorites')
+      router.replace('/console/articles')
     } else if (tab === 'volunteer') {
-      router.replace(isLoginAdmin.value || hasRole(loginRole.value, ROLE.WORKER) ? '/console/volunteer/recruitments' : '/console/volunteer/applications')
+      router.replace('/console/volunteer')
     } else if (TAB_REDIRECTS[tab]) {
       router.replace(TAB_REDIRECTS[tab])
     }
   }
-  loadUnreadNoticeCount()
   if (typeof window !== 'undefined') {
     window.addEventListener('notice-updated', handleNoticeUpdated)
   }
@@ -165,66 +141,51 @@ watch(
           <el-menu-item index="/console/notices">
             <el-icon><Message /></el-icon>
             <span>站内信</span>
-            <el-badge v-if="noticeUnreadCount > 0" :value="noticeUnreadCount" :max="99" class="console-menu-badge" />
+            <span v-if="noticeUnreadCount > 0" class="console-menu-badge">{{ noticeUnreadCount > 99 ? '99+' : noticeUnreadCount }}</span>
           </el-menu-item>
           <el-menu-item v-if="canManageUsers" index="/console/users">
-            <el-icon><User /></el-icon>
+            <el-icon><Setting /></el-icon>
             <span>用户管理</span>
           </el-menu-item>
           <el-menu-item index="/console/pets">
-            <el-icon><Connection /></el-icon>
+            <el-icon><House /></el-icon>
             <span>流浪宠物</span>
           </el-menu-item>
           <el-menu-item index="/console/lost-pets">
-            <el-icon><Connection /></el-icon>
+            <el-icon><Search /></el-icon>
             <span>丢失宠物</span>
           </el-menu-item>
           <el-menu-item index="/console/tasks">
-            <el-icon><Connection /></el-icon>
+            <el-icon><Flag /></el-icon>
             <span>救助任务</span>
           </el-menu-item>
-          <el-sub-menu index="/console/articles">
-            <template #title>
-              <el-icon><Message /></el-icon>
-              <span>公益文章</span>
-            </template>
-            <el-menu-item v-if="canManageArticles" index="/console/articles/mine">我的文章</el-menu-item>
-            <el-menu-item index="/console/articles/favorites">我的收藏</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/articles/manage">文章管理</el-menu-item>
-          </el-sub-menu>
-          <el-sub-menu index="/console/adoption">
-            <template #title>
-              <el-icon><Connection /></el-icon>
-              <span>领养寄养</span>
-            </template>
-            <el-menu-item index="/console/adoption/breading">寄养管理</el-menu-item>
-            <el-menu-item index="/console/adoption/adopts">领养管理</el-menu-item>
-            <el-menu-item index="/console/adoption/follow-tasks">回访任务</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/adoption/agreements">协议管理</el-menu-item>
-          </el-sub-menu>
+          <el-menu-item index="/console/articles">
+            <el-icon><Document /></el-icon>
+            <span>公益文章</span>
+          </el-menu-item>
+          <el-menu-item index="/console/adoption">
+            <el-icon><Link /></el-icon>
+            <span>领养寄养</span>
+          </el-menu-item>
           <el-sub-menu index="/console/volunteer">
             <template #title>
-              <el-icon><Connection /></el-icon>
+              <el-icon><Stamp /></el-icon>
               <span>志愿者</span>
             </template>
-            <el-menu-item v-if="canManageUsers" index="/console/volunteer/recruitments">招募计划</el-menu-item>
-            <el-menu-item index="/console/volunteer/applications">招募申请</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/volunteer/profiles">志愿者档案</el-menu-item>
-            <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/rewards">志愿者激励</el-menu-item>
-            <el-menu-item v-if="canManageUsers || hasRole(loginRole, ROLE.VOLUNTEER)" index="/console/volunteer/activities">志愿活动</el-menu-item>
+            <el-menu-item index="/console/volunteer">志愿者</el-menu-item>
+            <el-menu-item index="/console/volunteer/recruitments">志愿者招募</el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="/console/items">
             <template #title>
-              <el-icon><Connection /></el-icon>
+              <el-icon><Box /></el-icon>
               <span>物资管理</span>
             </template>
             <el-menu-item index="/console/items/donations">捐赠</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/items/stocks">物资余量</el-menu-item>
-            <el-menu-item v-if="canManageUsers" index="/console/items/records">库存管理</el-menu-item>
+            <el-menu-item v-if="canViewStocks" index="/console/items/stocks">物资管理</el-menu-item>
           </el-sub-menu>
           <el-sub-menu v-if="canViewMedical" index="/console/medical">
             <template #title>
-              <el-icon><Connection /></el-icon>
+              <el-icon><Plus /></el-icon>
               <span>医疗护理</span>
             </template>
             <el-menu-item v-if="canManageMedical" index="/console/medical/first">初诊登记</el-menu-item>
@@ -235,9 +196,9 @@ watch(
             <el-menu-item v-if="canManageRehab" index="/console/medical/rehab">康复计划</el-menu-item>
             <el-menu-item v-if="canManageMedical" index="/console/medical/health">健康评估</el-menu-item>
           </el-sub-menu>
-          <el-menu-item index="api-coverage">
-            <el-icon><Connection /></el-icon>
-            <span>接口覆盖台</span>
+          <el-menu-item v-if="canManageUsers" index="/console/settings">
+            <el-icon><Aim /></el-icon>
+            <span>系统设置</span>
           </el-menu-item>
         </el-menu>
       </aside>

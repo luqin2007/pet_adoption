@@ -26,7 +26,7 @@ public class ItemAddRequest implements IRequest {
         return new Item(null,
                 categoryId,
                 name,
-                description,
+                description == null ? "" : description,
                 unit,
                 false,
                 now,

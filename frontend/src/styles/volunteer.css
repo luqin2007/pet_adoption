@@ -1,0 +1,249 @@
+﻿.volunteer-tabs {
+  --el-tabs-header-margin-bottom: 0;
+}
+
+.volunteer-tabs .el-tabs__header {
+  margin-bottom: 0;
+}
+
+.volunteer-tabs + .pet-admin-section {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 0;
+}
+
+
+.volunteer-person-cell {
+  display: grid;
+  gap: 4px;
+}
+
+.volunteer-person-cell strong {
+  color: var(--primary-strong);
+}
+
+.volunteer-person-cell span,
+.volunteer-static-action {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.volunteer-activity-stack {
+  display: grid;
+  gap: 14px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.volunteer-activity-block {
+  padding: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.volunteer-block-head {
+  margin-bottom: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.volunteer-block-head strong {
+  color: var(--primary-strong);
+  font-size: 18px;
+}
+
+.volunteer-block-head span {
+  color: var(--muted);
+}
+
+.recruitment-detail-page {
+  display: grid;
+  gap: 18px;
+}
+
+.recruitment-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.34fr);
+  gap: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(circle at top right, rgba(47, 157, 143, 0.14), transparent 28%),
+    linear-gradient(155deg, rgba(255, 253, 249, 0.97) 0%, rgba(255, 244, 232, 0.92) 100%);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.recruitment-detail-copy h1 {
+  margin: 16px 0 10px;
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 1.15;
+}
+
+.recruitment-detail-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.recruitment-detail-meta {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #6c4834;
+  font-weight: 700;
+}
+
+.recruitment-detail-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recruitment-detail-sidecard {
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.78);
+  padding: 18px;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.recruitment-detail-sidecard span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.recruitment-detail-sidecard strong {
+  color: var(--primary-strong);
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.recruitment-detail-sidecard p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.recruitment-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.42fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.recruitment-detail-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 253, 249, 0.96);
+  box-shadow: var(--shadow-soft);
+  padding: 22px;
+}
+
+.detail-section-head {
+  margin-bottom: 14px;
+}
+
+.recruitment-detail-stack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.recruitment-detail-item {
+  border-radius: 14px;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  background: rgba(255, 255, 255, 0.82);
+  padding: 14px 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.recruitment-detail-item span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.recruitment-detail-item p {
+  margin: 0;
+  color: #5d3927;
+  line-height: 1.8;
+}
+
+.recruitment-detail-item-full {
+  grid-column: 1 / -1;
+}
+
+.volunteer-apply-grid {
+  margin-top: 16px;
+}
+
+.volunteer-apply-shell {
+  position: relative;
+}
+
+.volunteer-apply-shell.is-locked .volunteer-apply-grid {
+  filter: blur(1px);
+  opacity: 0.46;
+  pointer-events: none;
+  user-select: none;
+}
+
+.volunteer-login-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 253, 249, 0.72);
+  backdrop-filter: blur(5px);
+}
+
+.volunteer-login-card {
+  max-width: 360px;
+  width: min(100%, 360px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 253, 249, 0.96);
+  box-shadow: var(--shadow);
+  padding: 22px;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.volunteer-login-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), #f29a5b);
+}
+
+.volunteer-login-card strong {
+  color: var(--text);
+  font-size: 20px;
+}
+
+.volunteer-login-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.recruitment-detail-panel > .el-alert {
+  margin-bottom: 16px;
+}
+

@@ -12,7 +12,7 @@ import {
   getMedicalDetail,
   getMedicalExaminations,
   uploadExamination,
-} from '../api/services'
+} from '../api/medical'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { ROLE, hasRole } from '../utils/roles'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
@@ -210,7 +210,7 @@ onMounted(() => {
     <el-dialog v-model="dialogVisible" title="添加检查记录" width="720px" :close-on-click-modal="false">
       <el-form label-position="top" class="medical-exam-form">
         <el-form-item label="检查名称">
-          <el-input v-model="form.name" placeholder="例如：血常规复查" />
+          <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="检查类型">
           <el-select v-model="form.examType" class="full-width-control">
@@ -221,7 +221,7 @@ onMounted(() => {
           <el-date-picker v-model="form.checkTime" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss.SSS" class="full-width-control" />
         </el-form-item>
         <el-form-item label="文本记录" class="medical-exam-form-wide">
-          <el-input v-model="form.text" type="textarea" :autosize="{ minRows: 4 }" placeholder="记录检查发现、影像描述或补充说明" />
+          <el-input v-model="form.text" type="textarea" :autosize="{ minRows: 4 }" />
         </el-form-item>
         <el-form-item label="检查文件" class="medical-exam-form-wide">
           <input ref="fileInputRef" class="profile-avatar-input" type="file" @change="uploadFile" />

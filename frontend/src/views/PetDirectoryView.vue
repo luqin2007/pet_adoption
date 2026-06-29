@@ -1,10 +1,10 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { Icon } from '@iconify/vue'
-import { ArrowRight, Plus, RefreshRight } from '@element-plus/icons-vue'
+import { RefreshRight } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
+import PetCard from '../components/PetCard.vue'
 import { getPets } from '../api/pets'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
@@ -12,6 +12,7 @@ import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 const router = useRouter()
 const loading = ref(false)
 const pets = ref([])
+const showFilterPanel = ref(false)
 const filters = ref({
   type: '',
   breed: '',
@@ -43,6 +44,40 @@ const activeBreed = computed(() => filters.value.breed)
 const cityOptions = computed(() => getCityOptions(filters.value.province))
 const districtOptions = computed(() => getDistrictOptions(filters.value.province, filters.value.city))
 const breedOptions = computed(() => getBreedOptions(activeType.value))
+
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (filters.value.type) count++
+  if (filters.value.breed) count++
+  if (filters.value.sex) count++
+  if (hasValue(filters.value.age0) || hasValue(filters.value.age1)) count++
+  if (filters.value.name) count++
+  if (filters.value.province) count++
+  if (filters.value.city) count++
+  if (filters.value.district) count++
+  if (filters.value.address) count++
+  return count
+})
+
+function applyFilters() {
+  showFilterPanel.value = false
+  loadPets()
+}
+
+function resetFilters() {
+  filters.value = {
+    type: '',
+    breed: '',
+    sex: '',
+    age0: undefined,
+    age1: undefined,
+    name: '',
+    province: '',
+    city: '',
+    district: '',
+    address: '',
+  }
+}
 
 const filteredPets = computed(() =>
   pets.value.filter((pet) => {
@@ -95,45 +130,6 @@ async function loadPets() {
   }
 }
 
-function formatAge(age) {
-  if (!age && age !== 0) {
-    return '年龄待补充'
-  }
-  const months = Number(age)
-  if (Number.isNaN(months)) {
-    return '年龄待补充'
-  }
-  if (months > 12) {
-    const years = Math.floor(months / 12)
-    const remainMonths = months % 12
-    return remainMonths > 0 ? `约 ${years} 岁 ${remainMonths} 个月` : `约 ${years} 岁`
-  }
-  return `约 ${months} 个月`
-}
-
-function formatLocation(pet) {
-  const location = pet.locations?.[0]
-  if (!location) {
-    return '待补充位置'
-  }
-  return [location.city, location.district].filter(Boolean).join(' · ')
-}
-
-function formatTags(pet) {
-  const tags = Array.isArray(pet.tags) ? pet.tags.map((item) => item?.tag).filter(Boolean) : []
-  return tags.join(' · ')
-}
-
-function getStatusText(pet) {
-  if (pet.status === 'HEALTH') {
-    return '可预约见面'
-  }
-  if (pet.status === 'SHELTERED') {
-    return '等待领养'
-  }
-  return pet.health || '资料完善中'
-}
-
 function openPetProfile(id) {
   if (!id) {
     return
@@ -143,6 +139,7 @@ function openPetProfile(id) {
 
 function handleFilterTypeChange() {
   filters.value.breed = ''
+  applyFilters()
 }
 
 function handleFilterProvinceChange() {
@@ -151,6 +148,7 @@ function handleFilterProvinceChange() {
   if (filters.value.province) {
     ensureCityOptions(filters.value.province)
   }
+  applyFilters()
 }
 
 function handleFilterCityChange() {
@@ -158,6 +156,7 @@ function handleFilterCityChange() {
   if (filters.value.province && filters.value.city) {
     ensureDistrictOptions(filters.value.province, filters.value.city)
   }
+  applyFilters()
 }
 
 watch(
@@ -193,100 +192,49 @@ onMounted(async () => {
     <main class="subpage-main">
       <section class="directory-hero">
         <div>
-          <span class="hero-chip">领养大厅</span>
-          <h1>把一只流浪生命，接回一个真正的家</h1>
-          <p>
-            按类型、年龄和位置筛一筛，找到想见面的毛孩子。
-          </p>
-        </div>
-        <div class="directory-hero-side">
-          <span class="directory-hero-count">{{ filteredPets.length }} 份领养档案</span>
-          <el-button class="warm-btn directory-hero-action" :icon="Plus" @click="router.push('/pets/new')">发现宠物</el-button>
+          <h1>领养大厅</h1>
         </div>
       </section>
 
-      <section class="filter-panel pet-directory-filter-panel">
+      <section class="filter-panel pet-directory-filter-panel" @keyup.enter="applyFilters">
         <div class="pet-filter-row pet-filter-row-primary">
           <el-select v-model="filters.type" class="filter-field-sm" placeholder="宠物类型" clearable filterable @change="handleFilterTypeChange">
             <el-option v-for="item in typeOptions" :key="item" :label="item" :value="item" />
           </el-select>
-          <el-select v-model="filters.breed" class="filter-field-sm" placeholder="品种" clearable filterable :disabled="!activeType">
+          <el-select v-model="filters.breed" class="filter-field-sm" placeholder="品种" clearable filterable :disabled="!activeType" @change="applyFilters">
             <el-option v-for="item in breedOptions" :key="item" :label="item" :value="item" />
           </el-select>
-          <el-select v-model="filters.sex" class="filter-field-sm" placeholder="性别" clearable>
+          <el-select v-model="filters.sex" class="filter-field-sm" placeholder="性别" clearable @change="applyFilters">
             <el-option label="未知" value="未知" />
             <el-option label="公" value="公" />
             <el-option label="母" value="母" />
           </el-select>
           <div class="pet-age-range filter-field-lg">
-            <el-input-number
-              v-model="filters.age0"
-              :min="0"
-              :controls="false"
-              placeholder="最小月龄"
-            />
+            <el-input-number v-model="filters.age0" :min="0" :controls="false" placeholder="最小月龄" @change="applyFilters" />
             <span>至</span>
-            <el-input-number
-              v-model="filters.age1"
-              :min="hasValue(filters.age0) ? Number(filters.age0) : 0"
-              :controls="false"
-              placeholder="最大月龄"
-            />
+            <el-input-number v-model="filters.age1" :min="0" :controls="false" placeholder="最大月龄" @change="applyFilters" />
           </div>
-          <el-input v-model="filters.name" class="filter-field-md" placeholder="名称" clearable />
+          <el-input v-model="filters.name" class="filter-field-md" placeholder="名称" clearable @change="applyFilters" />
         </div>
 
-        <div class="pet-filter-row pet-filter-row-secondary">
-          <div class="pet-cascader-group pet-cascader-group-3 filter-field-lg">
-            <el-select v-model="filters.province" placeholder="省" clearable filterable @change="handleFilterProvinceChange">
-              <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <el-select v-model="filters.city" placeholder="市" clearable filterable :disabled="!filters.province" @change="handleFilterCityChange">
-              <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-            <el-select v-model="filters.district" placeholder="县 / 县级市" clearable filterable :disabled="!filters.city">
-              <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
-            </el-select>
-          </div>
-          <el-input v-model="filters.address" class="filter-field-xl" placeholder="地址" clearable />
-          <div class="pet-filter-action">
-            <el-button class="warm-btn" :icon="RefreshRight" @click="loadPets">刷新列表</el-button>
-          </div>
+        <div class="pet-filter-row pet-filter-row-primary" style="margin-top:8px">
+          <el-select v-model="filters.province" class="filter-field-sm" placeholder="省" clearable filterable @change="handleFilterProvinceChange">
+            <el-option v-for="item in provinceOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="filters.city" class="filter-field-sm" placeholder="市" clearable filterable :disabled="!filters.province" @change="handleFilterCityChange">
+            <el-option v-for="item in cityOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="filters.district" class="filter-field-sm" placeholder="县 / 县级市" clearable filterable :disabled="!filters.city" @change="applyFilters">
+            <el-option v-for="item in districtOptions" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-input v-model="filters.address" class="filter-field-lg" placeholder="地址" clearable @change="applyFilters" />
+          <el-button @click="resetFilters">重置</el-button>
+          <el-button class="warm-btn" :icon="RefreshRight" @click="applyFilters">搜索</el-button>
         </div>
       </section>
 
       <section class="directory-grid" v-loading="loading">
-        <article v-for="pet in filteredPets" :key="pet.id" class="directory-card">
-          <div class="directory-cover">
-            <img v-if="pet.cover" :src="pet.cover" :alt="pet.name" loading="lazy" />
-            <div v-else class="directory-cover-placeholder">暂无封面</div>
-            <span class="directory-badge">{{ getStatusText(pet) }}</span>
-          </div>
-          <div class="directory-body">
-            <div class="directory-head">
-              <div>
-                <h3>{{ pet.name }}</h3>
-                <p>{{ formatAge(pet.age) }} · {{ pet.sex || '性别待补充' }}</p>
-                <span v-if="formatTags(pet)" class="directory-tag-line">
-                  <Icon icon="mdi:tag-heart-outline" />{{ formatTags(pet) }}
-                </span>
-              </div>
-              <span class="directory-type">{{ pet.type || '宠物' }}</span>
-            </div>
-
-            <p class="directory-desc">{{ pet.description || '救助站正在完善它的故事与性格描述。' }}</p>
-
-            <div class="directory-meta">
-              <span><Icon icon="mdi:map-marker-radius-outline" />{{ formatLocation(pet) }}</span>
-              <span><Icon icon="mdi:account-heart-outline" />{{ pet.username || '暖窝救助站' }}</span>
-            </div>
-
-            <el-button text type="warning" class="card-link" @click="openPetProfile(pet.id)">
-              查看宠物档案
-              <el-icon><ArrowRight /></el-icon>
-            </el-button>
-          </div>
-        </article>
+        <PetCard v-for="pet in filteredPets" :key="pet.id" :pet="pet" @click="openPetProfile(pet.id)" />
 
         <el-empty v-if="!loading && filteredPets.length === 0" description="没有找到合适的领养档案" />
       </section>
