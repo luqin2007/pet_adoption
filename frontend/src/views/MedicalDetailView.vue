@@ -13,7 +13,7 @@ import {
   getMedicalDetails,
   getMedicalExaminations,
   updateMedicalDetail,
-} from '../api/services'
+} from '../api/medical'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'

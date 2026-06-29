@@ -69,7 +69,7 @@ import {
   beginAgreement,
   deleteAgreementWhenAdd,
   uploadAgreementWhenAdd,
-} from '../api/services'
+} from '../api/adoption'
 
 const props = defineProps({
   type: {

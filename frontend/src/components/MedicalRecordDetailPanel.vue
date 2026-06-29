@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getMedicalDetails, getMedicalRecord } from '../api/services'
+import { getMedicalDetails, getMedicalRecord } from '../api/medical'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { ROLE, hasRole } from '../utils/roles'
 

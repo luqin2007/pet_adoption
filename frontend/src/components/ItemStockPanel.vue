@@ -339,7 +339,7 @@ import {
   getSubscribes,
   updateCategory,
   updateItem,
-} from '../api/services'
+} from '../api/inventory'
 import { formatDate } from '../utils/format'
 import TableActionColumnHeader from './TableActionColumnHeader.vue'
 import TableFilterHeader from './TableFilterHeader.vue'

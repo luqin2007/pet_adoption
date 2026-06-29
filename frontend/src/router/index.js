@@ -61,7 +61,7 @@ import ItemStockPanel from '../components/ItemStockPanel.vue'
 import VolunteerManagementPanel from '../components/VolunteerManagementPanel.vue'
 import VolunteerApplicationDetailPanel from '../components/VolunteerApplicationDetailPanel.vue'
 import VolunteerShiftDetailPanel from '../components/VolunteerShiftDetailPanel.vue'
-import { medicalRecordOwnerExists } from '../api/services'
+import { medicalRecordOwnerExists } from '../api/medical'
 
 const router = createRouter({
   history: createWebHistory(),

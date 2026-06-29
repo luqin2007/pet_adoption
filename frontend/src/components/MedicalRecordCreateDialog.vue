@@ -2,7 +2,7 @@
 import { ref, reactive, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getPetById } from '../api/pets'
-import { addMedicalRecord } from '../api/services'
+import { addMedicalRecord } from '../api/medical'
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },

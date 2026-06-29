@@ -12,7 +12,7 @@ import {
   getMedicalDetail,
   getMedicalExaminations,
   uploadExamination,
-} from '../api/services'
+} from '../api/medical'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { ROLE, hasRole } from '../utils/roles'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'

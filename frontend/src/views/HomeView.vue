@@ -9,7 +9,7 @@ import HeroSection from '../components/HeroSection.vue'
 import StatsOverview from '../components/StatsOverview.vue'
 import { getPets } from '../api/pets'
 import { getArticles } from '../api/article'
-import { getRescueTaskCount } from '../api/services'
+import { getRescueTaskCount } from '../api/rescue'
 import { getRecruitments } from '../api/volunteer'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 

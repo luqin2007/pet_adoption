@@ -6,7 +6,7 @@ import { ArrowLeft, EditPen, LocationInformation, Plus } from '@element-plus/ico
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getPetHealthAssessments } from '../api/services'
+import { getPetHealthAssessments } from '../api/medical'
 import { addPetLocation, getPetById } from '../api/pets'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'

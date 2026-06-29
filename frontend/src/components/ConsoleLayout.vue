@@ -7,7 +7,7 @@ import { useUserStore } from '../stores/user'
 import { useConsoleGuards } from '../composables/useConsoleGuards'
 import { useNoticeSse } from '../composables/useNoticeSse'
 import { ROLE, hasRole } from '../utils/roles'
-import { medicalRecordOwnerExists } from '../api/services'
+import { medicalRecordOwnerExists } from '../api/medical'
 
 const router = useRouter()
 const route = useRoute()

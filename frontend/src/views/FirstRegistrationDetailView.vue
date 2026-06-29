@@ -5,7 +5,7 @@ import { ArrowLeft } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getFirstVisitRegistration } from '../api/services'
+import { getFirstVisitRegistration } from '../api/medical'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const route = useRoute()

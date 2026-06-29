@@ -5,7 +5,7 @@ import { ArrowLeft, PictureFilled } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { getRescueTask, getRescueTaskMedia } from '../api/services'
+import { getRescueTask, getRescueTaskMedia } from '../api/rescue'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const route = useRoute()

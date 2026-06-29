@@ -1,0 +1,320 @@
+﻿.action-form-page {
+  display: grid;
+  gap: 18px;
+}
+
+.action-form-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(155deg, rgba(255, 253, 249, 0.96) 0%, rgba(255, 244, 232, 0.9) 100%);
+  box-shadow: var(--shadow);
+}
+
+.action-form-hero h1 {
+  margin: 10px 0 0;
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 1.2;
+}
+
+.action-form-hero p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 720px;
+}
+
+.action-form-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 253, 249, 0.94);
+  padding: 20px;
+  box-shadow: 0 12px 30px rgba(151, 96, 56, 0.07);
+}
+
+.action-form-panel.application-detail-panel,
+.action-form-panel.follow-task-detail-panel,
+.action-form-panel.adoption-application-detail-panel,
+.action-form-panel.breading-application-detail-panel,
+.action-form-panel.agreement-draft-panel,
+.action-form-panel.adoption-follow-task-panel {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+.pet-apply-summary {
+  margin-bottom: 18px;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 248, 240, 0.82);
+  padding: 14px 16px;
+  display: grid;
+  gap: 6px;
+}
+
+.pet-apply-summary strong {
+  color: #5d3927;
+  font-size: 18px;
+}
+
+.pet-apply-summary span {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.action-form-panel .el-alert {
+  margin-bottom: 16px;
+}
+
+.action-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 14px;
+}
+
+.action-form-grid .el-select,
+.action-form-grid .el-input,
+.action-form-grid .el-input-number,
+.action-form-grid .el-date-editor {
+  width: 100%;
+}
+
+.pet-create-age-input .el-input__inner {
+  text-align: left;
+}
+
+.action-form-span-2 {
+  grid-column: span 2;
+}
+
+.lost-pet-similar-form-item {
+  margin-top: 2px;
+}
+
+.lost-pet-similar-panel {
+  width: 100%;
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.lost-pet-similar-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lost-pet-similar-head strong {
+  color: var(--primary-strong);
+  font-size: 16px;
+}
+
+.lost-pet-similar-head span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.lost-pet-similar-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.lost-pet-similar-list article {
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 249, 243, 0.92);
+  padding: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.lost-pet-similar-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.lost-pet-similar-card-head strong {
+  color: #5d3927;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lost-pet-similar-card-head span,
+.lost-pet-similar-list small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.lost-pet-similar-list p {
+  margin: 0;
+  color: #6c4834;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.lost-pet-similar-empty {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.action-form-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rescue-image-uploader {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.rescue-image-uploader > .el-button {
+  justify-self: start;
+}
+
+.rescue-image-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.rescue-image-list article {
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.rescue-image-list img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.rescue-image-list span {
+  color: #5d3927;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rescue-detail-page {
+  display: grid;
+  gap: 18px;
+}
+
+.rescue-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.28fr);
+  gap: 18px;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(155deg, rgba(255, 253, 249, 0.97) 0%, rgba(255, 244, 232, 0.92) 100%);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.rescue-detail-hero h1 {
+  margin: 16px 0 10px;
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.15;
+}
+
+.rescue-detail-hero p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.rescue-detail-meta {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #6c4834;
+  font-weight: 700;
+}
+
+.rescue-detail-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rescue-detail-status {
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.74);
+  padding: 18px;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+}
+
+.rescue-detail-status span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.rescue-detail-status strong {
+  color: var(--primary-strong);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.rescue-detail-media-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.rescue-detail-media-grid article {
+  border: 1px solid rgba(243, 223, 204, 0.9);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  overflow: hidden;
+  display: grid;
+}
+
+.rescue-detail-media-grid img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.rescue-detail-media-grid strong {
+  color: #5d3927;
+  padding: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+

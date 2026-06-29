@@ -134,7 +134,8 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Delete, Plus } from '@element-plus/icons-vue'
-import { createRehabPlan, getCategories, getItems } from '../api/services'
+import { createRehabPlan } from '../api/medical'
+import { getCategories, getItems } from '../api/inventory'
 
 const route = useRoute()
 const router = useRouter()

@@ -6,7 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
 import { getPetById } from '../api/pets'
-import { createAdoptApplication } from '../api/services'
+import { createAdoptApplication } from '../api/adoption'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
@@ -123,7 +123,6 @@ onMounted(async () => {
         <div>
           <span class="hero-chip">领养申请</span>
           <h1>提交领养意向</h1>
-          <p v-if="pet">想把 {{ pet.name || '这只毛孩子' }} 带回家，先留下联系方式和居住位置。</p>
         </div>
         <el-button class="soft-btn" :icon="ArrowLeft" @click="goBack">返回宠物档案</el-button>
       </section>

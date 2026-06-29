@@ -71,7 +71,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { RefreshRight } from '@element-plus/icons-vue'
-import { getStock, getStockRecords } from '../api/services'
+import { getStock, getStockRecords } from '../api/inventory'
 import TableFilterHeader from './TableFilterHeader.vue'
 import { useTableFilters } from '../composables/useTableFilters'
 

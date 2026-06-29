@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getFirstVisitRegistration } from '../api/services'
+import { getFirstVisitRegistration } from '../api/medical'
 
 const route = useRoute()
 const router = useRouter()

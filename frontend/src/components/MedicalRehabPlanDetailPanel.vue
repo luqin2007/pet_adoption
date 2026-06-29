@@ -141,7 +141,7 @@ import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, Edit, Plus } from '@element-plus/icons-vue'
-import { addRehabRecord, getRehabPlan, getRehabRecords, updateRehabPlanStatus } from '../api/services'
+import { addRehabRecord, getRehabPlan, getRehabRecords, updateRehabPlanStatus } from '../api/medical'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 

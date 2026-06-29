@@ -1,0 +1,131 @@
+﻿.article-admin-card .el-card__body {
+  display: grid;
+  /* gap: 18px; */
+}
+
+.article-admin-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.article-tabs {
+  --el-tabs-header-margin-bottom: 0;
+}
+
+.article-tabs .el-tabs__header {
+  margin-bottom: 0;
+}
+
+.article-tabs + .pet-admin-section {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 0;
+  margin-top: 0;
+}
+
+.article-search-btn.el-button {
+  border-radius: 999px;
+  border-color: rgba(231, 122, 59, 0.2);
+  background: rgba(231, 122, 59, 0.1);
+  color: var(--primary-strong);
+}
+
+.table-action-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 32px;
+}
+
+.table-action-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(231, 122, 59, 0.18);
+  border-radius: 999px;
+  background: rgba(231, 122, 59, 0.08);
+  color: var(--primary-strong);
+  cursor: pointer;
+  transition: background 0.24s ease, border-color 0.24s ease, transform 0.24s ease;
+}
+
+.table-action-toggle:hover {
+  border-color: rgba(231, 122, 59, 0.28);
+  background: rgba(231, 122, 59, 0.14);
+  transform: scale(1.1);
+}
+
+.table-action-cell {
+  position: relative;
+  height: 100%;
+}
+
+.table-action-panel {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(255, 253, 249, 0.95);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
+  z-index: 4;
+  opacity: 1;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.table-action-panel .el-button {
+  --el-button-size: small;
+  padding: 1px 6px;
+  font-size: 12px;
+  line-height: 20px;
+  height: 22px;
+}
+
+.table-action-panel.is-collapsed {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.action-col .cell {
+  overflow: visible !important;
+}
+
+.table-action-cell-text {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  font-size: 12px;
+}
+
+.notice-title-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.notice-title-cell strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notice-content-cell {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+
+

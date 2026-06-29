@@ -1,0 +1,234 @@
+﻿.home-page {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 16px 20px 28px;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+}
+
+
+.top-strip-right {
+  font-weight: 700;
+  color: var(--primary-strong);
+}
+
+.nav-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 253, 249, 0.9);
+  box-shadow: 0 10px 30px rgba(163, 104, 59, 0.08);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 210px;
+}
+
+.brand-button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary) 0%, #f29a5b 100%);
+  box-shadow: inset 0 -3px 8px rgba(120, 54, 14, 0.2);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-text strong {
+  font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', serif;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.brand-text small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-link {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.24s ease, color 0.24s ease;
+}
+
+.nav-link:hover {
+  color: var(--primary-strong);
+  background: var(--bg-soft);
+}
+
+.nav-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-btn.el-button {
+  --el-button-bg-color: var(--primary);
+  --el-button-border-color: var(--primary);
+  --el-button-hover-bg-color: var(--primary-strong);
+  --el-button-hover-border-color: var(--primary-strong);
+  --el-button-active-bg-color: var(--primary-strong);
+  --el-button-active-border-color: var(--primary-strong);
+  --el-button-text-color: #fff;
+  font-weight: 700;
+  border-radius: 12px;
+}
+
+.user-pill {
+  max-width: 180px;
+  height: 42px;
+  border: 1px solid rgba(231, 122, 59, 0.28);
+  border-radius: 999px;
+  padding: 4px 12px 4px 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(255, 253, 249, 0.94);
+  color: var(--text);
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(151, 96, 56, 0.08);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.user-pill:hover {
+  border-color: rgba(231, 122, 59, 0.58);
+  background: #fff;
+}
+
+.user-pill-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.user-menu-dropdown {
+  display: inline-flex;
+}
+
+.user-pill-badge {
+  line-height: 1;
+}
+
+.user-pill-badge .el-badge__content {
+  transform: translateY(-2px);
+}
+
+.header-user-menu .el-dropdown-menu__item {
+  gap: 8px;
+}
+
+.header-notice-menu-badge {
+  margin-left: 6px;
+}
+
+.user-pill-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.user-pill-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.mobile-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--primary-strong);
+  cursor: pointer;
+}
+
+.mobile-menu {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: rgba(255, 253, 249, 0.94);
+  display: grid;
+  gap: 8px;
+}
+
+.mobile-link {
+  border: none;
+  border-radius: 10px;
+  background: var(--bg-soft);
+  color: var(--text);
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.menu-fade-enter-active,
+.menu-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.menu-fade-enter-from,
+.menu-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+main {
+  margin-top: 24px;
+}

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getAllConfig, batchSetConfig, deleteCachedFeatures } from '../api/services'
+import { getAllConfig, batchSetConfig, deleteCachedFeatures } from '../api/system'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 import { computed } from 'vue'

@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 import { ArrowLeft, Check } from '@element-plus/icons-vue'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { addMedicalDetail } from '../api/services'
+import { addMedicalDetail } from '../api/medical'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const router = useRouter()

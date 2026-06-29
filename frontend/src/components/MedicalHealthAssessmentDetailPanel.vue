@@ -64,7 +64,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
-import { getHealthAssessment } from '../api/services'
+import { getHealthAssessment } from '../api/medical'
 
 const route = useRoute()
 const router = useRouter()

@@ -5,7 +5,7 @@ import { ArrowLeft, Check, Delete, Plus, Upload } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { beginDonation, createDonation, deleteDonationFile, getCategories, getItems, uploadDonationFile } from '../api/services'
+import { beginDonation, createDonation, deleteDonationFile, getCategories, getItems, uploadDonationFile } from '../api/inventory'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 
 const router = useRouter()

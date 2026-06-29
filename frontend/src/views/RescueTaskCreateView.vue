@@ -5,7 +5,7 @@ import { ArrowLeft, Check, Delete, Upload } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import AppFooter from '../components/AppFooter.vue'
 import AppHeader from '../components/AppHeader.vue'
-import { beginRescueTask, createRescueTask, deleteRescueTaskUpload, uploadRescueTaskMedia } from '../api/services'
+import { beginRescueTask, createRescueTask, deleteRescueTaskUpload, uploadRescueTaskMedia } from '../api/rescue'
 import { useInformationCatalog } from '../composables/useInformationCatalog'
 import { MAIN_NAV_ITEMS as navItems } from '../constants/navigation'
 

@@ -158,7 +158,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, PictureFilled } from '@element-plus/icons-vue'
-import { addFollowRecord, getAdoptApplication, getFollowRecords, getFollowTask } from '../api/services'
+import { addFollowRecord, getAdoptApplication, getFollowRecords, getFollowTask } from '../api/adoption'
 import { useUserStore } from '../stores/user'
 import { ROLE, hasRole } from '../utils/roles'
 
